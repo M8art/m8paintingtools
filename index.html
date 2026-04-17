@@ -134,7 +134,7 @@
 
     .hero {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 22px;
       align-items: start;
     }
@@ -151,6 +151,27 @@
     .tool-card {
       display: grid;
       gap: 20px;
+    }
+
+    .tool-card-primary {
+      box-shadow: 0 28px 68px rgba(50, 39, 28, 0.16);
+      transform: scale(1.03);
+      transform-origin: top center;
+    }
+
+    .tool-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(201, 106, 61, 0.12);
+      color: #9b5b37;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     .subheadline {
@@ -209,9 +230,31 @@
       border-color: #c96a3d;
     }
 
+    .button:disabled,
+    .button-secondary:disabled,
+    .button.is-disabled,
+    .button-secondary.is-disabled {
+      opacity: 0.68;
+      cursor: not-allowed;
+      pointer-events: none;
+      transform: none;
+      background: #c96a3d;
+      color: #ffffff;
+      border-color: rgba(201, 106, 61, 0.28);
+    }
+
     .features {
       display: grid;
       gap: 14px;
+    }
+
+    .feature-label {
+      margin-bottom: 2px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .hero-intro {
@@ -221,6 +264,7 @@
     .tool-heading {
       display: grid;
       gap: 10px;
+      min-height: 228px;
     }
 
     .feature {
@@ -239,12 +283,6 @@
     .feature-copy {
       color: var(--muted);
       line-height: 1.65;
-    }
-
-    .footer-note {
-      margin-top: 18px;
-      color: var(--muted);
-      line-height: 1.7;
     }
 
     .mini-game-callout {
@@ -287,6 +325,16 @@
       border-color: #c96a3d;
     }
 
+
+    @media (max-width: 1120px) {
+      .hero {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tool-card-primary {
+        transform: none;
+      }
+    }
 
     @media (max-width: 920px) {
       .hero {
@@ -361,11 +409,11 @@
     </p>
 
     <section class="hero">
-      <div class="card tool-card">
+      <div class="card tool-card tool-card-primary">
         <div class="tool-heading">
           <p class="eyebrow">Tool One</p>
           <h2>Value Checker</h2>
-          <p class="subheadline">Study value structure, simplify tonal masses, and compare what the painting is really doing.</p>
+          <p class="subheadline">Study value structure, simplify tonal masses, and better understand how the painting is really working before small value errors settle in.</p>
         </div>
 
         <div class="button-row">
@@ -373,64 +421,93 @@
           <a class="button-secondary" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer">Watch Demo</a>
         </div>
 
+        <div>
+          <p class="feature-label">Key tools:</p>
+        </div>
+
         <div class="features">
           <div class="feature">
             <h3 class="feature-title">Value Picker</h3>
-            <p class="feature-copy">Click into a grayscale image and read its exact place on a 20-step painter's value scale.</p>
+            <p class="feature-copy">Sample a grayscale image and place any point on a 20-step painter's value scale.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">7-Value Map</h3>
-            <p class="feature-copy">Posterize a reference into seven clean tonal bands to reveal the large value design at a glance.</p>
+            <p class="feature-copy">Reduce a reference into seven tonal bands to reveal the big value design fast.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Compare Values</h3>
-            <p class="feature-copy">Compare reference and painting side by side with a subtle overlay that shows lighter, darker, and matching passages.</p>
+            <p class="feature-copy">Compare reference and painting with an overlay that shows lighter, darker, and matching passages.</p>
           </div>
         </div>
 
-        <p class="footer-note">
-          Built for painters who want to measure, simplify, and check value decisions before they settle into paint.
-        </p>
       </div>
 
       <div class="card tool-card">
         <div class="tool-heading">
           <p class="eyebrow">Tool Two</p>
           <h2>Composition Checker</h2>
-          <p class="subheadline">Study structure, balance, focal points, and movement so the design carries the painting.</p>
+          <p class="subheadline">Study composition through multiple visual guides and overlays. Analyze structure, balance, movement, and focal flow using tools like grids, diagonals, and dynamic systems.</p>
         </div>
 
         <div class="button-row">
           <a class="button" href="./composition-checker/index.html">Open Composition Checker</a>
         </div>
 
-        <div class="features">
-          <div class="feature">
-            <h3 class="feature-title">Rule of Thirds</h3>
-            <p class="feature-copy">Check whether key shapes and accents sit in strong compositional zones.</p>
-          </div>
-
-          <div class="feature">
-            <h3 class="feature-title">Grid</h3>
-            <p class="feature-copy">Study spacing, alignment, and the overall placement of the big masses.</p>
-          </div>
-
-          <div class="feature">
-            <h3 class="feature-title">Diagonal Flow</h3>
-            <p class="feature-copy">Look for directional movement, tilt, and pathways that carry the eye through the image.</p>
-          </div>
-
-          <div class="feature">
-            <h3 class="feature-title">Focal Point Notes</h3>
-            <p class="feature-copy">Mark the main attention path to test whether the eye lands where you intend.</p>
-          </div>
+        <div>
+          <p class="feature-label">Key tools:</p>
         </div>
 
-        <p class="footer-note">
-          A clean workspace for testing how shapes, directions, and focal pressure hold together before the painting moves forward.
-        </p>
+        <div class="features">
+          <div class="feature">
+            <h3 class="feature-title">Basic Guides</h3>
+            <p class="feature-copy">Use essentials like the rule of thirds and grid overlays to check placement, spacing, and structural balance.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Directional Tools</h3>
+            <p class="feature-copy">Study diagonals and visual movement to understand how the eye travels through the image.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Golden Spiral</h3>
+            <p class="feature-copy">Test focal flow and visual rhythm with a true spiral construction overlay that can be positioned over the artwork.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Advanced Analysis</h3>
+            <p class="feature-copy">Explore more advanced systems and overlays for balance, dynamic structure, and compositional pressure.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card tool-card">
+        <div class="tool-heading">
+          <p class="eyebrow">Tool Three</p>
+          <h2>Color Checker</h2>
+          <p class="subheadline">Explore color relationships, palette structure, and temperature shifts. Understand how colors interact and build stronger, more controlled palettes.</p>
+        </div>
+
+        <div class="button-row">
+          <button class="button is-disabled" type="button" disabled aria-disabled="true">Coming Soon</button>
+        </div>
+
+        <div>
+          <p class="feature-label">Planned features:</p>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <h3 class="feature-title">Palette Structure</h3>
+            <p class="feature-copy">Simplify complex palettes and study how color families are organized across the painting.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Color Relationships</h3>
+            <p class="feature-copy">Explore temperature, contrast, and interaction so color choices feel more intentional and unified.</p>
+          </div>
+        </div>
       </div>
     </section>
 
