@@ -27,6 +27,7 @@ const PIPE_WIDTH = 104;
 const BASE_GAP = 160;
 const MIN_GAP = 126;
 const SPAWN_DELAY = 1.52;
+const PIPE_SPACING = BASE_SPEED * SPAWN_DELAY;
 const STAR_DURATION = 10;
 const STAR_CHANCE = 0.18;
 const PERFECT_WINDOW = 18;
@@ -37,8 +38,25 @@ const PALETTES = [
   ["#a24d54", "#5b7f72", "#ad8358", "#76523e", "#83645f", "#6a628a"]
 ];
 const RHYTHM_PATTERN = [1.02, 0.94, 1.08, 0.9];
+const TUBE_ASSETS = [
+  { name: "Blue", src: "../assets/tubes/Blue.png" },
+  { name: "Green", src: "../assets/tubes/Green.png" },
+  { name: "Orange", src: "../assets/tubes/Orange.png" },
+  { name: "Red", src: "../assets/tubes/Red.png" },
+  { name: "Yellow", src: "../assets/tubes/Yellow.png" }
+];
 const brushImage = new Image();
 brushImage.src = "../assets/images/game brush.png";
+const logoImage = new Image();
+logoImage.src = "../assets/images/M8 Logo (2).png";
+const tubeImages = TUBE_ASSETS.map((asset) => {
+  const image = new Image();
+  image.src = asset.src;
+  return {
+    ...asset,
+    image
+  };
+});
 
 const player = {
   x: PLAYER_X,
@@ -68,7 +86,8 @@ const state = {
   paletteBlend: 1,
   targetPaletteIndex: 0,
   screenShake: 0,
-  invincibleTimer: 0
+  invincibleTimer: 0,
+  backgroundScroll: 0
 };
 
 scoreValue.textContent = "0";
@@ -119,6 +138,7 @@ function startFlight() {
   state.targetPaletteIndex = 0;
   state.screenShake = 0;
   state.invincibleTimer = 0;
+  state.backgroundScroll = 0;
 
   player.y = canvas.height * 0.5;
   player.lastY = player.y;
@@ -186,6 +206,7 @@ function update(delta) {
   state.paletteBlend = Math.min(1, state.paletteBlend + delta * 0.9);
   state.screenShake = Math.max(0, state.screenShake - delta * 6);
   state.invincibleTimer = Math.max(0, state.invincibleTimer - delta);
+  state.backgroundScroll += state.speed * delta * 0.16;
   player.lastY = player.y;
   player.velocityY += BASE_GRAVITY * delta;
   player.y += player.velocityY * delta;
@@ -200,7 +221,7 @@ function update(delta) {
     spawnPipePair();
     const rhythm = RHYTHM_PATTERN[state.rhythmIndex % RHYTHM_PATTERN.length];
     state.rhythmIndex += 1;
-    state.spawnTimer = SPAWN_DELAY * rhythm;
+    state.spawnTimer = (PIPE_SPACING / state.speed) * rhythm;
   }
 
   addTrailPoints();
@@ -263,23 +284,24 @@ function update(delta) {
 }
 
 function spawnPipePair() {
-  const dynamicGap = Math.max(MIN_GAP, BASE_GAP - Math.floor(state.score * 1.2));
-  const topHeight = randomBetween(90, canvas.height - dynamicGap - 90);
+  const fixedGap = BASE_GAP;
+  const topHeight = randomBetween(90, canvas.height - fixedGap - 90);
   const palette = getActivePalette();
   const color = palette[Math.floor(Math.random() * palette.length)];
 
   state.pipes.push({
     x: canvas.width + 40,
     topHeight,
-    gapHeight: dynamicGap,
+    gapHeight: fixedGap,
     passed: false,
-    color
+    color,
+    tubeIndex: Math.floor(Math.random() * tubeImages.length)
   });
 
   if (Math.random() < STAR_CHANCE && state.score >= 2 && !state.stars.length && state.invincibleTimer <= 0) {
     state.stars.push({
       x: canvas.width + 40 + PIPE_WIDTH * 0.5,
-      y: topHeight + dynamicGap * 0.5,
+      y: topHeight + fixedGap * 0.5,
       radius: 14,
       spin: 0
     });
@@ -394,6 +416,8 @@ function drawBackground() {
   ctx.fillStyle = "rgba(255,255,255,0.12)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  drawBackgroundLogo();
+
   ctx.save();
   ctx.globalAlpha = 0.08;
   ctx.strokeStyle = "#ffffff";
@@ -413,6 +437,30 @@ function drawBackground() {
   ctx.fill();
 }
 
+function drawBackgroundLogo() {
+  if (!logoImage.complete || logoImage.naturalWidth <= 0 || logoImage.naturalHeight <= 0) {
+    return;
+  }
+
+  const desiredWidth = canvas.width * 0.36;
+  const scale = desiredWidth / logoImage.naturalWidth;
+  const drawWidth = logoImage.naturalWidth * scale;
+  const drawHeight = logoImage.naturalHeight * scale;
+  const spacing = drawWidth + canvas.width * 0.22;
+  const scrollX = state.backgroundScroll % spacing;
+  const baseY = (canvas.height - drawHeight) * 0.5;
+
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+
+  for (let index = -1; index <= 1; index += 1) {
+    const drawX = canvas.width * 0.5 - drawWidth * 0.5 - scrollX + index * spacing;
+    ctx.drawImage(logoImage, drawX, baseY, drawWidth, drawHeight);
+  }
+
+  ctx.restore();
+}
+
 function drawGuideLines() {
   ctx.strokeStyle = "rgba(59,57,55,0.1)";
   ctx.lineWidth = 1;
@@ -425,11 +473,51 @@ function drawGuideLines() {
 }
 
 function drawPipePair(pipe) {
-  drawPaintStroke(pipe.x, 0, PIPE_WIDTH, pipe.topHeight, false, pipe.color);
-  drawPaintStroke(pipe.x, pipe.topHeight + pipe.gapHeight, PIPE_WIDTH, canvas.height - (pipe.topHeight + pipe.gapHeight), true, pipe.color);
+  const tube = tubeImages[pipe.tubeIndex]?.image;
+  drawTubeObstacle(pipe.x, 0, PIPE_WIDTH, pipe.topHeight, tube, true, pipe.color);
+  drawTubeObstacle(
+    pipe.x,
+    pipe.topHeight + pipe.gapHeight,
+    PIPE_WIDTH,
+    canvas.height - (pipe.topHeight + pipe.gapHeight),
+    tube,
+    false,
+    pipe.color
+  );
 }
 
-function drawPaintStroke(x, y, width, height, flipped, color) {
+function drawTubeObstacle(x, y, width, height, tubeImage, flipVertical, fallbackColor) {
+  if (!tubeImage || !tubeImage.complete || tubeImage.naturalWidth <= 0 || tubeImage.naturalHeight <= 0) {
+    drawPaintStrokeFallback(x, y, width, height, flipVertical, fallbackColor);
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.shadowColor = hexToRgba(fallbackColor, 0.16);
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.rect(0, 0, width, height);
+  ctx.clip();
+
+  if (flipVertical) {
+    ctx.translate(0, height);
+    ctx.scale(1, -1);
+  }
+
+  const imageWidth = tubeImage.naturalWidth;
+  const imageHeight = tubeImage.naturalHeight;
+  const scale = Math.max(width / imageWidth, height / imageHeight);
+  const drawWidth = imageWidth * scale;
+  const drawHeight = imageHeight * scale;
+  const drawX = (width - drawWidth) * 0.5;
+  const drawY = 0;
+
+  ctx.drawImage(tubeImage, drawX, drawY, drawWidth, drawHeight);
+  ctx.restore();
+}
+
+function drawPaintStrokeFallback(x, y, width, height, flipped, color) {
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = hexToRgba(color, 0.18);
