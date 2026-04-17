@@ -42,15 +42,15 @@ const ADVANCED_MODES = {
   },
   notan: {
     title: "Notan",
-    description: "Simplifies the image into 2-3 value groups (light and dark) to reveal the core design.",
+    description: "Simplifies the image into 2-4 value groups to reveal the core value design and large shape structure.",
     tip: "Check if the composition still works clearly when reduced to simple value shapes.",
-    status: "Upload an image to begin."
+    status: "Notan view is active. Adjust the value groups to simplify the image further."
   },
   "focal-balance": {
     title: "Focal Balance",
-    description: "Analyzes visual weight and contrast to highlight the dominant focal area.",
-    tip: "Identify where the eye is naturally drawn and whether it matches your intended focal point.",
-    status: "Upload an image to begin."
+    description: "Map your focal hierarchy by placing primary, secondary, and tertiary points directly on the image or by using contrast-based suggestions.",
+    tip: "Click to place up to three focal points or use the contrast suggestion to find likely focal areas. Then compare whether the eye lands where you intend.",
+    status: "Click on the image to place up to three focal points, or use Suggest by Contrast for an automatic starting point."
   }
 };
 
@@ -83,6 +83,8 @@ const advancedModeDescription = document.getElementById("advancedModeDescription
 const advancedModeTip = document.getElementById("advancedModeTip");
 const advancedStatusNote = document.getElementById("advancedStatusNote");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
+const notanControlsCard = document.getElementById("notanControlsCard");
+const focalControlsCard = document.getElementById("focalControlsCard");
 const downloadCompositionAnalysisButton = document.getElementById("downloadCompositionAnalysisButton");
 const spiralScale = document.getElementById("spiralScale");
 const spiralScaleValue = document.getElementById("spiralScaleValue");
@@ -91,6 +93,9 @@ const spiralRotateButton = document.getElementById("spiralRotateButton");
 const spiralFlipHorizontalButton = document.getElementById("spiralFlipHorizontalButton");
 const spiralFlipVerticalButton = document.getElementById("spiralFlipVerticalButton");
 const spiralDisplayButtons = Array.from(document.querySelectorAll("[data-spiral-display]"));
+const notanLevels = document.getElementById("notanLevels");
+const notanLevelsValue = document.getElementById("notanLevelsValue");
+const focalSuggestButton = document.getElementById("focalSuggestButton");
 
 const SPIRAL_DEFAULTS = {
   scale: 1,
@@ -108,7 +113,10 @@ const SPIRAL_DEFAULTS = {
   startOffsetX: 0,
   startOffsetY: 0,
   anchorX: 0,
-  anchorY: 0
+  anchorY: 0,
+  suppressClick: false,
+  movedDuringPointer: false,
+  animationFrame: 0
 };
 
 const GOLDEN_RATIO = 1.61803398875;
@@ -155,9 +163,16 @@ const state = {
   imageLoaded: false,
   objectUrl: null,
   noteMarkers: [],
+  focalPoints: [],
+  focalPointSource: "manual",
   autoDetectedOverlayColor: "#1f1c18",
   userSelectedOverlayColor: null,
   isOverlayColorMenuOpen: false,
+  notanLevels: 3,
+  notanCache: {
+    key: null,
+    canvas: null
+  },
   spiral: {
     ...SPIRAL_DEFAULTS
   }
@@ -200,6 +215,8 @@ downloadCompositionAnalysisButton.addEventListener("click", downloadCompositionA
 spiralDisplayButtons.forEach((button) => {
   button.addEventListener("click", () => setSpiralDisplayMode(button.dataset.spiralDisplay));
 });
+notanLevels.addEventListener("input", handleNotanLevelsInput);
+focalSuggestButton.addEventListener("click", suggestFocalPointsFromContrast);
 overlayCanvas.addEventListener("pointerdown", handleOverlayPointerDown);
 window.addEventListener("pointermove", handleOverlayPointerMove);
 window.addEventListener("pointerup", handleOverlayPointerUp);
@@ -225,8 +242,11 @@ function handleUpload(event) {
   state.objectUrl = URL.createObjectURL(file);
   compositionImage.onload = () => {
     state.imageLoaded = true;
+    state.focalPoints = [];
+    state.focalPointSource = "manual";
     state.userSelectedOverlayColor = null;
     state.autoDetectedOverlayColor = detectOverlayColor();
+    invalidateNotanCache();
     Object.assign(state.spiral, SPIRAL_DEFAULTS);
     closeOverlayColorMenu();
     emptyState.style.display = "none";
@@ -256,7 +276,52 @@ function handleWorkspaceKeydown(event) {
 }
 
 function handleOverlayClick(event) {
-  return;
+  if (state.spiral.suppressClick) {
+    state.spiral.suppressClick = false;
+    return;
+  }
+
+  if (canSnapGoldenSpiral()) {
+    const point = getOverlayPoint(event);
+    if (!point) {
+      return;
+    }
+
+    snapGoldenSpiralToPoint(point);
+    return;
+  }
+
+  if (!canEditFocalBalance()) {
+    return;
+  }
+
+  const point = getOverlayPoint(event);
+  if (!point) {
+    return;
+  }
+
+  const existingIndex = getFocalPointAtPosition(point);
+  if (existingIndex >= 0) {
+    state.focalPoints.splice(existingIndex, 1);
+    state.focalPointSource = "manual";
+  } else if (state.focalPoints.length < 3) {
+    const width = Math.max(1, Math.round(compositionImage.clientWidth));
+    const height = Math.max(1, Math.round(compositionImage.clientHeight));
+    state.focalPoints.push({
+      x: point.x / width,
+      y: point.y / height
+    });
+    state.focalPointSource = "manual";
+  } else {
+    state.focalPoints[state.focalPoints.length - 1] = {
+      x: point.x / Math.max(1, Math.round(compositionImage.clientWidth)),
+      y: point.y / Math.max(1, Math.round(compositionImage.clientHeight))
+    };
+    state.focalPointSource = "manual";
+  }
+
+  updateModeUI();
+  requestOverlayDraw();
 }
 
 function toggleOverlayColorMenu(event) {
@@ -288,6 +353,8 @@ function handleOverlayPointerDown(event) {
     return;
   }
 
+  cancelGoldenSpiralAnimation();
+
   const point = getOverlayPoint(event);
   if (!point) {
     return;
@@ -296,6 +363,8 @@ function handleOverlayPointerDown(event) {
   const handle = getGoldenSpiralHandleAtPoint(point, bounds);
 
   state.spiral.selected = true;
+  state.spiral.movedDuringPointer = false;
+  state.spiral.suppressClick = false;
 
   if (handle) {
     const opposite = getOppositeCornerPoint(handle, bounds);
@@ -348,12 +417,16 @@ function handleOverlayPointerMove(event) {
       -maxOffsetY,
       maxOffsetY
     );
+    state.spiral.movedDuringPointer = state.spiral.movedDuringPointer
+      || Math.hypot(point.x - state.spiral.dragStartX, point.y - state.spiral.dragStartY) > 3;
     requestOverlayDraw();
     return;
   }
 
   if (state.spiral.interaction === "resize") {
     resizeGoldenSpiralFromHandle(point);
+    state.spiral.movedDuringPointer = state.spiral.movedDuringPointer
+      || Math.hypot(point.x - state.spiral.dragStartX, point.y - state.spiral.dragStartY) > 3;
     requestOverlayDraw();
     return;
   }
@@ -366,8 +439,11 @@ function handleOverlayPointerUp(event) {
     return;
   }
 
+  state.spiral.suppressClick = state.spiral.movedDuringPointer;
+
   state.spiral.interaction = null;
   state.spiral.activeHandle = null;
+  state.spiral.movedDuringPointer = false;
 
   if (overlayCanvas.releasePointerCapture) {
     try {
@@ -381,19 +457,26 @@ function handleOverlayPointerUp(event) {
 }
 
 function clearNoteMarkers() {
-  state.noteMarkers = [];
+  if (canEditFocalBalance()) {
+    state.focalPoints = [];
+    state.focalPointSource = "manual";
+  } else {
+    state.noteMarkers = [];
+  }
   clearNotesButton.disabled = true;
   updateModeUI();
   requestOverlayDraw();
 }
 
 function toggleSpiralFlipX() {
+  cancelGoldenSpiralAnimation();
   state.spiral.flipX = !state.spiral.flipX;
   updateModeUI();
   requestOverlayDraw();
 }
 
 function rotateGoldenSpiral() {
+  cancelGoldenSpiralAnimation();
   state.spiral.rotation = (state.spiral.rotation + 90) % 360;
   state.spiral.selected = true;
   updateModeUI();
@@ -401,18 +484,21 @@ function rotateGoldenSpiral() {
 }
 
 function toggleSpiralFlipY() {
+  cancelGoldenSpiralAnimation();
   state.spiral.flipY = !state.spiral.flipY;
   updateModeUI();
   requestOverlayDraw();
 }
 
 function setSpiralDisplayMode(displayMode) {
+  cancelGoldenSpiralAnimation();
   state.spiral.displayMode = displayMode;
   updateModeUI();
   requestOverlayDraw();
 }
 
 function handleSpiralScaleInput(event) {
+  cancelGoldenSpiralAnimation();
   state.spiral.scale = Number(event.target.value) / 100;
   state.spiral.selected = true;
   updateModeUI();
@@ -420,6 +506,7 @@ function handleSpiralScaleInput(event) {
 }
 
 function resetGoldenSpiral() {
+  cancelGoldenSpiralAnimation();
   Object.assign(state.spiral, SPIRAL_DEFAULTS);
   state.spiral.selected = true;
   updateModeUI();
@@ -439,6 +526,10 @@ function setMode(mode) {
 }
 
 function setAdvancedMode(mode) {
+  if (mode !== "golden-spiral") {
+    cancelGoldenSpiralAnimation();
+  }
+
   state.advancedMode = mode;
   if (mode !== "golden-spiral") {
     state.spiral.interaction = null;
@@ -456,15 +547,22 @@ function updateModeUI() {
   const config = MODES[state.mode];
   const advancedConfig = ADVANCED_MODES[state.advancedMode];
   const isGoldenSpiral = !isBasic && state.advancedMode === "golden-spiral";
+  const isNotan = !isBasic && state.advancedMode === "notan";
+  const isFocalBalance = !isBasic && state.advancedMode === "focal-balance";
 
   basicToolSwitcher.classList.toggle("hidden", !isBasic);
   advancedToolSwitcher.classList.toggle("hidden", isBasic);
   basicAnalysisPanel.classList.toggle("hidden", !isBasic);
   advancedAnalysisPanel.classList.toggle("hidden", isBasic);
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
+  notanControlsCard.classList.toggle("hidden", !isNotan);
+  focalControlsCard.classList.toggle("hidden", !isFocalBalance);
+  overlayColorControl.classList.toggle("hidden", isNotan);
   overlayCanvas.style.display = state.imageLoaded ? "block" : "none";
-  clearNotesButton.classList.add("hidden");
-  clearNotesButton.disabled = true;
+  clearNotesButton.classList.toggle("hidden", !isFocalBalance);
+  clearNotesButton.disabled = !isFocalBalance || state.focalPoints.length === 0;
+  clearNotesButton.textContent = "Reset Focal Points";
+  focalSuggestButton.disabled = !isFocalBalance || !state.imageLoaded;
 
   if (isBasic) {
     workspaceTitle.textContent = config.title;
@@ -486,14 +584,12 @@ function updateModeUI() {
     advancedModeDescription.textContent = advancedConfig.description;
     advancedModeTip.textContent = advancedConfig.tip;
     advancedStatusNote.textContent = state.imageLoaded
-      ? advancedConfig.status
+      ? getAdvancedStatusCopy(advancedConfig.status)
       : advancedConfig.status;
   }
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
-  overlayCanvas.style.cursor = isGoldenSpiral && state.imageLoaded
-    ? getGoldenSpiralCursor()
-    : "default";
+  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance);
   downloadCompositionAnalysisButton.disabled = !state.imageLoaded;
 
   spiralScale.value = String(Math.round(state.spiral.scale * 100));
@@ -518,6 +614,9 @@ function updateModeUI() {
     button.setAttribute("aria-pressed", String(isActiveDisplay));
     button.disabled = !isGoldenSpiral;
   });
+  notanLevels.value = String(state.notanLevels);
+  notanLevelsValue.textContent = `${state.notanLevels} values`;
+  notanLevels.disabled = !isNotan;
   updateOverlayColorUI();
 
   modeButtons.forEach((button) => {
@@ -544,6 +643,202 @@ function getStatusCopy() {
   return "Overlay is active. Switch modes to compare different compositional guides.";
 }
 
+function getAdvancedStatusCopy(defaultStatus) {
+  if (state.advancedMode !== "focal-balance") {
+    return defaultStatus;
+  }
+
+  if (!state.focalPoints.length) {
+    return "Click on the image to place your primary, secondary, and tertiary focal points, or use Suggest by Contrast to generate a starting hierarchy.";
+  }
+
+  const sourceLabel = state.focalPointSource === "auto" ? "Auto suggestion active." : "Focal hierarchy active.";
+  return `${sourceLabel} ${state.focalPoints.length}/3 points placed. Click a point to remove it or reset to start again.`;
+}
+
+function getOverlayCursor(isGoldenSpiral, isFocalBalance) {
+  if (isGoldenSpiral && state.imageLoaded) {
+    return getGoldenSpiralCursor();
+  }
+
+  if (isFocalBalance && state.imageLoaded) {
+    return "crosshair";
+  }
+
+  return "default";
+}
+
+function canEditFocalBalance() {
+  return state.imageLoaded && state.analysisMode === "advanced" && state.advancedMode === "focal-balance";
+}
+
+function getFocalPointAtPosition(point) {
+  if (!canEditFocalBalance()) {
+    return -1;
+  }
+
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+
+  return state.focalPoints.findIndex((focalPoint, index) => {
+    const markerX = focalPoint.x * width;
+    const markerY = focalPoint.y * height;
+    const hitRadius = [22, 20, 18][index] || 18;
+    return Math.hypot(point.x - markerX, point.y - markerY) <= hitRadius;
+  });
+}
+
+function canSnapGoldenSpiral() {
+  return state.imageLoaded
+    && state.analysisMode === "advanced"
+    && state.advancedMode === "golden-spiral"
+    && !state.spiral.interaction;
+}
+
+function cancelGoldenSpiralAnimation() {
+  if (state.spiral.animationFrame) {
+    window.cancelAnimationFrame(state.spiral.animationFrame);
+    state.spiral.animationFrame = 0;
+  }
+}
+
+function snapGoldenSpiralToPoint(point) {
+  cancelGoldenSpiralAnimation();
+
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const targetOffsets = getGoldenSpiralTargetOffsets(point, width, height);
+  const startOffsetX = state.spiral.offsetX;
+  const startOffsetY = state.spiral.offsetY;
+  const duration = 220;
+  const startTime = performance.now();
+
+  state.spiral.selected = true;
+
+  const animate = (timestamp) => {
+    const progress = clamp((timestamp - startTime) / duration, 0, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+
+    state.spiral.offsetX = startOffsetX + (targetOffsets.offsetX - startOffsetX) * eased;
+    state.spiral.offsetY = startOffsetY + (targetOffsets.offsetY - startOffsetY) * eased;
+    requestOverlayDraw();
+
+    if (progress < 1) {
+      state.spiral.animationFrame = window.requestAnimationFrame(animate);
+      return;
+    }
+
+    state.spiral.offsetX = targetOffsets.offsetX;
+    state.spiral.offsetY = targetOffsets.offsetY;
+    state.spiral.animationFrame = 0;
+    requestOverlayDraw();
+  };
+
+  state.spiral.animationFrame = window.requestAnimationFrame(animate);
+}
+
+function getGoldenSpiralTargetOffsets(point, width, height) {
+  const bounds = getGoldenSpiralBounds(width, height);
+  const centerX = clamp(point.x, bounds.width / 2, width - bounds.width / 2);
+  const centerY = clamp(point.y, bounds.height / 2, height - bounds.height / 2);
+
+  return {
+    offsetX: centerX - width / 2,
+    offsetY: centerY - height / 2
+  };
+}
+
+function suggestFocalPointsFromContrast() {
+  if (!canEditFocalBalance()) {
+    return;
+  }
+
+  const suggestedPoints = getContrastBasedFocalPoints();
+  if (!suggestedPoints.length) {
+    return;
+  }
+
+  state.focalPoints = suggestedPoints;
+  state.focalPointSource = "auto";
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+function getContrastBasedFocalPoints() {
+  const width = compositionImage.naturalWidth;
+  const height = compositionImage.naturalHeight;
+
+  if (!width || !height) {
+    return [];
+  }
+
+  const sampleMax = 120;
+  const sampleScale = Math.min(1, sampleMax / Math.max(width, height));
+  const sampleWidth = Math.max(48, Math.round(width * sampleScale));
+  const sampleHeight = Math.max(48, Math.round(height * sampleScale));
+  const sampleCanvas = document.createElement("canvas");
+  sampleCanvas.width = sampleWidth;
+  sampleCanvas.height = sampleHeight;
+  const sampleContext = sampleCanvas.getContext("2d", { willReadFrequently: true });
+
+  if (!sampleContext) {
+    return [];
+  }
+
+  sampleContext.drawImage(compositionImage, 0, 0, sampleWidth, sampleHeight);
+  const imageData = sampleContext.getImageData(0, 0, sampleWidth, sampleHeight);
+  const { data } = imageData;
+  const luminance = new Float32Array(sampleWidth * sampleHeight);
+
+  for (let index = 0, pixel = 0; index < data.length; index += 4, pixel += 1) {
+    luminance[pixel] = (0.2126 * data[index]) + (0.7152 * data[index + 1]) + (0.0722 * data[index + 2]);
+  }
+
+  const scores = [];
+  for (let y = 1; y < sampleHeight - 1; y += 1) {
+    for (let x = 1; x < sampleWidth - 1; x += 1) {
+      const center = y * sampleWidth + x;
+      const gx =
+        -luminance[center - sampleWidth - 1] + luminance[center - sampleWidth + 1] +
+        (-2 * luminance[center - 1]) + (2 * luminance[center + 1]) +
+        -luminance[center + sampleWidth - 1] + luminance[center + sampleWidth + 1];
+      const gy =
+        -luminance[center - sampleWidth - 1] - (2 * luminance[center - sampleWidth]) - luminance[center - sampleWidth + 1] +
+        luminance[center + sampleWidth - 1] + (2 * luminance[center + sampleWidth]) + luminance[center + sampleWidth + 1];
+      const gradient = Math.hypot(gx, gy);
+      const centerWeightX = 1 - Math.abs((x / (sampleWidth - 1)) - 0.5) * 0.55;
+      const centerWeightY = 1 - Math.abs((y / (sampleHeight - 1)) - 0.5) * 0.4;
+
+      scores.push({
+        x,
+        y,
+        score: gradient * centerWeightX * centerWeightY
+      });
+    }
+  }
+
+  scores.sort((a, b) => b.score - a.score);
+  const chosen = [];
+  const minDistance = Math.max(10, Math.round(Math.min(sampleWidth, sampleHeight) * 0.18));
+
+  for (const candidate of scores) {
+    const tooClose = chosen.some((point) => Math.hypot(point.x - candidate.x, point.y - candidate.y) < minDistance);
+    if (tooClose) {
+      continue;
+    }
+
+    chosen.push(candidate);
+    if (chosen.length === 3) {
+      break;
+    }
+  }
+
+  return chosen.map((point) => ({
+    x: point.x / sampleWidth,
+    y: point.y / sampleHeight
+  }));
+}
+
 function drawOverlay() {
   const ctx = overlayCanvas.getContext("2d");
 
@@ -566,6 +861,11 @@ function drawOverlay() {
 }
 
 function drawCompositionOverlay(ctx, width, height, options = {}) {
+  if (state.analysisMode === "advanced" && state.advancedMode === "notan") {
+    drawNotanOverlay(ctx, width, height);
+    return;
+  }
+
   const overlayPalette = getOverlayPalette();
   ctx.strokeStyle = overlayPalette.stroke;
   ctx.fillStyle = overlayPalette.fill;
@@ -592,8 +892,6 @@ function drawCompositionOverlay(ctx, width, height, options = {}) {
       drawGoldenSpiral(ctx, width, height, overlayPalette, drawOptions);
     } else if (state.advancedMode === "dynamic-symmetry") {
       drawDynamicSymmetry(ctx, width, height, overlayPalette);
-    } else if (state.advancedMode === "notan") {
-      drawNotanOverlay(ctx, width, height, overlayPalette);
     } else if (state.advancedMode === "focal-balance") {
       drawFocalBalance(ctx, width, height, overlayPalette);
     }
@@ -760,55 +1058,59 @@ function drawDynamicSymmetry(ctx, width, height, overlayPalette) {
   ctx.restore();
 }
 
-function drawNotanOverlay(ctx, width, height, overlayPalette) {
-  ctx.save();
-  ctx.fillStyle = overlayPalette.fillVerySoft;
-  ctx.fillRect(0, 0, width * 0.42, height);
-  ctx.fillRect(width * 0.68, 0, width * 0.32, height);
-  ctx.fillRect(width * 0.22, height * 0.56, width * 0.26, height * 0.44);
+function drawNotanOverlay(ctx, width, height) {
+  const notanCanvas = getNotanCanvas(width, height, state.notanLevels);
 
-  ctx.strokeStyle = overlayPalette.stroke;
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(width * 0.42, 0);
-  ctx.lineTo(width * 0.42, height);
-  ctx.moveTo(width * 0.68, 0);
-  ctx.lineTo(width * 0.68, height);
-  ctx.moveTo(width * 0.22, height * 0.56);
-  ctx.lineTo(width * 0.48, height * 0.56);
-  ctx.stroke();
+  if (!notanCanvas) {
+    return;
+  }
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(notanCanvas, 0, 0, width, height);
   ctx.restore();
 }
 
 function drawFocalBalance(ctx, width, height, overlayPalette) {
-  const zones = [
-    { x: width * 0.56, y: height * 0.36, rx: width * 0.16, ry: height * 0.14, alpha: 0.16 },
-    { x: width * 0.3, y: height * 0.6, rx: width * 0.14, ry: height * 0.12, alpha: 0.09 },
-    { x: width * 0.78, y: height * 0.68, rx: width * 0.12, ry: height * 0.1, alpha: 0.07 }
-  ];
+  const sizes = [56, 42, 30];
+  const alphas = [0.2, 0.14, 0.1];
+  const points = state.focalPoints.map((point, index) => ({
+    x: point.x * width,
+    y: point.y * height,
+    radius: sizes[index] || sizes[sizes.length - 1],
+    alpha: alphas[index] || alphas[alphas.length - 1],
+    label: String(index + 1)
+  }));
 
   ctx.save();
-  zones.forEach((zone) => {
-    const gradient = ctx.createRadialGradient(zone.x, zone.y, 0, zone.x, zone.y, Math.max(zone.rx, zone.ry));
-    gradient.addColorStop(0, toOverlayAlphaColor(getActiveOverlayColor(), zone.alpha));
+  points.forEach((point) => {
+    const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, point.radius);
+    gradient.addColorStop(0, toOverlayAlphaColor(getActiveOverlayColor(), point.alpha));
     gradient.addColorStop(1, toOverlayAlphaColor(getActiveOverlayColor(), 0));
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.ellipse(zone.x, zone.y, zone.rx, zone.ry, 0, 0, Math.PI * 2);
+    ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
     ctx.fill();
   });
 
-  ctx.strokeStyle = overlayPalette.strokeMuted;
-  ctx.lineWidth = 1.1;
-  zones.forEach((zone, index) => {
+  points.forEach((point) => {
+    ctx.strokeStyle = overlayPalette.strokeMuted;
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.ellipse(zone.x, zone.y, zone.rx, zone.ry, 0, 0, Math.PI * 2);
+    ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = overlayPalette.fill;
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = overlayPalette.strokeStrong;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.fillStyle = overlayPalette.strokeStrong;
     ctx.font = "700 12px Segoe UI";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(String(index + 1), zone.x, zone.y);
+    ctx.fillText(point.label, point.x, point.y);
   });
   ctx.restore();
 }
@@ -976,6 +1278,73 @@ function downloadCompositionAnalysis() {
   link.href = exportCanvas.toDataURL("image/png");
   link.download = "m8-composition-analysis.png";
   link.click();
+}
+
+function handleNotanLevelsInput(event) {
+  state.notanLevels = Number(event.target.value);
+  invalidateNotanCache();
+  notanLevelsValue.textContent = `${state.notanLevels} values`;
+  requestOverlayDraw();
+}
+
+function invalidateNotanCache() {
+  state.notanCache.key = null;
+  state.notanCache.canvas = null;
+}
+
+function getNotanCanvas(width, height, levels) {
+  if (!compositionImage.naturalWidth || !compositionImage.naturalHeight) {
+    return null;
+  }
+
+  const cacheKey = [state.objectUrl, width, height, levels].join("|");
+  if (state.notanCache.key === cacheKey && state.notanCache.canvas) {
+    return state.notanCache.canvas;
+  }
+
+  const sampleScale = Math.min(1, 240 / Math.max(width, height));
+  const sampleWidth = Math.max(48, Math.round(width * sampleScale));
+  const sampleHeight = Math.max(48, Math.round(height * sampleScale));
+  const sampleCanvas = document.createElement("canvas");
+  sampleCanvas.width = sampleWidth;
+  sampleCanvas.height = sampleHeight;
+  const sampleContext = sampleCanvas.getContext("2d", { willReadFrequently: true });
+
+  if (!sampleContext) {
+    return null;
+  }
+
+  sampleContext.drawImage(compositionImage, 0, 0, sampleWidth, sampleHeight);
+  const imageData = sampleContext.getImageData(0, 0, sampleWidth, sampleHeight);
+  const { data } = imageData;
+  const maxIndex = Math.max(1, levels - 1);
+
+  for (let index = 0; index < data.length; index += 4) {
+    const luminance = (0.2126 * data[index]) + (0.7152 * data[index + 1]) + (0.0722 * data[index + 2]);
+    const normalized = luminance / 255;
+    const groupIndex = Math.min(maxIndex, Math.floor(normalized * levels));
+    const quantized = Math.round((groupIndex / maxIndex) * 255);
+
+    data[index] = quantized;
+    data[index + 1] = quantized;
+    data[index + 2] = quantized;
+  }
+
+  sampleContext.putImageData(imageData, 0, 0);
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = width;
+  outputCanvas.height = height;
+  const outputContext = outputCanvas.getContext("2d");
+
+  if (!outputContext) {
+    return null;
+  }
+
+  outputContext.imageSmoothingEnabled = true;
+  outputContext.drawImage(sampleCanvas, 0, 0, width, height);
+  state.notanCache.key = cacheKey;
+  state.notanCache.canvas = outputCanvas;
+  return outputCanvas;
 }
 
 function getGoldenSpiralPath(arcs) {

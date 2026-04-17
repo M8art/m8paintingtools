@@ -199,6 +199,34 @@
               <button id="spiralResetButton" class="button-secondary control-reset" type="button">Reset</button>
             </div>
           </div>
+
+          <div id="notanControlsCard" class="detail-card hidden">
+            <p class="section-label">Notan Controls</p>
+
+            <div class="control-stack">
+              <div class="control-group">
+                <div class="control-meta">
+                  <p class="control-label">Value Groups</p>
+                  <span id="notanLevelsValue" class="control-value">3 values</span>
+                </div>
+                <input id="notanLevels" class="control-slider" type="range" min="2" max="4" step="1" value="3" aria-label="Set Notan value groups">
+              </div>
+
+              <p class="detail-copy control-hint">Use fewer values to simplify the design into larger, clearer light and dark shapes.</p>
+            </div>
+          </div>
+
+          <div id="focalControlsCard" class="detail-card hidden">
+            <p class="section-label">Focal Controls</p>
+
+            <div class="control-stack">
+              <div class="control-button-row" role="group" aria-label="Focal balance controls">
+                <button id="focalSuggestButton" class="button-secondary" type="button">Suggest by Contrast</button>
+              </div>
+
+              <p class="detail-copy control-hint">Auto suggestion looks for stronger local contrast areas. You can still move the hierarchy manually by clicking on the image.</p>
+            </div>
+          </div>
         </div>
 
         <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled>Download Composition Analysis</button>
