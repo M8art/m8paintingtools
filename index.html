@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Value Studio</title>
+  <style>
+    :root {
+      --bg: #e8e3d8;
+      --panel: rgba(252, 250, 246, 0.92);
+      --panel-soft: #f3efe6;
+      --ink: #1f1c18;
+      --muted: #69635d;
+      --line: rgba(50, 44, 38, 0.14);
+      --shadow: 0 22px 55px rgba(50, 39, 28, 0.12);
+      --accent: #3b3937;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
+        linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1240px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .brand-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: clamp(2.4rem, 4.8vw, 4.2rem);
+      line-height: 0.98;
+      max-width: none;
+      white-space: nowrap;
+    }
+
+    .brand-logo {
+      display: block;
+      height: clamp(40px, 6vw, 56px);
+      width: auto;
+      flex: none;
+    }
+
+    .social-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .header-actions {
+      display: grid;
+      gap: 12px;
+      justify-items: end;
+    }
+
+    .top-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .social-link {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(50, 44, 38, 0.1);
+      background: rgba(255, 255, 255, 0.38);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, opacity 140ms ease;
+    }
+
+    .social-link:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.62);
+      border-color: rgba(30, 25, 20, 0.2);
+      opacity: 0.92;
+    }
+
+    .social-link svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 26px;
+    }
+
+    .tool-card {
+      display: grid;
+      gap: 20px;
+    }
+
+    .subheadline {
+      font-size: clamp(1.08rem, 1.8vw, 1.35rem);
+      color: var(--muted);
+      max-width: 28ch;
+      line-height: 1.4;
+    }
+
+    .intro {
+      max-width: 64ch;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button,
+    .button-secondary {
+      border-radius: 999px;
+      padding: 13px 18px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font: inherit;
+      transition: transform 220ms ease, border-color 220ms ease, background 220ms ease, color 220ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button {
+      background: #c96a3d;
+      color: #ffffff;
+      border-color: rgba(201, 106, 61, 0.28);
+    }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ink);
+    }
+
+    .button:hover,
+    .button-secondary:hover {
+      transform: translateY(-1px);
+      border-color: rgba(30, 25, 20, 0.28);
+    }
+
+    .button:hover {
+      background: #ffffff;
+      color: #c96a3d;
+      border-color: #c96a3d;
+    }
+
+    .features {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-intro {
+      margin-bottom: 24px;
+    }
+
+    .tool-heading {
+      display: grid;
+      gap: 10px;
+    }
+
+    .feature {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      display: grid;
+      gap: 8px;
+    }
+
+    .feature-title {
+      font-size: 1.08rem;
+    }
+
+    .feature-copy {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .mini-game-callout {
+      margin-top: 28px;
+      padding: 22px 20px;
+      border-radius: 22px;
+      border: 1px solid rgba(59, 52, 45, 0.1);
+      background: rgba(255, 255, 255, 0.42);
+      text-align: center;
+      display: grid;
+      gap: 8px;
+    }
+
+    .mini-game-callout h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.2;
+    }
+
+    .mini-game-callout p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .mini-game-callout .button-row {
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .mini-game-button {
+      background: rgba(201, 106, 61, 0.88);
+      color: #ffffff;
+      border-color: rgba(201, 106, 61, 0.24);
+      min-width: 120px;
+    }
+
+    .mini-game-button:hover {
+      background: #ffffff;
+      color: #c96a3d;
+      border-color: #c96a3d;
+    }
+
+
+    @media (max-width: 920px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100% - 22px, 1240px);
+        padding-top: 22px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .social-links,
+      .button-row,
+      .top-nav {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .button,
+      .button-secondary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Painting Analysis</p>
+        <h1 class="brand-title">
+          <img class="brand-logo" src="./assets/images/M8 Logo (2).png" alt="M8 logo">
+          <span>Painting Studio</span>
+        </h1>
+      </div>
+
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="button-secondary" href="./value-checker/index.html">Value Checker</a>
+          <a class="button-secondary" href="./composition-checker/index.html">Composition Checker</a>
+        </nav>
+
+        <div class="social-links" aria-label="Social links">
+          <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"/>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"/>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <p class="intro hero-intro">
+      A focused painting toolkit for studying value and composition through clear, practical visual analysis.
+    </p>
+
+    <section class="hero">
+      <div class="card tool-card">
+        <div class="tool-heading">
+          <p class="eyebrow">Tool One</p>
+          <h2>Value Checker</h2>
+          <p class="subheadline">Study value structure, simplify tonal masses, and compare what the painting is really doing.</p>
+        </div>
+
+        <div class="button-row">
+          <a class="button" href="./value-checker/index.html">Open Value Checker</a>
+          <a class="button-secondary" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer">Watch Demo</a>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <h3 class="feature-title">Value Picker</h3>
+            <p class="feature-copy">Click into a grayscale image and read its exact place on a 20-step painter's value scale.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">7-Value Map</h3>
+            <p class="feature-copy">Posterize a reference into seven clean tonal bands to reveal the large value design at a glance.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Compare Values</h3>
+            <p class="feature-copy">Compare reference and painting side by side with a subtle overlay that shows lighter, darker, and matching passages.</p>
+          </div>
+        </div>
+
+        <p class="footer-note">
+          Built for painters who want to measure, simplify, and check value decisions before they settle into paint.
+        </p>
+      </div>
+
+      <div class="card tool-card">
+        <div class="tool-heading">
+          <p class="eyebrow">Tool Two</p>
+          <h2>Composition Checker</h2>
+          <p class="subheadline">Study structure, balance, focal points, and movement so the design carries the painting.</p>
+        </div>
+
+        <div class="button-row">
+          <a class="button" href="./composition-checker/index.html">Open Composition Checker</a>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <h3 class="feature-title">Rule of Thirds</h3>
+            <p class="feature-copy">Check whether key shapes and accents sit in strong compositional zones.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Grid</h3>
+            <p class="feature-copy">Study spacing, alignment, and the overall placement of the big masses.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Diagonal Flow</h3>
+            <p class="feature-copy">Look for directional movement, tilt, and pathways that carry the eye through the image.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Focal Point Notes</h3>
+            <p class="feature-copy">Mark the main attention path to test whether the eye lands where you intend.</p>
+          </div>
+        </div>
+
+        <p class="footer-note">
+          A clean workspace for testing how shapes, directions, and focal pressure hold together before the painting moves forward.
+        </p>
+      </div>
+    </section>
+
+    <section class="mini-game-callout" aria-label="Mini game">
+      <h2>🎨 Need a break?</h2>
+      <p>Play a mini game</p>
+      <div class="button-row">
+        <a class="button mini-game-button" href="./brush-runner/index.html">Play</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
