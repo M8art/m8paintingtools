@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Color Studio</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Color Study</p>
+        <h1>M8 Color Studio</h1>
+        <p class="intro">
+          Study the color structure of an image through palette, temperature, and simplified color groups.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <label class="button" for="fileInput">Upload Image</label>
+        <input id="fileInput" type="file" accept="image/*">
+      </div>
+    </header>
+
+    <nav class="mode-switcher" aria-label="Navigation">
+      <a class="tab-button" href="../index.html">← Back</a>
+      <button class="tab-button active" type="button" data-tab="palette">Palette Extractor</button>
+      <button class="tab-button" type="button" data-tab="temperature" aria-disabled="true">Temperature Map</button>
+      <button class="tab-button" type="button" data-tab="mixer" aria-disabled="true">Color Mixer</button>
+    </nav>
+
+    <main class="layout">
+      <section class="card workspace-card">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Workspace</p>
+            <h2>Reference Image</h2>
+          </div>
+          <p id="workspaceHint" class="hint">Upload an image to extract the dominant palette.</p>
+        </div>
+
+        <div class="image-wrap upload-enabled" id="imageWrap" tabindex="0" role="button" aria-label="Click to upload your image">
+          <img id="previewImage" class="preview-image" alt="Uploaded reference for palette extraction">
+          <div id="emptyState" class="empty-state upload-empty-state">
+            <div class="upload-empty-state-inner">
+              <div class="upload-empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 6v12"></path>
+                  <path d="M6 12h12"></path>
+                </svg>
+              </div>
+              <p class="upload-empty-label">Click to upload your image</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Tool</p>
+            <h2 id="panelTitle">Palette Extractor</h2>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+          <div class="placeholder-panel">
+            <p class="section-label">How It Works</p>
+            <div class="placeholder-card">
+              <p id="panelDescription">
+                Extract the main color families from your image and see which hues dominate the overall impression.
+              </p>
+            </div>
+          </div>
+
+          <div id="selectedColorCard" class="detail-card selected-color-card hidden">
+            <p class="section-label">Selected Color</p>
+            <div class="selected-color-layout">
+              <div id="selectedColorPreview" class="selected-color-preview" aria-hidden="true"></div>
+              <div class="selected-color-meta">
+                <div class="selected-color-row">
+                  <span class="meta-label">HEX</span>
+                  <span id="selectedHex" class="meta-value">—</span>
+                </div>
+                <div class="selected-color-row">
+                  <span class="meta-label">RGB</span>
+                  <span id="selectedRgb" class="meta-value">—</span>
+                </div>
+                <div class="selected-color-row">
+                  <span class="meta-label">HSL</span>
+                  <span id="selectedHsl" class="meta-value">—</span>
+                </div>
+                <div class="selected-color-row">
+                  <span class="meta-label">Coverage</span>
+                  <span id="selectedCoverage" class="meta-value">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">Extracted Palette</p>
+            <div id="swatchGrid" class="swatch-grid">
+              <p class="swatch-empty">No palette yet.</p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">Status</p>
+            <p id="statusNote" class="detail-copy">Upload an image to start.</p>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flying Brush</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="title-block">
+        <p class="eyebrow">Mini Game</p>
+        <h1>Flying Brush</h1>
+        <p class="intro">Flap a brush through vertical paint strokes, hold your rhythm, and keep the line alive as the studio pace picks up.</p>
+      </div>
+
+      <a class="back-button" href="../index.html">← Back</a>
+    </header>
+
+    <main class="layout">
+      <section class="card game-card">
+        <div class="card-head">
+          <div>
+            <p class="section-label">Flight</p>
+            <h2>Brush Passage</h2>
+          </div>
+          <p class="hint">Press Space or Up Arrow to flap.</p>
+        </div>
+
+        <div class="hud">
+          <div class="hud-item">
+            <span class="hud-label">Score</span>
+            <span id="scoreValue" class="hud-value">0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Best</span>
+            <span id="bestValue" class="hud-value">0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Speed</span>
+            <span id="speedValue" class="hud-value">1.0x</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Power</span>
+            <span id="powerValue" class="hud-value">—</span>
+          </div>
+        </div>
+
+        <div class="game-shell">
+          <canvas id="gameCanvas" width="1040" height="560" aria-label="Flying Brush game"></canvas>
+          <div id="gameOverlay" class="game-overlay">
+            <div class="overlay-card">
+              <p class="section-label">Flying Brush</p>
+              <h3 id="overlayTitle">Ready to fly?</h3>
+              <p id="overlayMessage" class="overlay-copy">Press Space or Up Arrow to flap upward, guide the brush through the gaps, and keep the score climbing.</p>
+              <div class="overlay-stats">
+                <div class="overlay-stat">
+                  <span class="hud-label">Current</span>
+                  <span id="overlayScore" class="hud-value">0</span>
+                </div>
+                <div class="overlay-stat">
+                  <span class="hud-label">Best</span>
+                  <span id="overlayBest" class="hud-value">0</span>
+                </div>
+              </div>
+              <button id="startButton" class="button" type="button">Start Flight</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card side-card">
+        <div class="card-head">
+          <div>
+            <p class="section-label">How It Works</p>
+            <h2>Painter's Flappy Run</h2>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="info-card">
+            <p class="section-label">Goal</p>
+            <p class="info-copy">Stay airborne and slip the brush through the gaps between vertical paint strokes.</p>
+          </div>
+
+          <div class="info-card">
+            <p class="section-label">Controls</p>
+            <p class="info-copy">Press <strong>Space</strong> or <strong>Up Arrow</strong> to flap upward. Gravity will keep pulling the brush back down.</p>
+          </div>
+
+          <div class="info-card">
+            <p class="section-label">Studio Notes</p>
+            <p class="info-copy">Every clean pass adds one point. The brush path speeds up over time, so the rhythm gets tighter the longer you survive.</p>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

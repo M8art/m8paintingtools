@@ -1,0 +1,3392 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Value Studio</title>
+  <style>
+    :root {
+      --bg: #e8e3d8;
+      --panel: rgba(252, 250, 246, 0.92);
+      --panel-soft: #f3efe6;
+      --ink: #1f1c18;
+      --muted: #69635d;
+      --line: rgba(50, 44, 38, 0.14);
+      --shadow: 0 22px 55px rgba(50, 39, 28, 0.12);
+      --accent: #3b3937;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
+        linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .app {
+      width: min(1360px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 28px 0 34px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .intro {
+      max-width: 740px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    .header-actions {
+      display: grid;
+      gap: 12px;
+      justify-items: end;
+      min-width: 0;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .controls.hidden {
+      display: none;
+    }
+
+    .header-controls {
+      justify-content: flex-end;
+    }
+
+    .social-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .social-link {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(50, 44, 38, 0.1);
+      background: rgba(255, 255, 255, 0.38);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, opacity 140ms ease;
+    }
+
+    .social-link:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.62);
+      border-color: rgba(30, 25, 20, 0.2);
+      opacity: 0.92;
+    }
+
+    .social-link svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+      display: block;
+    }
+
+    #fileInput,
+    #referenceInput,
+    #paintingInput {
+      display: none;
+    }
+
+    .button,
+    .button-secondary {
+      border-radius: 999px;
+      padding: 13px 18px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font: inherit;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+    .button {
+      background: var(--ink);
+      color: #f7f4ee;
+    }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ink);
+    }
+
+    .button:hover,
+    .button-secondary:hover {
+      transform: translateY(-1px);
+      border-color: rgba(30, 25, 20, 0.28);
+    }
+
+    .mode-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+      padding: 7px;
+      width: fit-content;
+      max-width: 100%;
+      border-radius: 22px;
+      background: rgba(250, 247, 240, 0.58);
+      border: 1px solid rgba(61, 51, 40, 0.08);
+      box-shadow: 0 14px 34px rgba(50, 39, 28, 0.06);
+    }
+
+    .tab-button {
+      border-radius: 999px;
+      padding: 11px 16px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      transition: transform 220ms ease, border-color 220ms ease, background 220ms ease, color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .tab-button:hover {
+      transform: translateY(-1px);
+      background: rgba(201, 106, 61, 0.08);
+      color: #c96a3d;
+      border-color: rgba(201, 106, 61, 0.2);
+    }
+
+    .tab-button.active {
+      background: #c96a3d;
+      color: #ffffff;
+      border-color: rgba(201, 106, 61, 0.26);
+      box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+    }
+
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .section-label {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      min-height: 620px;
+      border-radius: 22px;
+      border: 1px dashed rgba(62, 54, 47, 0.18);
+      overflow: hidden;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(85, 76, 66, 0.05) 0,
+          rgba(85, 76, 66, 0.05) 14px,
+          transparent 14px,
+          transparent 28px
+        ),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(241, 235, 225, 0.8));
+      display: grid;
+      place-items: center;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .canvas-wrap.upload-enabled {
+      cursor: pointer;
+    }
+
+    .canvas-wrap.upload-enabled:hover,
+    .canvas-wrap.upload-enabled:focus-visible {
+      border-color: rgba(62, 54, 47, 0.28);
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(85, 76, 66, 0.06) 0,
+          rgba(85, 76, 66, 0.06) 14px,
+          transparent 14px,
+          transparent 28px
+        ),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(241, 235, 225, 0.84));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+    }
+
+    .canvas-wrap.upload-enabled.dragover {
+      border-color: rgba(59, 57, 55, 0.34);
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(85, 76, 66, 0.075) 0,
+          rgba(85, 76, 66, 0.075) 14px,
+          transparent 14px,
+          transparent 28px
+        ),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(241, 235, 225, 0.88));
+    }
+
+    .image-stage {
+      position: relative;
+      width: 100%;
+      display: grid;
+      place-items: center;
+    }
+
+    #canvas,
+    #sevenValueCanvas,
+    #challengeCanvas {
+      display: none;
+      width: 100%;
+      height: auto;
+      max-height: 75vh;
+      touch-action: none;
+    }
+
+    #canvas {
+      cursor: crosshair;
+    }
+
+    #canvas.zoomed,
+    #sevenValueCanvas.zoomed,
+    #challengeCanvas.zoomed {
+      cursor: grab;
+    }
+
+    #canvas.dragging,
+    #sevenValueCanvas.dragging,
+    #challengeCanvas.dragging {
+      cursor: grabbing;
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .upload-empty-state {
+      pointer-events: none;
+    }
+
+    .upload-empty-state-inner {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+    }
+
+    .upload-empty-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 999px;
+      border: 1px solid rgba(62, 54, 47, 0.14);
+      background: rgba(255, 255, 255, 0.48);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.72),
+        0 10px 24px rgba(50, 39, 28, 0.06);
+      display: grid;
+      place-items: center;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .canvas-wrap.upload-enabled:hover .upload-empty-icon,
+    .canvas-wrap.upload-enabled:focus-visible .upload-empty-icon,
+    .canvas-wrap.upload-enabled.dragover .upload-empty-icon {
+      transform: translateY(-1px);
+      border-color: rgba(62, 54, 47, 0.22);
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 14px 28px rgba(50, 39, 28, 0.08);
+    }
+
+    .upload-empty-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: rgba(31, 28, 24, 0.78);
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+    }
+
+    .upload-empty-label {
+      font-size: 0.96rem;
+      letter-spacing: 0.01em;
+      color: rgba(69, 63, 57, 0.92);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .mode-panel.hidden {
+      display: none;
+    }
+
+    .analysis-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .placeholder-panel {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .placeholder-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .seven-map-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .seven-map-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .seven-map-swatch {
+      width: 42px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(40, 34, 29, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+      flex: none;
+    }
+
+    .seven-map-label {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .seven-map-percent {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .compare-workspace {
+      display: grid;
+      gap: 14px;
+    }
+
+    .compare-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .compare-preview-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .compare-preview-card .section-label {
+      margin-bottom: 0;
+    }
+
+    .compare-preview-wrap {
+      position: relative;
+      min-height: 210px;
+      border-radius: 18px;
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(241, 235, 225, 0.72));
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .compare-preview-canvas,
+    .compare-overlay-canvas {
+      display: none;
+      width: 100%;
+      height: auto;
+      max-height: 75vh;
+      touch-action: none;
+    }
+
+    .compare-preview-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .compare-overlay-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .compare-overlay-canvas.zoomed {
+      cursor: grab;
+    }
+
+    .compare-overlay-canvas.dragging {
+      cursor: grabbing;
+    }
+
+    .compare-legend {
+      display: grid;
+      gap: 10px;
+    }
+
+    .compare-legend-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .compare-legend-swatch {
+      width: 42px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(40, 34, 29, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+      flex: none;
+    }
+
+    .compare-slider-block {
+      display: grid;
+      gap: 10px;
+    }
+
+    .compare-slider-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .compare-slider-value {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .compare-slider {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .compare-note {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .challenge-panel {
+      display: grid;
+      gap: 18px;
+    }
+
+    .challenge-summary {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .challenge-value-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .challenge-guess-preview {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .challenge-guess-swatch {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      border: 1px solid rgba(44, 39, 34, 0.14);
+      background: rgb(134, 134, 134);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+      flex: none;
+    }
+
+    .challenge-guess-scale {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .challenge-guess-scale-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .challenge-tone-strip {
+      display: grid;
+      grid-template-columns: repeat(20, minmax(0, 1fr));
+      gap: 2px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.44);
+      border: 1px solid rgba(50, 44, 38, 0.1);
+    }
+
+    .challenge-tone-step {
+      position: relative;
+      height: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(34, 30, 26, 0.06);
+      overflow: hidden;
+    }
+
+    .challenge-tone-step.active::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 999px;
+      border: 2px solid rgba(31, 28, 24, 0.55);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.75);
+    }
+
+    .challenge-value-label {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .challenge-value-display {
+      min-width: 54px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(50, 44, 38, 0.1);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .challenge-slider {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .challenge-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .challenge-session-meta {
+      display: grid;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .challenge-session-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .challenge-session-progress {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .challenge-session-best {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .button[disabled],
+    .button-secondary[disabled] {
+      cursor: not-allowed;
+      opacity: 0.45;
+      transform: none;
+      border-color: rgba(50, 44, 38, 0.12);
+    }
+
+    .challenge-results {
+      display: grid;
+      gap: 10px;
+    }
+
+    .challenge-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .challenge-result-item {
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      display: grid;
+      gap: 6px;
+    }
+
+    .challenge-result-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .challenge-result-value {
+      font-weight: 700;
+      font-size: 1.08rem;
+    }
+
+    .challenge-feedback {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid rgba(50, 44, 38, 0.08);
+      color: var(--ink);
+      font-weight: 700;
+      display: grid;
+      gap: 4px;
+    }
+
+    .challenge-feedback-note {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .challenge-session-result {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .challenge-session-result.hidden {
+      display: none;
+    }
+
+    .challenge-session-kicker {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .challenge-session-accuracy {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      line-height: 0.95;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .challenge-session-title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .challenge-session-message {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .challenge-session-best-line {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .challenge-session-new-best {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.56);
+      border: 1px solid rgba(50, 44, 38, 0.08);
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .challenge-session-new-best.hidden {
+      display: none;
+    }
+
+    .app-cta {
+      margin-top: 32px;
+    }
+
+    .cta-card {
+      display: grid;
+      gap: 14px;
+      padding: 24px 26px;
+    }
+
+    .cta-copy {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 58ch;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+    }
+
+    .cta-button svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+      display: block;
+      flex: none;
+    }
+
+    .value-hero {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .swatch {
+      width: 88px;
+      height: 88px;
+      border-radius: 20px;
+      border: 1px solid rgba(44, 39, 34, 0.14);
+      background: #dddddd;
+      flex: none;
+    }
+
+    .value-number {
+      font-size: clamp(3rem, 7vw, 4.8rem);
+      line-height: 0.92;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .value-caption {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    .sample-groups {
+      display: grid;
+      gap: 10px;
+    }
+
+    .picker-panel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.16fr) minmax(220px, 0.84fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .picker-panel-column {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+      align-content: start;
+    }
+
+    .value-scale-card {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .value-scale-media {
+      display: grid;
+      justify-items: start;
+      gap: 12px;
+    }
+
+    .value-scale-preview {
+      width: min(100%, 150px);
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(50, 44, 38, 0.08);
+      box-shadow: 0 10px 24px rgba(50, 39, 28, 0.06);
+      background: rgba(255, 255, 255, 0.52);
+    }
+
+    .value-scale-steps {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .value-scale-step {
+      font-weight: 600;
+    }
+
+    .group-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+    }
+
+    .group-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .group-swatches {
+      display: flex;
+      gap: 8px;
+      min-height: 28px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .group-swatch {
+      min-height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(40, 34, 29, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      padding: 0 8px;
+      background-clip: padding-box;
+      white-space: nowrap;
+    }
+
+    .group-swatch.active-marker {
+      outline: 2px solid rgba(59, 57, 55, 0.34);
+      outline-offset: 1px;
+    }
+
+    .group-empty {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .scale-block {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    .value-picker-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .scale {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(10, auto);
+      grid-auto-flow: column;
+      column-gap: 14px;
+      row-gap: 4px;
+      margin-top: 12px;
+    }
+
+    .scale-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 4px;
+      border-radius: 12px;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .scale-step.active {
+      background: rgba(59, 57, 55, 0.08);
+      transform: translateX(2px);
+    }
+
+    .scale-label {
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .scale-bar {
+      height: 22px;
+      border-radius: 8px;
+      border: 1px solid rgba(34, 30, 26, 0.08);
+    }
+
+    .status-note {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .marker-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(31, 28, 24, 0.86);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    @media (max-width: 1060px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-wrap {
+        min-height: 470px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        width: min(100% - 22px, 1360px);
+        padding-top: 22px;
+      }
+
+      .topbar,
+      .panel-heading,
+      .value-hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .title-row {
+        align-items: center;
+      }
+
+      .controls,
+      .button,
+      .button-secondary,
+      .tab-button {
+        width: 100%;
+      }
+
+      .header-actions,
+      .social-links {
+        width: 100%;
+        justify-items: stretch;
+        justify-content: flex-start;
+      }
+
+      .button,
+      .button-secondary,
+      .tab-button {
+        text-align: center;
+      }
+
+      .group-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .picker-panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .challenge-result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .compare-preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mode-switcher {
+        width: 100%;
+      }
+
+      .canvas-wrap {
+        min-height: 350px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Painting Analysis</p>
+        <div class="title-row">
+          <h1>M8 Value Studio</h1>
+        </div>
+        <p class="intro">
+          Upload a reference image and explore value through different tools designed for painters.
+        </p>
+      </div>
+      <div class="header-actions">
+        <div class="social-links" aria-label="Social links">
+          <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"/>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"/>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"/>
+            </svg>
+          </a>
+        </div>
+
+        <input id="fileInput" type="file" accept="image/*">
+
+        <div id="compareControls" class="controls header-controls hidden">
+          <label class="button" for="referenceInput">Reference Image</label>
+          <input id="referenceInput" type="file" accept="image/*">
+          <label class="button-secondary" for="paintingInput">Painting Image</label>
+          <input id="paintingInput" type="file" accept="image/*">
+        </div>
+
+        <div class="controls header-controls">
+          <button id="resetViewButton" class="button-secondary" type="button">Reset View</button>
+          <button id="resetButton" class="button-secondary" type="button">Reset</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="mode-switcher" role="tablist" aria-label="Analysis modes">
+      <a class="tab-button" href="../index.html">← Back</a>
+      <button class="tab-button active" type="button" data-mode="value-picker" aria-selected="true">Value Picker</button>
+      <button class="tab-button" type="button" data-mode="seven-value-map" aria-selected="false">7-Value Map</button>
+      <button class="tab-button" type="button" data-mode="value-challenge" aria-selected="false">Value Challenge</button>
+      <button class="tab-button" type="button" data-mode="compare-values" aria-selected="false">Compare Values</button>
+    </div>
+
+    <main class="layout">
+      <section class="card">
+        <div class="panel-heading">
+          <div>
+            <p id="workspaceSectionLabel" class="section-label">Reference</p>
+            <h2 id="workspaceTitle">Grayscale Image</h2>
+          </div>
+          <p id="workspaceHint" class="hint">Click the image to sample a value.</p>
+        </div>
+
+        <div id="workspaceValuePicker" class="mode-panel">
+          <div class="canvas-wrap" id="canvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
+            <div class="image-stage">
+              <canvas id="canvas"></canvas>
+            </div>
+            <div id="emptyState" class="empty-state upload-empty-state">
+              <div class="upload-empty-state-inner">
+                <div class="upload-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 6v12"></path>
+                    <path d="M6 12h12"></path>
+                  </svg>
+                </div>
+                <p class="upload-empty-label">Click to upload your image</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="workspaceSevenValue" class="mode-panel hidden">
+          <div class="canvas-wrap" id="sevenValueCanvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
+            <div class="image-stage">
+              <canvas id="sevenValueCanvas"></canvas>
+            </div>
+            <div id="sevenValueEmptyState" class="empty-state upload-empty-state">
+              <div class="upload-empty-state-inner">
+                <div class="upload-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 6v12"></path>
+                    <path d="M6 12h12"></path>
+                  </svg>
+                </div>
+                <p class="upload-empty-label">Click to upload your image</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="workspaceValueChallenge" class="mode-panel hidden">
+          <div class="canvas-wrap" id="challengeCanvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
+            <div class="image-stage">
+              <canvas id="challengeCanvas"></canvas>
+            </div>
+            <div id="challengeEmptyState" class="empty-state upload-empty-state">
+              <div class="upload-empty-state-inner">
+                <div class="upload-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 6v12"></path>
+                    <path d="M6 12h12"></path>
+                  </svg>
+                </div>
+                <p class="upload-empty-label">Click to upload your image</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="workspaceCompareValues" class="mode-panel hidden">
+          <div class="compare-workspace">
+            <div class="compare-preview-grid">
+              <div class="compare-preview-card">
+                <p class="section-label">Reference</p>
+                <div class="compare-preview-wrap">
+                  <canvas id="compareReferenceCanvas" class="compare-preview-canvas"></canvas>
+                  <div id="compareReferenceEmpty" class="compare-preview-empty">
+                    <p>Upload a reference image.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="compare-preview-card">
+                <p class="section-label">Painting</p>
+                <div class="compare-preview-wrap">
+                  <canvas id="comparePaintingCanvas" class="compare-preview-canvas"></canvas>
+                  <div id="comparePaintingEmpty" class="compare-preview-empty">
+                    <p>Upload a painting image.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="compare-overlay-card">
+              <p class="section-label">Difference Overlay</p>
+              <div class="canvas-wrap" id="compareCanvasWrap">
+                <canvas id="compareOverlayCanvas" class="compare-overlay-canvas"></canvas>
+                <div id="compareOverlayEmpty" class="empty-state">
+                  <p>Upload both images to compare their value relationships.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="panel-heading">
+          <div>
+            <p id="analysisSectionLabel" class="section-label">Measured Value</p>
+            <h2 id="analysisTitle">Value Reading</h2>
+          </div>
+        </div>
+
+        <div id="analysisValuePicker" class="analysis-grid mode-panel">
+          <div class="picker-panel-grid">
+            <div class="picker-panel-column">
+              <div class="placeholder-panel">
+                <p class="section-label">How It Works</p>
+                <div class="placeholder-card">
+                  Click anywhere on the image to sample and analyze value using the M8 value scale.
+                </div>
+              </div>
+
+              <div class="value-hero">
+                <div id="swatch" class="swatch"></div>
+                <div>
+                  <div id="valueNumber" class="value-number">-</div>
+                  <p class="value-caption">1 = lightest, 20 = darkest</p>
+                </div>
+              </div>
+
+              <div class="sample-groups">
+                <div class="group-row">
+                  <div class="group-label">Highlights (1-2)</div>
+                  <div id="groupHighlights" class="group-swatches"><span class="group-empty">No samples yet.</span></div>
+                </div>
+                <div class="group-row">
+                  <div class="group-label">Lights (3-7)</div>
+                  <div id="groupLights" class="group-swatches"><span class="group-empty">No samples yet.</span></div>
+                </div>
+                <div class="group-row">
+                  <div class="group-label">Halftones (8-12)</div>
+                  <div id="groupHalftones" class="group-swatches"><span class="group-empty">No samples yet.</span></div>
+                </div>
+                <div class="group-row">
+                  <div class="group-label">Shadows (13-20)</div>
+                  <div id="groupShadows" class="group-swatches"><span class="group-empty">No samples yet.</span></div>
+                </div>
+              </div>
+
+              <p id="statusNote" class="status-note">No point selected yet.</p>
+
+              <div class="value-picker-actions">
+                <button id="downloadValueAnalysisButton" class="button" type="button" disabled>Download Value Analysis</button>
+              </div>
+            </div>
+
+            <div class="picker-panel-column">
+              <div class="value-scale-card">
+                <div>
+                  <p class="section-label">Use the M8 Value Scale</p>
+                </div>
+                <div class="value-scale-media">
+                  <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
+                  <a class="button-secondary" href="../assets/images/M8 gray scale.png" download>Download Value Scale</a>
+                </div>
+                <div class="value-scale-steps">
+                  <div class="value-scale-step">1. Sample a value in the app</div>
+                  <div class="value-scale-step">2. Mix your paint to match</div>
+                  <div class="value-scale-step">3. Compare it on the printed scale</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="analysisSevenValue" class="analysis-grid mode-panel hidden">
+          <div class="placeholder-panel">
+            <p class="section-label">How It Works</p>
+            <div class="placeholder-card">
+              Simplify the image into 7 broad tonal groups to make the big value structure easier to read.
+            </div>
+          </div>
+
+          <div>
+            <p class="section-label">7-Value Legend</p>
+            <div id="sevenValueLegend" class="seven-map-grid"></div>
+          </div>
+
+          <p id="sevenValueStatus" class="status-note">Upload an image to build the seven-value map.</p>
+        </div>
+
+        <div id="analysisValueChallenge" class="analysis-grid mode-panel hidden">
+          <div class="challenge-panel">
+            <div class="placeholder-panel">
+              <p class="section-label">How It Works</p>
+              <div class="placeholder-card">
+                Test your eye by guessing the value before revealing the correct answer.
+              </div>
+            </div>
+
+            <div class="challenge-summary">
+              <div class="challenge-session-meta">
+                <div class="challenge-session-row">
+                  <span class="challenge-session-progress" id="challengeSessionProgress">Attempt 1 / 5</span>
+                  <span class="challenge-session-best" id="challengeBestScore">Best Score: —</span>
+                </div>
+              </div>
+              <div class="challenge-value-row">
+                <span class="challenge-value-label">Guess Value</span>
+                <span id="challengeGuessValue" class="challenge-value-display">10</span>
+              </div>
+              <div class="challenge-guess-preview">
+                <div id="challengeGuessSwatch" class="challenge-guess-swatch" aria-hidden="true"></div>
+                <div class="challenge-guess-scale">
+                  <span class="challenge-guess-scale-label">Tone Preview</span>
+                  <div id="challengeToneStrip" class="challenge-tone-strip" aria-hidden="true"></div>
+                </div>
+              </div>
+              <input id="challengeSlider" class="challenge-slider" type="range" min="1" max="20" value="10">
+            </div>
+
+            <div class="challenge-actions">
+              <button id="submitGuessButton" class="button" type="button" disabled>Submit Guess</button>
+              <button id="nextChallengeButton" class="button-secondary" type="button" disabled>Next Challenge</button>
+              <button id="resetChallengeSessionButton" class="button-secondary" type="button">Reset Session</button>
+              <button id="startNewSessionButton" class="button hidden" type="button">Start New Session</button>
+            </div>
+
+            <div class="challenge-results">
+              <div class="challenge-feedback" id="challengeFeedback">
+                <span id="challengeFeedbackMessage">Click a point to begin.</span>
+                <span id="challengeFeedbackNote" class="challenge-feedback-note hidden"></span>
+              </div>
+              <div class="challenge-session-result hidden" id="challengeSessionResult">
+                <span class="challenge-session-kicker">Session Result</span>
+                <span id="challengeSessionAccuracy" class="challenge-session-accuracy">0%</span>
+                <span id="challengeSessionTitle" class="challenge-session-title">Value Rookie</span>
+                <p id="challengeSessionMessage" class="challenge-session-message">Your eye took a vacation. Time to train.</p>
+                <span id="challengeSessionBestLine" class="challenge-session-best-line">Best Accuracy: —</span>
+                <span id="challengeSessionNewBest" class="challenge-session-new-best hidden">New Best!</span>
+              </div>
+              <div class="challenge-result-grid">
+                <div class="challenge-result-item">
+                  <span class="challenge-result-label">Your Guess</span>
+                  <span id="challengeResultGuess" class="challenge-result-value">–</span>
+                </div>
+                <div class="challenge-result-item">
+                  <span class="challenge-result-label">Actual Value</span>
+                  <span id="challengeResultActual" class="challenge-result-value">–</span>
+                </div>
+                <div class="challenge-result-item">
+                  <span class="challenge-result-label">Difference</span>
+                  <span id="challengeResultDifference" class="challenge-result-value">–</span>
+                </div>
+                <div class="challenge-result-item">
+                  <span class="challenge-result-label">Points Earned</span>
+                  <span id="challengeResultPoints" class="challenge-result-value">–</span>
+                </div>
+                <div class="challenge-result-item">
+                  <span class="challenge-result-label">Total Score</span>
+                  <span id="challengeTotalScore" class="challenge-result-value">0</span>
+                </div>
+                <div class="challenge-result-item">
+                  <span class="challenge-result-label">Attempts</span>
+                  <span id="challengeAttempts" class="challenge-result-value">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="analysisCompareValues" class="analysis-grid mode-panel hidden">
+          <div class="placeholder-panel">
+            <p class="section-label">How It Works</p>
+            <div class="placeholder-card">
+              Compare different parts of the image to better understand value relationships between light, halftone, and shadow.
+            </div>
+          </div>
+
+          <div class="compare-slider-block">
+            <div class="compare-slider-head">
+              <p class="section-label">Sensitivity</p>
+              <span id="compareSensitivityValue" class="compare-slider-value">50</span>
+            </div>
+            <input id="compareSensitivity" class="compare-slider" type="range" min="0" max="100" value="50">
+            <p class="compare-note">Low is more tolerant. High is more strict.</p>
+          </div>
+
+          <div>
+            <p class="section-label">Legend</p>
+            <div class="compare-legend">
+              <div class="compare-legend-row">
+                <div class="compare-legend-swatch" style="background: rgba(121, 135, 163, 0.8);"></div>
+                <div>Darker than reference</div>
+              </div>
+              <div class="compare-legend-row">
+                <div class="compare-legend-swatch" style="background: rgba(181, 175, 168, 0.62);"></div>
+                <div>Close match</div>
+              </div>
+              <div class="compare-legend-row">
+                <div class="compare-legend-swatch" style="background: rgba(204, 175, 142, 0.82);"></div>
+                <div>Lighter than reference</div>
+              </div>
+            </div>
+          </div>
+
+          <p id="compareStatus" class="status-note">Upload both images to begin the comparison.</p>
+        </div>
+      </aside>
+    </main>
+
+    <section class="app-cta">
+      <div class="card cta-card">
+        <div>
+          <p class="section-label">Continue</p>
+          <h2>Go deeper</h2>
+        </div>
+
+        <p class="cta-copy">
+          Train your eye beyond the basics.
+          Full painting breakdowns, value studies, and extended lessons are available on Patreon.
+        </p>
+
+        <a
+          class="button cta-button"
+          href="https://www.patreon.com/mateart"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15.6 3.2a5.2 5.2 0 1 1 0 10.4 5.2 5.2 0 0 1 0-10.4ZM4 3h3.6v18H4V3Z"/>
+          </svg>
+          <span>Join on Patreon</span>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const MODE_CONFIG = {
+      "value-picker": {
+        workspaceSectionLabel: "Reference",
+        workspaceTitle: "Grayscale Image",
+        workspaceHint: "Sample and inspect a specific point in the image.",
+        analysisSectionLabel: "Measured Value",
+        analysisTitle: "Value Reading"
+      },
+      "seven-value-map": {
+        workspaceSectionLabel: "Value Study",
+        workspaceTitle: "7-Value Map",
+        workspaceHint: "See the whole image as broad tonal groups.",
+        analysisSectionLabel: "Tonal Summary",
+        analysisTitle: "7-Value Map"
+      },
+      "value-challenge": {
+        workspaceSectionLabel: "Training",
+        workspaceTitle: "Value Challenge",
+        workspaceHint: "Train your eye by guessing before the answer is revealed.",
+        analysisSectionLabel: "Challenge",
+        analysisTitle: "Value Challenge"
+      },
+      "compare-values": {
+        workspaceSectionLabel: "Comparison",
+        workspaceTitle: "Compare Values",
+        workspaceHint: "Study how value relationships shift across the image.",
+        analysisSectionLabel: "Comparison",
+        analysisTitle: "Compare Values"
+      }
+    };
+
+    const fileInput = document.getElementById("fileInput");
+    const referenceInput = document.getElementById("referenceInput");
+    const paintingInput = document.getElementById("paintingInput");
+    const compareControls = document.getElementById("compareControls");
+    const resetViewButton = document.getElementById("resetViewButton");
+    const resetButton = document.getElementById("resetButton");
+    const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
+    const workspaceSectionLabel = document.getElementById("workspaceSectionLabel");
+    const workspaceTitle = document.getElementById("workspaceTitle");
+    const workspaceHint = document.getElementById("workspaceHint");
+    const analysisSectionLabel = document.getElementById("analysisSectionLabel");
+    const analysisTitle = document.getElementById("analysisTitle");
+    const canvas = document.getElementById("canvas");
+    const canvasWrap = document.getElementById("canvasWrap");
+    const emptyState = document.getElementById("emptyState");
+    const sevenValueCanvas = document.getElementById("sevenValueCanvas");
+    const sevenValueCanvasWrap = document.getElementById("sevenValueCanvasWrap");
+    const sevenValueEmptyState = document.getElementById("sevenValueEmptyState");
+    const sevenValueLegend = document.getElementById("sevenValueLegend");
+    const sevenValueStatus = document.getElementById("sevenValueStatus");
+    const challengeCanvas = document.getElementById("challengeCanvas");
+    const challengeCanvasWrap = document.getElementById("challengeCanvasWrap");
+    const challengeEmptyState = document.getElementById("challengeEmptyState");
+    const downloadValueAnalysisButton = document.getElementById("downloadValueAnalysisButton");
+    const challengeSlider = document.getElementById("challengeSlider");
+    const challengeSessionProgress = document.getElementById("challengeSessionProgress");
+    const challengeBestScore = document.getElementById("challengeBestScore");
+    const challengeGuessValue = document.getElementById("challengeGuessValue");
+    const challengeGuessSwatch = document.getElementById("challengeGuessSwatch");
+    const challengeToneStrip = document.getElementById("challengeToneStrip");
+    const submitGuessButton = document.getElementById("submitGuessButton");
+    const nextChallengeButton = document.getElementById("nextChallengeButton");
+    const resetChallengeSessionButton = document.getElementById("resetChallengeSessionButton");
+    const startNewSessionButton = document.getElementById("startNewSessionButton");
+    const challengeFeedback = document.getElementById("challengeFeedback");
+    const challengeFeedbackMessage = document.getElementById("challengeFeedbackMessage");
+    const challengeFeedbackNote = document.getElementById("challengeFeedbackNote");
+    const challengeSessionResult = document.getElementById("challengeSessionResult");
+    const challengeSessionAccuracy = document.getElementById("challengeSessionAccuracy");
+    const challengeSessionTitle = document.getElementById("challengeSessionTitle");
+    const challengeSessionMessage = document.getElementById("challengeSessionMessage");
+    const challengeSessionBestLine = document.getElementById("challengeSessionBestLine");
+    const challengeSessionNewBest = document.getElementById("challengeSessionNewBest");
+    const challengeResultGuess = document.getElementById("challengeResultGuess");
+    const challengeResultActual = document.getElementById("challengeResultActual");
+    const challengeResultDifference = document.getElementById("challengeResultDifference");
+    const challengeResultPoints = document.getElementById("challengeResultPoints");
+    const challengeTotalScore = document.getElementById("challengeTotalScore");
+    const challengeAttempts = document.getElementById("challengeAttempts");
+    const compareReferenceCanvas = document.getElementById("compareReferenceCanvas");
+    const comparePaintingCanvas = document.getElementById("comparePaintingCanvas");
+    const compareOverlayCanvas = document.getElementById("compareOverlayCanvas");
+    const compareCanvasWrap = document.getElementById("compareCanvasWrap");
+    const compareReferenceEmpty = document.getElementById("compareReferenceEmpty");
+    const comparePaintingEmpty = document.getElementById("comparePaintingEmpty");
+    const compareOverlayEmpty = document.getElementById("compareOverlayEmpty");
+    const compareSensitivity = document.getElementById("compareSensitivity");
+    const compareSensitivityValue = document.getElementById("compareSensitivityValue");
+    const compareStatus = document.getElementById("compareStatus");
+    const swatch = document.getElementById("swatch");
+    const valueNumber = document.getElementById("valueNumber");
+    const statusNote = document.getElementById("statusNote");
+    const valueScale = document.getElementById("valueScale");
+    const groupContainers = {
+      highlights: document.getElementById("groupHighlights"),
+      lights: document.getElementById("groupLights"),
+      halftones: document.getElementById("groupHalftones"),
+      shadows: document.getElementById("groupShadows")
+    };
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const sevenValueCtx = sevenValueCanvas.getContext("2d", { willReadFrequently: true });
+    const challengeCtx = challengeCanvas.getContext("2d", { willReadFrequently: true });
+    const compareReferenceCtx = compareReferenceCanvas.getContext("2d", { willReadFrequently: true });
+    const comparePaintingCtx = comparePaintingCanvas.getContext("2d", { willReadFrequently: true });
+    const compareOverlayCtx = compareOverlayCanvas.getContext("2d", { willReadFrequently: true });
+    const imageBuffer = document.createElement("canvas");
+    const bufferCtx = imageBuffer.getContext("2d", { willReadFrequently: true });
+    const sevenValueBuffer = document.createElement("canvas");
+    const sevenValueBufferCtx = sevenValueBuffer.getContext("2d", { willReadFrequently: true });
+    const compareReferenceBuffer = document.createElement("canvas");
+    const compareReferenceBufferCtx = compareReferenceBuffer.getContext("2d", { willReadFrequently: true });
+    const comparePaintingBuffer = document.createElement("canvas");
+    const comparePaintingBufferCtx = comparePaintingBuffer.getContext("2d", { willReadFrequently: true });
+    const compareOverlayBuffer = document.createElement("canvas");
+    const compareOverlayBufferCtx = compareOverlayBuffer.getContext("2d", { willReadFrequently: true });
+    const modePanels = {
+      "value-picker": {
+        workspace: document.getElementById("workspaceValuePicker"),
+        analysis: document.getElementById("analysisValuePicker")
+      },
+      "seven-value-map": {
+        workspace: document.getElementById("workspaceSevenValue"),
+        analysis: document.getElementById("analysisSevenValue")
+      },
+      "value-challenge": {
+        workspace: document.getElementById("workspaceValueChallenge"),
+        analysis: document.getElementById("analysisValueChallenge")
+      },
+      "compare-values": {
+        workspace: document.getElementById("workspaceCompareValues"),
+        analysis: document.getElementById("analysisCompareValues")
+      }
+    };
+    const singleImageUploadZones = [canvasWrap, sevenValueCanvasWrap, challengeCanvasWrap];
+    const CHALLENGE_SESSION_ATTEMPTS = 5;
+    const CHALLENGE_SESSION_MAX_SCORE = CHALLENGE_SESSION_ATTEMPTS * 10;
+    const CHALLENGE_BEST_ACCURACY_KEY = "m8-value-studio-best-accuracy";
+
+    const state = {
+      mode: "value-picker",
+      imageLoaded: false,
+      imageData: null,
+      marker: null,
+      sourceImage: null,
+      referenceImage: null,
+      paintingImage: null,
+      compareReady: false,
+      compareSensitivity: Number(compareSensitivity.value),
+      challenge: {
+        marker: null,
+        actualValue: null,
+        currentGuess: Number(challengeSlider.value),
+        submitted: false,
+        lastPoints: null,
+        totalScore: 0,
+        attempts: 0,
+        feedback: "Upload an image to start the value challenge.",
+        feedbackNote: "",
+        sessionComplete: false,
+        bestAccuracy: loadChallengeBestAccuracy(),
+        newBestAchieved: false
+      },
+      viewScale: 1,
+      minScale: 1,
+      maxScale: 6,
+      offsetX: 0,
+      offsetY: 0,
+      isDragging: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      dragOriginX: 0,
+      dragOriginY: 0,
+      dragMoved: false,
+      suppressClick: false,
+      sevenValueStats: Array.from({ length: 7 }, (_, index) => ({
+        value: index + 1,
+        brightness: Math.round(((7 - (index + 1)) / 6) * 255),
+        coverage: 0
+      })),
+      groupedSamples: {
+        highlights: [],
+        lights: [],
+        halftones: [],
+        shadows: []
+      },
+      savedSamples: [],
+      nextSampleId: 1,
+      activeMarkerId: null,
+      activeMarkerTimeout: null,
+      uploadDragDepth: 0
+    };
+
+    fileInput.addEventListener("change", handleUpload);
+    referenceInput.addEventListener("change", (event) => handleCompareUpload(event, "reference"));
+    paintingInput.addEventListener("change", (event) => handleCompareUpload(event, "painting"));
+    singleImageUploadZones.forEach((zone) => {
+      zone.addEventListener("click", handleSingleUploadZoneClick);
+      zone.addEventListener("keydown", handleSingleUploadZoneKeydown);
+      zone.addEventListener("dragenter", handleSingleUploadDragEnter);
+      zone.addEventListener("dragover", handleSingleUploadDragOver);
+      zone.addEventListener("dragleave", handleSingleUploadDragLeave);
+      zone.addEventListener("drop", handleSingleUploadDrop);
+    });
+    canvas.addEventListener("click", handleCanvasClick);
+    challengeCanvas.addEventListener("click", handleChallengeCanvasClick);
+    canvas.addEventListener("wheel", handleCanvasWheel, { passive: false });
+    canvas.addEventListener("mousedown", handlePanStart);
+    canvas.addEventListener("mousemove", handlePanMove);
+    canvas.addEventListener("mouseup", handlePanEnd);
+    canvas.addEventListener("mouseleave", handlePanEnd);
+    sevenValueCanvas.addEventListener("wheel", handleCanvasWheel, { passive: false });
+    sevenValueCanvas.addEventListener("mousedown", handlePanStart);
+    sevenValueCanvas.addEventListener("mousemove", handlePanMove);
+    sevenValueCanvas.addEventListener("mouseup", handlePanEnd);
+    sevenValueCanvas.addEventListener("mouseleave", handlePanEnd);
+    challengeCanvas.addEventListener("wheel", handleCanvasWheel, { passive: false });
+    challengeCanvas.addEventListener("mousedown", handlePanStart);
+    challengeCanvas.addEventListener("mousemove", handlePanMove);
+    challengeCanvas.addEventListener("mouseup", handlePanEnd);
+    challengeCanvas.addEventListener("mouseleave", handlePanEnd);
+    compareOverlayCanvas.addEventListener("wheel", handleCanvasWheel, { passive: false });
+    compareOverlayCanvas.addEventListener("mousedown", handlePanStart);
+    compareOverlayCanvas.addEventListener("mousemove", handlePanMove);
+    compareOverlayCanvas.addEventListener("mouseup", handlePanEnd);
+    compareOverlayCanvas.addEventListener("mouseleave", handlePanEnd);
+    resetViewButton.addEventListener("click", resetView);
+    resetButton.addEventListener("click", resetTool);
+    downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
+    challengeSlider.addEventListener("input", handleChallengeSliderInput);
+    submitGuessButton.addEventListener("click", submitChallengeGuess);
+    nextChallengeButton.addEventListener("click", prepareNextChallenge);
+    resetChallengeSessionButton.addEventListener("click", resetChallengeSession);
+    startNewSessionButton.addEventListener("click", resetChallengeSession);
+    compareSensitivity.addEventListener("input", handleCompareSensitivityChange);
+    window.addEventListener("resize", redrawImage);
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
+
+    buildScale();
+    buildChallengeToneStrip();
+    renderSevenValueLegend();
+    renderChallengePanel();
+    setMode("value-picker");
+
+    function buildScale() {
+      if (!valueScale) {
+        return;
+      }
+
+      valueScale.innerHTML = "";
+
+      for (let step = 1; step <= 20; step += 1) {
+        const row = document.createElement("div");
+        const label = document.createElement("div");
+        const bar = document.createElement("div");
+        const gray = Math.round(((20 - step) / 19) * 255);
+
+        row.className = "scale-step";
+        row.dataset.value = String(step);
+        label.className = "scale-label";
+        bar.className = "scale-bar";
+
+        label.textContent = step;
+        bar.style.background = `rgb(${gray}, ${gray}, ${gray})`;
+
+        row.append(label, bar);
+        valueScale.appendChild(row);
+      }
+    }
+
+    function buildChallengeToneStrip() {
+      challengeToneStrip.innerHTML = "";
+
+      for (let step = 1; step <= 20; step += 1) {
+        const toneStep = document.createElement("div");
+        const gray = scaleValueToGray(step);
+
+        toneStep.className = "challenge-tone-step";
+        toneStep.dataset.value = String(step);
+        toneStep.style.background = `rgb(${gray}, ${gray}, ${gray})`;
+        challengeToneStrip.appendChild(toneStep);
+      }
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      const config = MODE_CONFIG[mode];
+
+      workspaceSectionLabel.textContent = config.workspaceSectionLabel;
+      workspaceTitle.textContent = config.workspaceTitle;
+      workspaceHint.textContent = config.workspaceHint;
+      analysisSectionLabel.textContent = config.analysisSectionLabel;
+      analysisTitle.textContent = config.analysisTitle;
+
+      tabButtons.forEach((button) => {
+        const isActive = button.dataset.mode === mode;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+      });
+
+      Object.entries(modePanels).forEach(([panelMode, panelSet]) => {
+        const isActive = panelMode === mode;
+        panelSet.workspace.classList.toggle("hidden", !isActive);
+        panelSet.analysis.classList.toggle("hidden", !isActive);
+      });
+
+      compareControls.classList.toggle("hidden", mode !== "compare-values");
+
+      updateSingleUploadZones();
+      updateCanvasCursor();
+      drawCurrentView();
+      drawSevenValueMap();
+      drawChallengeView();
+      drawCompareCanvases();
+    }
+
+    function handleUpload(event) {
+      const [file] = event.target.files || [];
+      if (!file) {
+        return;
+      }
+
+      loadSingleImageFile(file);
+    }
+
+    function loadSingleImageFile(file) {
+      loadImageFromFile(file)
+        .then((image) => prepareGrayscaleImage(image))
+        .catch(() => showUploadError("The selected image could not be loaded. Please try a JPG or PNG file."));
+    }
+
+    function handleSingleUploadZoneClick() {
+      if (!state.imageLoaded) {
+        fileInput.click();
+      }
+    }
+
+    function handleSingleUploadZoneKeydown(event) {
+      if (state.imageLoaded) {
+        return;
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        fileInput.click();
+      }
+    }
+
+    function handleSingleUploadDragEnter(event) {
+      if (!canAcceptSingleImageDrop(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      state.uploadDragDepth += 1;
+      singleImageUploadZones.forEach((zone) => zone.classList.add("dragover"));
+    }
+
+    function handleSingleUploadDragOver(event) {
+      if (!canAcceptSingleImageDrop(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+    }
+
+    function handleSingleUploadDragLeave(event) {
+      if (!canAcceptSingleImageDrop(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      state.uploadDragDepth = Math.max(0, state.uploadDragDepth - 1);
+      if (!state.uploadDragDepth) {
+        clearSingleUploadDragState();
+      }
+    }
+
+    function handleSingleUploadDrop(event) {
+      if (!canAcceptSingleImageDrop(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      clearSingleUploadDragState();
+      const [file] = event.dataTransfer.files || [];
+      if (!file) {
+        return;
+      }
+
+      fileInput.value = "";
+      loadSingleImageFile(file);
+    }
+
+    function canAcceptSingleImageDrop(event) {
+      return !state.imageLoaded && Array.from(event.dataTransfer?.types || []).includes("Files");
+    }
+
+    function clearSingleUploadDragState() {
+      state.uploadDragDepth = 0;
+      singleImageUploadZones.forEach((zone) => zone.classList.remove("dragover"));
+    }
+
+    function updateSingleUploadZones() {
+      singleImageUploadZones.forEach((zone) => {
+        zone.classList.toggle("upload-enabled", !state.imageLoaded);
+        zone.tabIndex = state.imageLoaded ? -1 : 0;
+        zone.setAttribute("aria-disabled", String(state.imageLoaded));
+      });
+    }
+
+    function prepareGrayscaleImage(image) {
+      state.sourceImage = image;
+
+      const canvasBounds = canvasWrap.getBoundingClientRect();
+      const maxWidth = Math.min(Math.max(320, Math.round(canvasBounds.width) - 2), 920);
+      const maxHeight = Math.min(Math.max(320, Math.round(window.innerHeight * 0.74)), 780);
+      const sourceWidth = image.naturalWidth || image.width;
+      const sourceHeight = image.naturalHeight || image.height;
+      const dimensions = getContainedDimensions(sourceWidth, sourceHeight, maxWidth, maxHeight);
+
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+      imageBuffer.width = canvas.width;
+      imageBuffer.height = canvas.height;
+      canvas.style.display = "block";
+      emptyState.classList.add("hidden");
+
+      bufferCtx.clearRect(0, 0, imageBuffer.width, imageBuffer.height);
+      bufferCtx.drawImage(image, 0, 0, imageBuffer.width, imageBuffer.height);
+
+      const imageData = bufferCtx.getImageData(0, 0, imageBuffer.width, imageBuffer.height);
+      const pixels = imageData.data;
+
+      for (let i = 0; i < pixels.length; i += 4) {
+        const brightness = getPerceivedBrightness(pixels[i], pixels[i + 1], pixels[i + 2]);
+        pixels[i] = brightness;
+        pixels[i + 1] = brightness;
+        pixels[i + 2] = brightness;
+      }
+
+      bufferCtx.putImageData(imageData, 0, 0);
+      state.imageData = imageData;
+      state.imageLoaded = true;
+      state.marker = null;
+      state.challenge.marker = null;
+      state.challenge.actualValue = null;
+      state.challenge.submitted = false;
+      state.challenge.lastPoints = null;
+      state.challenge.feedback = "Click a point to begin.";
+      state.challenge.feedbackNote = "";
+      state.challenge.sessionComplete = false;
+      buildSevenValueMap();
+      resetViewState();
+      clearSingleUploadDragState();
+      updateSingleUploadZones();
+      updateCanvasCursor();
+      resetReadout();
+      drawCurrentView();
+      drawSevenValueMap();
+      drawChallengeView();
+    }
+
+    function handleCompareUpload(event, type) {
+      const [file] = event.target.files || [];
+      if (!file) {
+        return;
+      }
+
+      loadImageFromFile(file)
+        .then((image) => {
+          if (type === "reference") {
+            state.referenceImage = image;
+          } else {
+            state.paintingImage = image;
+          }
+
+          buildCompareBuffers();
+          drawCompareCanvases();
+        })
+        .catch(() => {
+          showUploadError("One of the comparison images could not be loaded. Please try a JPG or PNG file.");
+        });
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const image = new Image();
+
+        image.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(image);
+        };
+
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("Image failed to load."));
+        };
+
+        image.src = objectUrl;
+      });
+    }
+
+    function showUploadError(message) {
+      resetTool();
+      emptyState.classList.remove("hidden");
+      emptyState.querySelector("p").textContent = message;
+      statusNote.textContent = message;
+      sevenValueStatus.textContent = message;
+      compareStatus.textContent = message;
+      state.challenge.feedback = message;
+      state.challenge.feedbackNote = "";
+      renderChallengePanel();
+    }
+
+    function handleCanvasClick(event) {
+      if (state.mode !== "value-picker" || !state.imageLoaded || !state.imageData) {
+        return;
+      }
+
+      if (state.suppressClick) {
+        state.suppressClick = false;
+        return;
+      }
+
+      const imagePoint = getImageCoordinatesFromEvent(event);
+      if (!imagePoint) {
+        return;
+      }
+
+      const sample = sampleAverageArea(imagePoint.x, imagePoint.y, 7);
+      const brightness = sample.brightness;
+      const value = brightnessToScaleValue(brightness);
+      const savedSample = addSampleToGroup(value, brightness, imagePoint.x, imagePoint.y);
+
+      if (state.activeMarkerTimeout) {
+        clearTimeout(state.activeMarkerTimeout);
+        state.activeMarkerTimeout = null;
+      }
+
+      state.marker = { x: imagePoint.x, y: imagePoint.y };
+      state.activeMarkerId = savedSample.id;
+      drawCurrentView();
+      updateReadout(sample.pixel, brightness, value);
+      renderSampleGroups();
+    }
+
+    function handleChallengeCanvasClick(event) {
+      if (state.mode !== "value-challenge" || !state.imageLoaded || !state.imageData) {
+        return;
+      }
+
+      if (state.suppressClick) {
+        state.suppressClick = false;
+        return;
+      }
+
+      if (state.challenge.submitted || state.challenge.sessionComplete) {
+        return;
+      }
+
+      const imagePoint = getImageCoordinatesFromCanvas(event, challengeCanvas);
+      if (!imagePoint) {
+        return;
+      }
+
+      const sample = sampleAverageArea(imagePoint.x, imagePoint.y, 7);
+      state.challenge.marker = { x: imagePoint.x, y: imagePoint.y };
+      state.challenge.actualValue = brightnessToScaleValue(sample.brightness);
+      state.challenge.lastPoints = null;
+      state.challenge.feedback = "Set your guess and submit when ready.";
+      state.challenge.feedbackNote = "";
+
+      renderChallengePanel();
+      drawChallengeView();
+    }
+
+    function drawCurrentView() {
+      if (!state.imageData) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(state.offsetX, state.offsetY);
+      ctx.scale(state.viewScale, state.viewScale);
+      ctx.drawImage(imageBuffer, 0, 0);
+      ctx.restore();
+
+      state.savedSamples.forEach((sample) => {
+        const markerX = sample.x * state.viewScale + state.offsetX;
+        const markerY = sample.y * state.viewScale + state.offsetY;
+        drawNumberedMarker(sample, markerX, markerY);
+      });
+    }
+
+    function drawChallengeView() {
+      if (!state.imageLoaded || !state.imageData) {
+        challengeCanvas.style.display = "none";
+        challengeEmptyState.classList.remove("hidden");
+        return;
+      }
+
+      challengeCanvas.width = imageBuffer.width;
+      challengeCanvas.height = imageBuffer.height;
+      challengeCanvas.style.display = "block";
+      challengeEmptyState.classList.add("hidden");
+
+      challengeCtx.clearRect(0, 0, challengeCanvas.width, challengeCanvas.height);
+      challengeCtx.save();
+      challengeCtx.translate(state.offsetX, state.offsetY);
+      challengeCtx.scale(state.viewScale, state.viewScale);
+      challengeCtx.drawImage(imageBuffer, 0, 0);
+      challengeCtx.restore();
+
+      if (state.challenge.marker) {
+        const markerX = state.challenge.marker.x * state.viewScale + state.offsetX;
+        const markerY = state.challenge.marker.y * state.viewScale + state.offsetY;
+        drawChallengeMarker(markerX, markerY);
+      }
+    }
+
+    function drawChallengeMarker(x, y) {
+      challengeCtx.save();
+      challengeCtx.strokeStyle = "rgba(255, 255, 255, 0.96)";
+      challengeCtx.lineWidth = 2.2;
+      challengeCtx.beginPath();
+      challengeCtx.arc(x, y, 11, 0, Math.PI * 2);
+      challengeCtx.stroke();
+
+      challengeCtx.strokeStyle = "rgba(31, 28, 24, 0.92)";
+      challengeCtx.lineWidth = 1.4;
+      challengeCtx.beginPath();
+      challengeCtx.arc(x, y, 11, 0, Math.PI * 2);
+      challengeCtx.stroke();
+
+      challengeCtx.fillStyle = "rgba(31, 28, 24, 0.9)";
+      challengeCtx.beginPath();
+      challengeCtx.arc(x, y, 3.4, 0, Math.PI * 2);
+      challengeCtx.fill();
+      challengeCtx.restore();
+    }
+
+    function buildSevenValueMap() {
+      if (!state.imageData) {
+        state.sevenValueStats = Array.from({ length: 7 }, (_, index) => ({
+          value: index + 1,
+          brightness: Math.round(((7 - (index + 1)) / 6) * 255),
+          coverage: 0
+        }));
+        renderSevenValueLegend();
+        return;
+      }
+
+      sevenValueBuffer.width = imageBuffer.width;
+      sevenValueBuffer.height = imageBuffer.height;
+
+      const mappedImage = sevenValueBufferCtx.createImageData(imageBuffer.width, imageBuffer.height);
+      const pixels = state.imageData.data;
+      const counts = Array(7).fill(0);
+      const totalPixels = pixels.length / 4;
+
+      for (let i = 0; i < pixels.length; i += 4) {
+        const brightness = pixels[i];
+        const value = Math.min(7, Math.floor(((255 - brightness) / 256) * 7) + 1);
+        const mappedBrightness = Math.round(((7 - value) / 6) * 255);
+
+        mappedImage.data[i] = mappedBrightness;
+        mappedImage.data[i + 1] = mappedBrightness;
+        mappedImage.data[i + 2] = mappedBrightness;
+        mappedImage.data[i + 3] = pixels[i + 3];
+        counts[value - 1] += 1;
+      }
+
+      sevenValueBufferCtx.putImageData(mappedImage, 0, 0);
+
+      state.sevenValueStats = counts.map((count, index) => ({
+        value: index + 1,
+        brightness: Math.round(((7 - (index + 1)) / 6) * 255),
+        coverage: totalPixels ? Math.round((count / totalPixels) * 100) : 0
+      }));
+
+      renderSevenValueLegend();
+    }
+
+    function renderSevenValueLegend() {
+      sevenValueLegend.innerHTML = "";
+
+      state.sevenValueStats.forEach((item) => {
+        const row = document.createElement("div");
+        const swatchEl = document.createElement("div");
+        const label = document.createElement("div");
+        const percent = document.createElement("div");
+
+        row.className = "seven-map-row";
+        swatchEl.className = "seven-map-swatch";
+        label.className = "seven-map-label";
+        percent.className = "seven-map-percent";
+
+        swatchEl.style.background = `rgb(${item.brightness}, ${item.brightness}, ${item.brightness})`;
+        label.textContent = `Value ${item.value}`;
+        percent.textContent = state.imageLoaded ? `${item.coverage}%` : "—";
+
+        row.append(swatchEl, label, percent);
+        sevenValueLegend.appendChild(row);
+      });
+    }
+
+    function renderChallengePanel() {
+      const currentGray = scaleValueToGray(state.challenge.currentGuess);
+      const sessionResult = getChallengeSessionResult();
+
+      challengeGuessValue.textContent = String(state.challenge.currentGuess);
+      challengeGuessSwatch.style.background = `rgb(${currentGray}, ${currentGray}, ${currentGray})`;
+      challengeSessionProgress.textContent = getChallengeProgressLabel();
+      challengeBestScore.textContent = getChallengeBestScoreLabel();
+      challengeToneStrip.querySelectorAll(".challenge-tone-step").forEach((step) => {
+        step.classList.toggle("active", Number(step.dataset.value) === state.challenge.currentGuess);
+      });
+      challengeResultGuess.textContent = state.challenge.submitted ? String(state.challenge.currentGuess) : "–";
+      challengeResultActual.textContent = state.challenge.submitted ? String(state.challenge.actualValue) : "–";
+      challengeResultDifference.textContent = state.challenge.submitted
+        ? String(Math.abs(state.challenge.currentGuess - state.challenge.actualValue))
+        : "–";
+      challengeResultPoints.textContent = state.challenge.lastPoints !== null ? String(state.challenge.lastPoints) : "–";
+      challengeTotalScore.textContent = String(state.challenge.totalScore);
+      challengeAttempts.textContent = String(state.challenge.attempts);
+      challengeFeedbackMessage.textContent = state.challenge.feedback;
+      challengeFeedbackNote.textContent = state.challenge.feedbackNote;
+      challengeFeedbackNote.classList.toggle("hidden", !state.challenge.feedbackNote);
+      challengeFeedback.setAttribute("aria-live", state.challenge.submitted || state.challenge.sessionComplete ? "polite" : "off");
+      challengeSessionResult.classList.toggle("hidden", !state.challenge.sessionComplete);
+      challengeSessionAccuracy.textContent = `${sessionResult.accuracy}%`;
+      challengeSessionTitle.textContent = sessionResult.title;
+      challengeSessionMessage.textContent = sessionResult.message;
+      challengeSessionBestLine.textContent = getChallengeSessionBestLine();
+      challengeSessionNewBest.classList.toggle("hidden", !state.challenge.newBestAchieved);
+
+      submitGuessButton.disabled = !state.imageLoaded || !state.challenge.marker || state.challenge.submitted || state.challenge.sessionComplete;
+      nextChallengeButton.disabled = !state.imageLoaded || !state.challenge.submitted || state.challenge.sessionComplete;
+      challengeSlider.disabled = !state.imageLoaded || state.challenge.sessionComplete;
+      startNewSessionButton.classList.toggle("hidden", !state.challenge.sessionComplete);
+    }
+
+    function handleChallengeSliderInput() {
+      state.challenge.currentGuess = Number(challengeSlider.value);
+      renderChallengePanel();
+    }
+
+    function submitChallengeGuess() {
+      if (!state.challenge.marker || state.challenge.actualValue === null || state.challenge.submitted || state.challenge.sessionComplete) {
+        return;
+      }
+
+      const difference = Math.abs(state.challenge.currentGuess - state.challenge.actualValue);
+      const points = getChallengePoints(difference);
+
+      state.challenge.submitted = true;
+      state.challenge.lastPoints = points;
+      state.challenge.totalScore += points;
+      state.challenge.attempts += 1;
+      state.challenge.feedback = getChallengeFeedback(difference);
+      state.challenge.feedbackNote = getChallengeDirectionFeedback();
+
+      if (state.challenge.attempts >= CHALLENGE_SESSION_ATTEMPTS) {
+        state.challenge.sessionComplete = true;
+        state.challenge.feedback = "Session complete. Your final read is ready.";
+        state.challenge.feedbackNote = "";
+        updateChallengeBestAccuracy();
+      }
+
+      renderChallengePanel();
+      drawChallengeView();
+    }
+
+    function prepareNextChallenge() {
+      if (state.challenge.sessionComplete || state.challenge.attempts >= CHALLENGE_SESSION_ATTEMPTS) {
+        renderChallengePanel();
+        drawChallengeView();
+        return;
+      }
+
+      state.challenge.marker = null;
+      state.challenge.actualValue = null;
+      state.challenge.currentGuess = 10;
+      state.challenge.submitted = false;
+      state.challenge.lastPoints = null;
+      challengeSlider.value = "10";
+      state.challenge.feedback = "Click a new point to continue.";
+      state.challenge.feedbackNote = "";
+      renderChallengePanel();
+      drawChallengeView();
+    }
+
+    function resetChallengeSession() {
+      state.challenge.totalScore = 0;
+      state.challenge.attempts = 0;
+      state.challenge.marker = null;
+      state.challenge.actualValue = null;
+      state.challenge.currentGuess = 10;
+      state.challenge.submitted = false;
+      state.challenge.lastPoints = null;
+      challengeSlider.value = "10";
+      state.challenge.feedback = state.imageLoaded ? "Click a point to begin." : "Upload an image to start the value challenge.";
+      state.challenge.feedbackNote = "";
+      state.challenge.sessionComplete = false;
+      state.challenge.newBestAchieved = false;
+      renderChallengePanel();
+      drawChallengeView();
+    }
+
+    function getChallengeProgressLabel() {
+      if (state.challenge.sessionComplete) {
+        return `Attempt ${CHALLENGE_SESSION_ATTEMPTS} / ${CHALLENGE_SESSION_ATTEMPTS}`;
+      }
+
+      const currentAttempt = state.challenge.submitted
+        ? Math.max(1, state.challenge.attempts)
+        : Math.min(state.challenge.attempts + 1, CHALLENGE_SESSION_ATTEMPTS);
+
+      return `Attempt ${currentAttempt} / ${CHALLENGE_SESSION_ATTEMPTS}`;
+    }
+
+    function getChallengeSessionAccuracy() {
+      return Math.round((state.challenge.totalScore / CHALLENGE_SESSION_MAX_SCORE) * 100);
+    }
+
+    function getChallengeSessionResult() {
+      const accuracy = getChallengeSessionAccuracy();
+
+      if (accuracy >= 90) {
+        return {
+          accuracy,
+          title: "Value Master",
+          message: "Your eye is locked in. You see like a painter."
+        };
+      }
+
+      if (accuracy >= 75) {
+        return {
+          accuracy,
+          title: "Strong Eye",
+          message: "Solid control. You're reading values well."
+        };
+      }
+
+      if (accuracy >= 60) {
+        return {
+          accuracy,
+          title: "Getting There",
+          message: "You're on the right track. Keep training."
+        };
+      }
+
+      if (accuracy >= 40) {
+        return {
+          accuracy,
+          title: "Warming Up",
+          message: "Your eye needs a bit more calibration."
+        };
+      }
+
+      return {
+        accuracy,
+        title: "Value Rookie",
+        message: "Your eye took a vacation. Time to train."
+      };
+    }
+
+    function getChallengeBestScoreLabel() {
+      return state.challenge.bestAccuracy === null
+        ? "Best Score: —"
+        : `Best Score: ${state.challenge.bestAccuracy}%`;
+    }
+
+    function getChallengeSessionBestLine() {
+      return state.challenge.bestAccuracy === null
+        ? "Best Accuracy: —"
+        : `Best Accuracy: ${state.challenge.bestAccuracy}%`;
+    }
+
+    function updateChallengeBestAccuracy() {
+      const accuracy = getChallengeSessionAccuracy();
+      state.challenge.newBestAchieved = false;
+
+      if (state.challenge.bestAccuracy === null || accuracy > state.challenge.bestAccuracy) {
+        state.challenge.bestAccuracy = accuracy;
+        state.challenge.newBestAchieved = true;
+
+        try {
+          window.localStorage.setItem(CHALLENGE_BEST_ACCURACY_KEY, String(accuracy));
+        } catch (error) {
+          // Ignore storage failures and keep the current session running.
+        }
+      }
+    }
+
+    function loadChallengeBestAccuracy() {
+      try {
+        const stored = window.localStorage.getItem(CHALLENGE_BEST_ACCURACY_KEY);
+
+        if (stored === null) {
+          return null;
+        }
+
+        const value = Number(stored);
+        return Number.isFinite(value) ? clamp(Math.round(value), 0, 100) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function getChallengePoints(difference) {
+      if (difference === 0) {
+        return 10;
+      }
+      if (difference === 1) {
+        return 7;
+      }
+      if (difference === 2) {
+        return 5;
+      }
+      if (difference === 3) {
+        return 2;
+      }
+      return 0;
+    }
+
+    function getChallengeFeedback(difference) {
+      if (difference === 0) {
+        return pickRandomChallengeMessage([
+          "Bullseye. Your eye is dialed in.",
+          "Dead on. You saw it perfectly.",
+          "That's painter vision right there."
+        ]);
+      }
+      if (difference === 1) {
+        return pickRandomChallengeMessage([
+          "Very close. Your eye almost nailed it.",
+          "Just a hair off. Strong read.",
+          "Nice call. Almost exact."
+        ]);
+      }
+      if (difference === 2) {
+        return pickRandomChallengeMessage([
+          "Good guess. You're in the zone.",
+          "Not bad at all.",
+          "Close enough to trust your eye."
+        ]);
+      }
+      if (difference === 3) {
+        return pickRandomChallengeMessage([
+          "You're circling it. Try one more.",
+          "Not far off, but the value slipped a bit.",
+          "Decent read. Look again at the big masses."
+        ]);
+      }
+      return pickRandomChallengeMessage([
+        "Your eye went on a coffee break.",
+        "That value escaped you.",
+        "Too far off. Squint harder.",
+        "That was brave. Let's try again."
+      ]);
+    }
+
+    function getChallengeDirectionFeedback() {
+      if (state.challenge.actualValue === null) {
+        return "";
+      }
+
+      if (state.challenge.currentGuess < state.challenge.actualValue) {
+        return "Too light.";
+      }
+
+      if (state.challenge.currentGuess > state.challenge.actualValue) {
+        return "Too dark.";
+      }
+
+      return "";
+    }
+
+    function pickRandomChallengeMessage(messages) {
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function drawSevenValueMap() {
+      if (!state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height) {
+        sevenValueCanvas.style.display = "none";
+        sevenValueEmptyState.classList.remove("hidden");
+        sevenValueStatus.textContent = "Upload an image to build the seven-value map.";
+        return;
+      }
+
+      sevenValueCanvas.width = sevenValueBuffer.width;
+      sevenValueCanvas.height = sevenValueBuffer.height;
+      sevenValueCanvas.style.display = "block";
+      sevenValueEmptyState.classList.add("hidden");
+      sevenValueStatus.textContent = "Approximate coverage shows how much of the image falls into each tonal band.";
+
+      sevenValueCtx.clearRect(0, 0, sevenValueCanvas.width, sevenValueCanvas.height);
+      sevenValueCtx.save();
+      sevenValueCtx.translate(state.offsetX, state.offsetY);
+      sevenValueCtx.scale(state.viewScale, state.viewScale);
+      sevenValueCtx.drawImage(sevenValueBuffer, 0, 0);
+      sevenValueCtx.restore();
+    }
+
+    function buildCompareBuffers() {
+      state.compareReady = false;
+
+      if (state.referenceImage) {
+        const referenceDimensions = getSingleCompareDimensions(state.referenceImage);
+        prepareImageBuffer(
+          state.referenceImage,
+          compareReferenceBuffer,
+          compareReferenceBufferCtx,
+          referenceDimensions.width,
+          referenceDimensions.height
+        );
+      } else {
+        clearBuffer(compareReferenceBuffer, compareReferenceBufferCtx);
+      }
+
+      if (state.paintingImage) {
+        const paintingDimensions = getSingleCompareDimensions(state.paintingImage);
+        prepareImageBuffer(
+          state.paintingImage,
+          comparePaintingBuffer,
+          comparePaintingBufferCtx,
+          paintingDimensions.width,
+          paintingDimensions.height
+        );
+      } else {
+        clearBuffer(comparePaintingBuffer, comparePaintingBufferCtx);
+      }
+
+      if (!state.referenceImage || !state.paintingImage) {
+        compareStatus.textContent = state.referenceImage || state.paintingImage
+          ? "Upload the missing image to enable the comparison."
+          : "Upload both images to begin the comparison.";
+        clearBuffer(compareOverlayBuffer, compareOverlayBufferCtx);
+        return;
+      }
+
+      const dimensions = getCompareDimensions(state.referenceImage, state.paintingImage);
+      prepareImageBuffer(state.referenceImage, compareReferenceBuffer, compareReferenceBufferCtx, dimensions.width, dimensions.height);
+      prepareImageBuffer(state.paintingImage, comparePaintingBuffer, comparePaintingBufferCtx, dimensions.width, dimensions.height);
+      buildCompareOverlay();
+      state.compareReady = true;
+      compareStatus.textContent = "The overlay reveals where the painting shifts lighter or darker than the reference.";
+    }
+
+    function clearBuffer(buffer, bufferContext) {
+      bufferContext.clearRect(0, 0, buffer.width, buffer.height);
+      buffer.width = 0;
+      buffer.height = 0;
+    }
+
+    function prepareImageBuffer(image, buffer, bufferContext, width, height) {
+      buffer.width = width;
+      buffer.height = height;
+      bufferContext.clearRect(0, 0, width, height);
+      const scale = Math.min(width / image.width, height / image.height, 1);
+      const drawWidth = Math.max(1, Math.round(image.width * scale));
+      const drawHeight = Math.max(1, Math.round(image.height * scale));
+      const offsetX = Math.floor((width - drawWidth) / 2);
+      const offsetY = Math.floor((height - drawHeight) / 2);
+
+      bufferContext.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+      const imageData = bufferContext.getImageData(0, 0, width, height);
+
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        if (imageData.data[i + 3] === 0) {
+          continue;
+        }
+        const brightness = getPerceivedBrightness(imageData.data[i], imageData.data[i + 1], imageData.data[i + 2]);
+        imageData.data[i] = brightness;
+        imageData.data[i + 1] = brightness;
+        imageData.data[i + 2] = brightness;
+      }
+
+      bufferContext.putImageData(imageData, 0, 0);
+    }
+
+    function getCompareDimensions(referenceImage, paintingImage) {
+      const wrapWidth = Math.min(compareCanvasWrap.clientWidth - 2, 920);
+      const wrapHeight = Math.min(window.innerHeight * 0.56, 560);
+      return getContainedDimensions(
+        Math.max(referenceImage.width, paintingImage.width),
+        Math.max(referenceImage.height, paintingImage.height),
+        wrapWidth,
+        wrapHeight
+      );
+    }
+
+    function getSingleCompareDimensions(image) {
+      const wrapWidth = Math.min(compareCanvasWrap.clientWidth - 20, 430);
+      const wrapHeight = Math.min(window.innerHeight * 0.28, 250);
+      return getContainedDimensions(image.width, image.height, wrapWidth, wrapHeight);
+    }
+
+    function buildCompareOverlay() {
+      compareOverlayBuffer.width = compareReferenceBuffer.width;
+      compareOverlayBuffer.height = compareReferenceBuffer.height;
+
+      const referenceData = compareReferenceBufferCtx.getImageData(0, 0, compareReferenceBuffer.width, compareReferenceBuffer.height);
+      const paintingData = comparePaintingBufferCtx.getImageData(0, 0, comparePaintingBuffer.width, comparePaintingBuffer.height);
+      const overlayData = compareOverlayBufferCtx.createImageData(compareOverlayBuffer.width, compareOverlayBuffer.height);
+      const tolerance = getCompareTolerance();
+
+      for (let i = 0; i < referenceData.data.length; i += 4) {
+        if (referenceData.data[i + 3] === 0 || paintingData.data[i + 3] === 0) {
+          overlayData.data[i] = 0;
+          overlayData.data[i + 1] = 0;
+          overlayData.data[i + 2] = 0;
+          overlayData.data[i + 3] = 0;
+          continue;
+        }
+
+        const referenceBrightness = referenceData.data[i];
+        const paintingBrightness = paintingData.data[i];
+        const diff = paintingBrightness - referenceBrightness;
+        const base = Math.round((referenceBrightness + paintingBrightness) / 2);
+        let color;
+
+        if (diff < -tolerance) {
+          color = blendColor(base, [121, 135, 163], 0.34);
+        } else if (diff > tolerance) {
+          color = blendColor(base, [204, 175, 142], 0.34);
+        } else {
+          color = blendColor(base, [181, 175, 168], 0.12);
+        }
+
+        overlayData.data[i] = color[0];
+        overlayData.data[i + 1] = color[1];
+        overlayData.data[i + 2] = color[2];
+        overlayData.data[i + 3] = 255;
+      }
+
+      compareOverlayBufferCtx.putImageData(overlayData, 0, 0);
+    }
+
+    function drawCompareCanvases() {
+      drawComparePreview(compareReferenceCanvas, compareReferenceCtx, compareReferenceBuffer, compareReferenceEmpty, "Upload a reference image.");
+      drawComparePreview(comparePaintingCanvas, comparePaintingCtx, comparePaintingBuffer, comparePaintingEmpty, "Upload a painting image.");
+
+      if (!state.compareReady || !compareOverlayBuffer.width || !compareOverlayBuffer.height) {
+        compareOverlayCanvas.style.display = "none";
+        compareOverlayEmpty.classList.remove("hidden");
+        compareOverlayEmpty.querySelector("p").textContent = state.referenceImage || state.paintingImage
+          ? "Upload the missing image to compare both value structures."
+          : "Upload both images to compare their value relationships.";
+        return;
+      }
+
+      compareOverlayCanvas.width = compareOverlayBuffer.width;
+      compareOverlayCanvas.height = compareOverlayBuffer.height;
+      compareOverlayCanvas.style.display = "block";
+      compareOverlayEmpty.classList.add("hidden");
+
+      compareOverlayCtx.clearRect(0, 0, compareOverlayCanvas.width, compareOverlayCanvas.height);
+      compareOverlayCtx.save();
+      compareOverlayCtx.translate(state.offsetX, state.offsetY);
+      compareOverlayCtx.scale(state.viewScale, state.viewScale);
+      compareOverlayCtx.drawImage(compareOverlayBuffer, 0, 0);
+      compareOverlayCtx.restore();
+    }
+
+    function drawComparePreview(canvasEl, context, buffer, emptyEl, emptyText) {
+      if (!buffer.width || !buffer.height) {
+        canvasEl.style.display = "none";
+        emptyEl.classList.remove("hidden");
+        emptyEl.querySelector("p").textContent = emptyText;
+        return;
+      }
+
+      canvasEl.width = buffer.width;
+      canvasEl.height = buffer.height;
+      canvasEl.style.display = "block";
+      emptyEl.classList.add("hidden");
+      context.clearRect(0, 0, canvasEl.width, canvasEl.height);
+      context.drawImage(buffer, 0, 0);
+    }
+
+    function handleCompareSensitivityChange() {
+      state.compareSensitivity = Number(compareSensitivity.value);
+      compareSensitivityValue.textContent = String(state.compareSensitivity);
+
+      if (!state.referenceImage || !state.paintingImage) {
+        return;
+      }
+
+      buildCompareOverlay();
+      drawCompareCanvases();
+    }
+
+    function getCompareTolerance() {
+      return Math.round(30 - (state.compareSensitivity / 100) * 24);
+    }
+
+    function blendColor(base, tint, amount) {
+      return tint.map((channel) => Math.round(base + (channel - base) * amount));
+    }
+
+    function hasActiveVisual() {
+      if (state.mode === "compare-values") {
+        return state.compareReady;
+      }
+      if (state.mode === "value-challenge") {
+        return state.imageLoaded;
+      }
+      return state.imageLoaded;
+    }
+
+    function getActiveCanvas() {
+      if (state.mode === "compare-values") {
+        return compareOverlayCanvas;
+      }
+      if (state.mode === "value-challenge") {
+        return challengeCanvas;
+      }
+      if (state.mode === "seven-value-map") {
+        return sevenValueCanvas;
+      }
+      return canvas;
+    }
+
+    function drawNumberedMarker(sample, x, y) {
+      drawNumberedMarkerOnContext(ctx, sample, x, y, state.activeMarkerId);
+    }
+
+    function drawNumberedMarkerOnContext(targetCtx, sample, x, y, activeMarkerId = null) {
+      const isActive = activeMarkerId === sample.id;
+      const radius = isActive ? 12 : 10;
+
+      targetCtx.save();
+      targetCtx.fillStyle = isActive ? "rgba(31, 28, 24, 0.96)" : "rgba(31, 28, 24, 0.86)";
+      targetCtx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+      targetCtx.lineWidth = isActive ? 2.2 : 1.6;
+      targetCtx.beginPath();
+      targetCtx.arc(x, y, radius, 0, Math.PI * 2);
+      targetCtx.fill();
+      targetCtx.stroke();
+      targetCtx.fillStyle = "#ffffff";
+      targetCtx.font = `700 ${isActive ? 12 : 11}px Segoe UI`;
+      targetCtx.textAlign = "center";
+      targetCtx.textBaseline = "middle";
+      targetCtx.fillText(String(sample.id), x, y + 0.5);
+      targetCtx.restore();
+    }
+
+    function updateReadout(pixel, brightness, value) {
+      const gray = `rgb(${brightness}, ${brightness}, ${brightness})`;
+      swatch.style.background = gray;
+      valueNumber.textContent = value;
+      statusNote.textContent = `Selected point reads as value ${value} on the M8 value scale.`;
+      highlightScale(value);
+    }
+
+    function downloadValueAnalysis() {
+      if (!state.imageLoaded || !imageBuffer.width || !imageBuffer.height) {
+        return;
+      }
+
+      const exportSamples = [...state.savedSamples].sort((left, right) => left.id - right.id);
+      const blockPaddingX = Math.max(18, Math.round(imageBuffer.width * 0.035));
+      const blockGap = Math.max(18, Math.round(imageBuffer.width * 0.028));
+      const legendTitleHeight = Math.max(18, Math.round(imageBuffer.width * 0.024));
+      const legendRowHeight = Math.max(30, Math.round(imageBuffer.width * 0.042));
+      const legendTopPadding = Math.max(16, Math.round(imageBuffer.width * 0.026));
+      const legendBottomPadding = Math.max(14, Math.round(imageBuffer.width * 0.022));
+      const legendColumnGap = Math.max(18, Math.round(imageBuffer.width * 0.03));
+      const legendColumns = Math.min(2, Math.max(1, Math.ceil(exportSamples.length / 5)));
+      const legendRows = Math.max(1, Math.ceil(exportSamples.length / legendColumns));
+      const footerHeight = Math.max(56, Math.round(imageBuffer.height * 0.08));
+      const infoBlockHeight = Math.max(
+        legendTopPadding + legendTitleHeight + (legendRows * legendRowHeight) + legendBottomPadding,
+        footerHeight
+      );
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = imageBuffer.width;
+      exportCanvas.height = imageBuffer.height + infoBlockHeight;
+      const exportCtx = exportCanvas.getContext("2d");
+
+      exportCtx.fillStyle = "#f4efe6";
+      exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      exportCtx.drawImage(imageBuffer, 0, 0);
+
+      state.savedSamples.forEach((sample) => {
+        drawNumberedMarkerOnContext(exportCtx, sample, sample.x, sample.y, state.activeMarkerId);
+      });
+
+      exportCtx.strokeStyle = "rgba(50, 44, 38, 0.12)";
+      exportCtx.lineWidth = 1;
+      exportCtx.beginPath();
+      exportCtx.moveTo(0, imageBuffer.height + 0.5);
+      exportCtx.lineTo(exportCanvas.width, imageBuffer.height + 0.5);
+      exportCtx.stroke();
+
+      const infoTop = imageBuffer.height;
+      const legendAreaWidth = Math.round(exportCanvas.width * 0.62);
+      const brandAreaWidth = exportCanvas.width - (blockPaddingX * 2) - blockGap - legendAreaWidth;
+
+      drawValueAnalysisLegend(
+        exportCtx,
+        exportSamples,
+        {
+          startY: infoTop,
+          width: legendAreaWidth,
+          originX: blockPaddingX,
+          topPadding: legendTopPadding,
+          titleHeight: legendTitleHeight,
+          rowHeight: legendRowHeight,
+          columnGap: legendColumnGap,
+          columns: legendColumns
+        }
+      );
+
+      const brandX = blockPaddingX + legendAreaWidth + blockGap;
+      const footerBaseY = infoTop + Math.round(footerHeight * 0.48);
+      exportCtx.fillStyle = "rgba(31, 28, 24, 0.78)";
+      exportCtx.textAlign = "left";
+      exportCtx.textBaseline = "alphabetic";
+      exportCtx.font = `600 ${Math.max(14, Math.round(exportCanvas.width * 0.018))}px Segoe UI`;
+      exportCtx.fillText("www.mateartwork.com", brandX, footerBaseY);
+      exportCtx.font = `500 ${Math.max(12, Math.round(exportCanvas.width * 0.014))}px Segoe UI`;
+      exportCtx.fillStyle = "rgba(31, 28, 24, 0.62)";
+      exportCtx.fillText("Created with M8 Value Studio", brandX, footerBaseY + Math.max(18, Math.round(footerHeight * 0.28)), brandAreaWidth);
+
+      const link = document.createElement("a");
+      link.href = exportCanvas.toDataURL("image/png");
+      link.download = "m8-value-analysis.png";
+      link.click();
+    }
+
+    function drawValueAnalysisLegend(targetCtx, samples, options) {
+      const {
+        startY,
+        width,
+        originX,
+        topPadding,
+        titleHeight,
+        rowHeight,
+        columnGap,
+        columns
+      } = options;
+
+      const boxRadius = 18;
+      const titleY = startY + topPadding + titleHeight - 2;
+      const contentPaddingX = Math.max(14, Math.round(width * 0.05));
+      const contentWidth = width - (contentPaddingX * 2);
+      const columnWidth = (contentWidth - (columnGap * (columns - 1))) / columns;
+      const markerXOffset = 10;
+      const swatchWidth = Math.max(24, Math.round(width * 0.04));
+      const swatchHeight = Math.max(16, Math.round(width * 0.024));
+      const textOffsetX = 54;
+      const boxHeight = topPadding + titleHeight + (Math.max(1, Math.ceil(samples.length / columns)) * rowHeight) + Math.max(14, Math.round(width * 0.03));
+
+      targetCtx.save();
+      targetCtx.fillStyle = "rgba(255, 255, 255, 0.46)";
+      targetCtx.strokeStyle = "rgba(59, 52, 45, 0.08)";
+      targetCtx.lineWidth = 1;
+      targetCtx.beginPath();
+      targetCtx.roundRect(originX, startY + 10, width, boxHeight, boxRadius);
+      targetCtx.fill();
+      targetCtx.stroke();
+      targetCtx.restore();
+
+      targetCtx.fillStyle = "rgba(31, 28, 24, 0.78)";
+      targetCtx.textAlign = "left";
+      targetCtx.textBaseline = "alphabetic";
+      targetCtx.font = `700 ${Math.max(13, Math.round(width * 0.016))}px Segoe UI`;
+      targetCtx.fillText("Marker Legend", originX + contentPaddingX, titleY + 8);
+
+      samples.forEach((sample, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const columnX = originX + contentPaddingX + column * (columnWidth + columnGap);
+        const centerY = startY + topPadding + titleHeight + 22 + row * rowHeight;
+        const swatchX = columnX + 26;
+        const swatchY = centerY - (swatchHeight / 2);
+
+        drawNumberedMarkerOnContext(targetCtx, sample, columnX + markerXOffset, centerY, null);
+
+        targetCtx.save();
+        targetCtx.fillStyle = `rgb(${sample.brightness}, ${sample.brightness}, ${sample.brightness})`;
+        targetCtx.strokeStyle = "rgba(40, 34, 29, 0.12)";
+        targetCtx.lineWidth = 1;
+        targetCtx.beginPath();
+        targetCtx.roundRect(swatchX, swatchY, swatchWidth, swatchHeight, 7);
+        targetCtx.fill();
+        targetCtx.stroke();
+        targetCtx.restore();
+
+        targetCtx.fillStyle = "rgba(31, 28, 24, 0.76)";
+        targetCtx.font = `600 ${Math.max(12, Math.round(width * 0.015))}px Segoe UI`;
+        targetCtx.textBaseline = "middle";
+        targetCtx.fillText(`Value ${sample.value}`, columnX + textOffsetX, centerY);
+      });
+    }
+
+    function addSampleToGroup(value, brightness, x, y) {
+      const groupKey = getGroupKeyForValue(value);
+      const group = state.groupedSamples[groupKey];
+      const savedSample = {
+        id: state.nextSampleId,
+        brightness,
+        value,
+        x,
+        y,
+        groupKey
+      };
+
+      state.nextSampleId += 1;
+      group.push(savedSample);
+      state.savedSamples.push(savedSample);
+
+      if (group.length > 5) {
+        const removed = group.shift();
+        state.savedSamples = state.savedSamples.filter((sample) => sample.id !== removed.id);
+
+        if (state.activeMarkerId === removed.id) {
+          state.activeMarkerId = null;
+        }
+      }
+
+      return savedSample;
+    }
+
+    function getGroupKeyForValue(value) {
+      if (value <= 2) {
+        return "highlights";
+      }
+      if (value <= 7) {
+        return "lights";
+      }
+      if (value <= 12) {
+        return "halftones";
+      }
+      return "shadows";
+    }
+
+    function renderSampleGroups() {
+      Object.entries(groupContainers).forEach(([groupKey, container]) => {
+        const samples = state.groupedSamples[groupKey];
+        container.innerHTML = "";
+
+        if (!samples.length) {
+          const empty = document.createElement("span");
+          empty.className = "group-empty";
+          empty.textContent = "No samples yet.";
+          container.appendChild(empty);
+          return;
+        }
+
+        samples.forEach((sample) => {
+          const sampleSwatch = document.createElement("button");
+          sampleSwatch.type = "button";
+          sampleSwatch.className = "group-swatch";
+          sampleSwatch.style.background = `rgb(${sample.brightness}, ${sample.brightness}, ${sample.brightness})`;
+          sampleSwatch.textContent = `${sample.id} · V${sample.value}`;
+          sampleSwatch.title = `Sample ${sample.id} · Value ${sample.value}`;
+          sampleSwatch.classList.toggle("active-marker", sample.id === state.activeMarkerId);
+          sampleSwatch.addEventListener("click", () => highlightMarker(sample.id));
+          container.appendChild(sampleSwatch);
+        });
+      });
+
+      downloadValueAnalysisButton.disabled = !state.imageLoaded || !state.savedSamples.length;
+    }
+
+    function highlightMarker(sampleId) {
+      state.activeMarkerId = sampleId;
+      drawCurrentView();
+      renderSampleGroups();
+
+      if (state.activeMarkerTimeout) {
+        clearTimeout(state.activeMarkerTimeout);
+      }
+
+      state.activeMarkerTimeout = setTimeout(() => {
+        state.activeMarkerId = null;
+        drawCurrentView();
+        renderSampleGroups();
+      }, 1200);
+    }
+
+    function highlightScale(activeValue) {
+      if (!valueScale) {
+        return;
+      }
+
+      const rows = valueScale.querySelectorAll(".scale-step");
+      rows.forEach((row) => {
+        row.classList.toggle("active", Number(row.dataset.value) === activeValue);
+      });
+    }
+
+    function brightnessToScaleValue(brightness) {
+      const normalized = brightness / 255;
+      return clamp(Math.round((1 - normalized) * 19) + 1, 1, 20);
+    }
+
+    function scaleValueToGray(value) {
+      return Math.round(((20 - value) / 19) * 255);
+    }
+
+    function sampleAverageArea(centerX, centerY, size) {
+      const radius = Math.floor(size / 2);
+      const startX = clamp(centerX - radius, 0, imageBuffer.width - 1);
+      const startY = clamp(centerY - radius, 0, imageBuffer.height - 1);
+      const endX = clamp(centerX + radius, 0, imageBuffer.width - 1);
+      const endY = clamp(centerY + radius, 0, imageBuffer.height - 1);
+      const width = endX - startX + 1;
+      const height = endY - startY + 1;
+      const data = bufferCtx.getImageData(startX, startY, width, height).data;
+
+      let total = 0;
+      let count = 0;
+
+      for (let i = 0; i < data.length; i += 4) {
+        total += data[i];
+        count += 1;
+      }
+
+      const brightness = count ? Math.round(total / count) : 0;
+
+      return {
+        brightness,
+        pixel: [brightness, brightness, brightness]
+      };
+    }
+
+    function getPerceivedBrightness(r, g, b) {
+      return Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    }
+
+    function getContainedDimensions(sourceWidth, sourceHeight, maxWidth, maxHeight) {
+      const safeWidth = Math.max(1, maxWidth);
+      const safeHeight = Math.max(1, maxHeight);
+      const scale = Math.min(safeWidth / sourceWidth, safeHeight / sourceHeight, 1);
+
+      return {
+        width: Math.max(1, Math.round(sourceWidth * scale)),
+        height: Math.max(1, Math.round(sourceHeight * scale))
+      };
+    }
+
+    function redrawImage() {
+      if (!state.imageLoaded || !state.sourceImage) {
+        if (state.referenceImage || state.paintingImage) {
+          buildCompareBuffers();
+          drawCompareCanvases();
+        }
+        drawChallengeView();
+        return;
+      }
+
+      const marker = state.marker;
+      prepareGrayscaleImage(state.sourceImage);
+      state.marker = marker;
+      drawCurrentView();
+      drawSevenValueMap();
+      drawChallengeView();
+
+      if (state.referenceImage || state.paintingImage) {
+        buildCompareBuffers();
+        drawCompareCanvases();
+      }
+    }
+
+    function handleCanvasWheel(event) {
+      if (!hasActiveVisual()) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const activeCanvas = getActiveCanvas();
+      const rect = activeCanvas.getBoundingClientRect();
+      const pointerX = (event.clientX - rect.left) * (activeCanvas.width / rect.width);
+      const pointerY = (event.clientY - rect.top) * (activeCanvas.height / rect.height);
+      const zoomFactor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+      const nextScale = clamp(state.viewScale * zoomFactor, state.minScale, state.maxScale);
+
+      if (nextScale === state.viewScale) {
+        return;
+      }
+
+      const imageX = (pointerX - state.offsetX) / state.viewScale;
+      const imageY = (pointerY - state.offsetY) / state.viewScale;
+
+      state.viewScale = nextScale;
+      state.offsetX = pointerX - imageX * nextScale;
+      state.offsetY = pointerY - imageY * nextScale;
+      constrainView();
+      updateCanvasCursor();
+      drawCurrentView();
+      drawSevenValueMap();
+      drawChallengeView();
+      drawCompareCanvases();
+    }
+
+    function handlePanStart(event) {
+      if (!hasActiveVisual() || state.viewScale <= 1) {
+        return;
+      }
+
+      state.isDragging = true;
+      state.dragMoved = false;
+      state.dragStartX = event.clientX;
+      state.dragStartY = event.clientY;
+      state.dragOriginX = state.offsetX;
+      state.dragOriginY = state.offsetY;
+      getActiveCanvas().classList.add("dragging");
+    }
+
+    function handlePanMove(event) {
+      if (!state.isDragging) {
+        return;
+      }
+
+      const activeCanvas = getActiveCanvas();
+      const pointerCanvas = getActiveCanvas();
+      const rect = pointerCanvas.getBoundingClientRect();
+      const deltaX = (event.clientX - state.dragStartX) * (activeCanvas.width / rect.width);
+      const deltaY = (event.clientY - state.dragStartY) * (activeCanvas.height / rect.height);
+
+      if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+        state.dragMoved = true;
+      }
+
+      state.offsetX = state.dragOriginX + deltaX;
+      state.offsetY = state.dragOriginY + deltaY;
+      constrainView();
+      drawCurrentView();
+      drawSevenValueMap();
+      drawChallengeView();
+      drawCompareCanvases();
+    }
+
+    function handlePanEnd() {
+      if (!state.isDragging) {
+        return;
+      }
+
+      state.isDragging = false;
+      canvas.classList.remove("dragging");
+      sevenValueCanvas.classList.remove("dragging");
+      challengeCanvas.classList.remove("dragging");
+      compareOverlayCanvas.classList.remove("dragging");
+
+      if (state.dragMoved) {
+        state.suppressClick = true;
+      }
+
+      updateCanvasCursor();
+    }
+
+    function resetView() {
+      if (!hasActiveVisual()) {
+        return;
+      }
+
+      resetViewState();
+      updateCanvasCursor();
+      drawCurrentView();
+      drawSevenValueMap();
+      drawChallengeView();
+      drawCompareCanvases();
+    }
+
+    function resetViewState() {
+      state.viewScale = 1;
+      state.offsetX = 0;
+      state.offsetY = 0;
+      state.isDragging = false;
+      state.dragMoved = false;
+      state.suppressClick = false;
+      canvas.classList.remove("dragging");
+      sevenValueCanvas.classList.remove("dragging");
+      challengeCanvas.classList.remove("dragging");
+      compareOverlayCanvas.classList.remove("dragging");
+    }
+
+    function constrainView() {
+      const activeCanvas = getActiveCanvas();
+      const scaledWidth = activeCanvas.width * state.viewScale;
+      const scaledHeight = activeCanvas.height * state.viewScale;
+      const minOffsetX = Math.min(0, activeCanvas.width - scaledWidth);
+      const minOffsetY = Math.min(0, activeCanvas.height - scaledHeight);
+
+      state.offsetX = clamp(state.offsetX, minOffsetX, 0);
+      state.offsetY = clamp(state.offsetY, minOffsetY, 0);
+    }
+
+    function updateCanvasCursor() {
+      const activeCanvas = getActiveCanvas();
+      canvas.classList.remove("zoomed", "dragging");
+      sevenValueCanvas.classList.remove("zoomed", "dragging");
+      compareOverlayCanvas.classList.remove("zoomed", "dragging");
+      challengeCanvas.classList.remove("zoomed", "dragging");
+      activeCanvas.classList.toggle("zoomed", state.viewScale > 1 && !state.isDragging);
+      activeCanvas.classList.toggle("dragging", state.isDragging);
+    }
+
+    function getImageCoordinatesFromEvent(event) {
+      return getImageCoordinatesFromCanvas(event, canvas);
+    }
+
+    function getImageCoordinatesFromCanvas(event, targetCanvas) {
+      if (!state.sourceImage || !targetCanvas.width || !targetCanvas.height) {
+        return null;
+      }
+
+      const rect = targetCanvas.getBoundingClientRect();
+      const renderedX = event.clientX - rect.left;
+      const renderedY = event.clientY - rect.top;
+
+      if (renderedX < 0 || renderedY < 0 || renderedX > rect.width || renderedY > rect.height) {
+        return null;
+      }
+
+      const canvasX = renderedX * (targetCanvas.width / rect.width);
+      const canvasY = renderedY * (targetCanvas.height / rect.height);
+      const imageX = Math.floor((canvasX - state.offsetX) / state.viewScale);
+      const imageY = Math.floor((canvasY - state.offsetY) / state.viewScale);
+
+      if (imageX < 0 || imageY < 0 || imageX >= targetCanvas.width || imageY >= targetCanvas.height) {
+        return null;
+      }
+
+      const naturalWidth = state.sourceImage.naturalWidth || state.sourceImage.width || targetCanvas.width;
+      const naturalHeight = state.sourceImage.naturalHeight || state.sourceImage.height || targetCanvas.height;
+      const naturalX = (imageX / targetCanvas.width) * naturalWidth;
+      const naturalY = (imageY / targetCanvas.height) * naturalHeight;
+
+      return {
+        x: imageX,
+        y: imageY,
+        naturalX,
+        naturalY
+      };
+    }
+
+    function resetReadout() {
+      swatch.style.background = "#dddddd";
+      valueNumber.textContent = "-";
+      statusNote.textContent = "No point selected yet.";
+      state.groupedSamples = {
+        highlights: [],
+        lights: [],
+        halftones: [],
+        shadows: []
+      };
+      state.savedSamples = [];
+      state.nextSampleId = 1;
+      state.activeMarkerId = null;
+
+      if (state.activeMarkerTimeout) {
+        clearTimeout(state.activeMarkerTimeout);
+        state.activeMarkerTimeout = null;
+      }
+
+      renderSampleGroups();
+      highlightScale(-1);
+      buildSevenValueMap();
+      drawSevenValueMap();
+      renderChallengePanel();
+      drawChallengeView();
+      drawCompareCanvases();
+    }
+
+    function resetTool() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sevenValueCtx.clearRect(0, 0, sevenValueCanvas.width, sevenValueCanvas.height);
+      challengeCtx.clearRect(0, 0, challengeCanvas.width, challengeCanvas.height);
+      compareReferenceCtx.clearRect(0, 0, compareReferenceCanvas.width, compareReferenceCanvas.height);
+      comparePaintingCtx.clearRect(0, 0, comparePaintingCanvas.width, comparePaintingCanvas.height);
+      compareOverlayCtx.clearRect(0, 0, compareOverlayCanvas.width, compareOverlayCanvas.height);
+      bufferCtx.clearRect(0, 0, imageBuffer.width, imageBuffer.height);
+      clearBuffer(compareReferenceBuffer, compareReferenceBufferCtx);
+      clearBuffer(comparePaintingBuffer, comparePaintingBufferCtx);
+      clearBuffer(compareOverlayBuffer, compareOverlayBufferCtx);
+      clearBuffer(sevenValueBuffer, sevenValueBufferCtx);
+      canvas.style.display = "none";
+      sevenValueCanvas.style.display = "none";
+      challengeCanvas.style.display = "none";
+      compareReferenceCanvas.style.display = "none";
+      comparePaintingCanvas.style.display = "none";
+      compareOverlayCanvas.style.display = "none";
+      sevenValueEmptyState.classList.remove("hidden");
+      challengeEmptyState.classList.remove("hidden");
+      emptyState.classList.remove("hidden");
+      compareReferenceEmpty.classList.remove("hidden");
+      comparePaintingEmpty.classList.remove("hidden");
+      compareOverlayEmpty.classList.remove("hidden");
+      fileInput.value = "";
+      referenceInput.value = "";
+      paintingInput.value = "";
+      clearSingleUploadDragState();
+      state.imageLoaded = false;
+      state.imageData = null;
+      state.marker = null;
+      state.sourceImage = null;
+      state.referenceImage = null;
+      state.paintingImage = null;
+      state.compareReady = false;
+      state.compareSensitivity = 50;
+      compareSensitivity.value = "50";
+      compareSensitivityValue.textContent = "50";
+      state.challenge = {
+        marker: null,
+        actualValue: null,
+        currentGuess: 10,
+        submitted: false,
+        lastPoints: null,
+        totalScore: 0,
+        attempts: 0,
+        feedback: "Upload an image to start the value challenge.",
+        feedbackNote: "",
+        sessionComplete: false,
+        bestAccuracy: loadChallengeBestAccuracy(),
+        newBestAchieved: false
+      };
+      challengeSlider.value = "10";
+      state.sevenValueStats = Array.from({ length: 7 }, (_, index) => ({
+        value: index + 1,
+        brightness: Math.round(((7 - (index + 1)) / 6) * 255),
+        coverage: 0
+      }));
+      resetViewState();
+      updateSingleUploadZones();
+      updateCanvasCursor();
+      resetReadout();
+      renderSevenValueLegend();
+      renderChallengePanel();
+      sevenValueStatus.textContent = "Upload an image to build the seven-value map.";
+      compareStatus.textContent = "Upload both images to begin the comparison.";
+      drawChallengeView();
+      drawCompareCanvases();
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
