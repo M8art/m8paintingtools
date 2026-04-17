@@ -13,7 +13,12 @@ const startButton = document.getElementById("startButton");
 
 const BEST_KEY = "m8-flying-brush-best-score";
 const PLAYER_X = 220;
-const PLAYER_RADIUS = 22;
+const PLAYER_RADIUS = 18;
+const BRUSH_RENDER_WIDTH = 108;
+const BRUSH_RENDER_HEIGHT = 34;
+const BRUSH_PIVOT_X = -12;
+const BRUSH_BRISTLE_OFFSET_X = 38;
+const BRUSH_BRISTLE_OFFSET_Y = 0;
 const BASE_GRAVITY = 1120;
 const FLAP_FORCE = -390;
 const BASE_SPEED = 220;
@@ -32,6 +37,8 @@ const PALETTES = [
   ["#a24d54", "#5b7f72", "#ad8358", "#76523e", "#83645f", "#6a628a"]
 ];
 const RHYTHM_PATTERN = [1.02, 0.94, 1.08, 0.9];
+const brushImage = new Image();
+brushImage.src = "../assets/images/game brush.png";
 
 const player = {
   x: PLAYER_X,
@@ -199,8 +206,10 @@ function update(delta) {
   addTrailPoints();
 
   state.trail.forEach((point) => {
-    point.alpha = Math.max(0, point.alpha - delta * 0.3);
-    point.radius = Math.max(3, point.radius - delta * 4.2);
+    point.age += delta;
+    point.alpha = Math.max(0, point.alpha - delta * 0.42);
+    point.width = Math.max(1.5, point.width - delta * 4.8);
+    point.length = Math.max(4, point.length - delta * 5.5);
   });
   state.trail = state.trail.filter((point) => point.alpha > 0.01);
 
@@ -312,7 +321,7 @@ function handlePipePass(pipe) {
 }
 
 function isPipeCollision(pipe) {
-  const forgiveness = 8;
+  const forgiveness = 10;
   const playerLeft = player.x - player.radius + forgiveness;
   const playerRight = player.x + player.radius - forgiveness;
   const playerTop = player.y - player.radius + forgiveness;
@@ -448,40 +457,48 @@ function drawPaintStroke(x, y, width, height, flipped, color) {
 function drawBrush() {
   ctx.save();
   ctx.translate(player.x, player.y);
-  ctx.rotate(Math.max(-0.45, Math.min(0.35, player.velocityY / 900)));
+  const rotation = getBrushRotation();
+  ctx.rotate(rotation);
   const glowColor = state.invincibleTimer > 0 ? "rgba(229, 186, 88, 0.46)" : hexToRgba(player.color, 0.3);
   ctx.shadowColor = glowColor;
   ctx.shadowBlur = state.invincibleTimer > 0 ? 24 : 16;
 
   const activeColor = state.invincibleTimer > 0 ? blendHex(player.color, "#f0c96b", 0.42) : player.color;
-  ctx.fillStyle = shadeColor(activeColor, -34);
-  ctx.beginPath();
-  ctx.roundRect(-24, -8, 30, 16, 9);
-  ctx.fill();
+  if (brushImage.complete && brushImage.naturalWidth > 0) {
+    ctx.drawImage(
+      brushImage,
+      BRUSH_PIVOT_X,
+      -BRUSH_RENDER_HEIGHT * 0.5,
+      BRUSH_RENDER_WIDTH,
+      BRUSH_RENDER_HEIGHT
+    );
 
-  ctx.fillStyle = activeColor;
-  ctx.beginPath();
-  ctx.roundRect(-2, -13, 32, 26, 12);
-  ctx.fill();
+    if (state.invincibleTimer > 0) {
+      ctx.fillStyle = hexToRgba("#f3d27c", 0.16);
+      ctx.beginPath();
+      ctx.roundRect(BRUSH_PIVOT_X + 8, -BRUSH_RENDER_HEIGHT * 0.42, BRUSH_RENDER_WIDTH - 20, BRUSH_RENDER_HEIGHT * 0.84, 16);
+      ctx.fill();
+    }
+  } else {
+    ctx.fillStyle = shadeColor(activeColor, -34);
+    ctx.beginPath();
+    ctx.roundRect(-24, -8, 30, 16, 9);
+    ctx.fill();
 
-  ctx.fillStyle = shadeColor(activeColor, -56);
-  ctx.beginPath();
-  ctx.moveTo(22, -13);
-  ctx.lineTo(34, -20);
-  ctx.lineTo(34, 20);
-  ctx.lineTo(22, 13);
-  ctx.closePath();
-  ctx.fill();
+    ctx.fillStyle = activeColor;
+    ctx.beginPath();
+    ctx.roundRect(-2, -13, 32, 26, 12);
+    ctx.fill();
 
-  ctx.fillStyle = "#f2ede4";
-  ctx.beginPath();
-  ctx.arc(-7, -5, 5, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#1f1c18";
-  ctx.beginPath();
-  ctx.arc(-5.6, -5, 2, 0, Math.PI * 2);
-  ctx.fill();
+    ctx.fillStyle = shadeColor(activeColor, -56);
+    ctx.beginPath();
+    ctx.moveTo(22, -13);
+    ctx.lineTo(34, -20);
+    ctx.lineTo(34, 20);
+    ctx.lineTo(22, 13);
+    ctx.closePath();
+    ctx.fill();
+  }
 
   ctx.restore();
 }
@@ -511,19 +528,7 @@ function drawStar(star) {
 }
 
 function drawTrail() {
-  state.trail.forEach((point, index) => {
-    ctx.save();
-    ctx.globalAlpha = point.alpha * Math.min(1, (index + 1) / state.trail.length);
-    ctx.fillStyle = hexToRgba(point.color, 1);
-    ctx.beginPath();
-    ctx.ellipse(point.x, point.y, point.radius * 1.6, point.radius * 0.68, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = hexToRgba("#ffffff", 0.08);
-    ctx.beginPath();
-    ctx.ellipse(point.x - point.radius * 0.1, point.y - point.radius * 0.05, point.radius * 0.56, point.radius * 0.22, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  });
+  return;
 }
 
 function drawPassEffects() {
@@ -598,25 +603,7 @@ function spawnCrashEffect(x, y, color) {
 }
 
 function addTrailPoints() {
-  const startY = player.lastY;
-  const endY = player.y;
-  const distance = Math.abs(endY - startY);
-  const steps = Math.max(2, Math.ceil(distance / 10));
-
-  for (let index = 0; index < steps; index += 1) {
-    const t = index / steps;
-    state.trail.push({
-      x: player.x - player.radius * (0.4 + t * 0.22),
-      y: startY + (endY - startY) * t,
-      radius: player.radius * (0.7 - t * 0.08),
-      alpha: 0.2 - t * 0.04,
-      color: player.color
-    });
-  }
-
-  if (state.trail.length > 62) {
-    state.trail.splice(0, state.trail.length - 62);
-  }
+  return;
 }
 
 function addFeedback(text, x, y, color) {
@@ -628,6 +615,17 @@ function addFeedback(text, x, y, color) {
     alpha: 0.9,
     life: 0.8
   });
+}
+
+function getBrushRotation() {
+  return Math.max(-0.58, Math.min(0.42, player.velocityY / 760));
+}
+
+function getBrushBristleTip(baseX, baseY, rotation) {
+  return {
+    x: baseX + Math.cos(rotation) * BRUSH_BRISTLE_OFFSET_X - Math.sin(rotation) * BRUSH_BRISTLE_OFFSET_Y,
+    y: baseY + Math.sin(rotation) * BRUSH_BRISTLE_OFFSET_X + Math.cos(rotation) * BRUSH_BRISTLE_OFFSET_Y
+  };
 }
 
 function drawFeedbacks() {
