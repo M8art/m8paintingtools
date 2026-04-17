@@ -59,6 +59,14 @@
       <button class="tab-button" type="button" data-mode="diagonal">Diagonal Flow</button>
     </div>
 
+    <div id="advancedToolSwitcher" class="mode-switcher secondary-switcher hidden" aria-label="Advanced analysis tools">
+      <button class="tab-button active" type="button" data-advanced-mode="golden-ratio">Golden Ratio</button>
+      <button class="tab-button" type="button" data-advanced-mode="golden-spiral">Golden Spiral</button>
+      <button class="tab-button" type="button" data-advanced-mode="dynamic-symmetry">Dynamic Symmetry</button>
+      <button class="tab-button" type="button" data-advanced-mode="notan">Notan</button>
+      <button class="tab-button" type="button" data-advanced-mode="focal-balance">Focal Balance</button>
+    </div>
+
     <main class="layout">
       <section class="card workspace-card">
         <div class="panel-heading">
@@ -66,7 +74,22 @@
             <p class="section-label">Workspace</p>
             <h2 id="workspaceTitle">Rule of Thirds</h2>
           </div>
-          <p id="workspaceHint" class="hint">Upload an image to begin your composition study.</p>
+          <div class="workspace-meta">
+            <p id="workspaceHint" class="hint">Upload an image to begin your composition study.</p>
+
+            <div id="overlayColorControl" class="overlay-color-control">
+              <button id="overlayColorButton" class="overlay-color-button" type="button" aria-expanded="false" aria-label="Choose overlay color">
+                <span id="overlayColorPreview" class="overlay-color-preview overlay-color-black" aria-hidden="true"></span>
+                <span class="overlay-color-label">Overlay</span>
+              </button>
+
+              <div id="overlayColorMenu" class="overlay-color-menu hidden" role="menu" aria-label="Overlay color options">
+                <button class="overlay-swatch overlay-swatch-black" type="button" data-overlay-color="#1f1c18" aria-label="Use black overlay"></button>
+                <button class="overlay-swatch overlay-swatch-white" type="button" data-overlay-color="#ffffff" aria-label="Use white overlay"></button>
+                <button class="overlay-swatch overlay-swatch-red" type="button" data-overlay-color="#c96a3d" aria-label="Use red overlay"></button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="canvas-wrap upload-enabled" id="canvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
@@ -121,12 +144,64 @@
 
         <div id="advancedAnalysisPanel" class="analysis-grid hidden">
           <div class="placeholder-panel">
-            <p class="section-label">Advanced Analysis</p>
+            <p class="section-label">How It Works</p>
             <div class="placeholder-card">
-              Advanced tools coming soon.
+              <p id="advancedModeDescription">
+                Uses the golden section (1:1.618) to divide the image into naturally balanced areas.
+              </p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">What To Look For</p>
+            <p id="advancedModeTip" class="detail-copy">
+              Check if key elements align with the golden intersections or fall along the main divisions.
+            </p>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">Status</p>
+            <p id="advancedStatusNote" class="detail-copy">Upload an image to begin.</p>
+          </div>
+
+          <div id="spiralControlsCard" class="detail-card hidden">
+            <p class="section-label">Composition Controls</p>
+
+            <div class="control-stack">
+              <div class="control-group">
+                <p class="control-label">Orientation</p>
+                <div class="control-button-row" role="group" aria-label="Golden spiral orientation">
+                  <button id="spiralRotateButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Rotate 90°</button>
+                  <button id="spiralFlipHorizontalButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Horizontal Flip</button>
+                  <button id="spiralFlipVerticalButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Vertical Flip</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-meta">
+                  <p class="control-label">Scale</p>
+                  <span id="spiralScaleValue" class="control-value">100%</span>
+                </div>
+                <input id="spiralScale" class="control-slider" type="range" min="55" max="175" step="1" value="100" aria-label="Scale golden spiral">
+              </div>
+
+              <div class="control-group">
+                <p class="control-label">Display</p>
+                <div class="control-button-row" role="group" aria-label="Golden spiral display mode">
+                  <button class="tab-button spiral-display-button active" type="button" data-spiral-display="full">Spiral + Rectangles</button>
+                  <button class="tab-button spiral-display-button" type="button" data-spiral-display="spiral">Spiral Only</button>
+                  <button class="tab-button spiral-display-button" type="button" data-spiral-display="rectangles">Rectangles Only</button>
+                </div>
+              </div>
+
+              <p class="detail-copy control-hint">Tip: Drag the guide directly on the image. Pull any corner handle to resize it around the artwork.</p>
+
+              <button id="spiralResetButton" class="button-secondary control-reset" type="button">Reset</button>
             </div>
           </div>
         </div>
+
+        <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled>Download Composition Analysis</button>
       </aside>
     </main>
   </div>

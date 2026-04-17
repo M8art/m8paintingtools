@@ -246,6 +246,14 @@ a {
   margin-bottom: 16px;
 }
 
+.workspace-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .section-label {
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -258,6 +266,103 @@ a {
 .hint {
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.overlay-color-control {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.overlay-color-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(50, 44, 38, 0.12);
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: transform 220ms ease, border-color 220ms ease, background 220ms ease, box-shadow 220ms ease;
+}
+
+.overlay-color-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(201, 106, 61, 0.24);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.overlay-color-preview,
+.overlay-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 28, 24, 0.22);
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.overlay-color-black {
+  background: #1f1c18;
+}
+
+.overlay-color-white {
+  background: #ffffff;
+}
+
+.overlay-color-red {
+  background: #c96a3d;
+}
+
+.overlay-color-label {
+  font-size: 0.88rem;
+}
+
+.overlay-color-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(252, 250, 246, 0.95);
+  border: 1px solid rgba(50, 44, 38, 0.1);
+  box-shadow: 0 16px 36px rgba(50, 39, 28, 0.12);
+  z-index: 4;
+}
+
+.overlay-swatch {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.overlay-swatch-black {
+  background: #1f1c18;
+}
+
+.overlay-swatch-white {
+  background: #ffffff;
+  border-color: rgba(31, 28, 24, 0.26);
+}
+
+.overlay-swatch-red {
+  background: #d34b2f;
+}
+
+.overlay-swatch:hover {
+  transform: scale(1.06);
+  border-color: rgba(31, 28, 24, 0.34);
+}
+
+.overlay-swatch.active {
+  box-shadow: 0 0 0 3px rgba(201, 106, 61, 0.22);
+  border-color: rgba(201, 106, 61, 0.62);
 }
 
 .canvas-wrap {
@@ -306,7 +411,7 @@ a {
 }
 
 .overlay-canvas.notes-mode {
-  cursor: crosshair;
+  cursor: grab;
 }
 
 .empty-state {
@@ -383,6 +488,64 @@ a {
   line-height: 1.65;
 }
 
+.control-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.control-group {
+  display: grid;
+  gap: 10px;
+}
+
+.control-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.control-label,
+.control-value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.control-value {
+  color: var(--muted);
+}
+
+.control-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spiral-control-button,
+.spiral-display-button {
+  min-width: 52px;
+  padding-inline: 14px;
+}
+
+.control-slider {
+  width: 100%;
+  accent-color: #c96a3d;
+}
+
+.control-hint {
+  font-size: 0.92rem;
+}
+
+.control-reset {
+  width: fit-content;
+}
+
+.analysis-download-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .hidden {
   display: none;
 }
@@ -412,6 +575,32 @@ a {
   .button,
   .button-secondary,
   .tab-button {
+    width: 100%;
+  }
+
+  .workspace-meta,
+  .overlay-color-control,
+  .overlay-color-button {
+    width: 100%;
+  }
+
+  .overlay-color-button {
+    justify-content: center;
+  }
+
+  .overlay-color-menu {
+    left: 0;
+    right: auto;
+  }
+
+  .control-button-row {
+    width: 100%;
+  }
+
+  .spiral-control-button,
+  .spiral-display-button,
+  .analysis-download-button,
+  .control-reset {
     width: 100%;
   }
 
