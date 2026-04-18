@@ -28,7 +28,7 @@
 
       <div class="header-actions">
         <label class="button" for="fileInput">Upload Image</label>
-        <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
+        <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
       </div>
     </header>
 
