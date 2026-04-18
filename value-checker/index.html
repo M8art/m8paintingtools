@@ -1172,13 +1172,13 @@
           </a>
         </div>
 
-        <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
+        <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
 
         <div id="compareControls" class="controls header-controls hidden">
           <label class="button" for="referenceInput">Reference Image</label>
-          <input id="referenceInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
+          <input id="referenceInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
           <label class="button-secondary" for="paintingInput">Painting Image</label>
-          <input id="paintingInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
+          <input id="paintingInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
         </div>
 
         <div class="controls header-controls">
@@ -1348,7 +1348,7 @@
               <p id="statusNote" class="status-note">No point selected yet.</p>
 
               <div class="value-picker-actions">
-                <button id="downloadValueAnalysisButton" class="button" type="button" disabled onclick="gtag('event', 'download_image')">Download Value Analysis</button>
+                <button id="downloadValueAnalysisButton" class="button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Analysis</button>
               </div>
             </div>
 
@@ -1359,7 +1359,7 @@
                 </div>
                 <div class="value-scale-media">
                   <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
-                  <a class="button-secondary" href="../assets/images/M8 gray scale.png" download>Download Value Scale</a>
+                  <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
                 </div>
                 <div class="value-scale-steps">
                   <div class="value-scale-step">1. Sample a value in the app</div>
