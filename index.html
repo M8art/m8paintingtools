@@ -422,8 +422,8 @@
 
       <div class="header-actions">
         <nav class="top-nav" aria-label="Tool navigation">
-          <a class="top-nav-link" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool')">Value Checker</a>
-          <a class="top-nav-link" href="./composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Value Checker</a>
+          <a class="top-nav-link" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Composition Checker</a>
           <span class="top-nav-link is-disabled" aria-disabled="true">Color Checker</span>
         </nav>
 
@@ -460,7 +460,7 @@
         </div>
 
         <div class="button-row">
-          <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool')">Open Value Checker</a>
+          <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Open Value Checker</a>
           <a class="button-secondary" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer">Watch Demo</a>
         </div>
 
@@ -495,7 +495,7 @@
         </div>
 
         <div class="button-row">
-          <a class="button" href="./composition-checker/index.html">Open Composition Checker</a>
+          <a class="button" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Open Composition Checker</a>
         </div>
 
         <div>
