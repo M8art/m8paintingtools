@@ -49,7 +49,7 @@
 
         <div class="controls header-controls">
           <label class="button" for="fileInput">Upload Image</label>
-          <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
+          <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
           <button id="clearNotesButton" class="button-secondary hidden" type="button" disabled>Clear Notes</button>
         </div>
       </div>
@@ -238,7 +238,7 @@
           </div>
         </div>
 
-        <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled onclick="gtag('event', 'download_image')">Download Composition Analysis</button>
+        <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Composition Analysis</button>
       </aside>
     </main>
   </div>
