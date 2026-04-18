@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flying Brush</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6ZYJSDPH5X');
+  </script>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -12,7 +21,7 @@
       <div class="title-block">
         <p class="eyebrow">Mini Game</p>
         <h1>Flying Brush</h1>
-        <p class="intro">Flap a brush through vertical paint strokes, hold your rhythm, and keep the line alive as the studio pace picks up.</p>
+        <p class="intro">Flap a brush through shifting paint tubes, hold your rhythm, and keep the line alive as the studio pace picks up.</p>
       </div>
 
       <a class="back-button" href="../index.html">← Back</a>
@@ -53,7 +62,7 @@
             <div class="overlay-card">
               <p class="section-label">Flying Brush</p>
               <h3 id="overlayTitle">Ready to fly?</h3>
-              <p id="overlayMessage" class="overlay-copy">Press Space or Up Arrow to flap upward, guide the brush through the gaps, and keep the score climbing.</p>
+              <p id="overlayMessage" class="overlay-copy">Press Space or Up Arrow to flap upward, guide the brush through the paint tube gaps, and keep the score climbing.</p>
               <div class="overlay-stats">
                 <div class="overlay-stat">
                   <span class="hud-label">Current</span>
@@ -81,7 +90,7 @@
         <div class="stack">
           <div class="info-card">
             <p class="section-label">Goal</p>
-            <p class="info-copy">Stay airborne and slip the brush through the gaps between vertical paint strokes.</p>
+            <p class="info-copy">Stay airborne and slip the brush through the gaps between matching paint tubes.</p>
           </div>
 
           <div class="info-card">
@@ -91,7 +100,7 @@
 
           <div class="info-card">
             <p class="section-label">Studio Notes</p>
-            <p class="info-copy">Every clean pass adds one point. The brush path speeds up over time, so the rhythm gets tighter the longer you survive.</p>
+            <p class="info-copy">Every clean pass adds points. Stars grant brief invincibility, orange bonus drops trigger 2x scoring, and the studio light shifts from day to night as the run goes on.</p>
           </div>
         </div>
       </aside>

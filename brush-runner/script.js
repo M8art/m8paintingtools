@@ -30,6 +30,8 @@ const SPAWN_DELAY = 1.52;
 const PIPE_SPACING = BASE_SPEED * SPAWN_DELAY;
 const STAR_DURATION = 10;
 const STAR_CHANCE = 0.18;
+const DOUBLE_SCORE_DURATION = 8;
+const BONUS_CHANCE = 0.12;
 const PERFECT_WINDOW = 18;
 const NEAR_MISS_EDGE = 20;
 const PALETTES = [
@@ -78,6 +80,7 @@ const state = {
   effects: [],
   feedbacks: [],
   stars: [],
+  bonuses: [],
   lastTime: 0,
   spawnTimer: SPAWN_DELAY,
   rhythmIndex: 0,
@@ -87,7 +90,9 @@ const state = {
   targetPaletteIndex: 0,
   screenShake: 0,
   invincibleTimer: 0,
-  backgroundScroll: 0
+  doubleScoreTimer: 0,
+  backgroundScroll: 0,
+  cycleTime: 0
 };
 
 scoreValue.textContent = "0";
@@ -129,6 +134,7 @@ function startFlight() {
   state.effects = [];
   state.feedbacks = [];
   state.stars = [];
+  state.bonuses = [];
   state.lastTime = 0;
   state.spawnTimer = 0.9;
   state.rhythmIndex = 0;
@@ -138,7 +144,9 @@ function startFlight() {
   state.targetPaletteIndex = 0;
   state.screenShake = 0;
   state.invincibleTimer = 0;
+  state.doubleScoreTimer = 0;
   state.backgroundScroll = 0;
+  state.cycleTime = 0;
 
   player.y = canvas.height * 0.5;
   player.lastY = player.y;
@@ -206,13 +214,20 @@ function update(delta) {
   state.paletteBlend = Math.min(1, state.paletteBlend + delta * 0.9);
   state.screenShake = Math.max(0, state.screenShake - delta * 6);
   state.invincibleTimer = Math.max(0, state.invincibleTimer - delta);
+  state.doubleScoreTimer = Math.max(0, state.doubleScoreTimer - delta);
   state.backgroundScroll += state.speed * delta * 0.16;
+  state.cycleTime += delta;
   player.lastY = player.y;
   player.velocityY += BASE_GRAVITY * delta;
   player.y += player.velocityY * delta;
 
-  if (player.y - player.radius <= 0 || player.y + player.radius >= canvas.height) {
-    endFlight();
+  if (player.y - player.radius <= 0) {
+    endFlight("ceiling");
+    return;
+  }
+
+  if (player.y + player.radius >= canvas.height) {
+    endFlight("fall");
     return;
   }
 
@@ -245,7 +260,7 @@ function update(delta) {
     }
 
     if (isPipeCollision(pipe) && state.invincibleTimer <= 0) {
-      endFlight();
+      endFlight("pipe");
       return;
     }
   }
@@ -261,6 +276,19 @@ function update(delta) {
     if (isStarCollected(star)) {
       collectStar(star);
       state.stars.splice(index, 1);
+    }
+  }
+  state.bonuses.forEach((bonus) => {
+    bonus.x -= state.speed * delta;
+    bonus.spin += delta * 3.8;
+    bonus.float += delta * 4.4;
+  });
+  state.bonuses = state.bonuses.filter((bonus) => bonus.x + bonus.radius > -40);
+  for (let index = state.bonuses.length - 1; index >= 0; index -= 1) {
+    const bonus = state.bonuses[index];
+    if (isBonusCollected(bonus)) {
+      collectBonus(bonus);
+      state.bonuses.splice(index, 1);
     }
   }
   state.effects.forEach((effect) => {
@@ -280,7 +308,7 @@ function update(delta) {
   });
   state.feedbacks = state.feedbacks.filter((feedback) => feedback.life > 0);
   speedValue.textContent = `${(state.speed / BASE_SPEED).toFixed(1)}x`;
-  powerValue.textContent = state.invincibleTimer > 0 ? `${state.invincibleTimer.toFixed(1)}s` : "—";
+  powerValue.textContent = getPowerStatusText();
 }
 
 function spawnPipePair() {
@@ -306,6 +334,16 @@ function spawnPipePair() {
       spin: 0
     });
   }
+
+  if (Math.random() < BONUS_CHANCE && state.score >= 4 && !state.bonuses.length && state.doubleScoreTimer <= 0) {
+    state.bonuses.push({
+      x: canvas.width + 40 + PIPE_WIDTH * 0.5,
+      y: topHeight + fixedGap * 0.5 + randomBetween(-30, 30),
+      radius: 15,
+      spin: 0,
+      float: Math.random() * Math.PI * 2
+    });
+  }
 }
 
 function handlePipePass(pipe) {
@@ -327,6 +365,11 @@ function handlePipePass(pipe) {
 
   if (nearMiss && !perfectPass) {
     addFeedback("Close!", player.x + 42, player.y - 20, shadeColor(pipe.color, -18));
+  }
+
+  if (state.doubleScoreTimer > 0) {
+    scoreGain *= 2;
+    addFeedback("2x", player.x + 18, player.y - 52, "#d36d3b");
   }
 
   state.score += scoreGain;
@@ -360,7 +403,7 @@ function isPipeCollision(pipe) {
   return playerTop < gapTop || playerBottom > gapBottom;
 }
 
-function endFlight() {
+function endFlight(reason = "fall") {
   state.running = false;
   state.gameOver = true;
   state.streak = 0;
@@ -379,8 +422,9 @@ function endFlight() {
     }
   }
 
-  overlayTitle.textContent = "Brush fell out of line.";
-  overlayMessage.textContent = `You reached ${state.score} clean passes. Press Space, Up Arrow, tap, or use the button to fly again.`;
+  const gameOverCopy = getGameOverCopy(reason);
+  overlayTitle.textContent = gameOverCopy.title;
+  overlayMessage.textContent = `${gameOverCopy.message} You reached ${state.score} clean passes. Press Space, Up Arrow, tap, or use the button to fly again.`;
   overlayScore.textContent = String(state.score);
   overlayBest.textContent = String(state.best);
   overlay.classList.remove("hidden");
@@ -398,6 +442,7 @@ function drawScene() {
   drawTrail();
   state.pipes.forEach(drawPipePair);
   state.stars.forEach(drawStar);
+  state.bonuses.forEach(drawBonus);
   drawPassEffects();
   drawFeedbacks();
   drawBrush();
@@ -407,20 +452,25 @@ function drawScene() {
 function drawBackground() {
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
   const palette = getActivePalette();
-  gradient.addColorStop(0, hexToRgba(palette[1], 0.12));
-  gradient.addColorStop(0.5, "rgba(248,243,234,0.72)");
-  gradient.addColorStop(1, hexToRgba(palette[2], 0.12));
+  const cycleBlend = getCycleBlend();
+  const skyTop = blendRgba(hexToRgba(palette[1], 0.2), "rgba(26,38,74,0.88)", cycleBlend);
+  const skyMid = blendRgba("rgba(248,243,234,0.72)", "rgba(42,52,96,0.58)", cycleBlend);
+  const skyBottom = blendRgba(hexToRgba(palette[2], 0.18), "rgba(16,20,40,0.92)", cycleBlend);
+  gradient.addColorStop(0, skyTop);
+  gradient.addColorStop(0.5, skyMid);
+  gradient.addColorStop(1, skyBottom);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillStyle = blendRgba("rgba(255,255,255,0.12)", "rgba(30,36,60,0.2)", cycleBlend);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   drawBackgroundLogo();
+  drawSkyAccents(cycleBlend);
 
   ctx.save();
-  ctx.globalAlpha = 0.08;
-  ctx.strokeStyle = "#ffffff";
+  ctx.globalAlpha = 0.08 + cycleBlend * 0.04;
+  ctx.strokeStyle = cycleBlend > 0.5 ? "rgba(181,194,255,0.92)" : "#ffffff";
   ctx.lineWidth = 1;
   for (let x = -canvas.height; x < canvas.width + canvas.height; x += 32) {
     ctx.beginPath();
@@ -430,7 +480,7 @@ function drawBackground() {
   }
   ctx.restore();
 
-  ctx.fillStyle = "rgba(255,255,255,0.34)";
+  ctx.fillStyle = blendRgba("rgba(255,255,255,0.34)", "rgba(203,214,255,0.18)", cycleBlend);
   ctx.beginPath();
   ctx.ellipse(180, 92, 88, 26, 0, 0, Math.PI * 2);
   ctx.ellipse(790, 122, 128, 32, 0, 0, Math.PI * 2);
@@ -458,6 +508,37 @@ function drawBackgroundLogo() {
     ctx.drawImage(logoImage, drawX, baseY, drawWidth, drawHeight);
   }
 
+  ctx.restore();
+}
+
+function drawSkyAccents(cycleBlend) {
+  if (cycleBlend > 0.18) {
+    ctx.save();
+    ctx.globalAlpha = 0.22 * cycleBlend;
+    ctx.fillStyle = "#f6f1d3";
+    ctx.beginPath();
+    ctx.arc(canvas.width - 132, 94, 28, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,0.78)";
+    for (let index = 0; index < 14; index += 1) {
+      const x = 70 + (index * 71) % (canvas.width - 120);
+      const y = 42 + ((index * 53) % 140);
+      const radius = index % 3 === 0 ? 2.2 : 1.4;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    return;
+  }
+
+  ctx.save();
+  ctx.globalAlpha = 0.16 * (1 - cycleBlend);
+  ctx.fillStyle = "#fff1d2";
+  ctx.beginPath();
+  ctx.arc(canvas.width - 128, 88, 34, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -615,6 +696,33 @@ function drawStar(star) {
   ctx.restore();
 }
 
+function drawBonus(bonus) {
+  ctx.save();
+  ctx.translate(bonus.x, bonus.y + Math.sin(bonus.float) * 6);
+  ctx.rotate(bonus.spin);
+  ctx.shadowColor = "rgba(211,109,59,0.34)";
+  ctx.shadowBlur = 18;
+
+  ctx.fillStyle = "rgba(255, 246, 236, 0.96)";
+  ctx.beginPath();
+  ctx.roundRect(-16, -16, 32, 32, 10);
+  ctx.fill();
+
+  ctx.strokeStyle = "#d36d3b";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.strokeStyle = "#d36d3b";
+  ctx.lineWidth = 2.8;
+  ctx.beginPath();
+  ctx.moveTo(-8, 0);
+  ctx.lineTo(8, 0);
+  ctx.moveTo(0, -8);
+  ctx.lineTo(0, 8);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawTrail() {
   return;
 }
@@ -663,9 +771,22 @@ function isStarCollected(star) {
 
 function collectStar(star) {
   state.invincibleTimer = STAR_DURATION;
-  powerValue.textContent = `${STAR_DURATION.toFixed(1)}s`;
   addFeedback("Star!", player.x + 44, player.y - 36, "#e5ba58");
   spawnPassEffect(star.x, star.y, "#e5ba58", 14);
+  playStarSound();
+}
+
+function isBonusCollected(bonus) {
+  const dx = player.x - bonus.x;
+  const dy = player.y - (bonus.y + Math.sin(bonus.float) * 6);
+  const distance = Math.hypot(dx, dy);
+  return distance <= player.radius + bonus.radius + 2;
+}
+
+function collectBonus(bonus) {
+  state.doubleScoreTimer = DOUBLE_SCORE_DURATION;
+  addFeedback("Double!", player.x + 56, player.y - 42, "#d36d3b");
+  spawnPassEffect(bonus.x, bonus.y, "#d36d3b", 16);
   playStarSound();
 }
 
@@ -703,6 +824,47 @@ function addFeedback(text, x, y, color) {
     alpha: 0.9,
     life: 0.8
   });
+}
+
+function getPowerStatusText() {
+  if (state.invincibleTimer > 0 && state.doubleScoreTimer > 0) {
+    return `Star ${state.invincibleTimer.toFixed(1)}s | 2x ${state.doubleScoreTimer.toFixed(1)}s`;
+  }
+
+  if (state.invincibleTimer > 0) {
+    return `Star ${state.invincibleTimer.toFixed(1)}s`;
+  }
+
+  if (state.doubleScoreTimer > 0) {
+    return `2x ${state.doubleScoreTimer.toFixed(1)}s`;
+  }
+
+  return "â€”";
+}
+
+function getCycleBlend() {
+  return (Math.sin(state.cycleTime * 0.16) + 1) * 0.5;
+}
+
+function getGameOverCopy(reason) {
+  if (reason === "pipe") {
+    return {
+      title: "Brush clipped a paint tube.",
+      message: "The passage closed too fast and the brush caught the obstacle."
+    };
+  }
+
+  if (reason === "ceiling") {
+    return {
+      title: "Brush flew too high.",
+      message: "The stroke jumped past the top edge of the studio run."
+    };
+  }
+
+  return {
+    title: "Brush fell out of line.",
+    message: "The brush dropped below the safe passage."
+  };
 }
 
 function getBrushRotation() {
@@ -776,6 +938,31 @@ function parseHex(hex) {
     g: (int >> 8) & 255,
     b: int & 255
   };
+}
+
+function parseRgba(color) {
+  const match = color.match(/rgba?\(([^)]+)\)/i);
+  if (!match) {
+    return { r: 255, g: 255, b: 255, a: 1 };
+  }
+
+  const parts = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
+  return {
+    r: parts[0] ?? 255,
+    g: parts[1] ?? 255,
+    b: parts[2] ?? 255,
+    a: parts[3] ?? 1
+  };
+}
+
+function blendRgba(fromColor, toColor, amount) {
+  const from = parseRgba(fromColor);
+  const to = parseRgba(toColor);
+  const r = Math.round(from.r + (to.r - from.r) * amount);
+  const g = Math.round(from.g + (to.g - from.g) * amount);
+  const b = Math.round(from.b + (to.b - from.b) * amount);
+  const a = from.a + (to.a - from.a) * amount;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
 function shadeColor(hex, amount) {
