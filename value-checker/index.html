@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M8 Value Studio</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6ZYJSDPH5X');
+  </script>
   <style>
     :root {
       --bg: #e8e3d8;
@@ -1163,13 +1172,13 @@
           </a>
         </div>
 
-        <input id="fileInput" type="file" accept="image/*">
+        <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
 
         <div id="compareControls" class="controls header-controls hidden">
           <label class="button" for="referenceInput">Reference Image</label>
-          <input id="referenceInput" type="file" accept="image/*">
+          <input id="referenceInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
           <label class="button-secondary" for="paintingInput">Painting Image</label>
-          <input id="paintingInput" type="file" accept="image/*">
+          <input id="paintingInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
         </div>
 
         <div class="controls header-controls">
@@ -1339,7 +1348,7 @@
               <p id="statusNote" class="status-note">No point selected yet.</p>
 
               <div class="value-picker-actions">
-                <button id="downloadValueAnalysisButton" class="button" type="button" disabled>Download Value Analysis</button>
+                <button id="downloadValueAnalysisButton" class="button" type="button" disabled onclick="gtag('event', 'download_image')">Download Value Analysis</button>
               </div>
             </div>
 
@@ -1499,29 +1508,6 @@
     </main>
 
     <section class="app-cta">
-      <div class="card cta-card">
-        <div>
-          <p class="section-label">Continue</p>
-          <h2>Go deeper</h2>
-        </div>
-
-        <p class="cta-copy">
-          Train your eye beyond the basics.
-          Full painting breakdowns, value studies, and extended lessons are available on Patreon.
-        </p>
-
-        <a
-          class="button cta-button"
-          href="https://www.patreon.com/mateart"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15.6 3.2a5.2 5.2 0 1 1 0 10.4 5.2 5.2 0 0 1 0-10.4ZM4 3h3.6v18H4V3Z"/>
-          </svg>
-          <span>Join on Patreon</span>
-        </a>
-      </div>
     </section>
   </div>
 
