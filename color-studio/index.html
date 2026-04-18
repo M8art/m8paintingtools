@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M8 Color Studio</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6ZYJSDPH5X');
+  </script>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -19,7 +28,7 @@
 
       <div class="header-actions">
         <label class="button" for="fileInput">Upload Image</label>
-        <input id="fileInput" type="file" accept="image/*">
+        <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image')">
       </div>
     </header>
 
