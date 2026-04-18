@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M8 Value Studio</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6ZYJSDPH5X');
+  </script>
   <style>
     :root {
       --bg: #e8e3d8;
@@ -101,8 +110,37 @@
     .top-nav {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 0;
       justify-content: flex-end;
+      align-items: center;
+    }
+
+    .top-nav-link {
+      padding: 0 16px;
+      color: var(--ink);
+      font-size: 0.96rem;
+      line-height: 1;
+      border-right: 1px solid rgba(50, 44, 38, 0.18);
+      transition: color 180ms ease, opacity 180ms ease;
+    }
+
+    .top-nav-link:first-child {
+      padding-left: 0;
+    }
+
+    .top-nav-link:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+
+    .top-nav-link:hover {
+      color: #c96a3d;
+    }
+
+    .top-nav-link.is-disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      pointer-events: none;
     }
 
     .social-link {
@@ -360,6 +398,10 @@
         justify-content: flex-start;
       }
 
+      .top-nav-link:first-child {
+        padding-left: 0;
+      }
+
       .button,
       .button-secondary {
         width: 100%;
@@ -380,8 +422,9 @@
 
       <div class="header-actions">
         <nav class="top-nav" aria-label="Tool navigation">
-          <a class="button-secondary" href="./value-checker/index.html">Value Checker</a>
-          <a class="button-secondary" href="./composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool')">Value Checker</a>
+          <a class="top-nav-link" href="./composition-checker/index.html">Composition Checker</a>
+          <span class="top-nav-link is-disabled" aria-disabled="true">Color Checker</span>
         </nav>
 
         <div class="social-links" aria-label="Social links">
@@ -405,7 +448,7 @@
     </header>
 
     <p class="intro hero-intro">
-      A focused painting toolkit for studying value and composition through clear, practical visual analysis.
+      A focused painting toolkit for studying value, color and composition through clear, practical visual analysis.
     </p>
 
     <section class="hero">
@@ -417,7 +460,7 @@
         </div>
 
         <div class="button-row">
-          <a class="button" href="./value-checker/index.html">Open Value Checker</a>
+          <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool')">Open Value Checker</a>
           <a class="button-secondary" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer">Watch Demo</a>
         </div>
 
