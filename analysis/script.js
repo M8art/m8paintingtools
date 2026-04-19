@@ -33,7 +33,7 @@ const lockedAnalysisState = document.getElementById("lockedAnalysisState");
 const unlockFullAccessButton = document.getElementById("unlockFullAccessButton");
 
 const params = new URLSearchParams(window.location.search);
-const DEV_MODE = params.get("dev") === "false" ? false : true;
+const DEV_MODE = params.get("dev") === "true";
 const FULL_ANALYSIS_STORAGE_KEY = "m8_full_analysis_used";
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
