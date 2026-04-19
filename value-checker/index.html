@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1550,7 +1550,7 @@
               <div class="challenge-session-meta">
                 <div class="challenge-session-row">
                   <span class="challenge-session-progress" id="challengeSessionProgress">Attempt 1 / 5</span>
-                  <span class="challenge-session-best" id="challengeBestScore">Best Score: Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬ÄąÄ„</span>
+                  <span class="challenge-session-best" id="challengeBestScore">Best Score: --</span>
                 </div>
               </div>
               <div class="challenge-value-row">
@@ -1584,25 +1584,25 @@
                 <span id="challengeSessionAccuracy" class="challenge-session-accuracy">0%</span>
                 <span id="challengeSessionTitle" class="challenge-session-title">Value Rookie</span>
                 <p id="challengeSessionMessage" class="challenge-session-message">Your eye took a vacation. Time to train.</p>
-                <span id="challengeSessionBestLine" class="challenge-session-best-line">Best Accuracy: Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬ÄąÄ„</span>
+                <span id="challengeSessionBestLine" class="challenge-session-best-line">Best Accuracy: --</span>
                 <span id="challengeSessionNewBest" class="challenge-session-new-best hidden">New Best!</span>
               </div>
               <div class="challenge-result-grid">
                 <div class="challenge-result-item">
                   <span class="challenge-result-label">Your Guess</span>
-                  <span id="challengeResultGuess" class="challenge-result-value">Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş</span>
+                  <span id="challengeResultGuess" class="challenge-result-value">--</span>
                 </div>
                 <div class="challenge-result-item">
                   <span class="challenge-result-label">Actual Value</span>
-                  <span id="challengeResultActual" class="challenge-result-value">Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş</span>
+                  <span id="challengeResultActual" class="challenge-result-value">--</span>
                 </div>
                 <div class="challenge-result-item">
                   <span class="challenge-result-label">Difference</span>
-                  <span id="challengeResultDifference" class="challenge-result-value">Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş</span>
+                  <span id="challengeResultDifference" class="challenge-result-value">--</span>
                 </div>
                 <div class="challenge-result-item">
                   <span class="challenge-result-label">Points Earned</span>
-                  <span id="challengeResultPoints" class="challenge-result-value">Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş</span>
+                  <span id="challengeResultPoints" class="challenge-result-value">--</span>
                 </div>
                 <div class="challenge-result-item">
                   <span class="challenge-result-label">Total Score</span>
@@ -2382,7 +2382,7 @@
 
         swatchEl.style.background = `rgb(${item.brightness}, ${item.brightness}, ${item.brightness})`;
         label.textContent = `Value ${item.value}`;
-        percent.textContent = state.imageLoaded ? `${item.coverage}%` : "Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬ÄąÄ„";
+        percent.textContent = state.imageLoaded ? `${item.coverage}%` : "--";
 
         row.append(swatchEl, label, percent);
         sevenValueLegend.appendChild(row);
@@ -2400,12 +2400,12 @@
       challengeToneStrip.querySelectorAll(".challenge-tone-step").forEach((step) => {
         step.classList.toggle("active", Number(step.dataset.value) === state.challenge.currentGuess);
       });
-      challengeResultGuess.textContent = state.challenge.submitted ? String(state.challenge.currentGuess) : "Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş";
-      challengeResultActual.textContent = state.challenge.submitted ? String(state.challenge.actualValue) : "Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş";
+      challengeResultGuess.textContent = state.challenge.submitted ? String(state.challenge.currentGuess) : "--";
+      challengeResultActual.textContent = state.challenge.submitted ? String(state.challenge.actualValue) : "--";
       challengeResultDifference.textContent = state.challenge.submitted
         ? String(Math.abs(state.challenge.currentGuess - state.challenge.actualValue))
-        : "Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş";
-      challengeResultPoints.textContent = state.challenge.lastPoints !== null ? String(state.challenge.lastPoints) : "Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş";
+        : "--";
+      challengeResultPoints.textContent = state.challenge.lastPoints !== null ? String(state.challenge.lastPoints) : "--";
       challengeTotalScore.textContent = String(state.challenge.totalScore);
       challengeAttempts.textContent = String(state.challenge.attempts);
       challengeFeedbackMessage.textContent = state.challenge.feedback;
@@ -2552,13 +2552,13 @@
 
     function getChallengeBestScoreLabel() {
       return state.challenge.bestAccuracy === null
-        ? "Best Score: Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬ÄąÄ„"
+        ? "Best Score: --"
         : `Best Score: ${state.challenge.bestAccuracy}%`;
     }
 
     function getChallengeSessionBestLine() {
       return state.challenge.bestAccuracy === null
-        ? "Best Accuracy: Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬ÄąÄ„"
+        ? "Best Accuracy: --"
         : `Best Accuracy: ${state.challenge.bestAccuracy}%`;
     }
 
@@ -3141,8 +3141,8 @@
           sampleSwatch.type = "button";
           sampleSwatch.className = "group-swatch";
           sampleSwatch.style.background = `rgb(${sample.brightness}, ${sample.brightness}, ${sample.brightness})`;
-          sampleSwatch.textContent = `${sample.id} Ă„â€šĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â· V${sample.value}`;
-          sampleSwatch.title = `Sample ${sample.id} Ă„â€šĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â· Value ${sample.value}`;
+          sampleSwatch.textContent = `${sample.id} - V${sample.value}`;
+          sampleSwatch.title = `Sample ${sample.id} - Value ${sample.value}`;
           sampleSwatch.classList.toggle("active-marker", sample.id === state.activeMarkerId);
           sampleSwatch.addEventListener("click", () => highlightMarker(sample.id));
           container.appendChild(sampleSwatch);
@@ -3530,6 +3530,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
