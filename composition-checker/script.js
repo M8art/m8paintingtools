@@ -1213,11 +1213,12 @@ function drawDiagonals(ctx, width, height, overlayPalette) {
 }
 
 function drawGoldenRatio(ctx, width, height, overlayPalette) {
-  const phi = 1.61803398875;
-  const verticalA = width / phi;
-  const verticalB = width - verticalA;
-  const horizontalA = height / phi;
-  const horizontalB = height - horizontalA;
+  const goldenMinor = 0.38196601125;
+  const goldenMajor = 0.61803398875;
+  const verticalA = width * goldenMinor;
+  const verticalB = width * goldenMajor;
+  const horizontalA = height * goldenMinor;
+  const horizontalB = height * goldenMajor;
 
   ctx.save();
   ctx.strokeStyle = overlayPalette.strokeStrong;
