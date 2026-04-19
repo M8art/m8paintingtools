@@ -35,6 +35,8 @@ const unlockFullAccessButton = document.getElementById("unlockFullAccessButton")
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "false" ? false : true;
 const FULL_ANALYSIS_STORAGE_KEY = "m8_full_analysis_used";
+const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
 const ANALYSIS_SEQUENCE = [
   { className: "stage-grid", helper: "Preparing your quick check", message: "Checking focal placement...", delay: 1100 },
   { className: "stage-grayscale", helper: "Preparing your quick check", message: "Mapping visual weight...", delay: 1500 },
@@ -91,9 +93,17 @@ let isBreakdownExpanded = false;
 let selectedOverlayColor = "#1f1c18";
 let isOverlayColorMenuOpen = false;
 let statusMessageTimeoutId = null;
+let justUnlockedFromStripe = false;
+
+handleUnlockReturn();
 
 updateAnalysisAccessUI();
 updateOverlayColorUI();
+
+if (justUnlockedFromStripe) {
+  updateStatusMessage("Unlimited access unlocked.", true);
+  workspaceHint.textContent = "Unlimited access unlocked.";
+}
 
 uploadZone.addEventListener("click", () => {
   analysisFileInput.click();
@@ -126,7 +136,7 @@ runAnalysisButton.addEventListener("click", () => {
     return;
   }
 
-  if (!DEV_MODE && hasUsedFullAnalysis()) {
+  if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
     showLockedAnalysisState();
     return;
   }
@@ -135,7 +145,7 @@ runAnalysisButton.addEventListener("click", () => {
 });
 
 unlockFullAccessButton.addEventListener("click", () => {
-  showLockedAnalysisState();
+  window.location.href = STRIPE_PAYMENT_LINK;
 });
 
 breakdownToggleButton.addEventListener("click", () => {
@@ -218,7 +228,49 @@ function hasUsedFullAnalysis() {
     return false;
   }
 
-  return localStorage.getItem(FULL_ANALYSIS_STORAGE_KEY) === "true";
+  if (hasUnlockedAccess()) {
+    return false;
+  }
+
+  const storedValue = localStorage.getItem(FULL_ANALYSIS_STORAGE_KEY);
+
+  if (storedValue === "true") {
+    const todayStamp = getTodayAnalysisStamp();
+    localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, todayStamp);
+    return true;
+  }
+
+  return storedValue === getTodayAnalysisStamp();
+}
+
+function hasUnlockedAccess() {
+  return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true";
+}
+
+function getTodayAnalysisStamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function markFreeAnalysisUsedToday() {
+  localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, getTodayAnalysisStamp());
+}
+
+function handleUnlockReturn() {
+  if (params.get("unlocked") !== "true") {
+    return;
+  }
+
+  localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+  justUnlockedFromStripe = true;
+
+  const cleanedUrl = new URL(window.location.href);
+  cleanedUrl.searchParams.delete("unlocked");
+  const nextUrl = `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`;
+  window.history.replaceState({}, "", nextUrl || cleanedUrl.pathname);
 }
 
 function updateAnalysisAccessUI() {
@@ -254,6 +306,7 @@ function runQuickCheck() {
   isAnalysisRunning = true;
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
+  freeCheckNote.classList.add("hidden");
   statusHelper.classList.remove("hidden");
   updateStatusMessage("Checking focal placement...");
   workspaceHint.textContent = "Quick check in progress. Reviewing structure and balance.";
@@ -306,12 +359,18 @@ function completeQuickCheck() {
   });
   isBreakdownExpanded = false;
   updateBreakdownUI();
-  freeCheckNote.classList.remove("hidden");
+  if (hasUnlockedAccess()) {
+    freeCheckNote.textContent = "Unlimited access is now active.";
+    freeCheckNote.classList.remove("hidden");
+  } else {
+    freeCheckNote.textContent = "This was your free full check for today.";
+    freeCheckNote.classList.remove("hidden");
+  }
   quickCheckResult.classList.remove("hidden");
   lockedAnalysisState.classList.add("hidden");
 
-  if (!DEV_MODE) {
-    localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, "true");
+  if (!DEV_MODE && !hasUnlockedAccess()) {
+    markFreeAnalysisUsedToday();
   }
   isAnalysisRunning = false;
   analysisTimeoutIds = [];
@@ -1304,8 +1363,9 @@ function showLockedAnalysisState() {
   statusHelper.classList.add("hidden");
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.remove("hidden");
-  updateStatusMessage("Unlock full access to continue.");
-  workspaceHint.textContent = "Your free full analysis has already been used.";
+  freeCheckNote.classList.add("hidden");
+  updateStatusMessage("Unlock unlimited access to continue.");
+  workspaceHint.textContent = "Today's free full analysis has already been used.";
 }
 
 function updateBreakdownUI() {
