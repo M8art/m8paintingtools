@@ -27,13 +27,36 @@
       </div>
 
       <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link" href="../analysis/index.html">Quick Check</a>
+          <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+          <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link is-current" href="./index.html" aria-current="page">Color Checker</a>
+        </nav>
+        <div class="social-links" aria-label="Social links">
+          <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"/>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"/>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"/>
+            </svg>
+          </a>
+        </div>
         <label class="button" for="fileInput">Upload Image</label>
         <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
       </div>
     </header>
 
     <nav class="mode-switcher" aria-label="Navigation">
-      <a class="tab-button" href="../index.html">← Back</a>
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-tab="palette">Palette Extractor</button>
       <button class="tab-button" type="button" data-tab="temperature" aria-disabled="true">Temperature Map</button>
       <button class="tab-button" type="button" data-tab="mixer" aria-disabled="true">Color Mixer</button>
@@ -63,7 +86,9 @@
             </div>
           </div>
         </div>
+        <p class="feedback-helper">Want a full personal critique by Mate Art? You will find the personal feedback option below after analysis.</p>
       </section>
+
 
       <aside class="card side-panel">
         <div class="panel-heading">
@@ -90,19 +115,19 @@
               <div class="selected-color-meta">
                 <div class="selected-color-row">
                   <span class="meta-label">HEX</span>
-                  <span id="selectedHex" class="meta-value">—</span>
+                  <span id="selectedHex" class="meta-value">Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ‚ÂĂ„â€šĂ‹ÂÄ‚ËĂ˘â€šÂ¬ÄąË‡Ä‚â€šĂ‚Â¬Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž</span>
                 </div>
                 <div class="selected-color-row">
                   <span class="meta-label">RGB</span>
-                  <span id="selectedRgb" class="meta-value">—</span>
+                  <span id="selectedRgb" class="meta-value">Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ‚ÂĂ„â€šĂ‹ÂÄ‚ËĂ˘â€šÂ¬ÄąË‡Ä‚â€šĂ‚Â¬Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž</span>
                 </div>
                 <div class="selected-color-row">
                   <span class="meta-label">HSL</span>
-                  <span id="selectedHsl" class="meta-value">—</span>
+                  <span id="selectedHsl" class="meta-value">Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ‚ÂĂ„â€šĂ‹ÂÄ‚ËĂ˘â€šÂ¬ÄąË‡Ä‚â€šĂ‚Â¬Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž</span>
                 </div>
                 <div class="selected-color-row">
                   <span class="meta-label">Coverage</span>
-                  <span id="selectedCoverage" class="meta-value">—</span>
+                  <span id="selectedCoverage" class="meta-value">Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ‚ÂĂ„â€šĂ‹ÂÄ‚ËĂ˘â€šÂ¬ÄąË‡Ä‚â€šĂ‚Â¬Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž</span>
                 </div>
               </div>
             </div>
@@ -119,6 +144,21 @@
             <p class="section-label">Status</p>
             <p id="statusNote" class="detail-copy">Upload an image to start.</p>
           </div>
+        <div class="feedback-cta">
+          <span class="feedback-badge">Personal feedback</span>
+          <div>
+            <h3 class="feedback-title">Get personal feedback on your painting</h3>
+          </div>
+          <p class="feedback-description">Want more than an automated result? Mate can personally review your painting and point out the biggest issues in values, composition, and overall clarity.</p>
+          <ul class="feedback-list">
+            <li>Personal critique by Mate</li>
+            <li>Focus on the biggest weaknesses</li>
+            <li>Clear next steps to improve</li>
+          </ul>
+          <!-- Future payment URL goes on this CTA button. -->
+          <button class="button feedback-cta-button" type="button" aria-disabled="true">Request Personal Feedback</button>
+          <p class="feedback-button-note">Coming soon</p>
+        </div>
         </div>
       </aside>
     </main>
@@ -127,3 +167,4 @@
   <script src="./script.js"></script>
 </body>
 </html>
+

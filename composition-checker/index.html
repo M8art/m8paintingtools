@@ -29,6 +29,12 @@
       </div>
 
       <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link" href="../analysis/index.html">Quick Check</a>
+          <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+          <a class="top-nav-link is-current" href="./index.html" aria-current="page">Composition Checker</a>
+          <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+        </nav>
         <div class="social-links" aria-label="Social links">
           <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -56,7 +62,7 @@
     </header>
 
     <nav class="mode-switcher primary-switcher" aria-label="Composition modes">
-      <a class="tab-button" href="../index.html">&larr; Back</a>
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-analysis-mode="basic">Basic Analysis</button>
       <button class="tab-button" type="button" data-analysis-mode="advanced">Advanced Analysis</button>
     </nav>
@@ -105,6 +111,7 @@
           <div id="compositionStage" class="composition-stage">
             <img id="compositionImage" class="workspace-image" alt="Uploaded composition reference">
             <canvas id="overlayCanvas" class="overlay-canvas"></canvas>
+            <div id="gridOverlayInfo" class="grid-overlay-info hidden">Grid: 6 x 6</div>
           </div>
           <div id="emptyState" class="empty-state upload-empty-state">
             <div class="upload-empty-state-inner">
@@ -118,8 +125,8 @@
             </div>
           </div>
         </div>
+        <p class="feedback-helper">Want a full personal critique by Mate Art? You will find the personal feedback option below after analysis.</p>
       </section>
-
       <aside class="card side-panel">
         <div class="panel-heading">
           <div>
@@ -148,6 +155,42 @@
           <div class="detail-card">
             <p class="section-label">Status</p>
             <p id="statusNote" class="detail-copy">Upload an image to start.</p>
+          </div>
+        <div id="gridControlsCard" class="detail-card hidden">
+            <p class="section-label">Grid Size</p>
+            <div class="control-stack">
+              <div class="control-group">
+                <div class="control-meta">
+                  <p class="control-label">Grid Size</p>
+                  <span id="gridSizeValue" class="control-value">Grid: 6 x 6</span>
+                </div>
+                <input id="gridSize" class="control-slider" type="range" min="0" max="5" step="1" value="2" aria-label="Set grid size">
+              </div>
+            </div>
+          </div>
+
+          <div id="gridTransferCard" class="detail-card hidden">
+            <p class="section-label">Transfer to Canvas</p>
+            <div class="control-stack">
+              <p class="detail-copy">Use the grid to match the same spacing on your canvas for easier drawing transfer.</p>
+              <div class="grid-transfer-inputs">
+                <label class="grid-transfer-field">
+                  <span class="control-label">Canvas width</span>
+                  <span class="grid-transfer-input-wrap">
+                    <input id="gridCanvasWidth" class="grid-transfer-input" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Canvas width in centimeters">
+                    <span class="grid-transfer-unit">cm</span>
+                  </span>
+                </label>
+                <label class="grid-transfer-field">
+                  <span class="control-label">Canvas height</span>
+                  <span class="grid-transfer-input-wrap">
+                    <input id="gridCanvasHeight" class="grid-transfer-input" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Canvas height in centimeters">
+                    <span class="grid-transfer-unit">cm</span>
+                  </span>
+                </label>
+              </div>
+              <p id="gridTransferResult" class="detail-copy grid-transfer-result">Enter your canvas size to calculate each square.</p>
+            </div>
           </div>
         </div>
 
@@ -180,7 +223,7 @@
               <div class="control-group">
                 <p class="control-label">Orientation</p>
                 <div class="control-button-row" role="group" aria-label="Golden spiral orientation">
-                  <button id="spiralRotateButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Rotate 90°</button>
+                  <button id="spiralRotateButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Rotate 90Ä‚â€žĂ˘â‚¬ĹˇÄ‚ËĂ˘â€šÂ¬ÄąË‡Ă„â€šĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â°</button>
                   <button id="spiralFlipHorizontalButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Horizontal Flip</button>
                   <button id="spiralFlipVerticalButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Vertical Flip</button>
                 </div>
@@ -239,6 +282,21 @@
         </div>
 
         <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Composition Analysis</button>
+        <div class="feedback-cta">
+          <span class="feedback-badge">Personal feedback</span>
+          <div>
+            <h3 class="feedback-title">Get personal feedback on your painting</h3>
+          </div>
+          <p class="feedback-description">Want more than an automated result? Mate can personally review your painting and point out the biggest issues in values, composition, and overall clarity.</p>
+          <ul class="feedback-list">
+            <li>Personal critique by Mate</li>
+            <li>Focus on the biggest weaknesses</li>
+            <li>Clear next steps to improve</li>
+          </ul>
+          <!-- Future payment URL goes on this CTA button. -->
+          <button class="button feedback-cta-button" type="button" aria-disabled="true">Request Personal Feedback</button>
+          <p class="feedback-button-note">Coming soon</p>
+        </div>
       </aside>
     </main>
   </div>
@@ -246,3 +304,5 @@
   <script src="./script.js"></script>
 </body>
 </html>
+
+

@@ -85,6 +85,14 @@ const advancedStatusNote = document.getElementById("advancedStatusNote");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
+const gridControlsCard = document.getElementById("gridControlsCard");
+const gridTransferCard = document.getElementById("gridTransferCard");
+const gridSize = document.getElementById("gridSize");
+const gridSizeValue = document.getElementById("gridSizeValue");
+const gridCanvasWidth = document.getElementById("gridCanvasWidth");
+const gridCanvasHeight = document.getElementById("gridCanvasHeight");
+const gridTransferResult = document.getElementById("gridTransferResult");
+const gridOverlayInfo = document.getElementById("gridOverlayInfo");
 const downloadCompositionAnalysisButton = document.getElementById("downloadCompositionAnalysisButton");
 const spiralScale = document.getElementById("spiralScale");
 const spiralScaleValue = document.getElementById("spiralScaleValue");
@@ -149,6 +157,8 @@ const SPIRAL_TEMPLATE_ARCS = [
   { startX: 64, startY: 39, endX: 65, endY: 40, radius: 1 }
 ];
 
+const GRID_DIVISION_OPTIONS = [2, 4, 6, 8, 10, 12];
+
 const OVERLAY_COLOR_CLASSES = ["overlay-color-black", "overlay-color-white", "overlay-color-red"];
 const OVERLAY_COLOR_NAMES = {
   "#1f1c18": "overlay-color-black",
@@ -165,6 +175,9 @@ const state = {
   noteMarkers: [],
   focalPoints: [],
   focalPointSource: "manual",
+  gridDivisionIndex: 2,
+  gridCanvasWidth: "",
+  gridCanvasHeight: "",
   autoDetectedOverlayColor: "#1f1c18",
   userSelectedOverlayColor: null,
   isOverlayColorMenuOpen: false,
@@ -173,6 +186,7 @@ const state = {
     key: null,
     canvas: null
   },
+  thirdsSelection: null,
   spiral: {
     ...SPIRAL_DEFAULTS
   }
@@ -217,6 +231,9 @@ spiralDisplayButtons.forEach((button) => {
 });
 notanLevels.addEventListener("input", handleNotanLevelsInput);
 focalSuggestButton.addEventListener("click", suggestFocalPointsFromContrast);
+gridSize.addEventListener("input", handleGridSizeInput);
+gridCanvasWidth.addEventListener("input", handleGridCanvasInput);
+gridCanvasHeight.addEventListener("input", handleGridCanvasInput);
 overlayCanvas.addEventListener("pointerdown", handleOverlayPointerDown);
 window.addEventListener("pointermove", handleOverlayPointerMove);
 window.addEventListener("pointerup", handleOverlayPointerUp);
@@ -244,6 +261,7 @@ function handleUpload(event) {
     state.imageLoaded = true;
     state.focalPoints = [];
     state.focalPointSource = "manual";
+    state.thirdsSelection = null;
     state.userSelectedOverlayColor = null;
     state.autoDetectedOverlayColor = detectOverlayColor();
     invalidateNotanCache();
@@ -278,6 +296,16 @@ function handleWorkspaceKeydown(event) {
 function handleOverlayClick(event) {
   if (state.spiral.suppressClick) {
     state.spiral.suppressClick = false;
+    return;
+  }
+
+  if (canAnalyzeThirds()) {
+    const point = getOverlayPoint(event);
+    if (!point) {
+      return;
+    }
+
+    updateThirdsSelection(point);
     return;
   }
 
@@ -542,10 +570,134 @@ function setAdvancedMode(mode) {
   requestOverlayDraw();
 }
 
+function getGridDivisions() {
+  return GRID_DIVISION_OPTIONS[state.gridDivisionIndex] ?? 6;
+}
+
+function getThirdsPowerPoints() {
+  return [
+    { x: 1 / 3, y: 1 / 3 },
+    { x: 2 / 3, y: 1 / 3 },
+    { x: 1 / 3, y: 2 / 3 },
+    { x: 2 / 3, y: 2 / 3 }
+  ];
+}
+
+function canAnalyzeThirds() {
+  return state.imageLoaded && state.analysisMode === "basic" && state.mode === "thirds";
+}
+
+function updateThirdsSelection(point) {
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const normalizedPoint = {
+    x: clamp(point.x / width, 0, 1),
+    y: clamp(point.y / height, 0, 1)
+  };
+  const nearestPowerPoint = getNearestThirdsPowerPoint(normalizedPoint);
+  const distance = Math.hypot(
+    normalizedPoint.x - nearestPowerPoint.x,
+    normalizedPoint.y - nearestPowerPoint.y
+  );
+  const centerDistance = Math.hypot(normalizedPoint.x - 0.5, normalizedPoint.y - 0.5);
+
+  state.thirdsSelection = {
+    point: normalizedPoint,
+    nearestPowerPoint,
+    distance,
+    centerDistance
+  };
+
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+function getNearestThirdsPowerPoint(point) {
+  const points = getThirdsPowerPoints();
+  let nearestPoint = points[0];
+  let nearestDistance = Number.POSITIVE_INFINITY;
+
+  points.forEach((candidate) => {
+    const distance = Math.hypot(point.x - candidate.x, point.y - candidate.y);
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestPoint = candidate;
+    }
+  });
+
+  return nearestPoint;
+}
+
+function getThirdsStatusCopy() {
+  if (!state.thirdsSelection) {
+    return "Overlay is active. Click the image to test how close a placement sits to a power point.";
+  }
+
+  const distanceMessage = getThirdsDistanceMessage(state.thirdsSelection.distance);
+  return state.thirdsSelection.centerDistance <= 0.09
+    ? `${distanceMessage} Center-dominant placement may feel more static.`
+    : distanceMessage;
+}
+
+function getThirdsDistanceMessage(distance) {
+  if (distance <= 0.075) {
+    return "Strong placement near a power point.";
+  }
+
+  if (distance <= 0.18) {
+    return "Close to a strong compositional zone.";
+  }
+
+  return "Far from the nearest power point.";
+}
+
+function formatGridMeasurement(value) {
+  if (!Number.isFinite(value)) {
+    return "";
+  }
+
+  return value.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+}
+
+function updateGridOverlayInfo() {
+  gridOverlayInfo.textContent = `Grid: ${getGridDivisions()} x ${getGridDivisions()}`;
+}
+
+function updateGridTransferUI() {
+  updateGridOverlayInfo();
+
+  const width = Number(state.gridCanvasWidth);
+  const height = Number(state.gridCanvasHeight);
+
+  if (!(width > 0) || !(height > 0)) {
+    gridTransferResult.textContent = "Enter your canvas size to calculate each square.";
+    return;
+  }
+
+  const divisions = getGridDivisions();
+  const cellWidth = width / divisions;
+  const cellHeight = height / divisions;
+  gridTransferResult.textContent = `Each square: ${formatGridMeasurement(cellWidth)} x ${formatGridMeasurement(cellHeight)} cm`;
+}
+
+function handleGridSizeInput(event) {
+  state.gridDivisionIndex = Number(event.target.value);
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+function handleGridCanvasInput() {
+  state.gridCanvasWidth = gridCanvasWidth.value;
+  state.gridCanvasHeight = gridCanvasHeight.value;
+  updateGridTransferUI();
+}
+
 function updateModeUI() {
   const isBasic = state.analysisMode === "basic";
   const config = MODES[state.mode];
   const advancedConfig = ADVANCED_MODES[state.advancedMode];
+  const isThirdsMode = isBasic && state.mode === "thirds";
+  const isGridMode = isBasic && state.mode === "grid";
   const isGoldenSpiral = !isBasic && state.advancedMode === "golden-spiral";
   const isNotan = !isBasic && state.advancedMode === "notan";
   const isFocalBalance = !isBasic && state.advancedMode === "focal-balance";
@@ -557,6 +709,9 @@ function updateModeUI() {
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
   notanControlsCard.classList.toggle("hidden", !isNotan);
   focalControlsCard.classList.toggle("hidden", !isFocalBalance);
+  gridControlsCard.classList.toggle("hidden", !isGridMode);
+  gridTransferCard.classList.toggle("hidden", !isGridMode);
+  gridOverlayInfo.classList.toggle("hidden", !isGridMode || !state.imageLoaded);
   overlayColorControl.classList.toggle("hidden", isNotan);
   overlayCanvas.style.display = state.imageLoaded ? "block" : "none";
   clearNotesButton.classList.toggle("hidden", !isFocalBalance);
@@ -570,10 +725,16 @@ function updateModeUI() {
     modeDescription.textContent = config.description;
     modeTip.textContent = config.tip;
     workspaceHint.textContent = state.imageLoaded
-      ? "Use the active overlay to study the structure of the composition."
+      ? (isThirdsMode
+        ? "Click on the image to compare a placement with the nearest power point."
+        : "Use the active overlay to study the structure of the composition.")
       : "Upload an image to begin your composition study.";
     statusNote.textContent = state.imageLoaded
-      ? "Overlay is active. Switch tools to compare different compositional guides."
+      ? (isThirdsMode
+        ? getThirdsStatusCopy()
+        : isGridMode
+        ? "Grid is active. Adjust the divisions and use the transfer helper below to match your canvas."
+        : "Overlay is active. Switch tools to compare different compositional guides.")
       : "Upload an image to start.";
   } else {
     workspaceTitle.textContent = advancedConfig.title;
@@ -589,7 +750,7 @@ function updateModeUI() {
   }
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
-  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance);
+  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode);
   downloadCompositionAnalysisButton.disabled = !state.imageLoaded;
 
   spiralScale.value = String(Math.round(state.spiral.scale * 100));
@@ -617,6 +778,14 @@ function updateModeUI() {
   notanLevels.value = String(state.notanLevels);
   notanLevelsValue.textContent = `${state.notanLevels} values`;
   notanLevels.disabled = !isNotan;
+  gridSize.value = String(state.gridDivisionIndex);
+  gridSize.disabled = !isGridMode;
+  gridCanvasWidth.disabled = !isGridMode;
+  gridCanvasHeight.disabled = !isGridMode;
+  gridCanvasWidth.value = state.gridCanvasWidth;
+  gridCanvasHeight.value = state.gridCanvasHeight;
+  gridSizeValue.textContent = `Grid: ${getGridDivisions()} x ${getGridDivisions()}`;
+  updateGridTransferUI();
   updateOverlayColorUI();
 
   modeButtons.forEach((button) => {
@@ -656,12 +825,16 @@ function getAdvancedStatusCopy(defaultStatus) {
   return `${sourceLabel} ${state.focalPoints.length}/3 points placed. Click a point to remove it or reset to start again.`;
 }
 
-function getOverlayCursor(isGoldenSpiral, isFocalBalance) {
+function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode) {
   if (isGoldenSpiral && state.imageLoaded) {
     return getGoldenSpiralCursor();
   }
 
   if (isFocalBalance && state.imageLoaded) {
+    return "crosshair";
+  }
+
+  if (isThirdsMode && state.imageLoaded) {
     return "crosshair";
   }
 
@@ -915,11 +1088,92 @@ function drawThirds(ctx, width, height, overlayPalette) {
   ctx.moveTo(0, secondThirdY);
   ctx.lineTo(width, secondThirdY);
   ctx.stroke();
+
+  drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette);
+  drawThirdsSelection(ctx, width, height, overlayPalette);
+}
+
+function drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette) {
+  const glowRadius = Math.max(18, Math.min(width, height) * 0.055);
+  const ringRadius = glowRadius * 0.42;
+
+  ctx.save();
+  getThirdsPowerPoints().forEach((point) => {
+    const x = point.x * width;
+    const y = point.y * height;
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+    gradient.addColorStop(0, overlayPalette.fillSoft);
+    gradient.addColorStop(0.55, overlayPalette.fillVerySoft);
+    gradient.addColorStop(1, toOverlayAlphaColor(getActiveOverlayColor(), 0));
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = overlayPalette.strokeSoft;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, ringRadius, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawThirdsSelection(ctx, width, height, overlayPalette) {
+  if (!state.thirdsSelection) {
+    return;
+  }
+
+  const point = {
+    x: state.thirdsSelection.point.x * width,
+    y: state.thirdsSelection.point.y * height
+  };
+  const nearestPowerPoint = {
+    x: state.thirdsSelection.nearestPowerPoint.x * width,
+    y: state.thirdsSelection.nearestPowerPoint.y * height
+  };
+  const markerRadius = Math.max(5, Math.min(width, height) * 0.01);
+  const targetRadius = markerRadius + 2;
+
+  ctx.save();
+  ctx.strokeStyle = overlayPalette.strokeMuted;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(point.x, point.y);
+  ctx.lineTo(nearestPowerPoint.x, nearestPowerPoint.y);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, markerRadius + 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = overlayPalette.strokeStrong;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, markerRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = overlayPalette.fillSoft;
+  ctx.beginPath();
+  ctx.arc(nearestPowerPoint.x, nearestPowerPoint.y, targetRadius + 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = overlayPalette.strokeStrong;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(nearestPowerPoint.x, nearestPowerPoint.y, targetRadius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(nearestPowerPoint.x - targetRadius - 3, nearestPowerPoint.y);
+  ctx.lineTo(nearestPowerPoint.x + targetRadius + 3, nearestPowerPoint.y);
+  ctx.moveTo(nearestPowerPoint.x, nearestPowerPoint.y - targetRadius - 3);
+  ctx.lineTo(nearestPowerPoint.x, nearestPowerPoint.y + targetRadius + 3);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawGrid(ctx, width, height, overlayPalette) {
-  const columns = 6;
-  const rows = 6;
+  const columns = getGridDivisions();
+  const rows = getGridDivisions();
   ctx.strokeStyle = overlayPalette.stroke;
   ctx.beginPath();
 

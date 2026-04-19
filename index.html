@@ -299,6 +299,46 @@
       margin-bottom: 24px;
     }
 
+    .featured-cta {
+      max-width: 760px;
+      margin: 0 auto 26px;
+      padding: 24px 26px;
+      text-align: center;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(243, 239, 230, 0.92));
+    }
+
+    .featured-cta h2 {
+      font-size: clamp(1.5rem, 2.4vw, 2rem);
+      line-height: 1.05;
+    }
+
+    .featured-cta-copy {
+      max-width: none;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .featured-cta-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .featured-cta-note {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(50, 44, 38, 0.08);
+      background: rgba(255, 255, 255, 0.46);
+    }
+
     .tool-heading {
       display: grid;
       gap: 10px;
@@ -422,9 +462,10 @@
 
       <div class="header-actions">
         <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link" href="./analysis/index.html">Quick Check</a>
           <a class="top-nav-link" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Value Checker</a>
           <a class="top-nav-link" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Composition Checker</a>
-          <span class="top-nav-link is-disabled" aria-disabled="true">Color Checker</span>
+          <a class="top-nav-link" href="./color-studio/index.html">Color Checker</a>
         </nav>
 
         <div class="social-links" aria-label="Social links">
@@ -450,6 +491,19 @@
     <p class="intro hero-intro">
       A focused painting toolkit for studying value, color and composition through clear, practical visual analysis.
     </p>
+
+    <section class="card featured-cta" aria-label="Quick Check call to action">
+      <p class="eyebrow">Featured Action</p>
+      <h2>Try the Quick Check</h2>
+      <p class="featured-cta-copy">Get one full analysis free and see how your painting reads.</p>
+      <div class="button-row">
+        <a class="button" href="./analysis/index.html">Start Free Check</a>
+      </div>
+      <div class="featured-cta-meta" aria-label="Quick check details">
+        <span class="featured-cta-note">One full check free</span>
+        <span class="featured-cta-note">No signup needed</span>
+      </div>
+    </section>
 
     <section class="hero">
       <div class="card tool-card tool-card-primary">

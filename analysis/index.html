@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Analysis Studio</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Painting Analysis</p>
+        <div class="title-row">
+          <h1>M8 Analysis Studio</h1>
+        </div>
+        <p class="intro">
+          Upload your painting and receive clear visual feedback on composition, balance, and structure.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link is-current" href="./index.html" aria-current="page">Quick Check</a>
+          <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+          <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+        </nav>
+        <div class="social-links" aria-label="Social links">
+          <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"></path>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"></path>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"></path>
+            </svg>
+          </a>
+        </div>
+
+        <div class="controls header-controls">
+          <label class="button" for="analysisFileInput">Upload Image</label>
+        </div>
+      </div>
+    </header>
+
+    <a class="back-link" href="../index.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+      Back to Home
+    </a>
+
+    <main class="layout">
+      <div class="left-column">
+        <section class="card workspace-card">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Workspace</p>
+              <h2>Upload Your Painting</h2>
+            </div>
+            <div class="workspace-meta">
+              <p id="workspaceHint" class="hint">Upload an image to prepare the analysis workspace.</p>
+              <div id="overlayColorControl" class="overlay-color-control">
+                <button id="overlayColorButton" class="overlay-color-button" type="button" aria-expanded="false" aria-label="Choose grid color">
+                  <span id="overlayColorPreview" class="overlay-color-preview overlay-color-black" aria-hidden="true"></span>
+                  <span class="overlay-color-label">Grid</span>
+                </button>
+                <div id="overlayColorMenu" class="overlay-color-menu hidden" role="menu" aria-label="Grid color options">
+                  <button class="overlay-swatch overlay-swatch-black active" type="button" data-overlay-color="#1f1c18" aria-label="Use black grid"></button>
+                  <button class="overlay-swatch overlay-swatch-white" type="button" data-overlay-color="#ffffff" aria-label="Use white grid"></button>
+                  <button class="overlay-swatch overlay-swatch-red" type="button" data-overlay-color="#c96a3d" aria-label="Use red grid"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <input id="analysisFileInput" type="file" accept="image/png,image/jpeg,image/webp">
+
+          <div id="uploadZone" class="canvas-wrap upload-enabled" tabindex="0" role="button" aria-label="Click to upload your painting">
+            <div id="imageStage" class="image-stage hidden">
+              <div id="analysisSurface" class="analysis-surface">
+                <img id="analysisPreview" class="workspace-image" alt="Uploaded painting preview">
+                <svg class="filter-defs" aria-hidden="true" focusable="false">
+                  <filter id="valuePassFilter">
+                    <feColorMatrix
+                      type="matrix"
+                      values="0.2126 0.7152 0.0722 0 0
+                              0.2126 0.7152 0.0722 0 0
+                              0.2126 0.7152 0.0722 0 0
+                              0      0      0      1 0"></feColorMatrix>
+                    <feComponentTransfer color-interpolation-filters="sRGB">
+                      <feFuncR type="discrete" tableValues="0 0.16 0.32 0.48 0.64 0.8 1"></feFuncR>
+                      <feFuncG type="discrete" tableValues="0 0.16 0.32 0.48 0.64 0.8 1"></feFuncG>
+                      <feFuncB type="discrete" tableValues="0 0.16 0.32 0.48 0.64 0.8 1"></feFuncB>
+                    </feComponentTransfer>
+                  </filter>
+                </svg>
+                <div id="thirdsOverlay" class="analysis-overlay thirds-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay center-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay scanning-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay focal-overlay" aria-hidden="true"></div>
+              </div>
+            </div>
+
+            <div id="emptyState" class="empty-state upload-empty-state">
+              <div class="upload-empty-state-inner">
+                <div class="upload-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 16V6"></path>
+                    <path d="M8.5 9.5 12 6l3.5 3.5"></path>
+                    <path d="M5 18h14"></path>
+                  </svg>
+                </div>
+                <p class="upload-empty-label">Drop an image here or click to upload</p>
+                <p class="upload-empty-subcopy">JPG, PNG, WebP</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card studio-note-card">
+          <div class="studio-note-copy">
+            <p class="detail-copy">This quick check is based on measurable visual factors such as value distribution, contrast, and compositional balance. It estimates how the eye moves through the image, where visual weight sits, and how clearly the focal area stands out. It’s designed as a fast studio tool to help you see structure more clearly — not as a final artistic judgment.</p>
+          </div>
+
+          <div class="artist-feedback-block">
+            <p class="section-label">Personal Feedback</p>
+            <h3 class="artist-feedback-title">Want feedback from a real painter?</h3>
+            <p class="detail-copy">Get a personal critique focused on your composition, values, and clarity — with clear guidance on how to improve.</p>
+            <ul class="artist-feedback-list">
+              <li>Personal feedback by Mate</li>
+              <li>Focus on key weaknesses</li>
+              <li>Clear next steps</li>
+            </ul>
+            <button class="button-secondary artist-feedback-button" type="button" disabled>Request Personal Feedback</button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="card side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Analysis Result</p>
+            <h2>M8 Quick Check</h2>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+          <div class="placeholder-panel">
+            <p class="section-label">How It Works</p>
+            <div class="placeholder-card">
+              <p>Run a quick check to get a clear read on your composition and visual balance.</p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">What To Look For</p>
+            <p class="detail-copy">See how your focal point sits, whether the image feels centered, and how visual weight is distributed.</p>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">Status</p>
+            <p id="statusHelper" class="status-helper hidden">Preparing your quick check</p>
+            <p id="statusNote" class="detail-copy">Waiting for image upload.</p>
+            <div id="quickCheckResult" class="quick-check-result hidden">
+              <p class="section-label result-label">Quick Check Score</p>
+              <p id="quickCheckScore" class="quick-check-score">72 / 100</p>
+              <div id="quickCheckTopSections" class="result-blocks">
+                <div id="quickCheckKeyInsightBlock" class="result-block">
+                  <p class="result-block-title">Key Insight</p>
+                  <p id="quickCheckKeyInsightText" class="detail-copy">The focal point sits too close to the center, reducing visual tension.</p>
+                </div>
+                <div id="quickCheckStrengthBlock" class="result-block">
+                  <p class="result-block-title">Strength</p>
+                  <p id="quickCheckStrengthText" class="detail-copy">The overall balance creates a stable and readable composition.</p>
+                </div>
+                <div id="quickCheckWeaknessBlock" class="result-block">
+                  <p class="result-block-title">Weakness</p>
+                  <p id="quickCheckWeaknessText" class="detail-copy">The focal area blends too much with surrounding values.</p>
+                </div>
+              </div>
+              <div id="quickCheckTags" class="result-tags">
+                <span class="result-tag">Center Dominant</span>
+                <span class="result-tag">Left Heavy</span>
+                <span class="result-tag">Compressed Values</span>
+              </div>
+              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full breakdown</button>
+              <div id="quickCheckDetails" class="result-details" aria-hidden="true">
+                <p class="result-helper">Quick visual estimate based on structure, balance, and value distribution.</p>
+                <div id="quickCheckBlocks" class="result-blocks"></div>
+                <div id="quickCheckSuggestion" class="result-suggestion">
+                  <p class="section-label result-label">Suggestion</p>
+                  <p id="quickCheckSuggestionText" class="detail-copy">Push the focal point farther away from the center and clarify the major value shapes.</p>
+                </div>
+                <p class="result-note">This check focuses on structure rather than subject or style.</p>
+              </div>
+              <p id="freeCheckNote" class="result-note hidden">This was your free full check.</p>
+            </div>
+            <div id="lockedAnalysisState" class="quick-check-result hidden">
+              <p class="section-label result-label">Ready for another check?</p>
+              <h3 class="locked-title">Ready for another check?</h3>
+              <p class="detail-copy">You've already used your free full analysis. Unlock access to continue analyzing your paintings.</p>
+              <button id="unlockFullAccessButton" class="button-secondary analysis-button" type="button">Unlock Full Access</button>
+            </div>
+          </div>
+
+          <button id="runAnalysisButton" class="button-secondary analysis-button" type="button" disabled>Run Analysis</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
