@@ -829,18 +829,26 @@ a {
 
 .breakdown-toggle {
   width: fit-content;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
+  align-self: center;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 106, 61, 0.26);
+  background: #c96a3d;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-  transition: color 160ms ease, transform 160ms ease;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .breakdown-toggle:hover {
-  color: var(--ink);
+  border-color: rgba(201, 106, 61, 0.36);
+  background: #cf7348;
   transform: translateY(-1px);
 }
 
