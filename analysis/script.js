@@ -36,6 +36,7 @@ const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
 const FULL_ANALYSIS_STORAGE_KEY = "m8_full_analysis_used";
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+const UNLOCKED_ACCESS_SOURCE_KEY = "m8_unlock_source";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
 const ANALYSIS_SEQUENCE = [
   { className: "stage-grid", helper: "Preparing your quick check", message: "Checking focal placement...", delay: 1100 },
@@ -244,7 +245,8 @@ function hasUsedFullAnalysis() {
 }
 
 function hasUnlockedAccess() {
-  return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true";
+  return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true"
+    && localStorage.getItem(UNLOCKED_ACCESS_SOURCE_KEY) === "stripe_return";
 }
 
 function getTodayAnalysisStamp() {
@@ -265,6 +267,7 @@ function handleUnlockReturn() {
   }
 
   localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+  localStorage.setItem(UNLOCKED_ACCESS_SOURCE_KEY, "stripe_return");
   justUnlockedFromStripe = true;
 
   const cleanedUrl = new URL(window.location.href);
