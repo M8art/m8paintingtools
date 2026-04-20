@@ -54,8 +54,8 @@ function handleUpload(event) {
   previewImage.onload = () => {
     previewImage.style.display = "block";
     emptyState.style.display = "none";
-    workspaceHint.textContent = "Palette extracted from the uploaded image.";
-    statusNote.textContent = "Palette ready.";
+    workspaceHint.textContent = "Color families sampled from the uploaded image.";
+    statusNote.textContent = "Palette analysis ready.";
     extractPalette(previewImage);
   };
   previewImage.src = state.objectUrl;
@@ -69,9 +69,9 @@ function setTab(tab) {
   });
 
   if (tab === "palette") {
-    panelTitle.textContent = "Palette Extractor";
-    panelDescription.textContent = "Extract the main color families from your image and see which hues dominate the overall impression.";
-    statusNote.textContent = state.palette.length ? "Palette ready." : "Upload an image to start.";
+    panelTitle.textContent = "Palette Analysis";
+    panelDescription.textContent = "Sample the main color families in your image and see which hues dominate the overall painting.";
+    statusNote.textContent = state.palette.length ? "Palette analysis ready." : "Upload an image to start.";
     renderPalette();
     renderSelectedColor();
     return;
@@ -144,7 +144,7 @@ function renderPalette() {
   swatchGrid.innerHTML = "";
 
   if (!state.palette.length) {
-    swatchGrid.innerHTML = '<p class="swatch-empty">No palette yet.</p>';
+    swatchGrid.innerHTML = '<p class="swatch-empty">No palette breakdown yet.</p>';
     return;
   }
 
@@ -168,7 +168,7 @@ function renderPalette() {
     meta.append(
       buildMetaRow("HEX", color.hex),
       buildMetaRow("RGB", color.rgb),
-      buildMetaRow("Coverage", `${color.coverage.toFixed(1)}%`)
+      buildMetaRow("Presence", `${color.coverage.toFixed(1)}%`)
     );
 
     card.append(preview, meta);

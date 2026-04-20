@@ -748,13 +748,17 @@ a {
 }
 .feedback-cta-button {
   justify-self: start;
-  opacity: 0.78;
-  cursor: not-allowed;
-  transition: none;
+  opacity: 1;
+  cursor: pointer;
+  background: #c96a3d;
+  color: #ffffff;
+  border-color: rgba(201, 106, 61, 0.26);
+  box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18);
 }
 .feedback-cta-button:hover {
-  transform: none;
-  border-color: var(--line);
+  transform: translateY(-1px);
+  border-color: rgba(201, 106, 61, 0.36);
+  background: #cf7348;
 }
 .feedback-button-note {
   font-size: 0.84rem;

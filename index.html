@@ -189,12 +189,23 @@
     .tool-card {
       display: grid;
       gap: 20px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
     }
 
     .tool-card-primary {
       box-shadow: 0 28px 68px rgba(50, 39, 28, 0.16);
       transform: scale(1.03);
       transform-origin: top center;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(201, 106, 61, 0.18);
+      box-shadow: 0 18px 34px rgba(50, 39, 28, 0.12);
+    }
+
+    .tool-card-primary:hover {
+      transform: scale(1.03) translateY(-2px);
     }
 
     .tool-badge {
@@ -432,6 +443,11 @@
       transform: translateY(-2px);
       border-color: rgba(201, 106, 61, 0.18);
       box-shadow: 0 18px 34px rgba(50, 39, 28, 0.12);
+    }
+
+    .hero-preview-card:focus-visible {
+      outline: 2px solid rgba(201, 106, 61, 0.45);
+      outline-offset: 3px;
     }
 
     .hero-preview-kicker {
@@ -758,7 +774,7 @@
             </div>
 
             <div class="hero-preview-grid">
-              <article class="hero-preview-card">
+              <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
                 <span class="hero-preview-kicker">Value analysis</span>
                 <h3 class="hero-preview-title">Simplify the big tonal pattern</h3>
                 <div class="hero-value-bars">
@@ -768,16 +784,16 @@
                   <span></span>
                 </div>
                 <p class="hero-preview-copy">Check whether the main value design reads clearly before small details take over.</p>
-              </article>
+              </a>
 
-              <article class="hero-preview-card">
+              <a class="hero-preview-card" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">
                 <span class="hero-preview-kicker">Composition preview</span>
                 <h3 class="hero-preview-title">See structure and focal pull faster</h3>
                 <div class="hero-composition-lines"></div>
                 <p class="hero-preview-copy">Use practical guides to study balance, placement, and movement without guesswork.</p>
-              </article>
+              </a>
 
-              <article class="hero-preview-card">
+              <a class="hero-preview-card" href="./color-studio/index.html">
                 <span class="hero-preview-kicker">Color preview</span>
                 <h3 class="hero-preview-title">Understand palette relationships</h3>
                 <div class="hero-color-swatches">
@@ -787,7 +803,7 @@
                   <span></span>
                 </div>
                 <p class="hero-preview-copy">Compare temperature shifts and color families with a calmer, more controlled read.</p>
-              </article>
+              </a>
             </div>
 
             <p class="hero-microcopy">No guesswork. See your painting before you paint it.</p>

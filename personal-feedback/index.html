@@ -8,7 +8,6 @@
     :root {
       --bg: #e8e3d8;
       --panel: rgba(252, 250, 246, 0.94);
-      --panel-soft: #f3efe6;
       --ink: #1f1c18;
       --muted: #69635d;
       --line: rgba(50, 44, 38, 0.14);
@@ -34,14 +33,21 @@
       padding: 28px 18px;
     }
 
-    h1, h2 {
+    h1 {
       margin: 0;
       font-family: Georgia, "Times New Roman", serif;
       font-weight: 600;
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      line-height: 0.98;
     }
 
     p {
       margin: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     .page {
@@ -68,15 +74,11 @@
       margin-bottom: 10px;
     }
 
-    .hero {
+    .hero,
+    .access-panel {
       display: grid;
       gap: 14px;
       text-align: center;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.1rem, 4vw, 3rem);
-      line-height: 0.98;
     }
 
     .subtext {
@@ -96,8 +98,19 @@
       line-height: 1.55;
     }
 
-    .success-message.is-visible {
+    .success-message.is-visible,
+    .access-panel.is-visible,
+    .form-panel.is-visible {
       display: block;
+    }
+
+    .access-panel,
+    .form-panel {
+      display: none;
+    }
+
+    .access-panel {
+      text-align: center;
     }
 
     form {
@@ -140,13 +153,16 @@
       resize: vertical;
     }
 
-    .helper {
+    .helper,
+    .footer-note {
       color: var(--muted);
       line-height: 1.6;
       font-size: 0.92rem;
+      text-align: center;
     }
 
-    .helper a {
+    .helper a,
+    .footer-note a {
       color: inherit;
       text-decoration: underline;
       text-decoration-color: rgba(201, 106, 61, 0.5);
@@ -154,7 +170,8 @@
       transition: color 180ms ease, text-decoration-color 180ms ease;
     }
 
-    .helper a:hover {
+    .helper a:hover,
+    .footer-note a:hover {
       color: var(--ink);
       text-decoration-color: rgba(201, 106, 61, 0.9);
     }
@@ -180,13 +197,6 @@
       border-color: rgba(201, 106, 61, 0.38);
       background: var(--accent-hover);
     }
-
-    .footer-note {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.6;
-    }
   </style>
 </head>
 <body>
@@ -196,16 +206,22 @@
         <p class="eyebrow">Personal Feedback</p>
         <h1>Your Feedback Request is Ready</h1>
       </div>
-      <p class="subtext">Upload your painting and tell me what you'd like help with. You’ll receive clear, practical feedback focused on values, composition, and clarity — with specific suggestions on how to improve your painting.</p>
+      <p class="subtext">Upload your painting and tell me what you'd like help with. You'll receive clear, practical feedback focused on values, composition, and clarity - with specific suggestions on how to improve your painting.</p>
       <p class="footer-note">Personal feedback by Mate, classical oil painter.</p>
     </section>
 
-    <section class="card">
-      <div id="successMessage" class="success-message" role="status" aria-live="polite">
-        Thank you — your request has been sent. I’ll get back to you soon.
-      </div>
+    <section id="successMessage" class="card success-message" role="status" aria-live="polite">
+      Thank you - your request has been sent. I'll get back to you soon.
+    </section>
 
-      <form action="https://formsubmit.co/matejakjan@gmail.com" method="POST" enctype="multipart/form-data">
+    <section id="accessPanel" class="card access-panel">
+      <p class="subtext">Payment is required before you can upload your painting for personal feedback.</p>
+      <a class="button" href="https://buy.stripe.com/3cIeVdbrVb2Pa2v4Cggw000">Unlock Personal Feedback</a>
+      <p class="footer-note">After payment, return here through the Stripe success redirect to unlock one submission.</p>
+    </section>
+
+    <section id="formPanel" class="card form-panel">
+      <form id="feedbackForm" action="https://formsubmit.co/matejakjan@gmail.com" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="_subject" value="New Personal Feedback Request">
         <input type="hidden" name="_captcha" value="false">
         <input type="hidden" name="_template" value="table">
@@ -230,26 +246,45 @@
 
         <button class="button" type="submit">Submit for Feedback</button>
 
-        <p class="helper">I usually respond within 24–48 hours.</p>
+        <p class="helper">I usually respond within 24-48 hours.</p>
         <p class="helper">Looking for instant feedback? <a href="../analysis/index.html">Try Quick Check</a>.</p>
       </form>
     </section>
-
-    <p class="footer-note">After payment, this page can be used as the Stripe success destination.</p>
   </div>
 
   <script>
+    const PERSONAL_FEEDBACK_ACCESS_KEY = "m8_personal_feedback_paid";
     const successMessage = document.getElementById("successMessage");
-    const form = document.querySelector("form");
+    const accessPanel = document.getElementById("accessPanel");
+    const formPanel = document.getElementById("formPanel");
+    const form = document.getElementById("feedbackForm");
     const currentUrl = new URL(window.location.href);
 
-    if (currentUrl.searchParams.get("success") === "true") {
-      successMessage.classList.add("is-visible");
-      currentUrl.searchParams.delete("success");
+    if (currentUrl.searchParams.get("paid") === "true") {
+      localStorage.setItem(PERSONAL_FEEDBACK_ACCESS_KEY, "true");
+      currentUrl.searchParams.delete("paid");
       window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
     }
 
+    const hasPaidAccess = localStorage.getItem(PERSONAL_FEEDBACK_ACCESS_KEY) === "true";
+    const hasSuccess = currentUrl.searchParams.get("success") === "true";
+
+    if (hasSuccess) {
+      successMessage.classList.add("is-visible");
+      localStorage.removeItem(PERSONAL_FEEDBACK_ACCESS_KEY);
+      currentUrl.searchParams.delete("success");
+      window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+    } else if (hasPaidAccess) {
+      formPanel.classList.add("is-visible");
+    } else {
+      accessPanel.classList.add("is-visible");
+    }
+
     form.querySelector('input[name="_next"]').value = `${window.location.origin}${window.location.pathname}?success=true`;
+
+    form.addEventListener("submit", () => {
+      localStorage.removeItem(PERSONAL_FEEDBACK_ACCESS_KEY);
+    });
   </script>
 </body>
 </html>

@@ -86,6 +86,19 @@
       margin-top: 12px;
     }
 
+    .intro a {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-color: rgba(201, 106, 61, 0.5);
+      text-underline-offset: 0.14em;
+      transition: color 180ms ease, text-decoration-color 180ms ease;
+    }
+
+    .intro a:hover {
+      color: var(--ink);
+      text-decoration-color: rgba(201, 106, 61, 0.9);
+    }
+
     .header-actions {
       display: grid;
       gap: 12px;
@@ -385,10 +398,12 @@
     #sevenValueCanvas,
     #challengeCanvas {
       display: none;
-      width: 100%;
+      width: auto;
+      max-width: 100%;
       height: auto;
       max-height: 75vh;
       touch-action: none;
+      vertical-align: top;
     }
 
     #canvas {
@@ -504,17 +519,17 @@
     .seven-map-row {
       display: grid;
       grid-template-columns: auto 1fr auto;
-      gap: 12px;
+      gap: 8px;
       align-items: center;
-      padding: 10px 12px;
+      padding: 9px 10px;
       border-radius: 16px;
       background: var(--panel-soft);
       border: 1px solid rgba(59, 52, 45, 0.08);
     }
 
     .seven-map-swatch {
-      width: 42px;
-      height: 24px;
+      width: 32px;
+      height: 20px;
       border-radius: 999px;
       border: 1px solid rgba(40, 34, 29, 0.12);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
@@ -567,10 +582,12 @@
     .compare-preview-canvas,
     .compare-overlay-canvas {
       display: none;
-      width: 100%;
+      width: auto;
+      max-width: 100%;
       height: auto;
       max-height: 75vh;
       touch-action: none;
+      vertical-align: top;
     }
 
     .compare-preview-empty {
@@ -782,6 +799,32 @@
       font-size: 0.92rem;
     }
 
+    .challenge-session-row-secondary {
+      align-items: center;
+    }
+
+    .challenge-score-meter {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(50, 44, 38, 0.08);
+    }
+
+    .challenge-score-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(201, 106, 61, 0.82), rgba(43, 38, 34, 0.72));
+      transition: width 280ms ease;
+    }
+
+    .challenge-sound-toggle {
+      min-width: 110px;
+    }
+
     .button[disabled],
     .button-secondary[disabled] {
       cursor: not-allowed;
@@ -799,6 +842,12 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+      transition: box-shadow 220ms ease, transform 220ms ease;
+    }
+
+    .challenge-result-grid.is-revealing {
+      box-shadow: 0 10px 24px rgba(201, 106, 61, 0.08);
+      transform: translateY(-1px);
     }
 
     .challenge-result-item {
@@ -819,6 +868,12 @@
     .challenge-result-value {
       font-weight: 700;
       font-size: 1.08rem;
+      transition: color 220ms ease, transform 220ms ease;
+    }
+
+    .challenge-result-value.score-updated {
+      color: #9a562f;
+      transform: translateY(-1px);
     }
 
     .challenge-feedback {
@@ -829,13 +884,66 @@
       color: var(--ink);
       font-weight: 700;
       display: grid;
-      gap: 4px;
+      gap: 6px;
+      transition: box-shadow 220ms ease, border-color 220ms ease, background 220ms ease, transform 220ms ease;
     }
 
     .challenge-feedback-note {
       color: var(--muted);
       font-size: 0.88rem;
       font-weight: 600;
+    }
+
+    .challenge-feedback.is-revealing {
+      border-color: rgba(201, 106, 61, 0.18);
+      box-shadow: 0 0 0 1px rgba(201, 106, 61, 0.08), 0 12px 26px rgba(50, 39, 28, 0.06);
+    }
+
+    .challenge-feedback.reveal-perfect {
+      background: rgba(236, 243, 232, 0.92);
+      border-color: rgba(114, 141, 105, 0.2);
+      box-shadow: 0 12px 28px rgba(92, 112, 85, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .challenge-feedback.reveal-close {
+      background: rgba(246, 240, 229, 0.94);
+      border-color: rgba(201, 106, 61, 0.16);
+      box-shadow: 0 12px 28px rgba(201, 106, 61, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .challenge-feedback.reveal-off {
+      background: rgba(245, 238, 233, 0.94);
+      border-color: rgba(91, 79, 70, 0.16);
+      box-shadow: 0 12px 28px rgba(73, 61, 53, 0.08);
+    }
+
+    .challenge-reveal-label {
+      width: fit-content;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: rgba(31, 28, 24, 0.82);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .challenge-reveal-label.reveal-perfect {
+      background: rgba(114, 141, 105, 0.14);
+      color: #516249;
+    }
+
+    .challenge-reveal-label.reveal-close {
+      background: rgba(201, 106, 61, 0.12);
+      color: #9a562f;
+    }
+
+    .challenge-reveal-label.reveal-off {
+      background: rgba(91, 79, 70, 0.12);
+      color: #5e5047;
     }
 
     .challenge-session-result {
@@ -1080,6 +1188,11 @@
       gap: 12px;
     }
 
+    .seven-value-download-actions {
+      margin-top: 14px;
+      justify-content: center;
+    }
+
     .scale {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1183,13 +1296,17 @@
     }
     .feedback-cta-button {
       justify-self: start;
-      opacity: 0.78;
-      cursor: not-allowed;
-      transition: none;
+      opacity: 1;
+      cursor: pointer;
+      background: #c96a3d;
+      color: #ffffff;
+      border-color: rgba(201, 106, 61, 0.26);
+      box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18);
     }
     .feedback-cta-button:hover {
-      transform: none;
-      border-color: var(--line);
+      transform: translateY(-1px);
+      border-color: rgba(201, 106, 61, 0.36);
+      background: #cf7348;
     }
     .feedback-button-note {
       font-size: 0.84rem;
@@ -1290,10 +1407,12 @@
       <div>
         <p class="eyebrow">Painting Analysis</p>
         <div class="title-row">
-          <h1>M8 Value Studio</h1>
+          <h1>M8 Value Checker</h1>
         </div>
         <p class="intro">
-          Upload a reference image and explore value through different tools designed for painters.
+          Value analysis is completely free — use it as much as you want.
+          Want deeper insight into your painting? Try <a href="../analysis/index.html">Quick Check</a> for full analysis, or explore <a href="../composition-checker/index.html">Composition Checker</a> and <a href="../color-studio/index.html">Color Checker</a>.
+          Quick Check combines value, composition, and color into one analysis.
         </p>
       </div>
       <div class="header-actions">
@@ -1522,19 +1641,44 @@
         </div>
 
         <div id="analysisSevenValue" class="analysis-grid mode-panel hidden">
-          <div class="placeholder-panel">
-            <p class="section-label">How It Works</p>
-            <div class="placeholder-card">
-              Simplify the image into 7 broad tonal groups to make the big value structure easier to read.
+          <div class="picker-panel-grid">
+            <div class="picker-panel-column">
+              <div class="placeholder-panel">
+                <p class="section-label">How It Works</p>
+                <div class="placeholder-card">
+                  Simplify the image into 7 broad tonal groups to make the big value structure easier to read.
+                </div>
+              </div>
+
+              <div>
+                <p class="section-label">7-Value Legend</p>
+                <div id="sevenValueLegend" class="seven-map-grid"></div>
+              </div>
+
+              <p id="sevenValueStatus" class="status-note">Upload an image to build the seven-value map.</p>
+
+              <div class="value-picker-actions seven-value-download-actions">
+                <button id="downloadSevenValueAnalysisButton" class="button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download 7-Value Analysis</button>
+              </div>
+            </div>
+
+            <div class="picker-panel-column">
+              <div class="value-scale-card">
+                <div>
+                  <p class="section-label">Use the M8 Value Scale</p>
+                </div>
+                <div class="value-scale-media">
+                  <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
+                  <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
+                </div>
+                <div class="value-scale-steps">
+                  <div class="value-scale-step">1. See the large value groups</div>
+                  <div class="value-scale-step">2. Compare the bands to your painting</div>
+                  <div class="value-scale-step">3. Use the scale while simplifying</div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div>
-            <p class="section-label">7-Value Legend</p>
-            <div id="sevenValueLegend" class="seven-map-grid"></div>
-          </div>
-
-          <p id="sevenValueStatus" class="status-note">Upload an image to build the seven-value map.</p>
         </div>
 
         <div id="analysisValueChallenge" class="analysis-grid mode-panel hidden">
@@ -1551,6 +1695,13 @@
                 <div class="challenge-session-row">
                   <span class="challenge-session-progress" id="challengeSessionProgress">Attempt 1 / 5</span>
                   <span class="challenge-session-best" id="challengeBestScore">Best Score: --</span>
+                </div>
+                <div class="challenge-session-row challenge-session-row-secondary">
+                  <span class="challenge-session-best" id="challengeCurrentAccuracy">Accuracy: 0%</span>
+                  <span class="challenge-session-best" id="challengeSessionsPlayed">Sessions: 0</span>
+                </div>
+                <div class="challenge-score-meter" aria-hidden="true">
+                  <span id="challengeScoreFill" class="challenge-score-fill"></span>
                 </div>
               </div>
               <div class="challenge-value-row">
@@ -1571,11 +1722,13 @@
               <button id="submitGuessButton" class="button" type="button" disabled>Submit Guess</button>
               <button id="nextChallengeButton" class="button-secondary" type="button" disabled>Next Challenge</button>
               <button id="resetChallengeSessionButton" class="button-secondary" type="button">Reset Session</button>
+              <button id="challengeSoundToggleButton" class="button-secondary challenge-sound-toggle" type="button">Sound On</button>
               <button id="startNewSessionButton" class="button hidden" type="button">Start New Session</button>
             </div>
 
             <div class="challenge-results">
               <div class="challenge-feedback" id="challengeFeedback">
+                <span id="challengeRevealLabel" class="challenge-reveal-label hidden">Ready</span>
                 <span id="challengeFeedbackMessage">Click a point to begin.</span>
                 <span id="challengeFeedbackNote" class="challenge-feedback-note hidden"></span>
               </div>
@@ -1585,7 +1738,7 @@
                 <span id="challengeSessionTitle" class="challenge-session-title">Value Rookie</span>
                 <p id="challengeSessionMessage" class="challenge-session-message">Your eye took a vacation. Time to train.</p>
                 <span id="challengeSessionBestLine" class="challenge-session-best-line">Best Accuracy: --</span>
-                <span id="challengeSessionNewBest" class="challenge-session-new-best hidden">New Best!</span>
+                <span id="challengeSessionNewBest" class="challenge-session-new-best hidden">New Best Score</span>
               </div>
               <div class="challenge-result-grid">
                 <div class="challenge-result-item">
@@ -1666,8 +1819,8 @@
             <li>Clear next steps to improve</li>
           </ul>
           <!-- Future payment URL goes on this CTA button. -->
-          <button class="button feedback-cta-button" type="button" aria-disabled="true">Request Personal Feedback</button>
-          <p class="feedback-button-note">Coming soon</p>
+          <a class="button feedback-cta-button" href="https://buy.stripe.com/3cIeVdbrVb2Pa2v4Cggw000">Request Personal Feedback</a>
+          <p class="feedback-button-note">Payment required before submission.</p>
         </div>
       </aside>
     </main>
@@ -1728,6 +1881,7 @@
     const sevenValueEmptyState = document.getElementById("sevenValueEmptyState");
     const sevenValueLegend = document.getElementById("sevenValueLegend");
     const sevenValueStatus = document.getElementById("sevenValueStatus");
+    const downloadSevenValueAnalysisButton = document.getElementById("downloadSevenValueAnalysisButton");
     const challengeCanvas = document.getElementById("challengeCanvas");
     const challengeCanvasWrap = document.getElementById("challengeCanvasWrap");
     const challengeEmptyState = document.getElementById("challengeEmptyState");
@@ -1735,14 +1889,19 @@
     const challengeSlider = document.getElementById("challengeSlider");
     const challengeSessionProgress = document.getElementById("challengeSessionProgress");
     const challengeBestScore = document.getElementById("challengeBestScore");
+    const challengeCurrentAccuracy = document.getElementById("challengeCurrentAccuracy");
+    const challengeSessionsPlayed = document.getElementById("challengeSessionsPlayed");
+    const challengeScoreFill = document.getElementById("challengeScoreFill");
     const challengeGuessValue = document.getElementById("challengeGuessValue");
     const challengeGuessSwatch = document.getElementById("challengeGuessSwatch");
     const challengeToneStrip = document.getElementById("challengeToneStrip");
     const submitGuessButton = document.getElementById("submitGuessButton");
     const nextChallengeButton = document.getElementById("nextChallengeButton");
     const resetChallengeSessionButton = document.getElementById("resetChallengeSessionButton");
+    const challengeSoundToggleButton = document.getElementById("challengeSoundToggleButton");
     const startNewSessionButton = document.getElementById("startNewSessionButton");
     const challengeFeedback = document.getElementById("challengeFeedback");
+    const challengeRevealLabel = document.getElementById("challengeRevealLabel");
     const challengeFeedbackMessage = document.getElementById("challengeFeedbackMessage");
     const challengeFeedbackNote = document.getElementById("challengeFeedbackNote");
     const challengeSessionResult = document.getElementById("challengeSessionResult");
@@ -1755,6 +1914,7 @@
     const challengeResultActual = document.getElementById("challengeResultActual");
     const challengeResultDifference = document.getElementById("challengeResultDifference");
     const challengeResultPoints = document.getElementById("challengeResultPoints");
+    const challengeResultGrid = document.querySelector("#analysisValueChallenge .challenge-result-grid");
     const challengeTotalScore = document.getElementById("challengeTotalScore");
     const challengeAttempts = document.getElementById("challengeAttempts");
     const compareReferenceCanvas = document.getElementById("compareReferenceCanvas");
@@ -1815,6 +1975,9 @@
     const CHALLENGE_SESSION_ATTEMPTS = 5;
     const CHALLENGE_SESSION_MAX_SCORE = CHALLENGE_SESSION_ATTEMPTS * 10;
     const CHALLENGE_BEST_ACCURACY_KEY = "m8-value-studio-best-accuracy";
+    const CHALLENGE_BEST_SCORE_KEY = "m8_value_challenge_best_score";
+    const CHALLENGE_SESSIONS_PLAYED_KEY = "m8_value_challenge_sessions_played";
+    const CHALLENGE_SOUND_KEY = "m8_value_challenge_sound";
 
     const state = {
       mode: "value-picker",
@@ -1837,7 +2000,15 @@
         feedback: "Upload an image to start the value challenge.",
         feedbackNote: "",
         sessionComplete: false,
+        revealState: "idle",
+        revealLabel: "",
+        roundCategory: "",
+        difference: null,
+        pendingResult: null,
         bestAccuracy: loadChallengeBestAccuracy(),
+        bestScore: loadChallengeBestScore(),
+        sessionsPlayed: loadChallengeSessionsPlayed(),
+        soundEnabled: loadChallengeSoundPreference(),
         newBestAchieved: false
       },
       viewScale: 1,
@@ -1869,6 +2040,86 @@
       activeMarkerTimeout: null,
       uploadDragDepth: 0
     };
+
+    function getCanvasWrapFor(targetCanvas) {
+      if (targetCanvas === sevenValueCanvas) {
+        return sevenValueCanvasWrap;
+      }
+      if (targetCanvas === challengeCanvas) {
+        return challengeCanvasWrap;
+      }
+      if (targetCanvas === compareOverlayCanvas) {
+        return compareCanvasWrap;
+      }
+      return canvasWrap;
+    }
+
+    function getWorkspaceViewportDimensions(targetCanvas = canvas) {
+      const targetWrap = getCanvasWrapFor(targetCanvas);
+      const fallbackWrap = canvasWrap;
+      const canvasBounds = targetWrap.getBoundingClientRect();
+      const fallbackBounds = fallbackWrap.getBoundingClientRect();
+      const measuredWidth = canvasBounds.width > 0 ? canvasBounds.width : fallbackBounds.width;
+      return {
+        width: Math.min(Math.max(320, Math.round(measuredWidth) - 2), 920),
+        height: Math.min(Math.max(320, Math.round(window.innerHeight * 0.74)), 780)
+      };
+    }
+
+    function syncPrimaryCanvasViewport(targetCanvas) {
+      const canvases = targetCanvas ? [targetCanvas] : [canvas, sevenValueCanvas, challengeCanvas];
+      let viewport = null;
+
+      canvases.forEach((canvasElement) => {
+        viewport = getWorkspaceViewportDimensions(canvasElement);
+        canvasElement.width = viewport.width;
+        canvasElement.height = viewport.height;
+      });
+
+      return viewport;
+    }
+
+    function usesCenteredViewport(targetCanvas) {
+      return targetCanvas === canvas || targetCanvas === sevenValueCanvas || targetCanvas === challengeCanvas;
+    }
+
+    function getCanvasBuffer(targetCanvas) {
+      if (targetCanvas === sevenValueCanvas) {
+        return sevenValueBuffer;
+      }
+      if (targetCanvas === compareOverlayCanvas) {
+        return compareOverlayBuffer;
+      }
+      return imageBuffer;
+    }
+
+    function getCanvasImagePlacement(targetCanvas, scale = state.viewScale) {
+      const buffer = getCanvasBuffer(targetCanvas);
+      const width = buffer.width || targetCanvas.width;
+      const height = buffer.height || targetCanvas.height;
+      const scaledWidth = width * scale;
+      const scaledHeight = height * scale;
+
+      if (!usesCenteredViewport(targetCanvas)) {
+        return {
+          x: 0,
+          y: 0,
+          width,
+          height,
+          scaledWidth,
+          scaledHeight
+        };
+      }
+
+      return {
+        x: (targetCanvas.width - scaledWidth) / 2,
+        y: (targetCanvas.height - scaledHeight) / 2,
+        width,
+        height,
+        scaledWidth,
+        scaledHeight
+      };
+    }
 
     fileInput.addEventListener("change", handleUpload);
     referenceInput.addEventListener("change", (event) => handleCompareUpload(event, "reference"));
@@ -1906,10 +2157,12 @@
     resetViewButton.addEventListener("click", resetView);
     resetButton.addEventListener("click", resetTool);
     downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
+    downloadSevenValueAnalysisButton.addEventListener("click", downloadSevenValueAnalysis);
     challengeSlider.addEventListener("input", handleChallengeSliderInput);
     submitGuessButton.addEventListener("click", submitChallengeGuess);
     nextChallengeButton.addEventListener("click", prepareNextChallenge);
     resetChallengeSessionButton.addEventListener("click", resetChallengeSession);
+    challengeSoundToggleButton.addEventListener("click", toggleChallengeSound);
     startNewSessionButton.addEventListener("click", resetChallengeSession);
     compareSensitivity.addEventListener("input", handleCompareSensitivityChange);
     window.addEventListener("resize", redrawImage);
@@ -1986,6 +2239,10 @@
       });
 
       compareControls.classList.toggle("hidden", mode !== "compare-values");
+
+      if (state.imageLoaded && mode !== "compare-values") {
+        syncPrimaryCanvasViewport(getActiveCanvas());
+      }
 
       updateSingleUploadZones();
       updateCanvasCursor();
@@ -2094,17 +2351,18 @@
     function prepareGrayscaleImage(image) {
       state.sourceImage = image;
 
-      const canvasBounds = canvasWrap.getBoundingClientRect();
-      const maxWidth = Math.min(Math.max(320, Math.round(canvasBounds.width) - 2), 920);
-      const maxHeight = Math.min(Math.max(320, Math.round(window.innerHeight * 0.74)), 780);
+      const activeSingleCanvas = state.mode === "seven-value-map"
+        ? sevenValueCanvas
+        : state.mode === "value-challenge"
+          ? challengeCanvas
+          : canvas;
+      const viewport = syncPrimaryCanvasViewport(activeSingleCanvas);
       const sourceWidth = image.naturalWidth || image.width;
       const sourceHeight = image.naturalHeight || image.height;
-      const dimensions = getContainedDimensions(sourceWidth, sourceHeight, maxWidth, maxHeight);
+      const dimensions = getContainedDimensions(sourceWidth, sourceHeight, viewport.width, viewport.height);
 
-      canvas.width = dimensions.width;
-      canvas.height = dimensions.height;
-      imageBuffer.width = canvas.width;
-      imageBuffer.height = canvas.height;
+      imageBuffer.width = dimensions.width;
+      imageBuffer.height = dimensions.height;
       canvas.style.display = "block";
       emptyState.classList.add("hidden");
 
@@ -2253,6 +2511,12 @@
       state.challenge.lastPoints = null;
       state.challenge.feedback = "Set your guess and submit when ready.";
       state.challenge.feedbackNote = "";
+      state.challenge.revealState = "idle";
+      state.challenge.revealLabel = "";
+      state.challenge.roundCategory = "";
+      state.challenge.difference = null;
+      clearChallengeRevealTimer();
+      playChallengeSound("point");
 
       renderChallengePanel();
       drawChallengeView();
@@ -2263,16 +2527,18 @@
         return;
       }
 
+      syncPrimaryCanvasViewport(canvas);
+      const placement = getCanvasImagePlacement(canvas);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
-      ctx.translate(state.offsetX, state.offsetY);
+      ctx.translate(placement.x + state.offsetX, placement.y + state.offsetY);
       ctx.scale(state.viewScale, state.viewScale);
       ctx.drawImage(imageBuffer, 0, 0);
       ctx.restore();
 
       state.savedSamples.forEach((sample) => {
-        const markerX = sample.x * state.viewScale + state.offsetX;
-        const markerY = sample.y * state.viewScale + state.offsetY;
+        const markerX = sample.x * state.viewScale + placement.x + state.offsetX;
+        const markerY = sample.y * state.viewScale + placement.y + state.offsetY;
         drawNumberedMarker(sample, markerX, markerY);
       });
     }
@@ -2284,27 +2550,41 @@
         return;
       }
 
-      challengeCanvas.width = imageBuffer.width;
-      challengeCanvas.height = imageBuffer.height;
+      syncPrimaryCanvasViewport(challengeCanvas);
       challengeCanvas.style.display = "block";
       challengeEmptyState.classList.add("hidden");
 
+      const placement = getCanvasImagePlacement(challengeCanvas);
       challengeCtx.clearRect(0, 0, challengeCanvas.width, challengeCanvas.height);
       challengeCtx.save();
-      challengeCtx.translate(state.offsetX, state.offsetY);
+      challengeCtx.translate(placement.x + state.offsetX, placement.y + state.offsetY);
       challengeCtx.scale(state.viewScale, state.viewScale);
       challengeCtx.drawImage(imageBuffer, 0, 0);
       challengeCtx.restore();
 
       if (state.challenge.marker) {
-        const markerX = state.challenge.marker.x * state.viewScale + state.offsetX;
-        const markerY = state.challenge.marker.y * state.viewScale + state.offsetY;
+        const markerX = state.challenge.marker.x * state.viewScale + placement.x + state.offsetX;
+        const markerY = state.challenge.marker.y * state.viewScale + placement.y + state.offsetY;
         drawChallengeMarker(markerX, markerY);
       }
     }
 
     function drawChallengeMarker(x, y) {
+      const ringColor = state.challenge.roundCategory === "perfect"
+        ? "rgba(114, 141, 105, 0.45)"
+        : state.challenge.roundCategory === "close"
+          ? "rgba(201, 106, 61, 0.38)"
+          : "rgba(91, 79, 70, 0.28)";
+
       challengeCtx.save();
+      if (state.challenge.revealState !== "idle") {
+        challengeCtx.strokeStyle = ringColor;
+        challengeCtx.lineWidth = 8;
+        challengeCtx.beginPath();
+        challengeCtx.arc(x, y, 18, 0, Math.PI * 2);
+        challengeCtx.stroke();
+      }
+
       challengeCtx.strokeStyle = "rgba(255, 255, 255, 0.96)";
       challengeCtx.lineWidth = 2.2;
       challengeCtx.beginPath();
@@ -2381,7 +2661,7 @@
         percent.className = "seven-map-percent";
 
         swatchEl.style.background = `rgb(${item.brightness}, ${item.brightness}, ${item.brightness})`;
-        label.textContent = `Value ${item.value}`;
+        label.textContent = getSevenValueLegendLabel(item.value);
         percent.textContent = state.imageLoaded ? `${item.coverage}%` : "--";
 
         row.append(swatchEl, label, percent);
@@ -2389,28 +2669,201 @@
       });
     }
 
+    let challengeAudioContext = null;
+    let challengeRevealTimer = null;
+    let challengeValueFlashTimer = null;
+
+    function clearChallengeRevealTimer() {
+      if (challengeRevealTimer) {
+        window.clearTimeout(challengeRevealTimer);
+        challengeRevealTimer = null;
+      }
+    }
+
+    function triggerChallengeValueFlash() {
+      if (challengeValueFlashTimer) {
+        window.clearTimeout(challengeValueFlashTimer);
+      }
+
+      [challengeResultPoints, challengeTotalScore].forEach((element) => {
+        element.classList.add("score-updated");
+      });
+
+      challengeValueFlashTimer = window.setTimeout(() => {
+        [challengeResultPoints, challengeTotalScore].forEach((element) => {
+          element.classList.remove("score-updated");
+        });
+      }, 520);
+    }
+
+    function getChallengeResultCategory(difference) {
+      if (difference <= 1) {
+        return "perfect";
+      }
+      if (difference <= 3) {
+        return "close";
+      }
+      return "off";
+    }
+
+    function getChallengeResultLabel(category) {
+      if (category === "perfect") {
+        return "Perfect Eye";
+      }
+      if (category === "close") {
+        return "Close Guess";
+      }
+      return "Too Far";
+    }
+
+    function getChallengeResultTone(category) {
+      return `reveal-${category}`;
+    }
+
+    function loadChallengeBestScore() {
+      try {
+        const stored = window.localStorage.getItem(CHALLENGE_BEST_SCORE_KEY);
+        if (stored === null) {
+          return null;
+        }
+        const value = Number(stored);
+        return Number.isFinite(value) ? clamp(Math.round(value), 0, CHALLENGE_SESSION_MAX_SCORE) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function loadChallengeSessionsPlayed() {
+      try {
+        const stored = window.localStorage.getItem(CHALLENGE_SESSIONS_PLAYED_KEY);
+        if (stored === null) {
+          return 0;
+        }
+        const value = Number(stored);
+        return Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
+      } catch (error) {
+        return 0;
+      }
+    }
+
+    function loadChallengeSoundPreference() {
+      try {
+        const stored = window.localStorage.getItem(CHALLENGE_SOUND_KEY);
+        return stored === null ? true : stored === "on";
+      } catch (error) {
+        return true;
+      }
+    }
+
+    function persistChallengeSoundPreference() {
+      try {
+        window.localStorage.setItem(CHALLENGE_SOUND_KEY, state.challenge.soundEnabled ? "on" : "off");
+      } catch (error) {
+        // Ignore preference storage failures.
+      }
+    }
+
+    function toggleChallengeSound() {
+      state.challenge.soundEnabled = !state.challenge.soundEnabled;
+      persistChallengeSoundPreference();
+      renderChallengePanel();
+      if (state.challenge.soundEnabled) {
+        playChallengeSound("toggle-on");
+      }
+    }
+
+    function playChallengeSound(type) {
+      if (!state.challenge.soundEnabled) {
+        return;
+      }
+
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+          return;
+        }
+
+        if (!challengeAudioContext) {
+          challengeAudioContext = new AudioContextClass();
+        }
+
+        if (challengeAudioContext.state === "suspended") {
+          challengeAudioContext.resume().catch(() => {});
+        }
+
+        const now = challengeAudioContext.currentTime;
+        const presets = {
+          point: { frequency: 540, duration: 0.05, gain: 0.018, type: "sine" },
+          submit: { frequency: 410, duration: 0.08, gain: 0.02, type: "triangle" },
+          reveal: { frequency: 470, duration: 0.1, gain: 0.02, type: "sine" },
+          perfect: { frequency: 680, duration: 0.14, gain: 0.024, type: "sine" },
+          close: { frequency: 560, duration: 0.11, gain: 0.02, type: "triangle" },
+          off: { frequency: 300, duration: 0.12, gain: 0.018, type: "triangle" },
+          "toggle-on": { frequency: 620, duration: 0.05, gain: 0.018, type: "sine" }
+        };
+        const preset = presets[type];
+
+        if (!preset) {
+          return;
+        }
+
+        const oscillator = challengeAudioContext.createOscillator();
+        const gainNode = challengeAudioContext.createGain();
+        oscillator.type = preset.type;
+        oscillator.frequency.setValueAtTime(preset.frequency, now);
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.exponentialRampToValueAtTime(preset.gain, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + preset.duration);
+        oscillator.connect(gainNode);
+        gainNode.connect(challengeAudioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + preset.duration + 0.02);
+      } catch (error) {
+        // Ignore sound failures to keep the challenge usable.
+      }
+    }
+
     function renderChallengePanel() {
       const currentGray = scaleValueToGray(state.challenge.currentGuess);
       const sessionResult = getChallengeSessionResult();
+      const accuracy = getChallengeSessionAccuracy();
+      const revealTone = getChallengeResultTone(state.challenge.roundCategory);
 
       challengeGuessValue.textContent = String(state.challenge.currentGuess);
       challengeGuessSwatch.style.background = `rgb(${currentGray}, ${currentGray}, ${currentGray})`;
       challengeSessionProgress.textContent = getChallengeProgressLabel();
       challengeBestScore.textContent = getChallengeBestScoreLabel();
+      challengeCurrentAccuracy.textContent = `Accuracy: ${accuracy}%`;
+      challengeSessionsPlayed.textContent = `Sessions: ${state.challenge.sessionsPlayed}`;
+      challengeScoreFill.style.width = `${(state.challenge.totalScore / CHALLENGE_SESSION_MAX_SCORE) * 100}%`;
+      challengeSoundToggleButton.textContent = state.challenge.soundEnabled ? "Sound On" : "Sound Off";
       challengeToneStrip.querySelectorAll(".challenge-tone-step").forEach((step) => {
         step.classList.toggle("active", Number(step.dataset.value) === state.challenge.currentGuess);
       });
-      challengeResultGuess.textContent = state.challenge.submitted ? String(state.challenge.currentGuess) : "--";
-      challengeResultActual.textContent = state.challenge.submitted ? String(state.challenge.actualValue) : "--";
+      challengeResultGuess.textContent = state.challenge.submitted || state.challenge.revealState === "checking" ? String(state.challenge.currentGuess) : "--";
+      challengeResultActual.textContent = state.challenge.submitted ? String(state.challenge.actualValue) : state.challenge.revealState === "checking" ? "..." : "--";
       challengeResultDifference.textContent = state.challenge.submitted
         ? String(Math.abs(state.challenge.currentGuess - state.challenge.actualValue))
+        : state.challenge.revealState === "checking"
+          ? "..."
         : "--";
-      challengeResultPoints.textContent = state.challenge.lastPoints !== null ? String(state.challenge.lastPoints) : "--";
+      challengeResultPoints.textContent = state.challenge.lastPoints !== null
+        ? `+${state.challenge.lastPoints}`
+        : state.challenge.revealState === "checking"
+          ? "..."
+          : "--";
       challengeTotalScore.textContent = String(state.challenge.totalScore);
       challengeAttempts.textContent = String(state.challenge.attempts);
       challengeFeedbackMessage.textContent = state.challenge.feedback;
       challengeFeedbackNote.textContent = state.challenge.feedbackNote;
       challengeFeedbackNote.classList.toggle("hidden", !state.challenge.feedbackNote);
+      challengeRevealLabel.textContent = state.challenge.revealLabel || "Checking";
+      challengeRevealLabel.className = `challenge-reveal-label${state.challenge.roundCategory ? ` ${revealTone}` : ""}${state.challenge.revealState === "idle" ? " hidden" : ""}`;
+      challengeFeedback.classList.toggle("is-revealing", state.challenge.revealState === "checking");
+      challengeFeedback.classList.toggle("reveal-perfect", state.challenge.revealState === "revealed" && state.challenge.roundCategory === "perfect");
+      challengeFeedback.classList.toggle("reveal-close", state.challenge.revealState === "revealed" && state.challenge.roundCategory === "close");
+      challengeFeedback.classList.toggle("reveal-off", state.challenge.revealState === "revealed" && state.challenge.roundCategory === "off");
+      challengeResultGrid.classList.toggle("is-revealing", state.challenge.revealState !== "idle");
       challengeFeedback.setAttribute("aria-live", state.challenge.submitted || state.challenge.sessionComplete ? "polite" : "off");
       challengeSessionResult.classList.toggle("hidden", !state.challenge.sessionComplete);
       challengeSessionAccuracy.textContent = `${sessionResult.accuracy}%`;
@@ -2419,9 +2872,9 @@
       challengeSessionBestLine.textContent = getChallengeSessionBestLine();
       challengeSessionNewBest.classList.toggle("hidden", !state.challenge.newBestAchieved);
 
-      submitGuessButton.disabled = !state.imageLoaded || !state.challenge.marker || state.challenge.submitted || state.challenge.sessionComplete;
+      submitGuessButton.disabled = !state.imageLoaded || !state.challenge.marker || state.challenge.submitted || state.challenge.sessionComplete || state.challenge.revealState === "checking";
       nextChallengeButton.disabled = !state.imageLoaded || !state.challenge.submitted || state.challenge.sessionComplete;
-      challengeSlider.disabled = !state.imageLoaded || state.challenge.sessionComplete;
+      challengeSlider.disabled = !state.imageLoaded || state.challenge.sessionComplete || state.challenge.revealState === "checking";
       startNewSessionButton.classList.toggle("hidden", !state.challenge.sessionComplete);
     }
 
@@ -2431,28 +2884,65 @@
     }
 
     function submitChallengeGuess() {
-      if (!state.challenge.marker || state.challenge.actualValue === null || state.challenge.submitted || state.challenge.sessionComplete) {
+      if (!state.challenge.marker || state.challenge.actualValue === null || state.challenge.submitted || state.challenge.sessionComplete || state.challenge.revealState === "checking") {
         return;
       }
 
       const difference = Math.abs(state.challenge.currentGuess - state.challenge.actualValue);
       const points = getChallengePoints(difference);
+      const category = getChallengeResultCategory(difference);
 
+      clearChallengeRevealTimer();
+      state.challenge.pendingResult = {
+        difference,
+        points,
+        category,
+        feedback: getChallengeFeedback(difference),
+        feedbackNote: getChallengeDirectionFeedback()
+      };
+      state.challenge.revealState = "checking";
+      state.challenge.revealLabel = "Reading";
+      state.challenge.roundCategory = "";
+      state.challenge.feedback = "Checking the value relationship...";
+      state.challenge.feedbackNote = "Hold for the reveal.";
+      playChallengeSound("submit");
+      renderChallengePanel();
+      drawChallengeView();
+
+      challengeRevealTimer = window.setTimeout(() => {
+        finalizeChallengeGuess();
+      }, 560);
+    }
+
+    function finalizeChallengeGuess() {
+      if (!state.challenge.pendingResult) {
+        return;
+      }
+
+      const { difference, points, category, feedback, feedbackNote } = state.challenge.pendingResult;
+      state.challenge.pendingResult = null;
       state.challenge.submitted = true;
       state.challenge.lastPoints = points;
       state.challenge.totalScore += points;
       state.challenge.attempts += 1;
-      state.challenge.feedback = getChallengeFeedback(difference);
-      state.challenge.feedbackNote = getChallengeDirectionFeedback();
+      state.challenge.difference = difference;
+      state.challenge.roundCategory = category;
+      state.challenge.revealLabel = getChallengeResultLabel(category);
+      state.challenge.revealState = "revealed";
+      state.challenge.feedback = feedback;
+      state.challenge.feedbackNote = feedbackNote;
 
       if (state.challenge.attempts >= CHALLENGE_SESSION_ATTEMPTS) {
         state.challenge.sessionComplete = true;
         state.challenge.feedback = "Session complete. Your final read is ready.";
         state.challenge.feedbackNote = "";
-        updateChallengeBestAccuracy();
+        updateChallengeSessionRecords();
       }
 
+      playChallengeSound("reveal");
+      playChallengeSound(category);
       renderChallengePanel();
+      triggerChallengeValueFlash();
       drawChallengeView();
     }
 
@@ -2468,9 +2958,15 @@
       state.challenge.currentGuess = 10;
       state.challenge.submitted = false;
       state.challenge.lastPoints = null;
+      state.challenge.revealState = "idle";
+      state.challenge.revealLabel = "";
+      state.challenge.roundCategory = "";
+      state.challenge.difference = null;
+      state.challenge.pendingResult = null;
       challengeSlider.value = "10";
       state.challenge.feedback = "Click a new point to continue.";
       state.challenge.feedbackNote = "";
+      clearChallengeRevealTimer();
       renderChallengePanel();
       drawChallengeView();
     }
@@ -2483,11 +2979,17 @@
       state.challenge.currentGuess = 10;
       state.challenge.submitted = false;
       state.challenge.lastPoints = null;
+      state.challenge.revealState = "idle";
+      state.challenge.revealLabel = "";
+      state.challenge.roundCategory = "";
+      state.challenge.difference = null;
+      state.challenge.pendingResult = null;
       challengeSlider.value = "10";
       state.challenge.feedback = state.imageLoaded ? "Click a point to begin." : "Upload an image to start the value challenge.";
       state.challenge.feedbackNote = "";
       state.challenge.sessionComplete = false;
       state.challenge.newBestAchieved = false;
+      clearChallengeRevealTimer();
       renderChallengePanel();
       drawChallengeView();
     }
@@ -2551,27 +3053,51 @@
     }
 
     function getChallengeBestScoreLabel() {
-      return state.challenge.bestAccuracy === null
+      return state.challenge.bestScore === null
         ? "Best Score: --"
-        : `Best Score: ${state.challenge.bestAccuracy}%`;
+        : `Best Score: ${state.challenge.bestScore}/${CHALLENGE_SESSION_MAX_SCORE}`;
     }
 
     function getChallengeSessionBestLine() {
-      return state.challenge.bestAccuracy === null
-        ? "Best Accuracy: --"
-        : `Best Accuracy: ${state.challenge.bestAccuracy}%`;
+      if (state.challenge.bestScore === null && state.challenge.bestAccuracy === null) {
+        return "Best Session: --";
+      }
+
+      if (state.challenge.bestScore === null) {
+        return `Best Accuracy: ${state.challenge.bestAccuracy}%`;
+      }
+
+      const accuracyText = state.challenge.bestAccuracy === null ? "--" : `${state.challenge.bestAccuracy}%`;
+      return `Best Session: ${state.challenge.bestScore}/${CHALLENGE_SESSION_MAX_SCORE} - Accuracy ${accuracyText}`;
     }
 
-    function updateChallengeBestAccuracy() {
+    function updateChallengeSessionRecords() {
       const accuracy = getChallengeSessionAccuracy();
       state.challenge.newBestAchieved = false;
+      state.challenge.sessionsPlayed += 1;
+
+      try {
+        window.localStorage.setItem(CHALLENGE_SESSIONS_PLAYED_KEY, String(state.challenge.sessionsPlayed));
+      } catch (error) {
+        // Ignore storage failures and keep the current session running.
+      }
 
       if (state.challenge.bestAccuracy === null || accuracy > state.challenge.bestAccuracy) {
         state.challenge.bestAccuracy = accuracy;
-        state.challenge.newBestAchieved = true;
 
         try {
           window.localStorage.setItem(CHALLENGE_BEST_ACCURACY_KEY, String(accuracy));
+        } catch (error) {
+          // Ignore storage failures and keep the current session running.
+        }
+      }
+
+      if (state.challenge.bestScore === null || state.challenge.totalScore > state.challenge.bestScore) {
+        state.challenge.bestScore = state.challenge.totalScore;
+        state.challenge.newBestAchieved = true;
+
+        try {
+          window.localStorage.setItem(CHALLENGE_BEST_SCORE_KEY, String(state.challenge.totalScore));
         } catch (error) {
           // Ignore storage failures and keep the current session running.
         }
@@ -2674,15 +3200,15 @@
         return;
       }
 
-      sevenValueCanvas.width = sevenValueBuffer.width;
-      sevenValueCanvas.height = sevenValueBuffer.height;
+      syncPrimaryCanvasViewport(sevenValueCanvas);
       sevenValueCanvas.style.display = "block";
       sevenValueEmptyState.classList.add("hidden");
       sevenValueStatus.textContent = "Approximate coverage shows how much of the image falls into each tonal band.";
 
+      const placement = getCanvasImagePlacement(sevenValueCanvas);
       sevenValueCtx.clearRect(0, 0, sevenValueCanvas.width, sevenValueCanvas.height);
       sevenValueCtx.save();
-      sevenValueCtx.translate(state.offsetX, state.offsetY);
+      sevenValueCtx.translate(placement.x + state.offsetX, placement.y + state.offsetY);
       sevenValueCtx.scale(state.viewScale, state.viewScale);
       sevenValueCtx.drawImage(sevenValueBuffer, 0, 0);
       sevenValueCtx.restore();
@@ -3016,6 +3542,139 @@
       link.click();
     }
 
+    function downloadSevenValueAnalysis() {
+      if (!state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height) {
+        return;
+      }
+
+      const blockPaddingX = Math.max(18, Math.round(sevenValueBuffer.width * 0.035));
+      const blockGap = Math.max(18, Math.round(sevenValueBuffer.width * 0.028));
+      const legendTitleHeight = Math.max(18, Math.round(sevenValueBuffer.width * 0.024));
+      const legendRowHeight = Math.max(30, Math.round(sevenValueBuffer.width * 0.042));
+      const legendTopPadding = Math.max(16, Math.round(sevenValueBuffer.width * 0.026));
+      const legendBottomPadding = Math.max(14, Math.round(sevenValueBuffer.width * 0.022));
+      const footerHeight = Math.max(56, Math.round(sevenValueBuffer.height * 0.08));
+      const infoBlockHeight = Math.max(
+        legendTopPadding + legendTitleHeight + (state.sevenValueStats.length * legendRowHeight) + legendBottomPadding,
+        footerHeight
+      );
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = sevenValueBuffer.width;
+      exportCanvas.height = sevenValueBuffer.height + infoBlockHeight;
+      const exportCtx = exportCanvas.getContext("2d");
+
+      exportCtx.fillStyle = "#f4efe6";
+      exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      exportCtx.drawImage(sevenValueBuffer, 0, 0);
+
+      exportCtx.strokeStyle = "rgba(50, 44, 38, 0.12)";
+      exportCtx.lineWidth = 1;
+      exportCtx.beginPath();
+      exportCtx.moveTo(0, sevenValueBuffer.height + 0.5);
+      exportCtx.lineTo(exportCanvas.width, sevenValueBuffer.height + 0.5);
+      exportCtx.stroke();
+
+      const infoTop = sevenValueBuffer.height;
+      const legendAreaWidth = Math.round(exportCanvas.width * 0.58);
+      const brandAreaWidth = exportCanvas.width - (blockPaddingX * 2) - blockGap - legendAreaWidth;
+
+      drawSevenValueAnalysisLegend(
+        exportCtx,
+        state.sevenValueStats,
+        {
+          startY: infoTop,
+          width: legendAreaWidth,
+          originX: blockPaddingX,
+          topPadding: legendTopPadding,
+          titleHeight: legendTitleHeight,
+          rowHeight: legendRowHeight
+        }
+      );
+
+      const brandX = blockPaddingX + legendAreaWidth + blockGap;
+      const footerBaseY = infoTop + Math.round(footerHeight * 0.48);
+      exportCtx.fillStyle = "rgba(31, 28, 24, 0.78)";
+      exportCtx.textAlign = "left";
+      exportCtx.textBaseline = "alphabetic";
+      exportCtx.font = `600 ${Math.max(14, Math.round(exportCanvas.width * 0.018))}px Segoe UI`;
+      exportCtx.fillText("www.mateartwork.com", brandX, footerBaseY);
+      exportCtx.font = `500 ${Math.max(12, Math.round(exportCanvas.width * 0.014))}px Segoe UI`;
+      exportCtx.fillStyle = "rgba(31, 28, 24, 0.62)";
+      exportCtx.fillText(
+        "Created with M8 Value Checker",
+        brandX,
+        footerBaseY + Math.max(18, Math.round(footerHeight * 0.28)),
+        brandAreaWidth
+      );
+
+      const link = document.createElement("a");
+      link.href = exportCanvas.toDataURL("image/png");
+      link.download = "m8-7-value-analysis.png";
+      link.click();
+    }
+
+    function drawSevenValueAnalysisLegend(targetCtx, items, options) {
+      const {
+        startY,
+        width,
+        originX,
+        topPadding,
+        titleHeight,
+        rowHeight
+      } = options;
+
+      const boxRadius = 18;
+      const contentPaddingX = Math.max(14, Math.round(width * 0.05));
+      const titleY = startY + topPadding + titleHeight - 2;
+      const swatchWidth = Math.max(24, Math.round(width * 0.04));
+      const swatchHeight = Math.max(16, Math.round(width * 0.024));
+      const percentWidth = Math.max(32, Math.round(width * 0.06));
+      const boxHeight = topPadding + titleHeight + (items.length * rowHeight) + Math.max(14, Math.round(width * 0.03));
+
+      targetCtx.save();
+      targetCtx.fillStyle = "rgba(255, 255, 255, 0.46)";
+      targetCtx.strokeStyle = "rgba(59, 52, 45, 0.08)";
+      targetCtx.lineWidth = 1;
+      targetCtx.beginPath();
+      targetCtx.roundRect(originX, startY + 10, width, boxHeight, boxRadius);
+      targetCtx.fill();
+      targetCtx.stroke();
+      targetCtx.restore();
+
+      targetCtx.fillStyle = "rgba(31, 28, 24, 0.78)";
+      targetCtx.textAlign = "left";
+      targetCtx.textBaseline = "alphabetic";
+      targetCtx.font = `700 ${Math.max(13, Math.round(width * 0.016))}px Segoe UI`;
+      targetCtx.fillText("7-Value Legend", originX + contentPaddingX, titleY + 8);
+
+      items.forEach((item, index) => {
+        const centerY = startY + topPadding + titleHeight + 22 + index * rowHeight;
+        const swatchX = originX + contentPaddingX;
+        const swatchY = centerY - (swatchHeight / 2);
+        const labelX = swatchX + swatchWidth + 14;
+        const percentX = originX + width - contentPaddingX - percentWidth;
+
+        targetCtx.save();
+        targetCtx.fillStyle = `rgb(${item.brightness}, ${item.brightness}, ${item.brightness})`;
+        targetCtx.strokeStyle = "rgba(40, 34, 29, 0.12)";
+        targetCtx.lineWidth = 1;
+        targetCtx.beginPath();
+        targetCtx.roundRect(swatchX, swatchY, swatchWidth, swatchHeight, 7);
+        targetCtx.fill();
+        targetCtx.stroke();
+        targetCtx.restore();
+
+        targetCtx.fillStyle = "rgba(31, 28, 24, 0.82)";
+        targetCtx.font = `600 ${Math.max(12, Math.round(width * 0.015))}px Segoe UI`;
+        targetCtx.textAlign = "left";
+        targetCtx.fillText(getSevenValueLegendLabel(item.value), labelX, centerY + 4);
+
+        targetCtx.fillStyle = "rgba(31, 28, 24, 0.58)";
+        targetCtx.textAlign = "right";
+        targetCtx.fillText(`${item.coverage}%`, percentX + percentWidth - 4, centerY + 4);
+      });
+    }
+
     function drawValueAnalysisLegend(targetCtx, samples, options) {
       const {
         startY,
@@ -3150,6 +3809,7 @@
       });
 
       downloadValueAnalysisButton.disabled = !state.imageLoaded || !state.savedSamples.length;
+      downloadSevenValueAnalysisButton.disabled = !state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height;
     }
 
     function highlightMarker(sampleId) {
@@ -3182,6 +3842,20 @@
     function brightnessToScaleValue(brightness) {
       const normalized = brightness / 255;
       return clamp(Math.round((1 - normalized) * 19) + 1, 1, 20);
+    }
+
+    function getSevenValueLegendLabel(value) {
+      const sevenValueScaleRanges = {
+        1: "V1-3",
+        2: "V4-6",
+        3: "V7-9",
+        4: "V10-11",
+        5: "V12-14",
+        6: "V15-17",
+        7: "V18-20"
+      };
+
+      return `${value} - ${sevenValueScaleRanges[value] || `V${value}`}`;
     }
 
     function scaleValueToGray(value) {
@@ -3270,12 +3944,14 @@
         return;
       }
 
-      const imageX = (pointerX - state.offsetX) / state.viewScale;
-      const imageY = (pointerY - state.offsetY) / state.viewScale;
+      const placement = getCanvasImagePlacement(activeCanvas);
+      const imageX = (pointerX - placement.x - state.offsetX) / state.viewScale;
+      const imageY = (pointerY - placement.y - state.offsetY) / state.viewScale;
 
       state.viewScale = nextScale;
-      state.offsetX = pointerX - imageX * nextScale;
-      state.offsetY = pointerY - imageY * nextScale;
+      const nextPlacement = getCanvasImagePlacement(activeCanvas, nextScale);
+      state.offsetX = pointerX - nextPlacement.x - imageX * nextScale;
+      state.offsetY = pointerY - nextPlacement.y - imageY * nextScale;
       constrainView();
       updateCanvasCursor();
       drawCurrentView();
@@ -3368,13 +4044,19 @@
 
     function constrainView() {
       const activeCanvas = getActiveCanvas();
-      const scaledWidth = activeCanvas.width * state.viewScale;
-      const scaledHeight = activeCanvas.height * state.viewScale;
-      const minOffsetX = Math.min(0, activeCanvas.width - scaledWidth);
-      const minOffsetY = Math.min(0, activeCanvas.height - scaledHeight);
+      const placement = getCanvasImagePlacement(activeCanvas);
 
-      state.offsetX = clamp(state.offsetX, minOffsetX, 0);
-      state.offsetY = clamp(state.offsetY, minOffsetY, 0);
+      if (placement.scaledWidth <= activeCanvas.width) {
+        state.offsetX = 0;
+      } else {
+        state.offsetX = clamp(state.offsetX, placement.x, -placement.x);
+      }
+
+      if (placement.scaledHeight <= activeCanvas.height) {
+        state.offsetY = 0;
+      } else {
+        state.offsetY = clamp(state.offsetY, placement.y, -placement.y);
+      }
     }
 
     function updateCanvasCursor() {
@@ -3406,17 +4088,18 @@
 
       const canvasX = renderedX * (targetCanvas.width / rect.width);
       const canvasY = renderedY * (targetCanvas.height / rect.height);
-      const imageX = Math.floor((canvasX - state.offsetX) / state.viewScale);
-      const imageY = Math.floor((canvasY - state.offsetY) / state.viewScale);
+      const placement = getCanvasImagePlacement(targetCanvas);
+      const imageX = Math.floor((canvasX - placement.x - state.offsetX) / state.viewScale);
+      const imageY = Math.floor((canvasY - placement.y - state.offsetY) / state.viewScale);
 
-      if (imageX < 0 || imageY < 0 || imageX >= targetCanvas.width || imageY >= targetCanvas.height) {
+      if (imageX < 0 || imageY < 0 || imageX >= placement.width || imageY >= placement.height) {
         return null;
       }
 
-      const naturalWidth = state.sourceImage.naturalWidth || state.sourceImage.width || targetCanvas.width;
-      const naturalHeight = state.sourceImage.naturalHeight || state.sourceImage.height || targetCanvas.height;
-      const naturalX = (imageX / targetCanvas.width) * naturalWidth;
-      const naturalY = (imageY / targetCanvas.height) * naturalHeight;
+      const naturalWidth = state.sourceImage.naturalWidth || state.sourceImage.width || placement.width;
+      const naturalHeight = state.sourceImage.naturalHeight || state.sourceImage.height || placement.height;
+      const naturalX = (imageX / placement.width) * naturalWidth;
+      const naturalY = (imageY / placement.height) * naturalHeight;
 
       return {
         x: imageX,
@@ -3503,9 +4186,18 @@
         feedback: "Upload an image to start the value challenge.",
         feedbackNote: "",
         sessionComplete: false,
+        revealState: "idle",
+        revealLabel: "",
+        roundCategory: "",
+        difference: null,
+        pendingResult: null,
         bestAccuracy: loadChallengeBestAccuracy(),
+        bestScore: loadChallengeBestScore(),
+        sessionsPlayed: loadChallengeSessionsPlayed(),
+        soundEnabled: loadChallengeSoundPreference(),
         newBestAchieved: false
       };
+      clearChallengeRevealTimer();
       challengeSlider.value = "10";
       state.sevenValueStats = Array.from({ length: 7 }, (_, index) => ({
         value: index + 1,
@@ -3520,6 +4212,8 @@
       renderChallengePanel();
       sevenValueStatus.textContent = "Upload an image to build the seven-value map.";
       compareStatus.textContent = "Upload both images to begin the comparison.";
+      downloadValueAnalysisButton.disabled = true;
+      downloadSevenValueAnalysisButton.disabled = true;
       drawChallengeView();
       drawCompareCanvases();
     }

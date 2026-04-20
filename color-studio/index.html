@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M8 Color Studio</title>
+  <title>M8 Color Checker</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
   <script>
@@ -20,9 +20,9 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">Color Study</p>
-        <h1>M8 Color Studio</h1>
+        <h1>M8 Color Checker</h1>
         <p class="intro">
-          Study the color structure of an image through palette, temperature, and simplified color groups.
+          Study the color structure of a painting through palette relationships, temperature, and simplified color groups.
         </p>
       </div>
 
@@ -57,7 +57,7 @@
 
     <nav class="mode-switcher" aria-label="Navigation">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
-      <button class="tab-button active" type="button" data-tab="palette">Palette Extractor</button>
+      <button class="tab-button active" type="button" data-tab="palette">Palette Analysis</button>
       <button class="tab-button" type="button" data-tab="temperature" aria-disabled="true">Temperature Map</button>
       <button class="tab-button" type="button" data-tab="mixer" aria-disabled="true">Color Mixer</button>
     </nav>
@@ -69,7 +69,7 @@
             <p class="section-label">Workspace</p>
             <h2>Reference Image</h2>
           </div>
-          <p id="workspaceHint" class="hint">Upload an image to extract the dominant palette.</p>
+          <p id="workspaceHint" class="hint">Upload an image to study the dominant color families.</p>
         </div>
 
         <div class="image-wrap upload-enabled" id="imageWrap" tabindex="0" role="button" aria-label="Click to upload your image">
@@ -94,7 +94,7 @@
         <div class="panel-heading">
           <div>
             <p class="section-label">Tool</p>
-            <h2 id="panelTitle">Palette Extractor</h2>
+            <h2 id="panelTitle">Palette Analysis</h2>
           </div>
         </div>
 
@@ -103,13 +103,14 @@
             <p class="section-label">How It Works</p>
             <div class="placeholder-card">
               <p id="panelDescription">
-                Extract the main color families from your image and see which hues dominate the overall impression.
+                Sample the main color families in your image and see which hues dominate the overall painting.
               </p>
+              <p class="detail-copy">Use this to understand which colors dominate the image.</p>
             </div>
           </div>
 
           <div id="selectedColorCard" class="detail-card selected-color-card hidden">
-            <p class="section-label">Selected Color</p>
+            <p class="section-label">Picked Color</p>
             <div class="selected-color-layout">
               <div id="selectedColorPreview" class="selected-color-preview" aria-hidden="true"></div>
               <div class="selected-color-meta">
@@ -126,18 +127,20 @@
                   <span id="selectedHsl" class="meta-value">Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ‚ÂĂ„â€šĂ‹ÂÄ‚ËĂ˘â€šÂ¬ÄąË‡Ä‚â€šĂ‚Â¬Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž</span>
                 </div>
                 <div class="selected-color-row">
-                  <span class="meta-label">Coverage</span>
+                  <span class="meta-label">Presence in Painting</span>
                   <span id="selectedCoverage" class="meta-value">Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ‚ÂĂ„â€šĂ‹ÂÄ‚ËĂ˘â€šÂ¬ÄąË‡Ä‚â€šĂ‚Â¬Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž</span>
                 </div>
               </div>
             </div>
+            <p class="detail-copy">Look for whether this color works as a shadow, midtone, or accent.</p>
           </div>
 
           <div class="detail-card">
-            <p class="section-label">Extracted Palette</p>
+            <p class="section-label">Palette Breakdown</p>
             <div id="swatchGrid" class="swatch-grid">
               <p class="swatch-empty">No palette yet.</p>
             </div>
+            <p class="detail-copy">Compare temperature shifts across the painting.</p>
           </div>
 
           <div class="detail-card">
@@ -156,8 +159,8 @@
             <li>Clear next steps to improve</li>
           </ul>
           <!-- Future payment URL goes on this CTA button. -->
-          <button class="button feedback-cta-button" type="button" aria-disabled="true">Request Personal Feedback</button>
-          <p class="feedback-button-note">Coming soon</p>
+          <a class="button feedback-cta-button" href="https://buy.stripe.com/3cIeVdbrVb2Pa2v4Cggw000">Request Personal Feedback</a>
+          <p class="feedback-button-note">Payment required before submission.</p>
         </div>
         </div>
       </aside>
