@@ -31,6 +31,7 @@ const quickCheckDetails = document.getElementById("quickCheckDetails");
 const freeCheckNote = document.getElementById("freeCheckNote");
 const lockedAnalysisState = document.getElementById("lockedAnalysisState");
 const unlockFullAccessButton = document.getElementById("unlockFullAccessButton");
+const premiumToast = document.getElementById("premiumToast");
 
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
@@ -94,6 +95,7 @@ let selectedOverlayColor = "#1f1c18";
 let isOverlayColorMenuOpen = false;
 let statusMessageTimeoutId = null;
 let justUnlockedFromStripe = false;
+let premiumToastTimeoutId = null;
 
 handleUnlockReturn();
 
@@ -1366,6 +1368,7 @@ function showLockedAnalysisState() {
   freeCheckNote.classList.add("hidden");
   updateStatusMessage("Unlock full access to continue.");
   workspaceHint.textContent = "Today's free full analysis has already been used. One payment unlocks the full app.";
+  showPremiumLimitToast("Today's free check is already used. Tap Unlock All Tools to continue.");
 }
 
 function updateBreakdownUI() {
@@ -1397,6 +1400,32 @@ function updateStatusMessage(message, immediate = false) {
     statusNote.classList.remove("is-fading");
     statusMessageTimeoutId = null;
   }, MESSAGE_FADE_DURATION);
+}
+
+function showPremiumLimitToast(message) {
+  if (!premiumToast) {
+    return;
+  }
+
+  if (premiumToastTimeoutId) {
+    window.clearTimeout(premiumToastTimeoutId);
+    premiumToastTimeoutId = null;
+  }
+
+  premiumToast.textContent = message;
+  premiumToast.classList.remove("hidden");
+
+  window.requestAnimationFrame(() => {
+    premiumToast.classList.add("is-visible");
+  });
+
+  premiumToastTimeoutId = window.setTimeout(() => {
+    premiumToast.classList.remove("is-visible");
+    premiumToastTimeoutId = window.setTimeout(() => {
+      premiumToast.classList.add("hidden");
+      premiumToastTimeoutId = null;
+    }, 180);
+  }, 2000);
 }
 
 function applyFocalPosition(metrics) {
