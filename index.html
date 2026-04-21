@@ -419,6 +419,18 @@
       background: rgba(255, 255, 255, 0.5);
       text-align: center;
       z-index: 1;
+      width: 100%;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .hero-upload-mock:hover,
+    .hero-upload-mock:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(201, 106, 61, 0.5);
+      box-shadow: 0 14px 28px rgba(50, 39, 28, 0.08);
+      background: rgba(255, 255, 255, 0.68);
+      outline: none;
     }
 
     .hero-upload-icon {
@@ -560,6 +572,87 @@
       color: var(--muted);
       font-size: 0.95rem;
       line-height: 1.5;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .upload-tool-modal {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(34, 28, 23, 0.32);
+      backdrop-filter: blur(8px);
+      z-index: 60;
+    }
+
+    .upload-tool-modal.hidden {
+      display: none !important;
+    }
+
+    .upload-tool-card {
+      width: min(560px, 100%);
+      display: grid;
+      gap: 16px;
+      padding: 24px;
+      border-radius: 28px;
+      background: rgba(248, 244, 237, 0.98);
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      box-shadow: 0 28px 64px rgba(30, 25, 20, 0.18);
+    }
+
+    .upload-tool-options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .upload-tool-option {
+      width: 100%;
+      display: grid;
+      gap: 4px;
+      text-align: left;
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .upload-tool-option:hover,
+    .upload-tool-option:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(201, 106, 61, 0.24);
+      box-shadow: 0 16px 30px rgba(50, 39, 28, 0.08);
+      outline: none;
+    }
+
+    .upload-tool-option-title {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .upload-tool-option-copy {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .upload-tool-actions {
+      display: flex;
+      justify-content: flex-end;
     }
 
     .quick-check-banner {
@@ -808,13 +901,13 @@
           </div>
         </div>
 
-        <div class="landing-hero-visual" aria-hidden="true">
+        <div class="landing-hero-visual">
           <div class="hero-preview-frame">
-            <div class="hero-upload-mock">
-              <span class="hero-upload-icon">+</span>
+            <button id="heroUploadTrigger" class="hero-upload-mock" type="button">
+              <span class="hero-upload-icon" aria-hidden="true">+</span>
               <span class="hero-upload-title">Upload your reference</span>
               <span class="hero-upload-copy">Preview how the studio tools help you read value, structure, and palette at a glance.</span>
-            </div>
+            </button>
 
             <div class="hero-preview-grid">
               <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
@@ -854,6 +947,35 @@
         </div>
       </div>
     </section>
+
+    <div id="uploadToolModal" class="upload-tool-modal hidden" role="dialog" aria-modal="true" aria-labelledby="uploadToolModalTitle">
+      <div class="upload-tool-card card">
+        <div>
+          <p class="eyebrow">Choose Tool</p>
+          <h2 id="uploadToolModalTitle">Where should this reference open?</h2>
+        </div>
+        <p class="subheadline">Pick the tool first, then choose your image. It will open directly in the first tab of that app.</p>
+        <div class="upload-tool-options">
+          <button class="upload-tool-option" type="button" data-upload-target="value">
+            <span class="upload-tool-option-title">Value Checker</span>
+            <span class="upload-tool-option-copy">Open the image in the grayscale study workspace.</span>
+          </button>
+          <button class="upload-tool-option" type="button" data-upload-target="composition">
+            <span class="upload-tool-option-title">Composition Checker</span>
+            <span class="upload-tool-option-copy">Open the image in the free basic composition workspace.</span>
+          </button>
+          <button class="upload-tool-option" type="button" data-upload-target="color">
+            <span class="upload-tool-option-title">Color Checker</span>
+            <span class="upload-tool-option-copy">Open the image in palette analysis with the first color tab active.</span>
+          </button>
+        </div>
+        <div class="upload-tool-actions">
+          <button id="uploadToolModalClose" class="button-secondary" type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <input id="landingUploadInput" class="visually-hidden" type="file" accept="image/*">
 
     <section class="card quick-check-banner" aria-label="Quick Check call to action">
       <h2>Try the Quick Check for Free</h2>
@@ -987,7 +1109,23 @@
 
   <script>
     const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+    const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
+    const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
+    const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
+    const LANDING_HANDOFF_STORE = "uploads";
+    const LANDING_HANDOFF_RECORD = "latest";
     const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
+    const heroUploadTrigger = document.getElementById("heroUploadTrigger");
+    const uploadToolModal = document.getElementById("uploadToolModal");
+    const uploadToolModalClose = document.getElementById("uploadToolModalClose");
+    const landingUploadInput = document.getElementById("landingUploadInput");
+    const uploadToolOptions = Array.from(document.querySelectorAll("[data-upload-target]"));
+    const TOOL_UPLOAD_DESTINATIONS = {
+      value: "./value-checker/index.html",
+      composition: "./composition-checker/index.html",
+      color: "./color-studio/index.html"
+    };
+    let pendingUploadTarget = "";
 
     function isUnlocked() {
       return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
@@ -1008,6 +1146,88 @@
       unlockSuccessBanner?.classList.remove("hidden");
     }
 
+    function openUploadToolModal() {
+      uploadToolModal?.classList.remove("hidden");
+    }
+
+    function closeUploadToolModal() {
+      uploadToolModal?.classList.add("hidden");
+      pendingUploadTarget = "";
+    }
+
+    function beginToolUpload(target) {
+      closeUploadToolModal();
+      pendingUploadTarget = target;
+      landingUploadInput?.click();
+    }
+
+    function openLandingHandoffDb() {
+      return new Promise((resolve, reject) => {
+        const request = window.indexedDB.open(LANDING_HANDOFF_DB, 1);
+
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(LANDING_HANDOFF_STORE)) {
+            db.createObjectStore(LANDING_HANDOFF_STORE);
+          }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Failed to open handoff database."));
+      });
+    }
+
+    async function saveLandingHandoff(file, target) {
+      const db = await openLandingHandoffDb();
+
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction(LANDING_HANDOFF_STORE, "readwrite");
+        const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+        store.put({ file, target, createdAt: Date.now() }, LANDING_HANDOFF_RECORD);
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error || new Error("Failed to store image handoff."));
+        transaction.onabort = () => reject(transaction.error || new Error("Image handoff was aborted."));
+      });
+
+      db.close();
+    }
+
+    async function handoffLandingUpload(file) {
+      const targetUrl = TOOL_UPLOAD_DESTINATIONS[pendingUploadTarget];
+      if (!file || !targetUrl) {
+        pendingUploadTarget = "";
+        return;
+      }
+
+      try {
+        await saveLandingHandoff(file, pendingUploadTarget);
+        window.location.href = targetUrl;
+      } catch (error) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            window.sessionStorage.setItem(LANDING_HANDOFF_IMAGE_KEY, String(reader.result));
+            window.sessionStorage.setItem(LANDING_HANDOFF_TARGET_KEY, pendingUploadTarget);
+            window.location.href = targetUrl;
+          } catch (storageError) {
+            window.alert("This image is too large to pass between tools. Please open the tool first and upload it there.");
+          } finally {
+            pendingUploadTarget = "";
+            landingUploadInput.value = "";
+          }
+        };
+        reader.onerror = () => {
+          pendingUploadTarget = "";
+          landingUploadInput.value = "";
+        };
+        reader.readAsDataURL(file);
+        return;
+      } finally {
+        pendingUploadTarget = "";
+        landingUploadInput.value = "";
+      }
+    }
+
     function handleLandingUnlockReturn() {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get("unlocked") === "true") {
@@ -1018,6 +1238,21 @@
     }
 
     handleLandingUnlockReturn();
+
+    heroUploadTrigger?.addEventListener("click", openUploadToolModal);
+    uploadToolModalClose?.addEventListener("click", closeUploadToolModal);
+    uploadToolModal?.addEventListener("click", (event) => {
+      if (event.target === uploadToolModal) {
+        closeUploadToolModal();
+      }
+    });
+    uploadToolOptions.forEach((button) => {
+      button.addEventListener("click", () => beginToolUpload(button.dataset.uploadTarget));
+    });
+    landingUploadInput?.addEventListener("change", async (event) => {
+      const [file] = event.target.files || [];
+      await handoffLandingUpload(file);
+    });
   </script>
 </body>
 </html>
