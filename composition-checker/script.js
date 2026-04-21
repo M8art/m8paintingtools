@@ -85,6 +85,7 @@ const advancedStatusNote = document.getElementById("advancedStatusNote");
 const advancedUnlockCard = document.getElementById("advancedUnlockCard");
 const advancedUnlockCopy = document.getElementById("advancedUnlockCopy");
 const advancedUnlockButton = document.getElementById("advancedUnlockButton");
+const premiumToast = document.getElementById("premiumToast");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
@@ -188,6 +189,7 @@ const state = {
   userSelectedOverlayColor: null,
   isOverlayColorMenuOpen: false,
   advancedUnlockVisible: false,
+  premiumToastTimeout: null,
   notanLevels: 3,
   notanCache: {
     key: null,
@@ -277,6 +279,7 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
   advancedUnlockCard?.classList.remove("hidden");
   advancedStatusNote.textContent = `Unlock full access to use ${actionName}.`;
   workspaceHint.textContent = "Advanced tools are visible for preview. Real advanced actions unlock with one full-app payment.";
+  showPremiumLimitToast(`Advanced action locked. Tap Unlock All Tools to use ${actionName}.`);
 }
 
 function requireUnlock(actionName = "advanced composition tools") {
@@ -286,6 +289,32 @@ function requireUnlock(actionName = "advanced composition tools") {
 
   showUnlockPaywall(actionName);
   return false;
+}
+
+function showPremiumLimitToast(message) {
+  if (!premiumToast) {
+    return;
+  }
+
+  if (state.premiumToastTimeout) {
+    window.clearTimeout(state.premiumToastTimeout);
+    state.premiumToastTimeout = null;
+  }
+
+  premiumToast.textContent = message;
+  premiumToast.classList.remove("hidden");
+
+  window.requestAnimationFrame(() => {
+    premiumToast.classList.add("is-visible");
+  });
+
+  state.premiumToastTimeout = window.setTimeout(() => {
+    premiumToast.classList.remove("is-visible");
+    state.premiumToastTimeout = window.setTimeout(() => {
+      premiumToast.classList.add("hidden");
+      state.premiumToastTimeout = null;
+    }, 180);
+  }, 2000);
 }
 
 function handleUpload(event) {
