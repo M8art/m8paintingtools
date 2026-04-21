@@ -186,6 +186,33 @@
       padding: 26px;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
+    .unlock-success-banner {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 26px;
+      padding: 24px 26px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 242, 234, 0.92));
+      border-color: rgba(201, 106, 61, 0.18);
+      box-shadow: 0 22px 48px rgba(50, 39, 28, 0.12);
+    }
+
+    .unlock-success-copy {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .unlock-success-note {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
     .tool-card {
       display: grid;
       gap: 20px;
@@ -712,6 +739,22 @@
 </head>
 <body>
   <div class="page">
+    <section id="unlockSuccessBanner" class="card unlock-success-banner hidden" aria-live="polite">
+      <div>
+        <p class="eyebrow">Premium Access</p>
+        <h2>All tools unlocked</h2>
+      </div>
+      <div class="unlock-success-copy">
+        <p>Your payment was successful. You now have unlimited access to all premium M8 Painting Tools.</p>
+        <p class="unlock-success-note">Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is sold separately.</p>
+      </div>
+      <div class="button-row">
+        <a class="button" href="./analysis/index.html">Open Analysis</a>
+        <a class="button-secondary" href="./composition-checker/index.html">Open Composition</a>
+        <a class="button-secondary" href="./color-studio/index.html">Open Color Mixer</a>
+      </div>
+    </section>
+
     <header class="topbar">
       <div>
         <p class="eyebrow">Painting Analysis</p>
@@ -931,5 +974,40 @@
       </div>
     </section>
   </div>
+
+  <script>
+    const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+    const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
+
+    function isUnlocked() {
+      return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
+    }
+
+    function setUnlocked() {
+      localStorage.setItem(GLOBAL_UNLOCK_STORAGE_KEY, "true");
+    }
+
+    function clearUnlockQueryFromUrl() {
+      const cleanedUrl = new URL(window.location.href);
+      cleanedUrl.searchParams.delete("unlocked");
+      const nextUrl = `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`;
+      window.history.replaceState({}, "", nextUrl || cleanedUrl.pathname);
+    }
+
+    function showGlobalUnlockSuccess() {
+      unlockSuccessBanner?.classList.remove("hidden");
+    }
+
+    function handleLandingUnlockReturn() {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("unlocked") === "true") {
+        setUnlocked();
+        showGlobalUnlockSuccess();
+        clearUnlockQueryFromUrl();
+      }
+    }
+
+    handleLandingUnlockReturn();
+  </script>
 </body>
 </html>

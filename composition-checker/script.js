@@ -82,6 +82,9 @@ const advancedAnalysisPanel = document.getElementById("advancedAnalysisPanel");
 const advancedModeDescription = document.getElementById("advancedModeDescription");
 const advancedModeTip = document.getElementById("advancedModeTip");
 const advancedStatusNote = document.getElementById("advancedStatusNote");
+const advancedUnlockCard = document.getElementById("advancedUnlockCard");
+const advancedUnlockCopy = document.getElementById("advancedUnlockCopy");
+const advancedUnlockButton = document.getElementById("advancedUnlockButton");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
@@ -165,6 +168,9 @@ const OVERLAY_COLOR_NAMES = {
   "#ffffff": "overlay-color-white",
   "#c96a3d": "overlay-color-red"
 };
+const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
+const GLOBAL_UNLOCK_BODY = "One payment unlocks all M8 Painting Tools. Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is separate.";
 
 const state = {
   analysisMode: "basic",
@@ -181,6 +187,7 @@ const state = {
   autoDetectedOverlayColor: "#1f1c18",
   userSelectedOverlayColor: null,
   isOverlayColorMenuOpen: false,
+  advancedUnlockVisible: false,
   notanLevels: 3,
   notanCache: {
     key: null,
@@ -243,12 +250,52 @@ overlayColorSwatches.forEach((button) => {
   button.addEventListener("click", () => selectOverlayColor(button.dataset.overlayColor));
 });
 document.addEventListener("click", handleDocumentClick);
+advancedUnlockButton?.addEventListener("click", () => {
+  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+});
 
 updateModeUI();
+
+function isUnlocked() {
+  return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
+}
+
+function isAdvancedLocked() {
+  return state.analysisMode === "advanced" && !isUnlocked();
+}
+
+function hideUnlockPaywall() {
+  state.advancedUnlockVisible = false;
+  advancedUnlockCard?.classList.add("hidden");
+}
+
+function showUnlockPaywall(actionName = "advanced composition tools") {
+  state.advancedUnlockVisible = true;
+  if (advancedUnlockCopy) {
+    advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
+  }
+  advancedUnlockCard?.classList.remove("hidden");
+  advancedStatusNote.textContent = `Unlock full access to use ${actionName}.`;
+  workspaceHint.textContent = "Advanced tools are visible for preview. Real advanced actions unlock with one full-app payment.";
+}
+
+function requireUnlock(actionName = "advanced composition tools") {
+  if (!isAdvancedLocked()) {
+    return true;
+  }
+
+  showUnlockPaywall(actionName);
+  return false;
+}
 
 function handleUpload(event) {
   const [file] = event.target.files || [];
   if (!file) {
+    return;
+  }
+
+  if (!requireUnlock("advanced image uploads")) {
+    event.target.value = "";
     return;
   }
 
@@ -294,6 +341,11 @@ function handleWorkspaceKeydown(event) {
 }
 
 function handleOverlayClick(event) {
+  if (isAdvancedLocked()) {
+    showUnlockPaywall("advanced overlays");
+    return;
+  }
+
   if (state.spiral.suppressClick) {
     state.spiral.suppressClick = false;
     return;
@@ -353,6 +405,9 @@ function handleOverlayClick(event) {
 }
 
 function toggleOverlayColorMenu(event) {
+  if (!requireUnlock("advanced overlay controls")) {
+    return;
+  }
   event.stopPropagation();
   state.isOverlayColorMenuOpen = !state.isOverlayColorMenuOpen;
   updateOverlayColorUI();
@@ -364,6 +419,9 @@ function closeOverlayColorMenu() {
 }
 
 function selectOverlayColor(color) {
+  if (!requireUnlock("advanced overlay controls")) {
+    return;
+  }
   state.userSelectedOverlayColor = color;
   closeOverlayColorMenu();
   updateModeUI();
@@ -377,6 +435,10 @@ function handleDocumentClick(event) {
 }
 
 function handleOverlayPointerDown(event) {
+  if (isAdvancedLocked()) {
+    showUnlockPaywall("advanced overlay controls");
+    return;
+  }
   if (!canDragGoldenSpiral() || !state.imageLoaded) {
     return;
   }
@@ -497,6 +559,9 @@ function clearNoteMarkers() {
 }
 
 function toggleSpiralFlipX() {
+  if (!requireUnlock("advanced spiral controls")) {
+    return;
+  }
   cancelGoldenSpiralAnimation();
   state.spiral.flipX = !state.spiral.flipX;
   updateModeUI();
@@ -504,6 +569,9 @@ function toggleSpiralFlipX() {
 }
 
 function rotateGoldenSpiral() {
+  if (!requireUnlock("advanced spiral controls")) {
+    return;
+  }
   cancelGoldenSpiralAnimation();
   state.spiral.rotation = (state.spiral.rotation + 90) % 360;
   state.spiral.selected = true;
@@ -512,6 +580,9 @@ function rotateGoldenSpiral() {
 }
 
 function toggleSpiralFlipY() {
+  if (!requireUnlock("advanced spiral controls")) {
+    return;
+  }
   cancelGoldenSpiralAnimation();
   state.spiral.flipY = !state.spiral.flipY;
   updateModeUI();
@@ -519,6 +590,9 @@ function toggleSpiralFlipY() {
 }
 
 function setSpiralDisplayMode(displayMode) {
+  if (!requireUnlock("advanced spiral controls")) {
+    return;
+  }
   cancelGoldenSpiralAnimation();
   state.spiral.displayMode = displayMode;
   updateModeUI();
@@ -526,6 +600,10 @@ function setSpiralDisplayMode(displayMode) {
 }
 
 function handleSpiralScaleInput(event) {
+  if (!requireUnlock("advanced spiral controls")) {
+    event.target.value = String(Math.round(state.spiral.scale * 100));
+    return;
+  }
   cancelGoldenSpiralAnimation();
   state.spiral.scale = Number(event.target.value) / 100;
   state.spiral.selected = true;
@@ -534,6 +612,9 @@ function handleSpiralScaleInput(event) {
 }
 
 function resetGoldenSpiral() {
+  if (!requireUnlock("advanced spiral controls")) {
+    return;
+  }
   cancelGoldenSpiralAnimation();
   Object.assign(state.spiral, SPIRAL_DEFAULTS);
   state.spiral.selected = true;
@@ -543,6 +624,9 @@ function resetGoldenSpiral() {
 
 function setAnalysisMode(mode) {
   state.analysisMode = mode;
+  if (mode === "basic" || isUnlocked()) {
+    hideUnlockPaywall();
+  }
   updateModeUI();
   requestOverlayDraw();
 }
@@ -565,6 +649,9 @@ function setAdvancedMode(mode) {
     state.spiral.selected = false;
   } else if (state.imageLoaded) {
     state.spiral.selected = true;
+  }
+  if (isUnlocked()) {
+    hideUnlockPaywall();
   }
   updateModeUI();
   requestOverlayDraw();
@@ -694,6 +781,7 @@ function handleGridCanvasInput() {
 
 function updateModeUI() {
   const isBasic = state.analysisMode === "basic";
+  const advancedLocked = !isBasic && !isUnlocked();
   const config = MODES[state.mode];
   const advancedConfig = ADVANCED_MODES[state.advancedMode];
   const isThirdsMode = isBasic && state.mode === "thirds";
@@ -718,6 +806,7 @@ function updateModeUI() {
   clearNotesButton.disabled = !isFocalBalance || state.focalPoints.length === 0;
   clearNotesButton.textContent = "Reset Focal Points";
   focalSuggestButton.disabled = !isFocalBalance || !state.imageLoaded;
+  advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
 
   if (isBasic) {
     workspaceTitle.textContent = config.title;
@@ -739,14 +828,20 @@ function updateModeUI() {
   } else {
     workspaceTitle.textContent = advancedConfig.title;
     analysisTitle.textContent = advancedConfig.title;
-    workspaceHint.textContent = state.imageLoaded
-      ? "Study the image with the selected advanced composition guide."
-      : "Upload an image to begin your composition study.";
+    workspaceHint.textContent = advancedLocked
+      ? (state.imageLoaded
+        ? "Preview the advanced layout here. Unlock full access to use overlays, controls, and export."
+        : "Preview the advanced layout here. Unlock full access to upload and use advanced composition tools.")
+      : (state.imageLoaded
+        ? "Study the image with the selected advanced composition guide."
+        : "Upload an image to begin your composition study.");
     advancedModeDescription.textContent = advancedConfig.description;
     advancedModeTip.textContent = advancedConfig.tip;
-    advancedStatusNote.textContent = state.imageLoaded
-      ? getAdvancedStatusCopy(advancedConfig.status)
-      : advancedConfig.status;
+    advancedStatusNote.textContent = advancedLocked
+      ? "Advanced tools are visible for preview. Unlock full access when you're ready to use overlays, controls, and export."
+      : (state.imageLoaded
+        ? getAdvancedStatusCopy(advancedConfig.status)
+        : advancedConfig.status);
   }
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
@@ -826,6 +921,10 @@ function getAdvancedStatusCopy(defaultStatus) {
 }
 
 function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode) {
+  if (isAdvancedLocked()) {
+    return "default";
+  }
+
   if (isGoldenSpiral && state.imageLoaded) {
     return getGoldenSpiralCursor();
   }
@@ -842,7 +941,7 @@ function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode) {
 }
 
 function canEditFocalBalance() {
-  return state.imageLoaded && state.analysisMode === "advanced" && state.advancedMode === "focal-balance";
+  return state.imageLoaded && state.analysisMode === "advanced" && state.advancedMode === "focal-balance" && !isAdvancedLocked();
 }
 
 function getFocalPointAtPosition(point) {
@@ -865,7 +964,8 @@ function canSnapGoldenSpiral() {
   return state.imageLoaded
     && state.analysisMode === "advanced"
     && state.advancedMode === "golden-spiral"
-    && !state.spiral.interaction;
+    && !state.spiral.interaction
+    && !isAdvancedLocked();
 }
 
 function cancelGoldenSpiralAnimation() {
@@ -922,6 +1022,9 @@ function getGoldenSpiralTargetOffsets(point, width, height) {
 }
 
 function suggestFocalPointsFromContrast() {
+  if (!requireUnlock("advanced focal suggestions")) {
+    return;
+  }
   if (!canEditFocalBalance()) {
     return;
   }
@@ -1030,6 +1133,9 @@ function drawOverlay() {
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, width, height);
+  if (isAdvancedLocked()) {
+    return;
+  }
   drawCompositionOverlay(ctx, width, height);
 }
 
@@ -1490,6 +1596,9 @@ function getScaledSpiralState(targetWidth, targetHeight) {
 }
 
 function downloadCompositionAnalysis() {
+  if (!requireUnlock("advanced exports")) {
+    return;
+  }
   if (!state.imageLoaded || !compositionImage.naturalWidth || !compositionImage.naturalHeight) {
     return;
   }
@@ -1536,6 +1645,10 @@ function downloadCompositionAnalysis() {
 }
 
 function handleNotanLevelsInput(event) {
+  if (!requireUnlock("advanced Notan controls")) {
+    event.target.value = String(state.notanLevels);
+    return;
+  }
   state.notanLevels = Number(event.target.value);
   invalidateNotanCache();
   notanLevelsValue.textContent = `${state.notanLevels} values`;
@@ -1789,7 +1902,7 @@ function toOverlayAlphaColor(hexColor, alpha) {
 }
 
 function canDragGoldenSpiral() {
-  return state.analysisMode === "advanced" && state.advancedMode === "golden-spiral";
+  return state.analysisMode === "advanced" && state.advancedMode === "golden-spiral" && !isAdvancedLocked();
 }
 
 function getOverlayPoint(event) {

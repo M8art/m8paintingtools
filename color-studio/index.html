@@ -58,8 +58,8 @@
     <nav class="mode-switcher" aria-label="Navigation">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-tab="palette">Palette Analysis</button>
-      <button class="tab-button" type="button" data-tab="temperature" aria-disabled="true">Temperature Map</button>
-      <button class="tab-button" type="button" data-tab="mixer" aria-disabled="true">Color Mixer</button>
+      <button class="tab-button" type="button" data-tab="mixer">Color Mixer</button>
+      <button class="tab-button" type="button" data-tab="trainer">Mix Trainer</button>
     </nav>
 
     <main class="layout">
@@ -85,6 +85,71 @@
               <p class="upload-empty-label">Click to upload your image</p>
             </div>
           </div>
+          <button id="sampleMarker" class="sample-marker hidden" type="button" tabindex="-1" aria-hidden="true"></button>
+        </div>
+        <div id="harmonySchemeCard" class="detail-card harmony-scheme-card">
+          <p id="harmonySchemeTitle" class="section-label">Color Harmony Scheme</p>
+          <div class="harmony-scheme-layout">
+            <div id="harmonySchemeVisualWrap" class="harmony-scheme-visual-wrap">
+              <div id="harmonySchemeVisual" class="harmony-scheme-visual">
+                <p class="swatch-empty">Upload an image to see the detected harmony scheme.</p>
+              </div>
+              <div class="harmony-scheme-meta">
+                <div class="harmony-scheme-head">
+                  <div>
+                    <p id="harmonySchemeName" class="scheme-title">No scheme yet</p>
+                    <p id="harmonySchemeSecondary" class="detail-copy">Upload an image to analyze the harmony structure.</p>
+                  </div>
+                  <div class="scheme-confidence-block">
+                    <span class="meta-label">Confidence</span>
+                    <span id="harmonySchemeConfidence" class="meta-value">--</span>
+                  </div>
+                </div>
+                <div class="confidence-meter" aria-hidden="true">
+                  <span id="harmonySchemeConfidenceFill" class="confidence-fill"></span>
+                </div>
+              </div>
+            </div>
+
+            <div id="harmonySchemeMeaningSection" class="scheme-section">
+              <p id="harmonySchemeMeaningLabel" class="section-label">What This Scheme Means</p>
+              <div id="harmonySchemeMeaning" class="scheme-copy">
+                <p class="detail-copy">The detected harmony will be explained here after upload.</p>
+              </div>
+            </div>
+
+            <div id="harmonySchemeUseSection" class="scheme-section">
+              <p id="harmonySchemeUseLabel" class="section-label">How This Painting Uses It</p>
+              <div id="harmonySchemeUse" class="scheme-copy">
+                <p class="detail-copy">A painting-specific summary will appear here after analysis.</p>
+              </div>
+            </div>
+
+            <div id="harmonySchemeSuggestionsSection" class="scheme-section">
+              <p id="harmonySchemeSuggestionsLabel" class="section-label">Painter Suggestions</p>
+              <div id="harmonySchemeSuggestions" class="scheme-list">
+                <p class="detail-copy">Practical painter guidance will appear here after analysis.</p>
+              </div>
+            </div>
+
+            <div id="harmonySchemeDoDontSection" class="scheme-section">
+              <p class="section-label">Do / Don't</p>
+              <div class="scheme-do-dont">
+                <div>
+                  <p class="meta-label">Do</p>
+                  <div id="harmonySchemeDo" class="scheme-list compact">
+                    <p class="detail-copy">Keep one hue family dominant.</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="meta-label">Don't</p>
+                  <div id="harmonySchemeDont" class="scheme-list compact">
+                    <p class="detail-copy">Avoid splitting every hue equally.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <p class="feedback-helper">Want a full personal critique by Mate Art? You will find the personal feedback option below after analysis.</p>
       </section>
@@ -106,11 +171,12 @@
                 Sample the main color families in your image and see which hues dominate the overall painting.
               </p>
               <p class="detail-copy">Use this to understand which colors dominate the image.</p>
+              <p id="paletteSummary" class="detail-copy">Upload an image to see a painter-friendly summary of the main color roles.</p>
             </div>
           </div>
 
           <div id="selectedColorCard" class="detail-card selected-color-card hidden">
-            <p class="section-label">Picked Color</p>
+            <p class="section-label">Selected Color</p>
             <div class="selected-color-layout">
               <div id="selectedColorPreview" class="selected-color-preview" aria-hidden="true"></div>
               <div class="selected-color-meta">
@@ -136,16 +202,224 @@
           </div>
 
           <div class="detail-card">
-            <p class="section-label">Palette Breakdown</p>
+            <p class="section-label">Color Roles in the Painting</p>
             <div id="swatchGrid" class="swatch-grid">
               <p class="swatch-empty">No palette yet.</p>
             </div>
             <p class="detail-copy">Compare temperature shifts across the painting.</p>
           </div>
 
-          <div class="detail-card">
-            <p class="section-label">Status</p>
-            <p id="statusNote" class="detail-copy">Upload an image to start.</p>
+          <div id="colorHarmonyCard" class="detail-card">
+            <p class="section-label">Color Harmony Analysis</p>
+            <div class="harmony-card">
+              <div id="harmonyResult" class="harmony-result">
+                <p id="harmonySummary" class="detail-copy">Upload an image to analyze the harmony structure of the palette.</p>
+                <div class="harmony-meta">
+                  <div class="swatch-row">
+                    <span class="meta-label">Primary Harmony</span>
+                    <span id="harmonyPrimary" class="meta-value">--</span>
+                  </div>
+                  <div class="swatch-row">
+                    <span class="meta-label">Secondary Tendency</span>
+                    <span id="harmonySecondary" class="meta-value">--</span>
+                  </div>
+                  <div class="swatch-row">
+                    <span class="meta-label">Confidence</span>
+                    <span id="harmonyConfidence" class="meta-value">--</span>
+                  </div>
+                </div>
+                <div class="confidence-meter" aria-hidden="true">
+                  <span id="harmonyConfidenceFill" class="confidence-fill"></span>
+                </div>
+                <div id="harmonySwatches" class="harmony-swatches">
+                  <p class="swatch-empty">Dominant harmony swatches will appear here.</p>
+                </div>
+                <p id="harmonyExplanation" class="detail-copy">The harmony reading will describe how the main hue families relate across the painting.</p>
+                <p id="harmonyHint" class="detail-copy">Painter hint: look for whether contrast comes from hue shifts or mostly from value and chroma.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown-toggle-row">
+            <button id="breakdownToggle" class="button breakdown-toggle" type="button">Show full breakdown</button>
+          </div>
+
+          <div id="mixerCard" class="detail-card hidden">
+            <p class="section-label">M8 Color Mixer</p>
+            <div class="mixer-panel">
+              <div id="mixerIntro" class="detail-copy">Upload an image, switch to Color Mixer, then click a point in the image to sample how M8 would most likely mix it.</div>
+
+              <div class="mixer-section">
+                <p class="section-label">Clicked Color</p>
+                <div class="mixer-target">
+                  <div id="mixerSwatch" class="mixer-swatch" aria-hidden="true"></div>
+                  <div class="mixer-target-grid">
+                    <div class="swatch-row"><span class="meta-label">Value</span><span id="mixerValue" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Temperature</span><span id="mixerTemperature" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Chroma</span><span id="mixerChroma" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Role</span><span id="mixerRole" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Family</span><span id="mixerFamily" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Hex</span><span id="mixerHex" class="meta-value">--</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mixer-section">
+                <p class="section-label">Most Likely Mix</p>
+                <div id="mixerMixList" class="mixer-mix-list">
+                  <p class="detail-copy">No mixture yet.</p>
+                </div>
+              </div>
+
+              <div id="mixerNotesSection" class="mixer-section">
+                <p class="section-label">Notes</p>
+                <div id="mixerNotes" class="scheme-list compact">
+                  <p class="detail-copy">Painter notes will appear here after sampling.</p>
+                </div>
+              </div>
+
+              <div id="mixerAltSection" class="mixer-section hidden">
+                <p class="section-label">Alternate Mix</p>
+                <div id="mixerAltList" class="mixer-mix-list"></div>
+              </div>
+
+              <div id="mixerTagsSection" class="mixer-section">
+                <p class="section-label">Mixing Behavior</p>
+                <div id="mixerTags" class="mixer-tags">
+                  <span class="detail-copy">No behavior tags yet.</span>
+                </div>
+              </div>
+
+              <div class="mixer-section mixer-logic-section">
+                <button id="mixerLogicToggle" class="mixer-logic-toggle" type="button" aria-expanded="false" aria-controls="mixerLogicContent">
+                  <span>M8 Palette &amp; Mixing Logic</span>
+                  <span id="mixerLogicToggleLabel" class="mixer-logic-toggle-label">Show</span>
+                </button>
+
+                <div id="mixerLogicContent" class="mixer-logic-content hidden">
+                  <div class="mixer-logic-block">
+                    <p class="section-label">Why this palette works</p>
+                    <div id="mixerLogicIntro" class="scheme-copy"></div>
+                  </div>
+
+                  <div class="mixer-logic-block">
+                    <p class="section-label">Core palette</p>
+                    <div id="mixerPaletteList" class="mixer-palette-list"></div>
+                  </div>
+
+                  <div class="mixer-logic-block">
+                    <p class="section-label">Key mixing rules</p>
+                    <div id="mixerLogicRules" class="scheme-list compact"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="trainerCard" class="detail-card hidden">
+            <p class="section-label">M8 Mix Trainer</p>
+            <div class="mixer-panel">
+              <div id="trainerIntro" class="detail-copy">Upload an image, switch to Mix Trainer, then click a passage in the image to train your mixing choice against M8 logic.</div>
+
+              <div class="mixer-section">
+                <p class="section-label">Target Color</p>
+                <div class="mixer-target">
+                  <div id="trainerSwatch" class="mixer-swatch" aria-hidden="true"></div>
+                  <div class="mixer-target-grid">
+                    <div class="swatch-row"><span class="meta-label">Value</span><span id="trainerValue" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Temperature</span><span id="trainerTemperature" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Chroma</span><span id="trainerChroma" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Role</span><span id="trainerRole" class="meta-value">--</span></div>
+                    <div class="swatch-row"><span class="meta-label">Family</span><span id="trainerFamily" class="meta-value">--</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mixer-section">
+                <div class="trainer-section-head">
+                  <p class="section-label">Choose Your Mix</p>
+                  <span class="trainer-limit">Max 4 pigments</span>
+                </div>
+                <div id="trainerPigmentGrid" class="trainer-pigment-grid"></div>
+                <div class="trainer-selected-block">
+                  <p class="meta-label">Selected Pigments</p>
+                  <div id="trainerSelectedList" class="mixer-tags">
+                    <span class="detail-copy">No pigments selected yet.</span>
+                  </div>
+                </div>
+                <button id="trainerCheckButton" class="button" type="button">Check My Mix</button>
+              </div>
+
+              <div id="trainerResultBlock" class="mixer-section hidden">
+                <p class="section-label">Result</p>
+                <div class="trainer-score-card">
+                  <div class="trainer-score-head">
+                    <span id="trainerScoreLabel" class="trainer-score-label">--</span>
+                    <span id="trainerScoreValue" class="meta-value">--</span>
+                  </div>
+                  <div class="confidence-meter" aria-hidden="true">
+                    <span id="trainerScoreFill" class="confidence-fill"></span>
+                  </div>
+                </div>
+
+                <div class="trainer-result-grid">
+                  <div class="trainer-result-card">
+                    <p class="meta-label">Your Mix</p>
+                    <div id="trainerYourMix" class="mixer-mix-list"></div>
+                  </div>
+                  <div class="trainer-result-card">
+                    <p class="meta-label">M8 Mix</p>
+                    <div id="trainerM8Mix" class="mixer-mix-list"></div>
+                  </div>
+                </div>
+
+                <div class="trainer-result-card">
+                  <p class="meta-label">Feedback</p>
+                  <div id="trainerFeedback" class="scheme-list compact"></div>
+                </div>
+
+                <div class="trainer-result-card">
+                  <p class="meta-label">Improve This Mix</p>
+                  <div id="trainerImprove" class="scheme-list compact"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="premiumUnlockCard" class="detail-card hidden">
+            <p class="section-label">Premium Access</p>
+            <h3 id="premiumUnlockTitle" class="feedback-title">Unlock full access</h3>
+            <p id="premiumUnlockText" class="detail-copy">One payment unlocks all M8 Painting Tools. Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is separate.</p>
+            <p id="premiumUnlockNote" class="detail-copy">This payment unlocks the full app, not just this section.</p>
+            <button id="premiumUnlockButton" class="button-secondary" type="button">Unlock All Tools</button>
+          </div>
+
+          <div id="breakdownContent" class="breakdown-content">
+            <div class="detail-card">
+              <p class="section-label">Painter Interpretation</p>
+              <div id="painterInterpretation" class="insight-list">
+                <p class="detail-copy">Upload an image to translate the palette into painter-friendly notes.</p>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <p class="section-label">Value Structure</p>
+              <div id="valueStructure" class="value-structure-grid">
+                <p class="detail-copy">Upload an image to read the tonal structure.</p>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <p class="section-label">Focal Color</p>
+              <div id="focalColor" class="focal-color-card">
+                <p class="detail-copy">The likely focal accent will appear here after analysis.</p>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <p class="section-label">Status</p>
+              <p id="statusNote" class="detail-copy">Upload an image to start.</p>
+            </div>
           </div>
         <div class="feedback-cta">
           <span class="feedback-badge">Personal feedback</span>
