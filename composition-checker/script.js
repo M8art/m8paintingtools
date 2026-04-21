@@ -172,6 +172,11 @@ const OVERLAY_COLOR_NAMES = {
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
 const GLOBAL_UNLOCK_BODY = "One payment unlocks all M8 Painting Tools. Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is separate.";
+const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
+const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
+const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
+const LANDING_HANDOFF_STORE = "uploads";
+const LANDING_HANDOFF_RECORD = "latest";
 
 const state = {
   analysisMode: "basic",
@@ -350,6 +355,137 @@ function handleUpload(event) {
     requestOverlayDraw();
   };
   compositionImage.src = state.objectUrl;
+}
+
+function loadCompositionFromDataUrl(dataUrl) {
+  if (!dataUrl) {
+    return;
+  }
+
+  if (state.objectUrl) {
+    URL.revokeObjectURL(state.objectUrl);
+    state.objectUrl = null;
+  }
+
+  setAnalysisMode("basic");
+  compositionImage.onload = () => {
+    state.imageLoaded = true;
+    state.focalPoints = [];
+    state.focalPointSource = "manual";
+    state.thirdsSelection = null;
+    state.userSelectedOverlayColor = null;
+    state.autoDetectedOverlayColor = detectOverlayColor();
+    invalidateNotanCache();
+    Object.assign(state.spiral, SPIRAL_DEFAULTS);
+    closeOverlayColorMenu();
+    emptyState.style.display = "none";
+    compositionImage.style.display = "block";
+    overlayCanvas.style.display = "block";
+    updateModeUI();
+    requestOverlayDraw();
+  };
+  compositionImage.src = dataUrl;
+}
+
+function openLandingHandoffDb() {
+  return new Promise((resolve, reject) => {
+    const request = window.indexedDB.open(LANDING_HANDOFF_DB, 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(LANDING_HANDOFF_STORE)) {
+        db.createObjectStore(LANDING_HANDOFF_STORE);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Failed to open handoff database."));
+  });
+}
+
+async function consumeIndexedLandingHandoff() {
+  const db = await openLandingHandoffDb();
+
+  const record = await new Promise((resolve, reject) => {
+    const transaction = db.transaction(LANDING_HANDOFF_STORE, "readonly");
+    const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+    const request = store.get(LANDING_HANDOFF_RECORD);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error || new Error("Failed to read handoff record."));
+  });
+
+  if (!record || record.target !== "composition" || !record.file) {
+    db.close();
+    return false;
+  }
+
+  await new Promise((resolve, reject) => {
+    const transaction = db.transaction(LANDING_HANDOFF_STORE, "readwrite");
+    const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+    store.delete(LANDING_HANDOFF_RECORD);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error("Failed to clear handoff record."));
+  });
+
+  db.close();
+  loadCompositionFromObjectFile(record.file);
+  return true;
+}
+
+function loadCompositionFromObjectFile(file) {
+  if (!file) {
+    return;
+  }
+
+  if (state.objectUrl) {
+    URL.revokeObjectURL(state.objectUrl);
+  }
+
+  setAnalysisMode("basic");
+  state.objectUrl = URL.createObjectURL(file);
+  compositionImage.onload = () => {
+    state.imageLoaded = true;
+    state.focalPoints = [];
+    state.focalPointSource = "manual";
+    state.thirdsSelection = null;
+    state.userSelectedOverlayColor = null;
+    state.autoDetectedOverlayColor = detectOverlayColor();
+    invalidateNotanCache();
+    Object.assign(state.spiral, SPIRAL_DEFAULTS);
+    closeOverlayColorMenu();
+    emptyState.style.display = "none";
+    compositionImage.style.display = "block";
+    overlayCanvas.style.display = "block";
+    updateModeUI();
+    requestOverlayDraw();
+  };
+  compositionImage.src = state.objectUrl;
+}
+
+async function consumeLandingHandoff() {
+  try {
+    const consumedIndexed = await consumeIndexedLandingHandoff();
+    if (consumedIndexed) {
+      return;
+    }
+  } catch (error) {
+    // Fall back to session storage below if IndexedDB is unavailable.
+  }
+
+  try {
+    const target = window.sessionStorage.getItem(LANDING_HANDOFF_TARGET_KEY);
+    const imageData = window.sessionStorage.getItem(LANDING_HANDOFF_IMAGE_KEY);
+
+    if (target !== "composition" || !imageData) {
+      return;
+    }
+
+    window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
+    window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+    loadCompositionFromDataUrl(imageData);
+  } catch (error) {
+    // Ignore session storage failures and keep the normal upload flow.
+  }
 }
 
 function handleWorkspaceClick() {
@@ -1949,3 +2085,5 @@ function getOverlayPoint(event) {
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
+
+void consumeLandingHandoff();
