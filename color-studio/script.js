@@ -11,6 +11,11 @@ const paletteSummary = document.getElementById("paletteSummary");
 const panelTitle = document.getElementById("panelTitle");
 const panelDescription = document.getElementById("panelDescription");
 const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
+const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
+const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
+const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
+const LANDING_HANDOFF_STORE = "uploads";
+const LANDING_HANDOFF_RECORD = "latest";
 
 selectedColorCard.innerHTML = `
   <p class="section-label">Selected Color</p>
@@ -376,6 +381,126 @@ function handleUpload(event) {
     extractPalette(previewImage);
   };
   previewImage.src = state.objectUrl;
+}
+
+function loadPaletteFromDataUrl(dataUrl) {
+  if (!dataUrl) {
+    return;
+  }
+
+  if (state.objectUrl) {
+    URL.revokeObjectURL(state.objectUrl);
+    state.objectUrl = null;
+  }
+
+  setTab("palette");
+  state.objectUrl = dataUrl;
+  previewImage.onload = () => {
+    previewImage.style.display = "block";
+    emptyState.style.display = "none";
+    workspaceHint.textContent = "Color families sampled from the uploaded image.";
+    statusNote.textContent = "Palette analysis ready.";
+    hidePremiumUnlockCard();
+    resetMixerSampling();
+    imageWrap.classList.toggle("sampling-enabled", false);
+    extractPalette(previewImage);
+  };
+  previewImage.src = dataUrl;
+}
+
+function openLandingHandoffDb() {
+  return new Promise((resolve, reject) => {
+    const request = window.indexedDB.open(LANDING_HANDOFF_DB, 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(LANDING_HANDOFF_STORE)) {
+        db.createObjectStore(LANDING_HANDOFF_STORE);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Failed to open handoff database."));
+  });
+}
+
+async function consumeIndexedLandingHandoff() {
+  const db = await openLandingHandoffDb();
+
+  const record = await new Promise((resolve, reject) => {
+    const transaction = db.transaction(LANDING_HANDOFF_STORE, "readonly");
+    const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+    const request = store.get(LANDING_HANDOFF_RECORD);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error || new Error("Failed to read handoff record."));
+  });
+
+  if (!record || record.target !== "color" || !record.file) {
+    db.close();
+    return false;
+  }
+
+  await new Promise((resolve, reject) => {
+    const transaction = db.transaction(LANDING_HANDOFF_STORE, "readwrite");
+    const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+    store.delete(LANDING_HANDOFF_RECORD);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error("Failed to clear handoff record."));
+  });
+
+  db.close();
+  loadPaletteFromObjectFile(record.file);
+  return true;
+}
+
+function loadPaletteFromObjectFile(file) {
+  if (!file) {
+    return;
+  }
+
+  if (state.objectUrl) {
+    URL.revokeObjectURL(state.objectUrl);
+  }
+
+  setTab("palette");
+  state.objectUrl = URL.createObjectURL(file);
+  previewImage.onload = () => {
+    previewImage.style.display = "block";
+    emptyState.style.display = "none";
+    workspaceHint.textContent = "Color families sampled from the uploaded image.";
+    statusNote.textContent = "Palette analysis ready.";
+    hidePremiumUnlockCard();
+    resetMixerSampling();
+    imageWrap.classList.toggle("sampling-enabled", false);
+    extractPalette(previewImage);
+  };
+  previewImage.src = state.objectUrl;
+}
+
+async function consumeLandingHandoff() {
+  try {
+    const consumedIndexed = await consumeIndexedLandingHandoff();
+    if (consumedIndexed) {
+      return;
+    }
+  } catch (error) {
+    // Fall back to session storage below if IndexedDB is unavailable.
+  }
+
+  try {
+    const target = window.sessionStorage.getItem(LANDING_HANDOFF_TARGET_KEY);
+    const imageData = window.sessionStorage.getItem(LANDING_HANDOFF_IMAGE_KEY);
+
+    if (target !== "color" || !imageData) {
+      return;
+    }
+
+    window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
+    window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+    loadPaletteFromDataUrl(imageData);
+  } catch (error) {
+    // Ignore session storage failures and keep the normal upload flow.
+  }
 }
 
 function handleImageWrapClick(event) {
@@ -3604,3 +3729,5 @@ function formatHsl({ hue, saturation, lightness }) {
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
+void consumeLandingHandoff();
