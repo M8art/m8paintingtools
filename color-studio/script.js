@@ -156,6 +156,7 @@ const premiumUnlockTitle = document.getElementById("premiumUnlockTitle");
 const premiumUnlockText = document.getElementById("premiumUnlockText");
 const premiumUnlockNote = document.getElementById("premiumUnlockNote");
 const premiumUnlockButton = document.getElementById("premiumUnlockButton");
+const premiumToast = document.getElementById("premiumToast");
 const painterInterpretation = document.getElementById("painterInterpretation");
 const howToPaint = document.getElementById("howToPaint");
 const valueStructure = document.getElementById("valueStructure");
@@ -228,6 +229,7 @@ const state = {
   breakdownExpanded: false,
   mixerLogicExpanded: false,
   premiumUnlockVisible: false,
+  premiumToastTimeout: null,
   sampledPoint: null,
   sampledColor: null,
   mixerResult: null,
@@ -323,6 +325,33 @@ function showUnlockPaywall(context = {}) {
   if (context.status) {
     statusNote.textContent = context.status;
   }
+  showPremiumLimitToast(context.toast || "Free limit reached. Tap Unlock All Tools to continue.");
+}
+
+function showPremiumLimitToast(message) {
+  if (!premiumToast) {
+    return;
+  }
+
+  if (state.premiumToastTimeout) {
+    window.clearTimeout(state.premiumToastTimeout);
+    state.premiumToastTimeout = null;
+  }
+
+  premiumToast.textContent = message;
+  premiumToast.classList.remove("hidden");
+
+  window.requestAnimationFrame(() => {
+    premiumToast.classList.add("is-visible");
+  });
+
+  state.premiumToastTimeout = window.setTimeout(() => {
+    premiumToast.classList.remove("is-visible");
+    state.premiumToastTimeout = window.setTimeout(() => {
+      premiumToast.classList.add("hidden");
+      state.premiumToastTimeout = null;
+    }, 180);
+  }, 2000);
 }
 
 function handleUpload(event) {
@@ -673,7 +702,8 @@ function sampleMixerPoint(event) {
     showUnlockPaywall({
       title: "Unlock full access",
       note: "Mix Trainer is part of the full-app premium unlock. Personal Feedback is separate.",
-      status: "Unlock full access to train against M8 mixing logic."
+      status: "Unlock full access to train against M8 mixing logic.",
+      toast: "Mix Trainer is premium. Tap Unlock All Tools to continue."
     });
     return;
   }
@@ -682,7 +712,8 @@ function sampleMixerPoint(event) {
     showUnlockPaywall({
       title: "Free Color Mixer limit reached",
       note: "Your 3 free Color Mixer uses are finished. One payment unlocks the full app, not just this section.",
-      status: "Unlock full access to keep using Color Mixer without limits."
+      status: "Unlock full access to keep using Color Mixer without limits.",
+      toast: "Your free Color Mixer limit is reached. Tap Unlock All Tools to continue."
     });
     return;
   }
@@ -1296,7 +1327,8 @@ function checkTrainerMix() {
     showUnlockPaywall({
       title: "Unlock full access",
       note: "Mix Trainer is included in the full-app unlock. Personal Feedback is separate.",
-      status: "Unlock full access to compare your mix with M8 logic."
+      status: "Unlock full access to compare your mix with M8 logic.",
+      toast: "Mix Trainer is premium. Tap Unlock All Tools to continue."
     });
     return;
   }
