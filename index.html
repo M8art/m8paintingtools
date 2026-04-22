@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M8 Value Studio</title>
+  <title>M8 Painting Studio</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
   <script>
@@ -367,6 +367,13 @@
       line-height: 1.62;
     }
 
+    .landing-hero-explainer {
+      max-width: 34rem;
+      color: var(--ink);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
     .landing-hero-meta {
       display: flex;
       flex-wrap: wrap;
@@ -694,6 +701,18 @@
       z-index: 1;
     }
 
+    .quick-check-banner-meta {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      text-align: center;
+    }
+
     .quick-check-banner .button-row {
       position: relative;
       z-index: 1;
@@ -704,6 +723,154 @@
       display: grid;
       gap: 10px;
       min-height: 228px;
+    }
+
+    .product-story {
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 22px;
+    }
+
+    .section-card {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section-intro {
+      display: grid;
+      gap: 8px;
+    }
+
+    .section-copy {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .micro-trust {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .step-card,
+    .matter-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      display: grid;
+      gap: 8px;
+    }
+
+    .step-number {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(201, 106, 61, 0.12);
+      color: #9b5b37;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .step-card h3,
+    .matter-card h3,
+    .promo-card h2,
+    .bridge-card h2 {
+      font-size: 1.12rem;
+      line-height: 1.2;
+    }
+
+    .step-card p,
+    .matter-card p,
+    .promo-copy,
+    .bridge-copy,
+    .footer-copy {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .matter-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .matter-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .matter-item::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(201, 106, 61, 0.72);
+      margin-top: 0.45rem;
+      flex: none;
+    }
+
+    .promo-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+      gap: 22px;
+    }
+
+    .promo-card,
+    .bridge-card {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .bridge-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 243, 236, 0.92));
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding: 20px 24px;
+      border-radius: 22px;
+      border: 1px solid rgba(59, 52, 45, 0.1);
+      background: rgba(255, 255, 255, 0.42);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .footer-links {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .footer-link {
+      color: var(--ink);
+      font-size: 0.94rem;
+    }
+
+    .footer-link:hover {
+      color: #c96a3d;
+    }
+
+    .footer-link-placeholder {
+      color: var(--muted);
+      cursor: default;
     }
 
     .feature {
@@ -778,6 +945,11 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .product-story,
+      .promo-grid {
+        grid-template-columns: 1fr;
+      }
+
       .tool-card-primary {
         transform: none;
       }
@@ -789,6 +961,10 @@
       }
 
       .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .steps-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -817,6 +993,16 @@
 
       .landing-hero-title {
         max-width: 13ch;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .footer-links {
+        grid-auto-flow: row;
+        gap: 8px;
       }
 
       .top-nav-link:first-child {
@@ -890,6 +1076,7 @@
         <div class="landing-hero-copy">
           <p class="eyebrow">Painting Tools System</p>
           <h2 class="landing-hero-title">Paint Smarter Before You Touch the Canvas</h2>
+          <p class="landing-hero-explainer">A set of simple tools that help painters see values, improve composition, and understand color faster.</p>
           <p class="landing-hero-subheadline">Analyze values, composition, and color with practical tools designed for real painters.</p>
           <div class="button-row">
             <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start with Value Checker</a>
@@ -978,10 +1165,54 @@
     <input id="landingUploadInput" class="visually-hidden" type="file" accept="image/*">
 
     <section class="card quick-check-banner" aria-label="Quick Check call to action">
-      <h2>Try the Quick Check for Free</h2>
-      <p class="quick-check-banner-copy">Get a full analysis of your reference in seconds and see how it reads in value, composition, and color.</p>
+      <h2>Test your painting in seconds</h2>
+      <p class="quick-check-banner-copy">Upload your image and instantly reveal its value, composition, and color structure.</p>
       <div class="button-row">
-        <a class="button" href="./analysis/index.html">Try Quick Check Free</a>
+        <a class="button" href="./analysis/index.html">Start Quick Check</a>
+      </div>
+      <div class="quick-check-banner-meta">
+        <p>No signup needed. Works instantly.</p>
+        <p>Use your own image or try a demo.</p>
+      </div>
+    </section>
+
+    <section class="product-story" aria-label="Product overview">
+      <div class="card section-card">
+        <div class="section-intro">
+          <p class="eyebrow">How It Works</p>
+          <h2>Simple steps, faster visual decisions</h2>
+          <p class="section-copy">Use the tools the same way you would study a reference in the studio: start with the image, isolate the problem, then paint with more clarity.</p>
+        </div>
+        <div class="steps-grid">
+          <div class="step-card">
+            <span class="step-number">1</span>
+            <h3>Upload your image</h3>
+            <p>Bring in a reference, painting, or study and open it in the tool that matches the problem you want to solve.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-number">2</span>
+            <h3>Analyze values, composition, or color</h3>
+            <p>Use focused tools to strip the image down and see what is really carrying the read.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-number">3</span>
+            <h3>Make better painting decisions</h3>
+            <p>Adjust the big structure first so color, edges, and finish rest on a stronger foundation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card section-card">
+        <div class="section-intro">
+          <p class="eyebrow">Why It Matters</p>
+          <h2>Most painting problems show up early</h2>
+        </div>
+        <div class="matter-list">
+          <div class="matter-item">Most painting problems are value problems first, even when they appear to be color issues.</div>
+          <div class="matter-item">Composition issues are easier to see when guides and overlays reveal spacing, pressure, and movement.</div>
+          <div class="matter-item">Color works better when the value structure is strong enough to carry the image on its own.</div>
+        </div>
+        <p class="micro-trust">Built for painters who want fast clarity before committing paint.</p>
       </div>
     </section>
 
@@ -1105,6 +1336,15 @@
         <a class="button mini-game-button" href="./brush-runner/index.html">Play</a>
       </div>
     </section>
+
+    <footer class="footer" aria-label="Site footer">
+      <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <div class="footer-links">
+        <a class="footer-link" href="./privacy.html">Privacy Policy</a>
+        <a class="footer-link" href="./terms.html">Terms of Use</a>
+        <a class="footer-link" href="./contact.html">Contact</a>
+      </div>
+    </footer>
   </div>
 
   <script>

@@ -387,6 +387,55 @@
         linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(241, 235, 225, 0.88));
     }
 
+    .canvas-wrap.is-loading .image-loading-overlay,
+    .compare-preview-wrap.is-loading .image-loading-overlay {
+      opacity: 1;
+    }
+
+    .image-loading-overlay {
+      position: absolute;
+      inset: 18px;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(247, 242, 235, 0.78);
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      box-shadow: 0 18px 36px rgba(50, 39, 28, 0.08);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+      z-index: 4;
+    }
+
+    .image-loading-copy {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+      text-align: center;
+      color: var(--ink);
+    }
+
+    .image-loading-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .image-loading-subcopy {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .canvas-visual {
+      opacity: 0;
+      transition: opacity 240ms ease;
+    }
+
+    .canvas-visual.is-visible {
+      opacity: 1;
+    }
+
     .image-stage {
       position: relative;
       width: 100%;
@@ -831,6 +880,31 @@
       opacity: 0.45;
       transform: none;
       border-color: rgba(50, 44, 38, 0.12);
+    }
+
+    .status-toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 1250;
+      max-width: min(320px, calc(100% - 28px));
+      padding: 11px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background: rgba(252, 250, 246, 0.95);
+      color: var(--ink);
+      box-shadow: 0 16px 32px rgba(50, 39, 28, 0.12);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .status-toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .challenge-results {
@@ -1398,6 +1472,15 @@
       .canvas-wrap {
         min-height: 350px;
       }
+
+      .image-loading-overlay {
+        inset: 14px;
+      }
+
+      .status-toast {
+        right: 14px;
+        bottom: 14px;
+      }
     }
   </style>
 </head>
@@ -1421,7 +1504,6 @@
           <a class="top-nav-link is-current" href="./index.html" aria-current="page">Value Checker</a>
           <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
           <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
-          <a class="top-nav-link" href="../contact/">Contact</a>
         </nav>
         <div class="social-links" aria-label="Social links">
           <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
@@ -1931,6 +2013,9 @@
     const swatch = document.getElementById("swatch");
     const valueNumber = document.getElementById("valueNumber");
     const statusNote = document.getElementById("statusNote");
+    const emptyStateLabel = emptyState?.querySelector(".upload-empty-label");
+    const sevenValueEmptyStateLabel = sevenValueEmptyState?.querySelector(".upload-empty-label");
+    const challengeEmptyStateLabel = challengeEmptyState?.querySelector(".upload-empty-label");
     const valueScale = document.getElementById("valueScale");
     const groupContainers = {
       highlights: document.getElementById("groupHighlights"),
@@ -2044,8 +2129,153 @@
       nextSampleId: 1,
       activeMarkerId: null,
       activeMarkerTimeout: null,
-      uploadDragDepth: 0
+      uploadDragDepth: 0,
+      imageLoading: false,
+      loadingTarget: "",
+      loadErrorMessage: ""
     };
+
+    const singleImageCanvases = [canvas, sevenValueCanvas, challengeCanvas];
+    const singleImageOverlays = new Map([
+      [canvasWrap, createLoadingOverlay("Loading image...", "Preparing analysis...")],
+      [sevenValueCanvasWrap, createLoadingOverlay("Loading image...", "Preparing analysis...")],
+      [challengeCanvasWrap, createLoadingOverlay("Loading image...", "Preparing analysis...")]
+    ]);
+    const compareLoadingOverlays = new Map([
+      [compareReferenceEmpty.parentElement, createLoadingOverlay("Loading image...", "Preparing comparison...")],
+      [comparePaintingEmpty.parentElement, createLoadingOverlay("Loading image...", "Preparing comparison...")]
+    ]);
+    const statusToast = createStatusToast();
+    let statusToastTimeoutId = null;
+
+    singleImageCanvases.forEach((canvasEl) => {
+      canvasEl.classList.add("canvas-visual");
+    });
+
+    singleImageOverlays.forEach((overlay, wrap) => {
+      wrap.appendChild(overlay);
+    });
+    compareLoadingOverlays.forEach((overlay, wrap) => {
+      wrap?.appendChild(overlay);
+    });
+
+    resetUploadMessages();
+
+    function createLoadingOverlay(title, subcopy) {
+      const overlay = document.createElement("div");
+      overlay.className = "image-loading-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+      overlay.innerHTML = `
+        <div class="image-loading-copy">
+          <p class="image-loading-title">${title}</p>
+          <p class="image-loading-subcopy">${subcopy}</p>
+        </div>
+      `;
+      return overlay;
+    }
+
+    function createStatusToast() {
+      const toast = document.createElement("div");
+      toast.className = "status-toast";
+      toast.setAttribute("aria-live", "polite");
+      toast.setAttribute("aria-atomic", "true");
+      document.body.appendChild(toast);
+      return toast;
+    }
+
+    function showStatusToast(message) {
+      if (!statusToast) {
+        return;
+      }
+
+      if (statusToastTimeoutId) {
+        window.clearTimeout(statusToastTimeoutId);
+        statusToastTimeoutId = null;
+      }
+
+      statusToast.textContent = message;
+      window.requestAnimationFrame(() => {
+        statusToast.classList.add("is-visible");
+      });
+
+      statusToastTimeoutId = window.setTimeout(() => {
+        statusToast.classList.remove("is-visible");
+        statusToastTimeoutId = null;
+      }, 1800);
+    }
+
+    function resetUploadMessages() {
+      if (emptyStateLabel) {
+        emptyStateLabel.textContent = "Click to upload your image";
+      }
+      if (sevenValueEmptyStateLabel) {
+        sevenValueEmptyStateLabel.textContent = "Click to upload your image";
+      }
+      if (challengeEmptyStateLabel) {
+        challengeEmptyStateLabel.textContent = "Click to upload your image";
+      }
+      compareReferenceEmpty.querySelector("p").textContent = "Upload a reference image.";
+      comparePaintingEmpty.querySelector("p").textContent = "Upload a painting image.";
+    }
+
+    function setSingleImageLoadingState(isLoading, target = state.mode) {
+      state.imageLoading = isLoading;
+      state.loadingTarget = isLoading ? target : "";
+      singleImageUploadZones.forEach((zone) => {
+        zone.classList.toggle("is-loading", isLoading && (target === "all" || zone === canvasWrap || zone === sevenValueCanvasWrap || zone === challengeCanvasWrap));
+      });
+      updateActionButtonStates();
+    }
+
+    function setCompareLoadingState(type, isLoading) {
+      const targetWrap = type === "painting" ? comparePaintingEmpty.parentElement : compareReferenceEmpty.parentElement;
+      targetWrap?.classList.toggle("is-loading", isLoading);
+    }
+
+    function showSingleImageLoadError(message) {
+      state.imageLoading = false;
+      state.loadingTarget = "";
+      state.loadErrorMessage = message;
+      singleImageUploadZones.forEach((zone) => zone.classList.remove("is-loading"));
+      resetTool();
+      resetUploadMessages();
+      if (emptyStateLabel) {
+        emptyStateLabel.textContent = message;
+      }
+      if (sevenValueEmptyStateLabel) {
+        sevenValueEmptyStateLabel.textContent = message;
+      }
+      if (challengeEmptyStateLabel) {
+        challengeEmptyStateLabel.textContent = message;
+      }
+      updateActionButtonStates();
+    }
+
+    function showCompareLoadError(message, type) {
+      setCompareLoadingState(type, false);
+      if (type === "reference") {
+        compareReferenceEmpty.querySelector("p").textContent = message;
+        state.referenceImage = null;
+      } else if (type === "painting") {
+        comparePaintingEmpty.querySelector("p").textContent = message;
+        state.paintingImage = null;
+      } else {
+        compareReferenceEmpty.querySelector("p").textContent = message;
+        comparePaintingEmpty.querySelector("p").textContent = message;
+        state.referenceImage = null;
+        state.paintingImage = null;
+      }
+      compareStatus.textContent = message;
+      drawCompareCanvases();
+    }
+
+    function updateActionButtonStates() {
+      const hasVisual = hasActiveVisual();
+      resetViewButton.disabled = !hasVisual || state.imageLoading;
+      resetButton.disabled = !state.imageLoaded && !state.referenceImage && !state.paintingImage && !state.imageLoading;
+      downloadValueAnalysisButton.disabled = !state.imageLoaded || !state.savedSamples.length || state.imageLoading;
+      downloadSevenValueAnalysisButton.disabled = !state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height || state.imageLoading;
+    }
 
     function getCanvasWrapFor(targetCanvas) {
       if (targetCanvas === sevenValueCanvas) {
@@ -2161,7 +2391,13 @@
     compareOverlayCanvas.addEventListener("mouseup", handlePanEnd);
     compareOverlayCanvas.addEventListener("mouseleave", handlePanEnd);
     resetViewButton.addEventListener("click", resetView);
-    resetButton.addEventListener("click", resetTool);
+    resetButton.addEventListener("click", () => {
+      if (!state.imageLoaded && !state.referenceImage && !state.paintingImage) {
+        return;
+      }
+      resetTool();
+      showStatusToast("Workspace reset");
+    });
     downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
     downloadSevenValueAnalysisButton.addEventListener("click", downloadSevenValueAnalysis);
     challengeSlider.addEventListener("input", handleChallengeSliderInput);
@@ -2256,6 +2492,7 @@
       drawSevenValueMap();
       drawChallengeView();
       drawCompareCanvases();
+      updateActionButtonStates();
     }
 
     function handleUpload(event) {
@@ -2268,19 +2505,26 @@
     }
 
     function loadSingleImageFile(file) {
+      state.loadErrorMessage = "";
+      resetUploadMessages();
+      setSingleImageLoadingState(true, "all");
+      workspaceHint.textContent = "Preparing analysis...";
+      statusNote.textContent = "Preparing analysis...";
+      sevenValueStatus.textContent = "Preparing analysis...";
+      compareStatus.textContent = "Preparing analysis...";
       loadImageFromFile(file)
         .then((image) => prepareGrayscaleImage(image))
-        .catch(() => showUploadError("The selected image could not be loaded. Please try a JPG or PNG file."));
+        .catch(() => showSingleImageLoadError("Couldn't load image. Please try another file."));
     }
 
     function handleSingleUploadZoneClick() {
-      if (!state.imageLoaded) {
+      if (!state.imageLoaded && !state.imageLoading) {
         fileInput.click();
       }
     }
 
     function handleSingleUploadZoneKeydown(event) {
-      if (state.imageLoaded) {
+      if (state.imageLoaded || state.imageLoading) {
         return;
       }
 
@@ -2348,9 +2592,9 @@
 
     function updateSingleUploadZones() {
       singleImageUploadZones.forEach((zone) => {
-        zone.classList.toggle("upload-enabled", !state.imageLoaded);
-        zone.tabIndex = state.imageLoaded ? -1 : 0;
-        zone.setAttribute("aria-disabled", String(state.imageLoaded));
+        zone.classList.toggle("upload-enabled", !state.imageLoaded && !state.imageLoading);
+        zone.tabIndex = state.imageLoaded || state.imageLoading ? -1 : 0;
+        zone.setAttribute("aria-disabled", String(state.imageLoaded || state.imageLoading));
       });
     }
 
@@ -2370,6 +2614,7 @@
       imageBuffer.width = dimensions.width;
       imageBuffer.height = dimensions.height;
       canvas.style.display = "block";
+      canvas.classList.remove("is-visible");
       emptyState.classList.add("hidden");
 
       bufferCtx.clearRect(0, 0, imageBuffer.width, imageBuffer.height);
@@ -2388,6 +2633,9 @@
       bufferCtx.putImageData(imageData, 0, 0);
       state.imageData = imageData;
       state.imageLoaded = true;
+      state.imageLoading = false;
+      state.loadingTarget = "";
+      state.loadErrorMessage = "";
       state.marker = null;
       state.challenge.marker = null;
       state.challenge.actualValue = null;
@@ -2397,6 +2645,7 @@
       state.challenge.feedbackNote = "";
       state.challenge.sessionComplete = false;
       buildSevenValueMap();
+      setSingleImageLoadingState(false);
       resetViewState();
       clearSingleUploadDragState();
       updateSingleUploadZones();
@@ -2405,6 +2654,14 @@
       drawCurrentView();
       drawSevenValueMap();
       drawChallengeView();
+      window.requestAnimationFrame(() => {
+        canvas.classList.add("is-visible");
+        sevenValueCanvas.classList.add("is-visible");
+        challengeCanvas.classList.add("is-visible");
+      });
+      workspaceHint.textContent = MODE_CONFIG[state.mode].workspaceHint;
+      showStatusToast("Image loaded");
+      updateActionButtonStates();
     }
 
     function handleCompareUpload(event, type) {
@@ -2413,8 +2670,12 @@
         return;
       }
 
+      resetUploadMessages();
+      setCompareLoadingState(type, true);
+      compareStatus.textContent = "Preparing comparison...";
       loadImageFromFile(file)
         .then((image) => {
+          setCompareLoadingState(type, false);
           if (type === "reference") {
             state.referenceImage = image;
           } else {
@@ -2423,9 +2684,13 @@
 
           buildCompareBuffers();
           drawCompareCanvases();
+          if (state.referenceImage && state.paintingImage) {
+            showStatusToast("Image loaded");
+          }
+          updateActionButtonStates();
         })
         .catch(() => {
-          showUploadError("One of the comparison images could not be loaded. Please try a JPG or PNG file.");
+          showCompareLoadError("Couldn't load image. Please try another file.", type);
         });
     }
 
@@ -2529,22 +2794,14 @@
         setMode("value-picker");
         loadImageFromDataUrl(imageData)
           .then((image) => prepareGrayscaleImage(image))
-          .catch(() => showUploadError("The selected image could not be loaded. Please try a JPG or PNG file."));
+          .catch(() => showUploadError("Couldn't load image. Please try another file."));
       } catch (error) {
         // Ignore session storage failures and keep the regular upload flow.
       }
     }
 
     function showUploadError(message) {
-      resetTool();
-      emptyState.classList.remove("hidden");
-      emptyState.querySelector("p").textContent = message;
-      statusNote.textContent = message;
-      sevenValueStatus.textContent = message;
-      compareStatus.textContent = message;
-      state.challenge.feedback = message;
-      state.challenge.feedbackNote = "";
-      renderChallengePanel();
+      showSingleImageLoadError(message);
     }
 
     function handleCanvasClick(event) {
@@ -3448,6 +3705,7 @@
 
       if (!state.compareReady || !compareOverlayBuffer.width || !compareOverlayBuffer.height) {
         compareOverlayCanvas.style.display = "none";
+        compareOverlayCanvas.classList.remove("is-visible");
         compareOverlayEmpty.classList.remove("hidden");
         compareOverlayEmpty.querySelector("p").textContent = state.referenceImage || state.paintingImage
           ? "Upload the missing image to compare both value structures."
@@ -3458,6 +3716,7 @@
       compareOverlayCanvas.width = compareOverlayBuffer.width;
       compareOverlayCanvas.height = compareOverlayBuffer.height;
       compareOverlayCanvas.style.display = "block";
+      compareOverlayCanvas.classList.remove("is-visible");
       compareOverlayEmpty.classList.add("hidden");
 
       compareOverlayCtx.clearRect(0, 0, compareOverlayCanvas.width, compareOverlayCanvas.height);
@@ -3466,11 +3725,15 @@
       compareOverlayCtx.scale(state.viewScale, state.viewScale);
       compareOverlayCtx.drawImage(compareOverlayBuffer, 0, 0);
       compareOverlayCtx.restore();
+      window.requestAnimationFrame(() => {
+        compareOverlayCanvas.classList.add("is-visible");
+      });
     }
 
     function drawComparePreview(canvasEl, context, buffer, emptyEl, emptyText) {
       if (!buffer.width || !buffer.height) {
         canvasEl.style.display = "none";
+        canvasEl.classList.remove("is-visible");
         emptyEl.classList.remove("hidden");
         emptyEl.querySelector("p").textContent = emptyText;
         return;
@@ -3479,9 +3742,13 @@
       canvasEl.width = buffer.width;
       canvasEl.height = buffer.height;
       canvasEl.style.display = "block";
+      canvasEl.classList.remove("is-visible");
       emptyEl.classList.add("hidden");
       context.clearRect(0, 0, canvasEl.width, canvasEl.height);
       context.drawImage(buffer, 0, 0);
+      window.requestAnimationFrame(() => {
+        canvasEl.classList.add("is-visible");
+      });
     }
 
     function handleCompareSensitivityChange() {
@@ -3633,6 +3900,7 @@
       link.href = exportCanvas.toDataURL("image/png");
       link.download = "m8-value-analysis.png";
       link.click();
+      showStatusToast("Analysis downloaded");
     }
 
     function downloadSevenValueAnalysis() {
@@ -3704,6 +3972,7 @@
       link.href = exportCanvas.toDataURL("image/png");
       link.download = "m8-7-value-analysis.png";
       link.click();
+      showStatusToast("Analysis downloaded");
     }
 
     function drawSevenValueAnalysisLegend(targetCtx, items, options) {
@@ -4120,6 +4389,7 @@
       drawSevenValueMap();
       drawChallengeView();
       drawCompareCanvases();
+      showStatusToast("View reset");
     }
 
     function resetViewState() {
@@ -4243,22 +4513,35 @@
       clearBuffer(compareOverlayBuffer, compareOverlayBufferCtx);
       clearBuffer(sevenValueBuffer, sevenValueBufferCtx);
       canvas.style.display = "none";
+      canvas.classList.remove("is-visible");
       sevenValueCanvas.style.display = "none";
+      sevenValueCanvas.classList.remove("is-visible");
       challengeCanvas.style.display = "none";
+      challengeCanvas.classList.remove("is-visible");
       compareReferenceCanvas.style.display = "none";
+      compareReferenceCanvas.classList.remove("is-visible");
       comparePaintingCanvas.style.display = "none";
+      comparePaintingCanvas.classList.remove("is-visible");
       compareOverlayCanvas.style.display = "none";
+      compareOverlayCanvas.classList.remove("is-visible");
       sevenValueEmptyState.classList.remove("hidden");
       challengeEmptyState.classList.remove("hidden");
       emptyState.classList.remove("hidden");
       compareReferenceEmpty.classList.remove("hidden");
       comparePaintingEmpty.classList.remove("hidden");
       compareOverlayEmpty.classList.remove("hidden");
+      resetUploadMessages();
       fileInput.value = "";
       referenceInput.value = "";
       paintingInput.value = "";
       clearSingleUploadDragState();
+      singleImageUploadZones.forEach((zone) => zone.classList.remove("is-loading"));
+      setCompareLoadingState("reference", false);
+      setCompareLoadingState("painting", false);
       state.imageLoaded = false;
+      state.imageLoading = false;
+      state.loadingTarget = "";
+      state.loadErrorMessage = "";
       state.imageData = null;
       state.marker = null;
       state.sourceImage = null;
@@ -4309,6 +4592,7 @@
       downloadSevenValueAnalysisButton.disabled = true;
       drawChallengeView();
       drawCompareCanvases();
+      updateActionButtonStates();
     }
 
     function clamp(value, min, max) {

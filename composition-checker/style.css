@@ -458,6 +458,7 @@ a {
   border-radius: 22px;
   border: 1px dashed rgba(62, 54, 47, 0.18);
   overflow: hidden;
+  cursor: pointer;
   background:
     repeating-linear-gradient(
       45deg,
@@ -486,6 +487,12 @@ a {
   max-height: 75vh;
   object-fit: contain;
   vertical-align: top;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.workspace-image.is-loaded {
+  opacity: 1;
 }
 
 .overlay-canvas {
@@ -499,6 +506,46 @@ a {
 
 .overlay-canvas.notes-mode {
   cursor: grab;
+}
+
+.image-loading-overlay {
+  position: absolute;
+  inset: 18px;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(247, 242, 235, 0.78);
+  border: 1px solid rgba(61, 51, 40, 0.1);
+  box-shadow: 0 18px 36px rgba(50, 39, 28, 0.08);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+  z-index: 4;
+}
+
+.canvas-wrap.is-loading .image-loading-overlay,
+.canvas-wrap.has-load-error .image-loading-overlay {
+  opacity: 1;
+}
+
+.image-loading-copy {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  color: var(--ink);
+}
+
+.image-loading-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.image-loading-subcopy {
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .empty-state {
@@ -730,6 +777,31 @@ a {
   transform: translateX(-50%) translateY(0);
 }
 
+.status-toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1250;
+  max-width: min(320px, calc(100% - 28px));
+  padding: 11px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(61, 51, 40, 0.12);
+  background: rgba(252, 250, 246, 0.95);
+  color: var(--ink);
+  box-shadow: 0 16px 32px rgba(50, 39, 28, 0.12);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.status-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .feedback-helper {
   margin-top: 14px;
   color: var(--muted);
@@ -868,6 +940,15 @@ a {
 
   .canvas-wrap {
     min-height: 360px;
+  }
+
+  .image-loading-overlay {
+    inset: 14px;
+  }
+
+  .status-toast {
+    right: 14px;
+    bottom: 14px;
   }
 }
 

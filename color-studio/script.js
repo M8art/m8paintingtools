@@ -1,7 +1,9 @@
 const fileInput = document.getElementById("fileInput");
+const uploadLabels = Array.from(document.querySelectorAll('label[for="fileInput"]'));
 const imageWrap = document.getElementById("imageWrap");
 const previewImage = document.getElementById("previewImage");
 const emptyState = document.getElementById("emptyState");
+const emptyStateLabel = emptyState?.querySelector(".upload-empty-label");
 const swatchGrid = document.getElementById("swatchGrid");
 const statusNote = document.getElementById("statusNote");
 const workspaceHint = document.getElementById("workspaceHint");
@@ -239,14 +241,39 @@ const state = {
   sampledColor: null,
   mixerResult: null,
   trainerSelection: [],
-  trainerEvaluation: null
+  trainerEvaluation: null,
+  imageLoading: false,
+  loadErrorMessage: ""
 };
+let imageLoadRequestId = 0;
+let feedbackToastTimeoutId = null;
+
+const uploadLoadingOverlay = createUploadLoadingOverlay();
+const statusToast = createStatusToast();
+
+resetWorkspaceEmptyState();
 
 fileInput.addEventListener("change", handleUpload);
+uploadLabels.forEach((label) => {
+  label.addEventListener("click", (event) => {
+    const uploadLockContext = getUploadLockContext();
+    if (!uploadLockContext) {
+      return;
+    }
+
+    event.preventDefault();
+    showUnlockPaywall(uploadLockContext);
+  });
+});
 imageWrap.addEventListener("click", handleImageWrapClick);
 imageWrap.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
+    const uploadLockContext = getUploadLockContext();
+    if (uploadLockContext) {
+      showUnlockPaywall(uploadLockContext);
+      return;
+    }
     fileInput.click();
   }
 });
@@ -365,12 +392,30 @@ function handleUpload(event) {
     return;
   }
 
+  const uploadLockContext = getUploadLockContext();
+  if (uploadLockContext) {
+    event.target.value = "";
+    showUnlockPaywall(uploadLockContext);
+    return;
+  }
+
   if (state.objectUrl) {
     URL.revokeObjectURL(state.objectUrl);
   }
 
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
+  beginImageLoad();
+  previewImage.onload = null;
+  previewImage.onerror = null;
   previewImage.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
+    state.imageLoading = false;
+    state.loadErrorMessage = "";
     previewImage.style.display = "block";
     emptyState.style.display = "none";
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
@@ -378,7 +423,18 @@ function handleUpload(event) {
     hidePremiumUnlockCard();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", ["mixer", "trainer"].includes(state.activeTab));
+    setWorkspaceLoadingState(false);
+    window.requestAnimationFrame(() => {
+      previewImage.classList.add("is-loaded");
+    });
     extractPalette(previewImage);
+    showStatusToast("Image loaded");
+  };
+  previewImage.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+    showWorkspaceLoadError("Couldn't load image. Please try another file.");
   };
   previewImage.src = state.objectUrl;
 }
@@ -394,8 +450,19 @@ function loadPaletteFromDataUrl(dataUrl) {
   }
 
   setTab("palette");
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
   state.objectUrl = dataUrl;
+  beginImageLoad();
+  previewImage.onload = null;
+  previewImage.onerror = null;
   previewImage.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
+    state.imageLoading = false;
+    state.loadErrorMessage = "";
     previewImage.style.display = "block";
     emptyState.style.display = "none";
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
@@ -403,7 +470,18 @@ function loadPaletteFromDataUrl(dataUrl) {
     hidePremiumUnlockCard();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", false);
+    setWorkspaceLoadingState(false);
+    window.requestAnimationFrame(() => {
+      previewImage.classList.add("is-loaded");
+    });
     extractPalette(previewImage);
+    showStatusToast("Image loaded");
+  };
+  previewImage.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+    showWorkspaceLoadError("Couldn't load image. Please try another file.");
   };
   previewImage.src = dataUrl;
 }
@@ -463,8 +541,19 @@ function loadPaletteFromObjectFile(file) {
   }
 
   setTab("palette");
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
+  beginImageLoad();
+  previewImage.onload = null;
+  previewImage.onerror = null;
   previewImage.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
+    state.imageLoading = false;
+    state.loadErrorMessage = "";
     previewImage.style.display = "block";
     emptyState.style.display = "none";
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
@@ -472,7 +561,18 @@ function loadPaletteFromObjectFile(file) {
     hidePremiumUnlockCard();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", false);
+    setWorkspaceLoadingState(false);
+    window.requestAnimationFrame(() => {
+      previewImage.classList.add("is-loaded");
+    });
     extractPalette(previewImage);
+    showStatusToast("Image loaded");
+  };
+  previewImage.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+    showWorkspaceLoadError("Couldn't load image. Please try another file.");
   };
   previewImage.src = state.objectUrl;
 }
@@ -504,12 +604,44 @@ async function consumeLandingHandoff() {
 }
 
 function handleImageWrapClick(event) {
+  if (state.imageLoading) {
+    return;
+  }
   const hasImage = previewImage.src && previewImage.style.display === "block" && previewImage.naturalWidth;
   if (["mixer", "trainer"].includes(state.activeTab) && hasImage && event.target === previewImage) {
     sampleMixerPoint(event);
     return;
   }
+
+  const uploadLockContext = getUploadLockContext();
+  if (uploadLockContext) {
+    showUnlockPaywall(uploadLockContext);
+    return;
+  }
+
   fileInput.click();
+}
+
+function getUploadLockContext() {
+  if (state.activeTab === "trainer" && !isUnlocked()) {
+    return {
+      title: "Unlock full access",
+      note: "Mix Trainer is part of the full-app premium unlock. Personal Feedback is separate.",
+      status: "Unlock full access to train against M8 mixing logic.",
+      toast: "Mix Trainer is premium. Tap Unlock All Tools to continue."
+    };
+  }
+
+  if (state.activeTab === "mixer" && !canUseColorMixer()) {
+    return {
+      title: "Free Color Mixer limit reached",
+      note: "Your 3 free Color Mixer uses are finished. One payment unlocks the full app, not just this section.",
+      status: "Unlock full access to keep using Color Mixer without limits.",
+      toast: "Your free Color Mixer limit is reached. Tap Unlock All Tools to continue."
+    };
+  }
+
+  return null;
 }
 
 function setTab(tab) {
@@ -519,7 +651,7 @@ function setTab(tab) {
     button.classList.toggle("active", button.dataset.tab === tab);
   });
 
-  imageWrap.classList.toggle("sampling-enabled", ["mixer", "trainer"].includes(tab) && !!previewImage.src);
+  imageWrap.classList.toggle("sampling-enabled", ["mixer", "trainer"].includes(tab) && !!previewImage.src && !state.imageLoading);
   if (sampleMarker) {
     sampleMarker.classList.toggle("hidden", !((tab === "mixer" || tab === "trainer") && state.sampledPoint));
   }
@@ -528,7 +660,9 @@ function setTab(tab) {
     hidePremiumUnlockCard();
     panelTitle.textContent = "Palette Analysis";
     panelDescription.textContent = "Sample the main color families in your image and see which hues dominate the overall painting.";
-    statusNote.textContent = state.palette.length ? "Palette analysis ready." : "Upload an image to start.";
+    statusNote.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (state.palette.length ? "Palette analysis ready." : "Upload an image to start.");
     if (colorHarmonyCard) {
       colorHarmonyCard.classList.remove("hidden");
     }
@@ -583,11 +717,13 @@ function setTab(tab) {
     setMixerSupportMode(true);
     setTrainerSupportMode(false);
     renderM8ColorMixer(state.mixerResult);
-    statusNote.textContent = state.mixerResult
-      ? "Mixer suggestion ready."
-      : (isUnlocked()
-        ? "Click a point in the image to build a mix."
-        : `Click a point in the image to build a mix. ${getRemainingColorMixerUses()} free uses remaining.`);
+    statusNote.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (state.mixerResult
+        ? "Mixer suggestion ready."
+        : (isUnlocked()
+          ? "Click a point in the image to build a mix."
+          : `Click a point in the image to build a mix. ${getRemainingColorMixerUses()} free uses remaining.`));
     return;
   }
 
@@ -611,9 +747,11 @@ function setTab(tab) {
     setMixerSupportMode(false);
     setTrainerSupportMode(true);
     renderMixTrainer();
-    statusNote.textContent = isUnlocked()
-      ? (state.sampledColor ? "Choose your pigments, then check your mix." : "Click a point in the image to begin training.")
-      : "Mix Trainer is part of full premium access. Open a point to unlock the full app.";
+    statusNote.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (isUnlocked()
+        ? (state.sampledColor ? "Choose your pigments, then check your mix." : "Click a point in the image to begin training.")
+        : "Mix Trainer is part of full premium access. Open a point to unlock the full app.");
     return;
   }
 
@@ -636,6 +774,44 @@ function setTab(tab) {
   setMixerSupportMode(false);
   setTrainerSupportMode(false);
   statusNote.textContent = "This mode is not active yet.";
+}
+
+function beginImageLoad() {
+  state.imageLoading = true;
+  state.loadErrorMessage = "";
+  previewImage.classList.remove("is-loaded");
+  previewImage.style.display = "none";
+  resetWorkspaceEmptyState();
+  emptyState.style.display = "none";
+  setWorkspaceLoadingState(true, "Loading image...", "Preparing analysis...");
+  workspaceHint.textContent = "Preparing analysis...";
+  statusNote.textContent = "Preparing analysis...";
+  imageWrap.classList.remove("sampling-enabled");
+}
+
+function resetWorkspaceEmptyState() {
+  if (emptyStateLabel) {
+    emptyStateLabel.textContent = "Click to upload your image";
+  }
+  emptyState.style.display = "grid";
+  imageWrap.classList.remove("has-load-error");
+}
+
+function showWorkspaceLoadError(message) {
+  state.imageLoading = false;
+  state.loadErrorMessage = message;
+  previewImage.removeAttribute("src");
+  previewImage.classList.remove("is-loaded");
+  previewImage.style.display = "none";
+  emptyState.style.display = "grid";
+  if (emptyStateLabel) {
+    emptyStateLabel.textContent = message;
+  }
+  setWorkspaceLoadingState(false);
+  imageWrap.classList.add("has-load-error");
+  workspaceHint.textContent = "Please try another image.";
+  statusNote.textContent = message;
+  imageWrap.classList.remove("sampling-enabled");
 }
 
 function extractPalette(image) {
@@ -816,6 +992,64 @@ function resetMixerSampling() {
   if (state.activeTab === "trainer") {
     renderTrainerSupportPanel();
   }
+}
+
+function createUploadLoadingOverlay() {
+  const overlay = document.createElement("div");
+  overlay.className = "image-loading-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.innerHTML = `
+    <div class="image-loading-copy">
+      <p class="image-loading-title">Loading image...</p>
+      <p class="image-loading-subcopy">Preparing analysis...</p>
+    </div>
+  `;
+  imageWrap.appendChild(overlay);
+  return overlay;
+}
+
+function createStatusToast() {
+  const toast = document.createElement("div");
+  toast.className = "status-toast";
+  toast.setAttribute("aria-live", "polite");
+  toast.setAttribute("aria-atomic", "true");
+  document.body.appendChild(toast);
+  return toast;
+}
+
+function setWorkspaceLoadingState(isLoading, title = "Loading image...", subcopy = "Preparing analysis...") {
+  state.imageLoading = isLoading;
+  imageWrap.classList.toggle("is-loading", isLoading);
+  imageWrap.classList.remove("has-load-error");
+  const titleNode = uploadLoadingOverlay.querySelector(".image-loading-title");
+  const subcopyNode = uploadLoadingOverlay.querySelector(".image-loading-subcopy");
+  if (titleNode) {
+    titleNode.textContent = title;
+  }
+  if (subcopyNode) {
+    subcopyNode.textContent = subcopy;
+  }
+}
+
+function showStatusToast(message) {
+  if (!statusToast) {
+    return;
+  }
+
+  if (feedbackToastTimeoutId) {
+    window.clearTimeout(feedbackToastTimeoutId);
+    feedbackToastTimeoutId = null;
+  }
+
+  statusToast.textContent = message;
+  window.requestAnimationFrame(() => {
+    statusToast.classList.add("is-visible");
+  });
+
+  feedbackToastTimeoutId = window.setTimeout(() => {
+    statusToast.classList.remove("is-visible");
+    feedbackToastTimeoutId = null;
+  }, 1800);
 }
 
 function sampleMixerPoint(event) {

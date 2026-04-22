@@ -493,6 +493,7 @@ a {
   border-radius: 18px;
   overflow: hidden;
   line-height: 0;
+  isolation: isolate;
 }
 
 .filter-defs {
@@ -512,7 +513,77 @@ a {
   object-fit: contain;
   border-radius: 18px;
   box-shadow: 0 20px 40px rgba(50, 39, 28, 0.08);
-  transition: filter 720ms ease, transform 720ms ease, opacity 340ms ease;
+  opacity: 0;
+  transition: filter 720ms ease, transform 720ms ease, opacity 260ms ease;
+}
+
+.workspace-image.is-loaded {
+  opacity: 1;
+}
+
+.image-loading-overlay {
+  position: absolute;
+  inset: 18px;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(247, 242, 235, 0.78);
+  border: 1px solid rgba(61, 51, 40, 0.1);
+  box-shadow: 0 18px 36px rgba(50, 39, 28, 0.08);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+  z-index: 4;
+}
+
+.canvas-wrap.is-loading .image-loading-overlay,
+.canvas-wrap.has-load-error .image-loading-overlay {
+  opacity: 1;
+}
+
+.image-loading-copy {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  color: var(--ink);
+}
+
+.image-loading-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.image-loading-subcopy {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.status-toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1250;
+  max-width: min(320px, calc(100% - 28px));
+  padding: 11px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(61, 51, 40, 0.12);
+  background: rgba(252, 250, 246, 0.95);
+  color: var(--ink);
+  box-shadow: 0 16px 32px rgba(50, 39, 28, 0.12);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.status-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .analysis-overlay {
@@ -520,7 +591,7 @@ a {
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 520ms ease;
+  transition: opacity 520ms ease, transform 760ms ease;
 }
 
 .thirds-overlay {
@@ -588,16 +659,62 @@ a {
 
 .focal-overlay {
   background:
-    radial-gradient(circle at var(--scan-focus-x) var(--scan-focus-y), rgb(var(--analysis-overlay-rgb) / 0.16) 0, rgb(var(--analysis-overlay-rgb) / 0.07) 13%, rgb(var(--analysis-overlay-rgb) / 0) 30%),
-    radial-gradient(circle at var(--scan-focus-x) var(--scan-focus-y), rgba(255, 255, 255, 0.14) 0, rgba(255, 255, 255, 0) 42%);
+    radial-gradient(circle at var(--scan-focus-x) var(--scan-focus-y), rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0.1) 10%, rgba(255, 255, 255, 0) 28%),
+    radial-gradient(circle at var(--scan-focus-x) var(--scan-focus-y), rgb(var(--analysis-overlay-rgb) / 0.18) 0, rgb(var(--analysis-overlay-rgb) / 0.08) 14%, rgb(var(--analysis-overlay-rgb) / 0) 34%);
+  transform: scale(0.98);
 }
 
 .scanning-overlay {
   background:
-    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.18) 0, rgba(255, 255, 255, 0.06) 12%, rgba(255, 255, 255, 0) 28%),
-    radial-gradient(circle at 0% 0%, rgb(var(--analysis-overlay-rgb) / 0.09) 0, rgb(var(--analysis-overlay-rgb) / 0) 34%);
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.04) 40%,
+      rgba(255, 255, 255, 0.22) 50%,
+      rgba(255, 255, 255, 0.04) 60%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgb(var(--analysis-overlay-rgb) / 0) 0%,
+      rgb(var(--analysis-overlay-rgb) / 0.03) 42%,
+      rgb(var(--analysis-overlay-rgb) / 0.12) 50%,
+      rgb(var(--analysis-overlay-rgb) / 0.03) 58%,
+      rgb(var(--analysis-overlay-rgb) / 0) 100%
+    );
+  background-size: 34% 100%, 34% 100%;
+  background-repeat: no-repeat;
+  background-position: -34% 0, -34% 0;
   mix-blend-mode: screen;
   transform: translate3d(0, 0, 0);
+}
+
+.analysis-surface::before,
+.analysis-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.analysis-surface::before {
+  background:
+    radial-gradient(circle at var(--scan-focus-x) var(--scan-focus-y), rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0) 22%, rgba(42, 36, 31, 0.06) 62%, rgba(42, 36, 31, 0.12) 100%);
+  transition: opacity 620ms ease;
+}
+
+.analysis-surface::after {
+  background:
+    linear-gradient(180deg,
+      rgba(245, 240, 232, 0.12) 0%,
+      rgba(190, 180, 168, 0.08) 28%,
+      rgba(120, 112, 105, 0.08) 52%,
+      rgba(72, 66, 61, 0.1) 76%,
+      rgba(35, 31, 28, 0.12) 100%);
+  mix-blend-mode: multiply;
+  transition: opacity 360ms ease;
 }
 
 .analysis-surface.stage-grid .thirds-overlay,
@@ -613,52 +730,47 @@ a {
 }
 
 .analysis-surface.stage-grayscale .workspace-image {
-  filter: grayscale(1) contrast(1.05) brightness(1.01);
+  filter: grayscale(1) contrast(1.04) brightness(1.02);
 }
 
 .analysis-surface.stage-contrast .workspace-image {
-  filter: grayscale(1) contrast(1.22) brightness(1.03);
+  filter: grayscale(1) contrast(1.18) brightness(1.03);
 }
 
 .analysis-surface.stage-posterize .workspace-image {
-  filter: url("#valuePassFilter") contrast(1.06) brightness(1.03);
+  filter: url("#valuePassFilter") saturate(0.18) contrast(1.08) brightness(1.02);
 }
 
 .analysis-surface.stage-posterize::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg,
-      rgba(245, 240, 232, 0.18) 0%,
-      rgba(190, 180, 168, 0.12) 28%,
-      rgba(120, 112, 105, 0.1) 52%,
-      rgba(72, 66, 61, 0.12) 76%,
-      rgba(35, 31, 28, 0.14) 100%);
-  mix-blend-mode: multiply;
   opacity: 1;
-  pointer-events: none;
 }
 
 .analysis-surface.stage-center .workspace-image {
-  filter: grayscale(1) contrast(1.16) brightness(1.01);
+  filter: grayscale(0.9) contrast(1.1) brightness(1.01);
 }
 
 .analysis-surface.stage-center .center-overlay {
+  opacity: 0.58;
+}
+
+.analysis-surface.stage-center::before,
+.analysis-surface.stage-focus-lock::before {
   opacity: 1;
 }
 
 .analysis-surface.stage-grid .scanning-overlay,
-.analysis-surface.stage-grayscale .scanning-overlay,
 .analysis-surface.stage-contrast .scanning-overlay,
-.analysis-surface.stage-posterize .scanning-overlay,
-.analysis-surface.stage-center .scanning-overlay {
-  opacity: 1;
-  animation: scanSweep 5.8s ease-in-out infinite alternate;
+.analysis-surface.stage-posterize .scanning-overlay {
+  opacity: 0.95;
+  animation: scanSweep 1.45s ease-in-out 1 forwards;
+}
+
+.analysis-surface.stage-grayscale .scanning-overlay {
+  opacity: 0.28;
 }
 
 .analysis-surface.stage-focus-lock .workspace-image {
-  filter: grayscale(1) contrast(1.08) brightness(1.01);
+  filter: grayscale(0.18) contrast(1.06) brightness(1.01);
 }
 
 .analysis-surface.stage-focus-lock .thirds-overlay,
@@ -672,16 +784,25 @@ a {
 }
 
 .analysis-surface.stage-focus-lock .focal-overlay {
-  animation: focalPulse 760ms ease-in-out 1;
+  animation: focalPulse 1.6s ease-in-out 2;
 }
 
 .analysis-surface.stage-final .workspace-image {
   filter: none;
 }
 
+.analysis-surface.stage-final .thirds-overlay {
+  opacity: 0.94;
+}
+
 .analysis-surface.stage-final .center-overlay,
 .analysis-surface.stage-final .focal-overlay,
 .analysis-surface.stage-final .scanning-overlay {
+  opacity: 0;
+}
+
+.analysis-surface.stage-final::before,
+.analysis-surface.stage-final::after {
   opacity: 0;
 }
 
@@ -812,12 +933,20 @@ a {
   opacity: 0.28;
 }
 
-.quick-check-result {
+#quickCheckResult:not(.hidden) {
   display: grid;
   gap: 12px;
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid rgba(59, 52, 45, 0.08);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 360ms ease, transform 420ms ease;
+}
+
+#quickCheckResult.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .result-label {
@@ -829,6 +958,14 @@ a {
   font-size: clamp(1.8rem, 4vw, 2.45rem);
   line-height: 0.96;
   color: var(--ink);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 320ms ease, transform 380ms ease;
+}
+
+.quick-check-score.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .result-helper {
@@ -881,9 +1018,17 @@ a {
   opacity: 1;
 }
 
-.result-blocks {
+#quickCheckTopSections {
   display: grid;
   gap: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 320ms ease, transform 380ms ease;
+}
+
+#quickCheckTopSections.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .result-block {
@@ -893,6 +1038,30 @@ a {
   border: 1px solid rgba(50, 44, 38, 0.08);
   display: grid;
   gap: 5px;
+}
+
+.result-reveal {
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity 320ms ease, transform 380ms ease;
+}
+
+.is-visible > .result-reveal,
+.result-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.is-visible > .result-reveal:nth-child(1) {
+  transition-delay: 40ms;
+}
+
+.is-visible > .result-reveal:nth-child(2) {
+  transition-delay: 110ms;
+}
+
+.is-visible > .result-reveal:nth-child(3) {
+  transition-delay: 180ms;
 }
 
 .result-block-title {
@@ -916,6 +1085,14 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 320ms ease, transform 380ms ease;
+}
+
+.result-tags.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .result-tag {
@@ -928,12 +1105,43 @@ a {
   color: var(--ink);
   font-size: 0.82rem;
   font-weight: 600;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 300ms ease, transform 360ms ease;
+}
+
+.result-tags.is-visible .result-tag {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.result-tags.is-visible .result-tag:nth-child(1) {
+  transition-delay: 30ms;
+}
+
+.result-tags.is-visible .result-tag:nth-child(2) {
+  transition-delay: 90ms;
+}
+
+.result-tags.is-visible .result-tag:nth-child(3) {
+  transition-delay: 150ms;
 }
 
 .result-note {
   color: rgba(105, 99, 93, 0.88);
   font-size: 0.88rem;
   line-height: 1.5;
+}
+
+#freeCheckNote {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 320ms ease, transform 380ms ease;
+}
+
+#freeCheckNote.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .locked-title {
@@ -1012,37 +1220,28 @@ a {
 
 @keyframes scanSweep {
   0% {
-    background-position: 16% 20%, 16% 20%;
-    transform: scale(0.98);
-  }
-
-  32% {
-    background-position: 72% 28%, 72% 28%;
-    transform: scale(1);
-  }
-
-  66% {
-    background-position: 38% 72%, 38% 72%;
-    transform: scale(1.02);
+    background-position: -34% 0, -34% 0;
   }
 
   100% {
-    background-position: var(--scan-focus-x) var(--scan-focus-y), var(--scan-focus-x) var(--scan-focus-y);
-    transform: scale(1);
+    background-position: 134% 0, 134% 0;
   }
 }
 
 @keyframes focalPulse {
   0% {
-    opacity: 0;
+    opacity: 0.2;
+    transform: scale(0.94);
   }
 
-  35% {
+  45% {
     opacity: 1;
+    transform: scale(1);
   }
 
   100% {
-    opacity: 0;
+    opacity: 0.42;
+    transform: scale(1.04);
   }
 }
 
@@ -1121,5 +1320,14 @@ a {
 
   .workspace-image {
     max-height: 56vh;
+  }
+
+  .image-loading-overlay {
+    inset: 14px;
+  }
+
+  .status-toast {
+    right: 14px;
+    bottom: 14px;
   }
 }

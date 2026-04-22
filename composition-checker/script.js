@@ -55,12 +55,14 @@ const ADVANCED_MODES = {
 };
 
 const fileInput = document.getElementById("fileInput");
+const uploadLabels = Array.from(document.querySelectorAll('label[for="fileInput"]'));
 const clearNotesButton = document.getElementById("clearNotesButton");
 const canvasWrap = document.getElementById("canvasWrap");
 const compositionStage = document.getElementById("compositionStage");
 const compositionImage = document.getElementById("compositionImage");
 const overlayCanvas = document.getElementById("overlayCanvas");
 const emptyState = document.getElementById("emptyState");
+const emptyStateLabel = emptyState?.querySelector(".upload-empty-label");
 const workspaceTitle = document.getElementById("workspaceTitle");
 const workspaceHint = document.getElementById("workspaceHint");
 const overlayColorControl = document.getElementById("overlayColorControl");
@@ -162,6 +164,7 @@ const SPIRAL_TEMPLATE_ARCS = [
 ];
 
 const GRID_DIVISION_OPTIONS = [2, 4, 6, 8, 10, 12];
+const BASIC_OVERLAY_LINE_WIDTH = 1.75;
 
 const OVERLAY_COLOR_CLASSES = ["overlay-color-black", "overlay-color-white", "overlay-color-red"];
 const OVERLAY_COLOR_NAMES = {
@@ -183,6 +186,8 @@ const state = {
   mode: "thirds",
   advancedMode: "golden-ratio",
   imageLoaded: false,
+  imageLoading: false,
+  loadErrorMessage: "",
   objectUrl: null,
   noteMarkers: [],
   focalPoints: [],
@@ -205,6 +210,13 @@ const state = {
     ...SPIRAL_DEFAULTS
   }
 };
+let imageLoadRequestId = 0;
+let feedbackToastTimeoutId = null;
+
+const uploadLoadingOverlay = createUploadLoadingOverlay();
+const statusToast = createStatusToast();
+
+resetWorkspaceEmptyState();
 
 const resizeObserver = new ResizeObserver(() => {
   requestOverlayDraw();
@@ -215,6 +227,13 @@ resizeObserver.observe(compositionStage);
 resizeObserver.observe(compositionImage);
 
 fileInput.addEventListener("change", handleUpload);
+uploadLabels.forEach((label) => {
+  label.addEventListener("click", (event) => {
+    if (!requireUnlock("advanced image uploads")) {
+      event.preventDefault();
+    }
+  });
+});
 clearNotesButton.addEventListener("click", clearNoteMarkers);
 canvasWrap.addEventListener("click", handleWorkspaceClick);
 canvasWrap.addEventListener("keydown", handleWorkspaceKeydown);
@@ -337,8 +356,17 @@ function handleUpload(event) {
     URL.revokeObjectURL(state.objectUrl);
   }
 
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
+  beginImageLoad();
+  compositionImage.onload = null;
+  compositionImage.onerror = null;
   compositionImage.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
     state.imageLoaded = true;
     state.focalPoints = [];
     state.focalPointSource = "manual";
@@ -351,8 +379,19 @@ function handleUpload(event) {
     emptyState.style.display = "none";
     compositionImage.style.display = "block";
     overlayCanvas.style.display = "block";
+    setWorkspaceLoadingState(false);
+    window.requestAnimationFrame(() => {
+      compositionImage.classList.add("is-loaded");
+    });
     updateModeUI();
     requestOverlayDraw();
+    showStatusToast("Image loaded");
+  };
+  compositionImage.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+    showWorkspaceLoadError("Couldn't load image. Please try another file.");
   };
   compositionImage.src = state.objectUrl;
 }
@@ -368,7 +407,16 @@ function loadCompositionFromDataUrl(dataUrl) {
   }
 
   setAnalysisMode("basic");
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
+  beginImageLoad();
+  compositionImage.onload = null;
+  compositionImage.onerror = null;
   compositionImage.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
     state.imageLoaded = true;
     state.focalPoints = [];
     state.focalPointSource = "manual";
@@ -381,8 +429,19 @@ function loadCompositionFromDataUrl(dataUrl) {
     emptyState.style.display = "none";
     compositionImage.style.display = "block";
     overlayCanvas.style.display = "block";
+    setWorkspaceLoadingState(false);
+    window.requestAnimationFrame(() => {
+      compositionImage.classList.add("is-loaded");
+    });
     updateModeUI();
     requestOverlayDraw();
+    showStatusToast("Image loaded");
+  };
+  compositionImage.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+    showWorkspaceLoadError("Couldn't load image. Please try another file.");
   };
   compositionImage.src = dataUrl;
 }
@@ -442,8 +501,17 @@ function loadCompositionFromObjectFile(file) {
   }
 
   setAnalysisMode("basic");
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
+  beginImageLoad();
+  compositionImage.onload = null;
+  compositionImage.onerror = null;
   compositionImage.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
     state.imageLoaded = true;
     state.focalPoints = [];
     state.focalPointSource = "manual";
@@ -456,8 +524,19 @@ function loadCompositionFromObjectFile(file) {
     emptyState.style.display = "none";
     compositionImage.style.display = "block";
     overlayCanvas.style.display = "block";
+    setWorkspaceLoadingState(false);
+    window.requestAnimationFrame(() => {
+      compositionImage.classList.add("is-loaded");
+    });
     updateModeUI();
     requestOverlayDraw();
+    showStatusToast("Image loaded");
+  };
+  compositionImage.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+    showWorkspaceLoadError("Couldn't load image. Please try another file.");
   };
   compositionImage.src = state.objectUrl;
 }
@@ -490,6 +569,9 @@ async function consumeLandingHandoff() {
 
 function handleWorkspaceClick() {
   if (!state.imageLoaded) {
+    if (!requireUnlock("advanced image uploads")) {
+      return;
+    }
     fileInput.click();
   }
 }
@@ -501,6 +583,9 @@ function handleWorkspaceKeydown(event) {
 
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
+    if (!requireUnlock("advanced image uploads")) {
+      return;
+    }
     fileInput.click();
   }
 }
@@ -978,35 +1063,43 @@ function updateModeUI() {
     analysisTitle.textContent = config.title;
     modeDescription.textContent = config.description;
     modeTip.textContent = config.tip;
-    workspaceHint.textContent = state.imageLoaded
+    workspaceHint.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (state.imageLoaded
       ? (isThirdsMode
         ? "Click on the image to compare a placement with the nearest power point."
         : "Use the active overlay to study the structure of the composition.")
-      : "Upload an image to begin your composition study.";
-    statusNote.textContent = state.imageLoaded
+      : "Upload an image to begin your composition study.");
+    statusNote.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (state.imageLoaded
       ? (isThirdsMode
         ? getThirdsStatusCopy()
         : isGridMode
         ? "Grid is active. Adjust the divisions and use the transfer helper below to match your canvas."
         : "Overlay is active. Switch tools to compare different compositional guides.")
-      : "Upload an image to start.";
+      : "Upload an image to start.");
   } else {
     workspaceTitle.textContent = advancedConfig.title;
     analysisTitle.textContent = advancedConfig.title;
-    workspaceHint.textContent = advancedLocked
+    workspaceHint.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (advancedLocked
       ? (state.imageLoaded
         ? "Preview the advanced layout here. Unlock full access to use overlays, controls, and export."
         : "Preview the advanced layout here. Unlock full access to upload and use advanced composition tools.")
       : (state.imageLoaded
         ? "Study the image with the selected advanced composition guide."
-        : "Upload an image to begin your composition study.");
+        : "Upload an image to begin your composition study."));
     advancedModeDescription.textContent = advancedConfig.description;
     advancedModeTip.textContent = advancedConfig.tip;
-    advancedStatusNote.textContent = advancedLocked
+    advancedStatusNote.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (advancedLocked
       ? "Advanced tools are visible for preview. Unlock full access when you're ready to use overlays, controls, and export."
       : (state.imageLoaded
         ? getAdvancedStatusCopy(advancedConfig.status)
-        : advancedConfig.status);
+        : advancedConfig.status));
   }
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
@@ -1062,6 +1155,47 @@ function updateModeUI() {
     button.classList.toggle("active", !isBasic && button.dataset.advancedMode === state.advancedMode);
     button.setAttribute("aria-selected", String(button.dataset.advancedMode === state.advancedMode));
   });
+}
+
+function beginImageLoad() {
+  state.imageLoaded = false;
+  state.imageLoading = true;
+  state.loadErrorMessage = "";
+  compositionImage.classList.remove("is-loaded");
+  compositionImage.style.display = "none";
+  overlayCanvas.style.display = "none";
+  resetWorkspaceEmptyState();
+  emptyState.style.display = "none";
+  setWorkspaceLoadingState(true, "Loading image...", "Preparing analysis...");
+  workspaceHint.textContent = "Preparing analysis...";
+  statusNote.textContent = "Preparing analysis...";
+  advancedStatusNote.textContent = "Preparing analysis...";
+  updateModeUI();
+}
+
+function resetWorkspaceEmptyState() {
+  if (emptyStateLabel) {
+    emptyStateLabel.textContent = "Click to upload your image";
+  }
+  emptyState.style.display = "grid";
+  canvasWrap.classList.remove("has-load-error");
+}
+
+function showWorkspaceLoadError(message) {
+  state.imageLoaded = false;
+  state.imageLoading = false;
+  state.loadErrorMessage = message;
+  compositionImage.removeAttribute("src");
+  compositionImage.classList.remove("is-loaded");
+  compositionImage.style.display = "none";
+  overlayCanvas.style.display = "none";
+  emptyState.style.display = "grid";
+  if (emptyStateLabel) {
+    emptyStateLabel.textContent = message;
+  }
+  setWorkspaceLoadingState(false);
+  canvasWrap.classList.add("has-load-error");
+  updateModeUI();
 }
 
 function getWorkspaceHint() {
@@ -1313,21 +1447,21 @@ function drawCompositionOverlay(ctx, width, height, options = {}) {
   const overlayPalette = getOverlayPalette();
   ctx.strokeStyle = overlayPalette.stroke;
   ctx.fillStyle = overlayPalette.fill;
-  ctx.lineWidth = 1.4;
   const drawOptions = {
     includeSelection: options.includeSelection ?? true,
-    spiralState: options.spiralState ?? state.spiral
+    spiralState: options.spiralState ?? state.spiral,
+    basicLineWidth: options.basicLineWidth ?? BASIC_OVERLAY_LINE_WIDTH
   };
 
   if (state.analysisMode === "basic") {
     if (state.mode === "thirds") {
-      drawThirds(ctx, width, height, overlayPalette);
+      drawThirds(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
     } else if (state.mode === "grid") {
-      drawGrid(ctx, width, height, overlayPalette);
+      drawGrid(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
     } else if (state.mode === "center") {
-      drawCenterLines(ctx, width, height, overlayPalette);
+      drawCenterLines(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
     } else if (state.mode === "diagonal") {
-      drawDiagonals(ctx, width, height, overlayPalette);
+      drawDiagonals(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
     }
   } else {
     if (state.advancedMode === "golden-ratio") {
@@ -1342,13 +1476,14 @@ function drawCompositionOverlay(ctx, width, height, options = {}) {
   }
 }
 
-function drawThirds(ctx, width, height, overlayPalette) {
+function drawThirds(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
   const firstThirdX = width * 0.33333;
   const secondThirdX = width * 0.66666;
   const firstThirdY = height * 0.33333;
   const secondThirdY = height * 0.66666;
 
   ctx.strokeStyle = overlayPalette.stroke;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.moveTo(firstThirdX, 0);
   ctx.lineTo(firstThirdX, height);
@@ -1442,10 +1577,11 @@ function drawThirdsSelection(ctx, width, height, overlayPalette) {
   ctx.restore();
 }
 
-function drawGrid(ctx, width, height, overlayPalette) {
+function drawGrid(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
   const columns = getGridDivisions();
   const rows = getGridDivisions();
   ctx.strokeStyle = overlayPalette.stroke;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
 
   for (let index = 1; index < columns; index += 1) {
@@ -1463,8 +1599,9 @@ function drawGrid(ctx, width, height, overlayPalette) {
   ctx.stroke();
 }
 
-function drawCenterLines(ctx, width, height, overlayPalette) {
+function drawCenterLines(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
   ctx.strokeStyle = overlayPalette.stroke;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.moveTo(width / 2, 0);
   ctx.lineTo(width / 2, height);
@@ -1473,8 +1610,9 @@ function drawCenterLines(ctx, width, height, overlayPalette) {
   ctx.stroke();
 }
 
-function drawDiagonals(ctx, width, height, overlayPalette) {
+function drawDiagonals(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
   ctx.strokeStyle = overlayPalette.stroke;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(width, height);
@@ -1807,6 +1945,64 @@ function downloadCompositionAnalysis() {
   link.href = exportCanvas.toDataURL("image/png");
   link.download = "m8-composition-analysis.png";
   link.click();
+  showStatusToast("Analysis downloaded");
+}
+
+function createUploadLoadingOverlay() {
+  const overlay = document.createElement("div");
+  overlay.className = "image-loading-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.innerHTML = `
+    <div class="image-loading-copy">
+      <p class="image-loading-title">Loading image...</p>
+      <p class="image-loading-subcopy">Preparing analysis...</p>
+    </div>
+  `;
+  canvasWrap.appendChild(overlay);
+  return overlay;
+}
+
+function createStatusToast() {
+  const toast = document.createElement("div");
+  toast.className = "status-toast";
+  toast.setAttribute("aria-live", "polite");
+  toast.setAttribute("aria-atomic", "true");
+  document.body.appendChild(toast);
+  return toast;
+}
+
+function setWorkspaceLoadingState(isLoading, title = "Loading image...", subcopy = "Preparing analysis...") {
+  canvasWrap.classList.toggle("is-loading", isLoading);
+  canvasWrap.classList.remove("has-load-error");
+  const titleNode = uploadLoadingOverlay.querySelector(".image-loading-title");
+  const subcopyNode = uploadLoadingOverlay.querySelector(".image-loading-subcopy");
+  if (titleNode) {
+    titleNode.textContent = title;
+  }
+  if (subcopyNode) {
+    subcopyNode.textContent = subcopy;
+  }
+}
+
+function showStatusToast(message) {
+  if (!statusToast) {
+    return;
+  }
+
+  if (feedbackToastTimeoutId) {
+    window.clearTimeout(feedbackToastTimeoutId);
+    feedbackToastTimeoutId = null;
+  }
+
+  statusToast.textContent = message;
+  window.requestAnimationFrame(() => {
+    statusToast.classList.add("is-visible");
+  });
+
+  feedbackToastTimeoutId = window.setTimeout(() => {
+    statusToast.classList.remove("is-visible");
+    feedbackToastTimeoutId = null;
+  }, 1800);
 }
 
 function handleNotanLevelsInput(event) {

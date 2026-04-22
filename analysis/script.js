@@ -32,6 +32,9 @@ const freeCheckNote = document.getElementById("freeCheckNote");
 const lockedAnalysisState = document.getElementById("lockedAnalysisState");
 const unlockFullAccessButton = document.getElementById("unlockFullAccessButton");
 const premiumToast = document.getElementById("premiumToast");
+const emptyStateLabel = emptyState?.querySelector(".upload-empty-label");
+const emptyStateSubcopy = emptyState?.querySelector(".upload-empty-subcopy");
+const analysisUploadLabels = Array.from(document.querySelectorAll('label[for="analysisFileInput"]'));
 
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
@@ -39,11 +42,11 @@ const FULL_ANALYSIS_STORAGE_KEY = "m8_full_analysis_used";
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
 const ANALYSIS_SEQUENCE = [
-  { className: "stage-grid", helper: "Preparing your quick check", message: "Checking focal placement...", delay: 1100 },
-  { className: "stage-grayscale", helper: "Preparing your quick check", message: "Mapping visual weight...", delay: 1500 },
-  { className: "stage-contrast", helper: "Preparing your quick check", message: "Reviewing value structure...", delay: 1350 },
-  { className: "stage-posterize", helper: "Preparing your quick check", message: "Estimating value range...", delay: 1250 },
-  { className: "stage-center", helper: "Preparing your quick check", message: "Checking focal placement...", delay: 1200 }
+  { className: "stage-grid", helper: "Preparing your quick check", message: "Reading structure...", delay: 980 },
+  { className: "stage-grayscale", helper: "Preparing your quick check", message: "Mapping value groups...", delay: 1180 },
+  { className: "stage-contrast", helper: "Preparing your quick check", message: "Balancing visual weight...", delay: 1120 },
+  { className: "stage-posterize", helper: "Preparing your quick check", message: "Mapping value groups...", delay: 1040 },
+  { className: "stage-center", helper: "Preparing your quick check", message: "Estimating focal pull...", delay: 1180 }
 ];
 const ANALYSIS_STAGE_CLASSES = ["stage-grid", "stage-grayscale", "stage-contrast", "stage-posterize", "stage-center", "stage-focus-lock", "stage-final"];
 const MESSAGE_FADE_DURATION = 220;
@@ -96,6 +99,13 @@ let isOverlayColorMenuOpen = false;
 let statusMessageTimeoutId = null;
 let justUnlockedFromStripe = false;
 let premiumToastTimeoutId = null;
+let imageLoadRequestId = 0;
+let feedbackToastTimeoutId = null;
+
+const uploadLoadingOverlay = createUploadLoadingOverlay();
+const statusToast = createStatusToast();
+
+resetEmptyState();
 
 handleUnlockReturn();
 
@@ -108,21 +118,46 @@ if (justUnlockedFromStripe) {
 }
 
 uploadZone.addEventListener("click", () => {
+  if (shouldBlockAnalysisUpload()) {
+    showLockedAnalysisState();
+    return;
+  }
   analysisFileInput.click();
 });
 
 uploadZone.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
+    if (shouldBlockAnalysisUpload()) {
+      showLockedAnalysisState();
+      return;
+    }
     analysisFileInput.click();
   }
 });
 
 analysisFileInput.addEventListener("change", (event) => {
+  if (shouldBlockAnalysisUpload()) {
+    event.target.value = "";
+    showLockedAnalysisState();
+    return;
+  }
+
   const [file] = event.target.files || [];
   if (file) {
     showPreview(file);
   }
+});
+
+analysisUploadLabels.forEach((label) => {
+  label.addEventListener("click", (event) => {
+    if (!shouldBlockAnalysisUpload()) {
+      return;
+    }
+
+    event.preventDefault();
+    showLockedAnalysisState();
+  });
 });
 
 overlayColorButton.addEventListener("click", toggleOverlayColorMenu);
@@ -172,6 +207,11 @@ uploadZone.addEventListener("drop", (event) => {
   event.preventDefault();
   uploadZone.classList.remove("dragover");
 
+  if (shouldBlockAnalysisUpload()) {
+    showLockedAnalysisState();
+    return;
+  }
+
   const [file] = event.dataTransfer?.files || [];
   if (file && file.type.startsWith("image/")) {
     showPreview(file);
@@ -180,14 +220,33 @@ uploadZone.addEventListener("drop", (event) => {
 
 function showPreview(file) {
   resetAnalysisSequence();
+  imageLoadRequestId += 1;
+  const requestId = imageLoadRequestId;
 
   if (currentObjectUrl) {
     URL.revokeObjectURL(currentObjectUrl);
   }
 
+  hasUploadedImage = false;
+  imageStage.classList.add("hidden");
+  quickCheckResult.classList.add("hidden");
+  lockedAnalysisState.classList.add("hidden");
+  freeCheckNote.classList.add("hidden");
+  setAnalysisStage("");
+  updateAnalysisAccessUI();
+  resetEmptyState();
+  setUploadLoadingState(true, "Loading image...", "Preparing analysis...");
+  workspaceHint.textContent = "Preparing analysis...";
+  updateStatusMessage("Preparing analysis...", true);
+  analysisPreview.classList.remove("is-loaded");
+  analysisPreview.onload = null;
+  analysisPreview.onerror = null;
   currentObjectUrl = URL.createObjectURL(file);
-  analysisPreview.src = currentObjectUrl;
   analysisPreview.onload = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
     hasUploadedImage = true;
     imageStage.classList.remove("hidden");
     emptyState.classList.add("hidden");
@@ -197,9 +256,28 @@ function showPreview(file) {
     lockedAnalysisState.classList.add("hidden");
     isBreakdownExpanded = false;
     updateBreakdownUI();
+    setUploadLoadingState(false);
+    window.requestAnimationFrame(() => {
+      analysisPreview.classList.add("is-loaded");
+    });
     updateStatusMessage("Image uploaded. Ready to run check.", true);
     updateAnalysisAccessUI();
+    showStatusToast("Image loaded");
   };
+  analysisPreview.onerror = () => {
+    if (requestId !== imageLoadRequestId) {
+      return;
+    }
+
+    hasUploadedImage = false;
+    analysisPreview.removeAttribute("src");
+    analysisPreview.classList.remove("is-loaded");
+    imageStage.classList.add("hidden");
+    quickCheckResult.classList.add("hidden");
+    lockedAnalysisState.classList.add("hidden");
+    showUploadError("Couldn't load image. Please try another file.");
+  };
+  analysisPreview.src = currentObjectUrl;
 }
 
 function toggleOverlayColorMenu(event) {
@@ -280,6 +358,10 @@ function updateAnalysisAccessUI() {
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
 }
 
+function shouldBlockAnalysisUpload() {
+  return !DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis();
+}
+
 function updateOverlayColorUI() {
   overlayColorMenu.classList.toggle("hidden", !isOverlayColorMenuOpen);
   overlayColorButton.setAttribute("aria-expanded", String(isOverlayColorMenuOpen));
@@ -306,11 +388,12 @@ function applyOverlayColor() {
 
 function runQuickCheck() {
   isAnalysisRunning = true;
+  resetResultRevealState();
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
   statusHelper.classList.remove("hidden");
-  updateStatusMessage("Checking focal placement...");
+  updateStatusMessage("Reading structure...");
   workspaceHint.textContent = "Quick check in progress. Reviewing structure and balance.";
   latestQuickCheckResult = buildQuickCheckResult();
   applyFocalPosition(latestQuickCheckResult.metrics);
@@ -329,6 +412,7 @@ function runQuickCheck() {
 
   const focalLockTimeoutId = window.setTimeout(() => {
     setAnalysisStage("stage-focus-lock");
+    updateStatusMessage("Settling final overlay...");
   }, Math.max(elapsed - 260, 0));
   analysisTimeoutIds.push(focalLockTimeoutId);
 
@@ -369,6 +453,10 @@ function completeQuickCheck() {
     freeCheckNote.classList.remove("hidden");
   }
   quickCheckResult.classList.remove("hidden");
+  window.requestAnimationFrame(() => {
+    quickCheckResult.classList.add("is-visible");
+  });
+  revealResultPanel();
   lockedAnalysisState.classList.add("hidden");
 
   if (!DEV_MODE && !hasUnlockedAccess()) {
@@ -1338,14 +1426,44 @@ function resetAnalysisSequence() {
   isAnalysisRunning = false;
   latestQuickCheckResult = null;
   setAnalysisStage("");
+  resetResultRevealState();
   updateAnalysisAccessUI();
+}
+
+function resetEmptyState() {
+  if (emptyStateLabel) {
+    emptyStateLabel.textContent = "Drop an image here or click to upload";
+  }
+  if (emptyStateSubcopy) {
+    emptyStateSubcopy.textContent = "JPG, PNG, WebP";
+    emptyStateSubcopy.classList.remove("hidden");
+  }
+  emptyState.classList.remove("hidden");
+  uploadZone.classList.remove("has-load-error");
+}
+
+function showUploadError(message) {
+  resetAnalysisSequence();
+  setUploadLoadingState(false);
+  uploadZone.classList.add("has-load-error");
+  if (emptyStateLabel) {
+    emptyStateLabel.textContent = message;
+  }
+  if (emptyStateSubcopy) {
+    emptyStateSubcopy.textContent = "Choose another JPG, PNG, or WebP image.";
+    emptyStateSubcopy.classList.remove("hidden");
+  }
+  imageStage.classList.add("hidden");
+  emptyState.classList.remove("hidden");
+  workspaceHint.textContent = "Please try another image.";
+  updateStatusMessage(message, true);
 }
 
 function renderResultBlocks(blocks) {
   quickCheckBlocks.innerHTML = "";
   blocks.forEach((block) => {
     const wrapper = document.createElement("div");
-    wrapper.className = "result-block";
+    wrapper.className = "result-block result-reveal";
 
     const title = document.createElement("p");
     title.className = "result-block-title";
@@ -1358,6 +1476,48 @@ function renderResultBlocks(blocks) {
     wrapper.appendChild(title);
     wrapper.appendChild(copy);
     quickCheckBlocks.appendChild(wrapper);
+  });
+}
+
+function resetResultRevealState() {
+  [
+    quickCheckResult,
+    quickCheckScore,
+    quickCheckTopSections,
+    quickCheckSuggestion,
+    quickCheckTags,
+    quickCheckBlocks,
+    freeCheckNote
+  ].forEach((element) => {
+    element?.classList.remove("is-visible");
+  });
+
+  [
+    quickCheckKeyInsightBlock,
+    quickCheckStrengthBlock,
+    quickCheckWeaknessBlock
+  ].forEach((element) => {
+    element?.classList.add("result-reveal");
+  });
+}
+
+function revealResultPanel() {
+  const revealSteps = [
+    { element: quickCheckScore, delay: 80 },
+    { element: quickCheckTopSections, delay: 180 },
+    { element: quickCheckTags, delay: 300 },
+    { element: freeCheckNote, delay: 420 }
+  ];
+
+  revealSteps.forEach(({ element, delay }) => {
+    if (!element) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      element.classList.add("is-visible");
+    }, delay);
+    analysisTimeoutIds.push(timeoutId);
   });
 }
 
@@ -1400,6 +1560,63 @@ function updateStatusMessage(message, immediate = false) {
     statusNote.classList.remove("is-fading");
     statusMessageTimeoutId = null;
   }, MESSAGE_FADE_DURATION);
+}
+
+function createUploadLoadingOverlay() {
+  const overlay = document.createElement("div");
+  overlay.className = "image-loading-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.innerHTML = `
+    <div class="image-loading-copy">
+      <p class="image-loading-title">Loading image...</p>
+      <p class="image-loading-subcopy">Preparing analysis...</p>
+    </div>
+  `;
+  uploadZone.appendChild(overlay);
+  return overlay;
+}
+
+function createStatusToast() {
+  const toast = document.createElement("div");
+  toast.className = "status-toast";
+  toast.setAttribute("aria-live", "polite");
+  toast.setAttribute("aria-atomic", "true");
+  document.body.appendChild(toast);
+  return toast;
+}
+
+function setUploadLoadingState(isLoading, title = "Loading image...", subcopy = "Preparing analysis...") {
+  uploadZone.classList.toggle("is-loading", isLoading);
+  uploadZone.classList.remove("has-load-error");
+  const titleNode = uploadLoadingOverlay.querySelector(".image-loading-title");
+  const subcopyNode = uploadLoadingOverlay.querySelector(".image-loading-subcopy");
+  if (titleNode) {
+    titleNode.textContent = title;
+  }
+  if (subcopyNode) {
+    subcopyNode.textContent = subcopy;
+  }
+}
+
+function showStatusToast(message) {
+  if (!statusToast) {
+    return;
+  }
+
+  if (feedbackToastTimeoutId) {
+    window.clearTimeout(feedbackToastTimeoutId);
+    feedbackToastTimeoutId = null;
+  }
+
+  statusToast.textContent = message;
+  window.requestAnimationFrame(() => {
+    statusToast.classList.add("is-visible");
+  });
+
+  feedbackToastTimeoutId = window.setTimeout(() => {
+    statusToast.classList.remove("is-visible");
+    feedbackToastTimeoutId = null;
+  }, 1800);
 }
 
 function showPremiumLimitToast(message) {
