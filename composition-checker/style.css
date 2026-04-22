@@ -87,16 +87,16 @@ a {
 
 .top-nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0;
   justify-content: flex-end;
   align-items: center;
 }
 
 .top-nav-link {
-  padding: 0 16px;
+  padding: 0 12px;
   color: var(--ink);
-  font-size: 0.96rem;
+  font-size: 0.91rem;
   line-height: 1;
   border-right: 1px solid rgba(50, 44, 38, 0.18);
   transition: color 180ms ease, opacity 180ms ease;
