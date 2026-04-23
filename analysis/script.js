@@ -39,6 +39,8 @@ const analysisUploadLabels = Array.from(document.querySelectorAll('label[for="an
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
 const FULL_ANALYSIS_STORAGE_KEY = "m8_full_analysis_used";
+const FREE_FULL_ANALYSIS_LIMIT = 3;
+const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
 const ANALYSIS_SEQUENCE = [
@@ -312,15 +314,7 @@ function hasUsedFullAnalysis() {
     return false;
   }
 
-  const storedValue = localStorage.getItem(FULL_ANALYSIS_STORAGE_KEY);
-
-  if (storedValue === "true") {
-    const todayStamp = getTodayAnalysisStamp();
-    localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, todayStamp);
-    return true;
-  }
-
-  return storedValue === getTodayAnalysisStamp();
+  return getRecentFreeAnalysisTimestamps().length >= FREE_FULL_ANALYSIS_LIMIT;
 }
 
 function hasUnlockedAccess() {
@@ -336,7 +330,48 @@ function getTodayAnalysisStamp() {
 }
 
 function markFreeAnalysisUsedToday() {
-  localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, getTodayAnalysisStamp());
+  const recentTimestamps = getRecentFreeAnalysisTimestamps();
+  recentTimestamps.push(Date.now());
+  localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, JSON.stringify(recentTimestamps));
+}
+
+function getRecentFreeAnalysisTimestamps() {
+  const now = Date.now();
+  const cutoff = now - FREE_FULL_ANALYSIS_WINDOW_MS;
+  const storedValue = localStorage.getItem(FULL_ANALYSIS_STORAGE_KEY);
+
+  if (!storedValue) {
+    return [];
+  }
+
+  let timestamps = [];
+
+  if (storedValue === "true") {
+    timestamps = [now];
+  } else {
+    try {
+      const parsed = JSON.parse(storedValue);
+      if (Array.isArray(parsed)) {
+        timestamps = parsed
+          .map((value) => Number(value))
+          .filter((value) => Number.isFinite(value));
+      } else {
+        const legacyDate = new Date(`${storedValue}T00:00:00`);
+        if (!Number.isNaN(legacyDate.getTime())) {
+          timestamps = [legacyDate.getTime()];
+        }
+      }
+    } catch (error) {
+      const legacyDate = new Date(`${storedValue}T00:00:00`);
+      if (!Number.isNaN(legacyDate.getTime())) {
+        timestamps = [legacyDate.getTime()];
+      }
+    }
+  }
+
+  const recentTimestamps = timestamps.filter((timestamp) => timestamp >= cutoff);
+  localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, JSON.stringify(recentTimestamps));
+  return recentTimestamps;
 }
 
 function handleUnlockReturn() {
@@ -449,7 +484,7 @@ function completeQuickCheck() {
     freeCheckNote.textContent = "Unlimited access is now active.";
     freeCheckNote.classList.remove("hidden");
   } else {
-    freeCheckNote.textContent = "This was your free full check for today.";
+    freeCheckNote.textContent = "This used one of your 3 free full checks in the last 24 hours.";
     freeCheckNote.classList.remove("hidden");
   }
   quickCheckResult.classList.remove("hidden");
@@ -1527,8 +1562,8 @@ function showLockedAnalysisState() {
   lockedAnalysisState.classList.remove("hidden");
   freeCheckNote.classList.add("hidden");
   updateStatusMessage("Unlock full access to continue.");
-  workspaceHint.textContent = "Today's free full analysis has already been used. One payment unlocks the full app.";
-  showPremiumLimitToast("Today's free check is already used. Tap Unlock All Tools to continue.");
+  workspaceHint.textContent = "Your 3 free full checks in the last 24 hours are used. One payment unlocks the full app.";
+  showPremiumLimitToast("Your 3 free checks in the last 24 hours are used. Tap Unlock All Tools to continue.");
 }
 
 function updateBreakdownUI() {
