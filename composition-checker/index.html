@@ -287,6 +287,19 @@
               <p class="detail-copy control-hint">Auto suggestion looks for stronger local contrast areas. You can still move the hierarchy manually by clicking on the image.</p>
             </div>
           </div>
+
+          <div id="dynamicSymmetryControlsCard" class="detail-card hidden">
+            <p class="section-label">Dynamic Symmetry Read</p>
+            <div class="control-stack">
+              <p id="dynamicSymmetryScore" class="dynamic-score">Dynamic Symmetry Score: --</p>
+              <p id="dynamicSymmetryFeedback" class="detail-copy">Upload an image to detect structural alignment.</p>
+              <label class="toggle-control">
+                <input id="dynamicAlignmentOnlyToggle" type="checkbox">
+                <span>Show alignments only</span>
+              </label>
+              <p id="dynamicSymmetryTooltip" class="detail-copy dynamic-tooltip hidden"></p>
+            </div>
+          </div>
         </div>
 
         <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Composition Analysis</button>

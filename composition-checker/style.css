@@ -741,6 +741,33 @@ a {
 .grid-transfer-result {
   min-height: 1.65em;
 }
+
+.dynamic-score {
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.toggle-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.toggle-control input {
+  accent-color: #c96a3d;
+}
+
+.dynamic-tooltip {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(50, 44, 38, 0.08);
+}
 @media (max-width: 720px) {
   .grid-transfer-inputs {
     grid-template-columns: 1fr;

@@ -91,6 +91,11 @@ const premiumToast = document.getElementById("premiumToast");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
+const dynamicSymmetryControlsCard = document.getElementById("dynamicSymmetryControlsCard");
+const dynamicSymmetryScore = document.getElementById("dynamicSymmetryScore");
+const dynamicSymmetryFeedback = document.getElementById("dynamicSymmetryFeedback");
+const dynamicAlignmentOnlyToggle = document.getElementById("dynamicAlignmentOnlyToggle");
+const dynamicSymmetryTooltip = document.getElementById("dynamicSymmetryTooltip");
 const gridControlsCard = document.getElementById("gridControlsCard");
 const gridTransferCard = document.getElementById("gridTransferCard");
 const gridSize = document.getElementById("gridSize");
@@ -165,6 +170,8 @@ const SPIRAL_TEMPLATE_ARCS = [
 
 const GRID_DIVISION_OPTIONS = [2, 4, 6, 8, 10, 12];
 const BASIC_OVERLAY_LINE_WIDTH = 1.75;
+const DYNAMIC_SYMMETRY_MAX_POINTS = 42;
+const DYNAMIC_SYMMETRY_SAMPLE_SIZE = 180;
 
 const OVERLAY_COLOR_CLASSES = ["overlay-color-black", "overlay-color-white", "overlay-color-red"];
 const OVERLAY_COLOR_NAMES = {
@@ -204,6 +211,15 @@ const state = {
   notanCache: {
     key: null,
     canvas: null
+  },
+  dynamicSymmetry: {
+    showAlignmentsOnly: false,
+    analysisKey: null,
+    points: [],
+    alignedPoints: [],
+    score: null,
+    feedback: "Upload an image to detect structural alignment.",
+    tooltip: null
   },
   thirdsSelection: null,
   spiral: {
@@ -264,6 +280,7 @@ spiralDisplayButtons.forEach((button) => {
 });
 notanLevels.addEventListener("input", handleNotanLevelsInput);
 focalSuggestButton.addEventListener("click", suggestFocalPointsFromContrast);
+dynamicAlignmentOnlyToggle.addEventListener("change", handleDynamicAlignmentToggle);
 gridSize.addEventListener("input", handleGridSizeInput);
 gridCanvasWidth.addEventListener("input", handleGridCanvasInput);
 gridCanvasHeight.addEventListener("input", handleGridCanvasInput);
@@ -618,6 +635,16 @@ function handleOverlayClick(event) {
     }
 
     snapGoldenSpiralToPoint(point);
+    return;
+  }
+
+  if (canInspectDynamicSymmetry()) {
+    const point = getOverlayPoint(event);
+    if (!point) {
+      return;
+    }
+
+    inspectDynamicSymmetryPoint(point);
     return;
   }
 
@@ -1039,6 +1066,7 @@ function updateModeUI() {
   const isGoldenSpiral = !isBasic && state.advancedMode === "golden-spiral";
   const isNotan = !isBasic && state.advancedMode === "notan";
   const isFocalBalance = !isBasic && state.advancedMode === "focal-balance";
+  const isDynamicSymmetry = !isBasic && state.advancedMode === "dynamic-symmetry";
 
   basicToolSwitcher.classList.toggle("hidden", !isBasic);
   advancedToolSwitcher.classList.toggle("hidden", isBasic);
@@ -1047,6 +1075,7 @@ function updateModeUI() {
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
   notanControlsCard.classList.toggle("hidden", !isNotan);
   focalControlsCard.classList.toggle("hidden", !isFocalBalance);
+  dynamicSymmetryControlsCard.classList.toggle("hidden", !isDynamicSymmetry);
   gridControlsCard.classList.toggle("hidden", !isGridMode);
   gridTransferCard.classList.toggle("hidden", !isGridMode);
   gridOverlayInfo.classList.toggle("hidden", !isGridMode || !state.imageLoaded);
@@ -1056,6 +1085,9 @@ function updateModeUI() {
   clearNotesButton.disabled = !isFocalBalance || state.focalPoints.length === 0;
   clearNotesButton.textContent = "Reset Focal Points";
   focalSuggestButton.disabled = !isFocalBalance || !state.imageLoaded;
+  dynamicAlignmentOnlyToggle.checked = state.dynamicSymmetry.showAlignmentsOnly;
+  dynamicAlignmentOnlyToggle.disabled = !isDynamicSymmetry || !state.imageLoaded;
+  updateDynamicSymmetryReadout();
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
 
   if (isBasic) {
@@ -1103,7 +1135,7 @@ function updateModeUI() {
   }
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
-  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode);
+  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry);
   downloadCompositionAnalysisButton.disabled = !state.imageLoaded;
 
   spiralScale.value = String(Math.round(state.spiral.scale * 100));
@@ -1161,6 +1193,12 @@ function beginImageLoad() {
   state.imageLoaded = false;
   state.imageLoading = true;
   state.loadErrorMessage = "";
+  state.dynamicSymmetry.analysisKey = null;
+  state.dynamicSymmetry.points = [];
+  state.dynamicSymmetry.alignedPoints = [];
+  state.dynamicSymmetry.score = null;
+  state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
+  state.dynamicSymmetry.tooltip = null;
   compositionImage.classList.remove("is-loaded");
   compositionImage.style.display = "none";
   overlayCanvas.style.display = "none";
@@ -1219,7 +1257,7 @@ function getAdvancedStatusCopy(defaultStatus) {
   return `${sourceLabel} ${state.focalPoints.length}/3 points placed. Click a point to remove it or reset to start again.`;
 }
 
-function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode) {
+function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry) {
   if (isAdvancedLocked()) {
     return "default";
   }
@@ -1233,6 +1271,10 @@ function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode) {
   }
 
   if (isThirdsMode && state.imageLoaded) {
+    return "crosshair";
+  }
+
+  if (isDynamicSymmetry && state.imageLoaded) {
     return "crosshair";
   }
 
@@ -1436,6 +1478,9 @@ function drawOverlay() {
     return;
   }
   drawCompositionOverlay(ctx, width, height);
+  if (canInspectDynamicSymmetry() && state.dynamicSymmetry.alignedPoints.length) {
+    window.requestAnimationFrame(drawOverlay);
+  }
 }
 
 function drawCompositionOverlay(ctx, width, height, options = {}) {
@@ -1469,7 +1514,10 @@ function drawCompositionOverlay(ctx, width, height, options = {}) {
     } else if (state.advancedMode === "golden-spiral") {
       drawGoldenSpiral(ctx, width, height, overlayPalette, drawOptions);
     } else if (state.advancedMode === "dynamic-symmetry") {
-      drawDynamicSymmetry(ctx, width, height, overlayPalette);
+      if (!state.dynamicSymmetry.showAlignmentsOnly) {
+        drawDynamicSymmetry(ctx, width, height, overlayPalette);
+      }
+      drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette);
     } else if (state.advancedMode === "focal-balance") {
       drawFocalBalance(ctx, width, height, overlayPalette);
     }
@@ -1720,6 +1768,66 @@ function drawDynamicSymmetry(ctx, width, height, overlayPalette) {
   ctx.lineTo(threeQuarterX, height);
   ctx.stroke();
   ctx.restore();
+}
+
+function drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette) {
+  const analysis = getDynamicSymmetryAnalysis(width, height);
+  const pulse = 0.72 + Math.sin(Date.now() / 360) * 0.18;
+
+  ctx.save();
+  analysis.alignedPoints.forEach((point) => {
+    const x = point.x * width;
+    const y = point.y * height;
+    const glowRadius = Math.max(12, Math.min(width, height) * 0.025) * pulse;
+    const coreRadius = Math.max(3.5, Math.min(width, height) * 0.006);
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+    gradient.addColorStop(0, overlayPalette.fillSoft);
+    gradient.addColorStop(0.55, overlayPalette.fillVerySoft);
+    gradient.addColorStop(1, toOverlayAlphaColor(getActiveOverlayColor(), 0));
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.beginPath();
+    ctx.arc(x, y, coreRadius + 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = overlayPalette.strokeStrong;
+    ctx.lineWidth = 1.15;
+    ctx.beginPath();
+    ctx.arc(x, y, coreRadius, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  if (state.dynamicSymmetry.tooltip) {
+    drawDynamicSymmetryTooltip(ctx, width, height, overlayPalette);
+  }
+  ctx.restore();
+}
+
+function drawDynamicSymmetryTooltip(ctx, width, height, overlayPalette) {
+  const tooltip = state.dynamicSymmetry.tooltip;
+  const x = tooltip.x * width;
+  const y = tooltip.y * height;
+  const text = tooltip.message;
+  const paddingX = 10;
+  const boxHeight = 34;
+  ctx.font = "700 12px Segoe UI";
+  const boxWidth = Math.min(width - 24, ctx.measureText(text).width + paddingX * 2);
+  const boxX = clamp(x + 12, 12, width - boxWidth - 12);
+  const boxY = clamp(y - boxHeight - 12, 12, height - boxHeight - 12);
+
+  ctx.fillStyle = "rgba(252,250,246,0.9)";
+  drawRoundedRect(ctx, boxX, boxY, boxWidth, boxHeight, 13);
+  ctx.fill();
+  ctx.strokeStyle = overlayPalette.strokeSoft;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = "#1f1c18";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, boxX + paddingX, boxY + boxHeight / 2);
 }
 
 function drawNotanOverlay(ctx, width, height) {
@@ -2019,6 +2127,199 @@ function handleNotanLevelsInput(event) {
 function invalidateNotanCache() {
   state.notanCache.key = null;
   state.notanCache.canvas = null;
+}
+
+function handleDynamicAlignmentToggle(event) {
+  state.dynamicSymmetry.showAlignmentsOnly = event.target.checked;
+  requestOverlayDraw();
+}
+
+function canInspectDynamicSymmetry() {
+  return state.imageLoaded
+    && state.analysisMode === "advanced"
+    && state.advancedMode === "dynamic-symmetry"
+    && !isAdvancedLocked();
+}
+
+function inspectDynamicSymmetryPoint(point) {
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const nearest = getNearestDynamicLineDistance(point.x, point.y, width, height);
+  const isClose = nearest.distance <= getDynamicAlignmentThreshold(width, height);
+  const message = isClose
+    ? "This point is close to a major diagonal"
+    : "This point is outside main structural lines";
+
+  state.dynamicSymmetry.tooltip = {
+    x: point.x / width,
+    y: point.y / height,
+    message
+  };
+  dynamicSymmetryTooltip.textContent = message;
+  dynamicSymmetryTooltip.classList.remove("hidden");
+  requestOverlayDraw();
+}
+
+function getDynamicSymmetryAnalysis(width, height) {
+  const key = `${compositionImage.currentSrc || compositionImage.src}|${compositionImage.naturalWidth}x${compositionImage.naturalHeight}`;
+  if (state.dynamicSymmetry.analysisKey !== key) {
+    state.dynamicSymmetry.analysisKey = key;
+    state.dynamicSymmetry.points = detectDynamicSymmetryKeyPoints();
+    state.dynamicSymmetry.tooltip = null;
+    dynamicSymmetryTooltip.classList.add("hidden");
+  }
+
+  const threshold = getDynamicAlignmentThreshold(width, height);
+  const alignedPoints = state.dynamicSymmetry.points
+    .map((point) => {
+      const nearest = getNearestDynamicLineDistance(point.x * width, point.y * height, width, height);
+      return { ...point, distance: nearest.distance, aligned: nearest.distance <= threshold };
+    })
+    .filter((point) => point.aligned);
+  const score = state.dynamicSymmetry.points.length
+    ? Math.round((alignedPoints.length / state.dynamicSymmetry.points.length) * 100)
+    : 0;
+
+  state.dynamicSymmetry.alignedPoints = alignedPoints;
+  state.dynamicSymmetry.score = score;
+  state.dynamicSymmetry.feedback = getDynamicSymmetryFeedback(score);
+  updateDynamicSymmetryReadout();
+  return state.dynamicSymmetry;
+}
+
+function detectDynamicSymmetryKeyPoints() {
+  const width = compositionImage.naturalWidth;
+  const height = compositionImage.naturalHeight;
+  if (!width || !height) {
+    return [];
+  }
+
+  const scale = Math.min(1, DYNAMIC_SYMMETRY_SAMPLE_SIZE / Math.max(width, height));
+  const sampleWidth = Math.max(48, Math.round(width * scale));
+  const sampleHeight = Math.max(48, Math.round(height * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    return [];
+  }
+
+  canvas.width = sampleWidth;
+  canvas.height = sampleHeight;
+  context.drawImage(compositionImage, 0, 0, sampleWidth, sampleHeight);
+  const imageData = context.getImageData(0, 0, sampleWidth, sampleHeight).data;
+  const candidates = [];
+  const step = Math.max(3, Math.floor(Math.min(sampleWidth, sampleHeight) / 54));
+
+  for (let y = step; y < sampleHeight - step; y += step) {
+    for (let x = step; x < sampleWidth - step; x += step) {
+      const center = getLuminanceAt(imageData, sampleWidth, x, y);
+      const right = getLuminanceAt(imageData, sampleWidth, x + step, y);
+      const left = getLuminanceAt(imageData, sampleWidth, x - step, y);
+      const down = getLuminanceAt(imageData, sampleWidth, x, y + step);
+      const up = getLuminanceAt(imageData, sampleWidth, x, y - step);
+      const gradient = Math.abs(right - left) + Math.abs(down - up);
+      const contrast = Math.max(Math.abs(center - right), Math.abs(center - left), Math.abs(center - down), Math.abs(center - up));
+      const centerPull = 1 - Math.min(1, Math.hypot((x / sampleWidth) - 0.5, (y / sampleHeight) - 0.5) / 0.72);
+      const score = gradient * 0.7 + contrast * 0.45 + centerPull * 24;
+
+      if (score > 34) {
+        candidates.push({ x: x / sampleWidth, y: y / sampleHeight, score });
+      }
+    }
+  }
+
+  candidates.sort((a, b) => b.score - a.score);
+  return chooseSeparatedDynamicPoints(candidates, DYNAMIC_SYMMETRY_MAX_POINTS);
+}
+
+function chooseSeparatedDynamicPoints(candidates, maxPoints) {
+  const chosen = [];
+  const minDistance = 0.055;
+
+  for (const candidate of candidates) {
+    if (chosen.some((point) => Math.hypot(point.x - candidate.x, point.y - candidate.y) < minDistance)) {
+      continue;
+    }
+
+    chosen.push(candidate);
+    if (chosen.length >= maxPoints) {
+      break;
+    }
+  }
+
+  return chosen;
+}
+
+function getLuminanceAt(data, width, x, y) {
+  const index = (y * width + x) * 4;
+  return (data[index] * 0.299) + (data[index + 1] * 0.587) + (data[index + 2] * 0.114);
+}
+
+function getDynamicSymmetryFeedback(score) {
+  if (score >= 62) {
+    return "Major forms align well with primary diagonals.";
+  }
+  if (score >= 34) {
+    return "Some alignment is present, but could be stronger.";
+  }
+  return "The composition does not strongly follow dynamic symmetry lines.";
+}
+
+function updateDynamicSymmetryReadout() {
+  const score = state.dynamicSymmetry.score;
+  dynamicSymmetryScore.textContent = `Dynamic Symmetry Score: ${Number.isFinite(score) ? score : "--"}`;
+  dynamicSymmetryFeedback.textContent = state.dynamicSymmetry.feedback;
+}
+
+function getDynamicAlignmentThreshold(width, height) {
+  return Math.max(10, Math.min(width, height) * 0.038);
+}
+
+function getNearestDynamicLineDistance(x, y, width, height) {
+  return getDynamicSymmetryLines(width, height).reduce((nearest, line) => {
+    const distance = getPointLineDistance(x, y, line.x1, line.y1, line.x2, line.y2);
+    return distance < nearest.distance ? { distance, line } : nearest;
+  }, { distance: Infinity, line: null });
+}
+
+function getDynamicSymmetryLines(width, height) {
+  const quarterX = width * 0.25;
+  const threeQuarterX = width * 0.75;
+  return [
+    { x1: 0, y1: height, x2: width, y2: 0 },
+    { x1: 0, y1: 0, x2: width, y2: height },
+    { x1: 0, y1: height, x2: quarterX, y2: 0 },
+    { x1: width, y1: height, x2: threeQuarterX, y2: 0 },
+    { x1: 0, y1: 0, x2: quarterX, y2: height },
+    { x1: width, y1: 0, x2: threeQuarterX, y2: height }
+  ];
+}
+
+function getPointLineDistance(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lengthSquared = dx * dx + dy * dy;
+  if (!lengthSquared) {
+    return Math.hypot(px - x1, py - y1);
+  }
+
+  const t = clamp(((px - x1) * dx + (py - y1) * dy) / lengthSquared, 0, 1);
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + safeRadius, y);
+  ctx.lineTo(x + width - safeRadius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+  ctx.lineTo(x + width, y + height - safeRadius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+  ctx.lineTo(x + safeRadius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+  ctx.lineTo(x, y + safeRadius);
+  ctx.quadraticCurveTo(x, y, x + safeRadius, y);
+  ctx.closePath();
 }
 
 function getNotanCanvas(width, height, levels) {
