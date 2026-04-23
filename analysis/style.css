@@ -1112,6 +1112,62 @@ a {
   border: 1px solid rgba(50, 44, 38, 0.08);
 }
 
+.notan-reading-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.54);
+  border: 1px solid rgba(50, 44, 38, 0.08);
+  box-shadow: 0 16px 34px rgba(43, 35, 28, 0.07);
+}
+
+.notan-reading-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.notan-strength {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 1.18rem;
+  font-weight: 700;
+}
+
+.notan-reading-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.notan-tooltip {
+  max-width: 240px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(201, 106, 61, 0.12);
+  color: var(--ink);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.notan-fix-panel {
+  margin-top: 2px;
+}
+
+.notan-fix-panel .painters-fix-lock {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.notan-fix-panel .painters-fix-lock p {
+  margin: 0;
+}
+
 .breakdown-section {
   display: grid;
   gap: 6px;
@@ -1130,6 +1186,44 @@ a {
   line-height: 1.55;
   display: grid;
   gap: 4px;
+}
+
+.painters-fix {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1px solid rgba(50, 44, 38, 0.08);
+  overflow: hidden;
+}
+
+.painters-fix-list {
+  display: grid;
+  gap: 8px;
+}
+
+.painters-fix-line {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.painters-fix.is-locked .painters-fix-line {
+  filter: blur(3px);
+  user-select: none;
+}
+
+.painters-fix-lock {
+  position: absolute;
+  inset: auto 12px 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(252, 250, 246, 0.88);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 12px 26px rgba(50, 39, 28, 0.12);
 }
 
 #quickCheckTopSections {
@@ -1561,5 +1655,18 @@ a {
   .footer-links {
     grid-auto-flow: row;
     gap: 8px;
+  }
+
+  .notan-reading-head {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .notan-reading-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .notan-tooltip {
+    max-width: none;
   }
 }

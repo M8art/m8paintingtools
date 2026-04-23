@@ -42,6 +42,9 @@ const dynamicBreakdown = document.getElementById("dynamicBreakdown");
 const breakdownWorks = document.getElementById("breakdownWorks");
 const breakdownWeakness = document.getElementById("breakdownWeakness");
 const breakdownTest = document.getElementById("breakdownTest");
+const paintersFix = document.getElementById("paintersFix");
+const paintersFixList = document.getElementById("paintersFixList");
+const paintersFixLock = document.getElementById("paintersFixLock");
 const breakdownToggleButton = document.getElementById("breakdownToggleButton");
 const quickCheckDetails = document.getElementById("quickCheckDetails");
 const freeCheckNote = document.getElementById("freeCheckNote");
@@ -54,6 +57,18 @@ const premiumToast = document.getElementById("premiumToast");
 const emptyStateLabel = emptyState?.querySelector(".upload-empty-label");
 const emptyStateSubcopy = emptyState?.querySelector(".upload-empty-subcopy");
 const analysisUploadLabels = Array.from(document.querySelectorAll('label[for="analysisFileInput"]'));
+const notanReadingPanel = document.getElementById("notanReadingPanel");
+const notanStrength = document.getElementById("notanStrength");
+const notanDominantShape = document.getElementById("notanDominantShape");
+const notanShapeCount = document.getElementById("notanShapeCount");
+const notanFragmentation = document.getElementById("notanFragmentation");
+const notanReadability = document.getElementById("notanReadability");
+const notanProblems = document.getElementById("notanProblems");
+const notanTooltip = document.getElementById("notanTooltip");
+const notanFixPanel = document.getElementById("notanFixPanel");
+const notanFixList = document.getElementById("notanFixList");
+const notanFixLock = document.getElementById("notanFixLock");
+const notanUnlockButton = document.getElementById("notanUnlockButton");
 
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
@@ -64,29 +79,32 @@ const RECENT_BREAKDOWN_LINES_STORAGE_KEY = "m8_recent_lines";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
+const NOTAN_SAMPLE_SIZE = 68;
+const NOTAN_SIGNIFICANT_REGION_RATIO = 0.014;
+const NOTAN_SMALL_REGION_RATIO = 0.004;
 const WORKS_POOL = [
-  "The focal point reads clearly.",
-  "The overall balance feels stable.",
-  "Value relationships are controlled.",
-  "The composition holds together well.",
-  "There is a clear dominant area.",
-  "The structure feels organized."
+  "The focal point has enough contrast hierarchy to be readable.",
+  "The overall balance supports a stable value grouping.",
+  "The value relationships feel controlled across the main forms.",
+  "The composition holds together through clear large shapes.",
+  "There is a dominant area for the eye to return to.",
+  "The structure feels organized before the smaller details take over."
 ];
 const WEAKNESS_POOL = [
-  "Movement between forms feels limited.",
-  "The eye has no strong directional path.",
-  "The image feels slightly static.",
-  "Value contrast could be pushed further.",
-  "Secondary areas compete too much.",
-  "The rhythm between shapes is weak."
+  "Movement between forms is limited, so the visual rhythm softens.",
+  "The eye path needs a stronger directional flow through the frame.",
+  "The contrast hierarchy could be clearer around the focal point.",
+  "Value grouping could separate the major forms more decisively.",
+  "Secondary areas compete too much with the main read.",
+  "The rhythm between shape masses feels underdeveloped."
 ];
 const TEST_POOL = [
-  "Try strengthening directional flow.",
-  "Push contrast in one key area.",
-  "Simplify secondary elements.",
-  "Guide the eye with a clearer path.",
-  "Group values more aggressively.",
-  "Reduce noise in less important areas."
+  "Strengthen directional flow with a clearer value path.",
+  "Push contrast in one key focal area.",
+  "Simplify secondary elements so the focal point can breathe.",
+  "Guide the eye with a cleaner light-to-dark path.",
+  "Group values more aggressively into larger families.",
+  "Reduce edge noise in less important areas."
 ];
 const ANALYSIS_SEQUENCE = [
   { className: "stage-grid", helper: "Preparing your quick check", message: "Reading structure...", delay: 980 },
@@ -151,6 +169,7 @@ let imageLoadRequestId = 0;
 let feedbackToastTimeoutId = null;
 let scoreAnimationFrameId = null;
 let currentAnalysisUsesFreeSlot = false;
+let currentNotanReading = null;
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -217,6 +236,7 @@ overlayColorSwatches.forEach((button) => {
   });
 });
 document.addEventListener("click", handleDocumentClick);
+analysisSurface.addEventListener("click", handleNotanSurfaceClick);
 
 runAnalysisButton.addEventListener("click", () => {
   if (!hasUploadedImage || isAnalysisRunning) {
@@ -243,6 +263,10 @@ unlockFullAccessButton.addEventListener("click", () => {
 breakdownToggleButton.addEventListener("click", () => {
   isBreakdownExpanded = !isBreakdownExpanded;
   updateBreakdownUI();
+});
+
+notanUnlockButton?.addEventListener("click", () => {
+  window.location.href = STRIPE_PAYMENT_LINK;
 });
 
 ["dragenter", "dragover"].forEach((eventName) => {
@@ -275,6 +299,7 @@ uploadZone.addEventListener("drop", (event) => {
 
 function showPreview(file) {
   resetAnalysisSequence();
+  resetNotanReading();
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
 
@@ -319,6 +344,7 @@ function showPreview(file) {
     });
     updateStatusMessage("Image uploaded. Ready to run check.", true);
     updateAnalysisAccessUI();
+    updateNotanReading();
     showStatusToast("Image loaded");
   };
   analysisPreview.onerror = () => {
@@ -332,6 +358,7 @@ function showPreview(file) {
     imageStage.classList.add("hidden");
     quickCheckResult.classList.add("hidden");
     lockedAnalysisState.classList.add("hidden");
+    resetNotanReading();
     showUploadError("Couldn't load image. Please try another file.");
   };
   analysisPreview.src = currentObjectUrl;
@@ -455,6 +482,7 @@ function handleUnlockReturn() {
 }
 
 function updateAnalysisAccessUI() {
+  syncNotanAccessState();
   freeLimitHelper.classList.add("hidden");
 
   if (isAnalysisRunning) {
@@ -554,7 +582,7 @@ function completeQuickCheck() {
   quickCheckStrengthText.textContent = result.strength;
   quickCheckWeaknessText.textContent = result.weakness;
   renderResultBlocks(result.blocks);
-  renderDynamicBreakdown();
+  renderDynamicBreakdown(result);
   quickCheckSuggestionText.textContent = result.suggestion;
   quickCheckFastestFixText.textContent = result.fastestFix;
   renderScoreBreakdown(result.scoreBreakdown);
@@ -1615,15 +1643,19 @@ function renderResultBlocks(blocks) {
   quickCheckBlocks.innerHTML = "";
 }
 
-function renderDynamicBreakdown() {
-  const selectedWorks = selectBreakdownLines(WORKS_POOL);
-  const selectedWeaknesses = selectBreakdownLines(WEAKNESS_POOL);
-  const selectedTests = selectBreakdownLines(TEST_POOL);
-  const selectedLines = [...selectedWorks, ...selectedWeaknesses, ...selectedTests];
+function renderDynamicBreakdown(result) {
+  const context = buildBreakdownContext(result);
+  const pools = buildContextualBreakdownPools(context);
+  const selectedWorks = selectBreakdownLines(pools.works, pools.priorityWorks);
+  const selectedWeaknesses = selectBreakdownLines(pools.weaknesses, pools.priorityWeaknesses);
+  const selectedTests = selectBreakdownLines(pools.tests, pools.priorityTests);
+  const selectedFixes = selectPainterFixLines(pools.fixes, pools.priorityFixes);
+  const selectedLines = [...selectedWorks, ...selectedWeaknesses, ...selectedTests, ...selectedFixes];
 
   renderBreakdownList(breakdownWorks, selectedWorks);
   renderBreakdownList(breakdownWeakness, selectedWeaknesses);
   renderBreakdownList(breakdownTest, selectedTests);
+  renderPaintersFix(selectedFixes);
   rememberBreakdownLines(selectedLines);
 }
 
@@ -1636,12 +1668,186 @@ function renderBreakdownList(listElement, lines) {
   });
 }
 
-function selectBreakdownLines(pool) {
+function selectBreakdownLines(pool, priorityLines = []) {
   const recentLines = getRecentBreakdownLines();
   const targetCount = 2 + Math.floor(Math.random() * 2);
-  const freshLines = shuffleLines(pool.filter((line) => !recentLines.includes(line)));
-  const fallbackLines = shuffleLines(pool.filter((line) => recentLines.includes(line)));
-  return [...freshLines, ...fallbackLines].slice(0, targetCount);
+  const selected = [];
+  const freshPriorityLines = shuffleLines(priorityLines.filter((line) => !recentLines.includes(line)));
+  const fallbackPriorityLines = shuffleLines(priorityLines.filter((line) => recentLines.includes(line)));
+  const priorityLine = freshPriorityLines[0] || fallbackPriorityLines[0];
+
+  if (priorityLine) {
+    selected.push(priorityLine);
+  }
+
+  const remainingPool = pool.filter((line) => !selected.includes(line));
+  const freshLines = shuffleLines(remainingPool.filter((line) => !recentLines.includes(line)));
+  const fallbackLines = shuffleLines(remainingPool.filter((line) => recentLines.includes(line)));
+  return [...selected, ...freshLines, ...fallbackLines].slice(0, targetCount);
+}
+
+function selectPainterFixLines(pool, priorityLines = []) {
+  const targetCount = hasUnlockedAccess() ? 3 + Math.floor(Math.random() * 2) : 2;
+  const recentLines = getRecentBreakdownLines();
+  const selected = [];
+  const priorityLine = shuffleLines(priorityLines.filter((line) => !recentLines.includes(line)))[0]
+    || shuffleLines(priorityLines)[0];
+
+  if (priorityLine) {
+    selected.push(priorityLine);
+  }
+
+  const remainingPool = pool.filter((line) => !selected.includes(line));
+  const freshLines = shuffleLines(remainingPool.filter((line) => !recentLines.includes(line)));
+  const fallbackLines = shuffleLines(remainingPool.filter((line) => recentLines.includes(line)));
+  return [...selected, ...freshLines, ...fallbackLines].slice(0, targetCount);
+}
+
+function renderPaintersFix(lines) {
+  paintersFixList.innerHTML = "";
+  paintersFix.classList.toggle("is-locked", !hasUnlockedAccess());
+  paintersFixLock.classList.toggle("hidden", hasUnlockedAccess());
+
+  lines.forEach((line) => {
+    const item = document.createElement("p");
+    item.className = "painters-fix-line";
+    item.textContent = line;
+    paintersFixList.appendChild(item);
+  });
+}
+
+function buildBreakdownContext(result) {
+  const tags = result?.tags || [];
+  const metrics = result?.metrics || {};
+  const hasTag = (tag) => tags.includes(tag);
+
+  return {
+    tags,
+    metrics,
+    isCentered: hasTag("Center Dominant"),
+    isBalanced: hasTag("Balanced"),
+    isStatic: hasTag("Static Flow"),
+    hasLowContrast: hasTag("Compressed Values") || metrics.valueSpread < 0.34 || metrics.valueStd < 0.16,
+    hasStrongFocus: hasTag("Clear Focus") || metrics.focalClarity > 0.64,
+    hasDiffuseFocus: hasTag("Diffuse Focus") || metrics.focalClarity < 0.34,
+    hasStrongFlow: hasTag("Strong Flow") || metrics.flowStrength > 0.64,
+    hasStrongContrast: hasTag("Strong Contrast") || metrics.valueSpread > 0.56 || metrics.valueStd > 0.23,
+    isLeftHeavy: hasTag("Left Heavy"),
+    isRightHeavy: hasTag("Right Heavy"),
+    hasShallowDepth: hasTag("Shallow Depth") || metrics.depthStrength < 0.34,
+    styleHint: inferStyleHint(metrics)
+  };
+}
+
+function buildContextualBreakdownPools(context) {
+  const priorityWorks = [];
+  const priorityWeaknesses = [];
+  const priorityTests = [];
+  const priorityFixes = [];
+  const works = [...WORKS_POOL];
+  const weaknesses = [...WEAKNESS_POOL];
+  const tests = [...TEST_POOL];
+  const fixes = [
+    "Darken the lower midtones to anchor the form.",
+    "Shift the strongest contrast toward the focal area.",
+    "Merge small value jumps into larger value groups.",
+    "Lose a few hard edges outside the focal point.",
+    "Use one darker passage to stabilize the composition.",
+    "Clarify the light path before adding smaller details."
+  ];
+
+  if (context.isStatic) {
+    priorityWeaknesses.push("The directional flow is limited, which reduces visual rhythm.");
+    priorityTests.push("Create a stronger eye path by linking the main value groups.");
+    priorityFixes.push("Connect the focal point to a secondary shape with a clearer value path.");
+    weaknesses.push("The composition feels static because the eye has few value stepping stones.");
+    tests.push("Angle one supporting shape or contrast edge to pull the eye through the image.");
+  }
+
+  if (context.isCentered) {
+    priorityWorks.push("The central focal point reads clearly and anchors the composition.");
+    tests.push("Offset one supporting contrast note so the centered focal point feels less locked.");
+  }
+
+  if (context.hasLowContrast) {
+    priorityWeaknesses.push("The value range is compressed, reducing contrast hierarchy.");
+    priorityTests.push("Push contrast in one dominant area to create hierarchy.");
+    priorityFixes.push("Darken the lower midtones while preserving the lightest focal accents.");
+    weaknesses.push("The value grouping sits too close together for a strong first read.");
+    tests.push("Separate light, middle, and dark families more aggressively.");
+  }
+
+  if (context.isBalanced) {
+    priorityWorks.push("The composition feels stable and visually balanced.");
+    works.push("The visual weight is distributed cleanly across the frame.");
+  }
+
+  if (context.hasStrongFocus) {
+    priorityWorks.push("The focal point has a clear contrast stop.");
+    works.push("Edge control around the focal area helps the eye land.");
+  }
+
+  if (context.hasDiffuseFocus) {
+    priorityWeaknesses.push("The focal point is diffused, so the eye does not stop firmly.");
+    priorityTests.push("Sharpen edge control and contrast only around the main focal area.");
+    priorityFixes.push("Simplify surrounding values so the focal point has a harder stop.");
+  }
+
+  if (context.hasStrongFlow) {
+    priorityWorks.push("Directional flow gives the eye a readable path through the image.");
+  }
+
+  if (context.hasStrongContrast) {
+    priorityWorks.push("The contrast hierarchy gives the image a strong first read.");
+    fixes.push("Protect the strongest dark-light jump and soften competing contrasts.");
+  }
+
+  if (context.isLeftHeavy || context.isRightHeavy) {
+    const side = context.isLeftHeavy ? "left" : "right";
+    priorityWeaknesses.push(`Visual weight leans to the ${side}, which can pull attention away from the focal point.`);
+    priorityTests.push(`Reduce competing contrast on the ${side} side.`);
+    priorityFixes.push(`Quiet the ${side} edge with simpler value grouping.`);
+  }
+
+  if (context.hasShallowDepth) {
+    priorityWeaknesses.push("Depth reads shallow because foreground and background values are too close.");
+    priorityTests.push("Separate foreground and background with clearer value grouping.");
+  }
+
+  if (context.styleHint) {
+    priorityWorks.push(context.styleHint);
+  }
+
+  return {
+    works: uniqueLines(works),
+    weaknesses: uniqueLines(weaknesses),
+    tests: uniqueLines(tests),
+    fixes: uniqueLines(fixes),
+    priorityWorks: uniqueLines(priorityWorks),
+    priorityWeaknesses: uniqueLines(priorityWeaknesses),
+    priorityTests: uniqueLines(priorityTests),
+    priorityFixes: uniqueLines(priorityFixes)
+  };
+}
+
+function inferStyleHint(metrics) {
+  if (metrics.valueSpread > 0.56 && metrics.focalClarity > 0.58) {
+    return "The image leans graphic, with a clear contrast hierarchy and firmer edge control.";
+  }
+
+  if (metrics.valueSpread < 0.34 || metrics.valueStd < 0.16) {
+    return "The image leans toward a limited-value structure with soft transitions.";
+  }
+
+  if (metrics.depthStrength > 0.48 && metrics.flowStrength > 0.44) {
+    return "The image leans painterly, with value transitions carrying the visual rhythm.";
+  }
+
+  return "";
+}
+
+function uniqueLines(lines) {
+  return [...new Set(lines.filter(Boolean))];
 }
 
 function getRecentBreakdownLines() {
@@ -1943,6 +2149,337 @@ function getQualityLabel(value) {
 
 function pickHighestScoringText(items) {
   return [...items].sort((left, right) => right.score - left.score)[0]?.text || "";
+}
+
+function resetNotanReading() {
+  currentNotanReading = null;
+  notanReadingPanel.classList.add("hidden");
+  notanTooltip.classList.add("hidden");
+  notanTooltip.textContent = "Click the image to inspect the main mass.";
+  notanStrength.textContent = "Notan Strength: --";
+  notanDominantShape.textContent = "Waiting for image upload.";
+  notanShapeCount.textContent = "Waiting for image upload.";
+  notanFragmentation.textContent = "Waiting for image upload.";
+  notanReadability.textContent = "Waiting for image upload.";
+  notanProblems.innerHTML = "";
+  renderNotanFixLines([]);
+}
+
+function updateNotanReading() {
+  if (!hasUploadedImage || !analysisPreview.naturalWidth || !analysisPreview.naturalHeight) {
+    resetNotanReading();
+    return;
+  }
+
+  currentNotanReading = buildNotanReading(analysisPreview);
+  renderNotanReading(currentNotanReading);
+}
+
+function renderNotanReading(reading) {
+  if (!reading) {
+    resetNotanReading();
+    return;
+  }
+
+  notanReadingPanel.classList.remove("hidden");
+  notanStrength.textContent = `Notan Strength: ${reading.score}`;
+  notanDominantShape.textContent = capitalizeFirstLetter(reading.dominantShape);
+  notanShapeCount.textContent = capitalizeFirstLetter(reading.shapeCountEstimate);
+  notanFragmentation.textContent = capitalizeFirstLetter(reading.fragmentation);
+  notanReadability.textContent = capitalizeFirstLetter(reading.readability);
+  notanProblems.innerHTML = "";
+
+  reading.problems.forEach((line) => {
+    const item = document.createElement("li");
+    item.textContent = line;
+    notanProblems.appendChild(item);
+  });
+  renderNotanFixLines(hasUnlockedAccess() ? reading.unlockedFixLines : reading.lockedFixLines);
+  syncNotanAccessState();
+}
+
+function renderNotanFixLines(lines) {
+  notanFixList.innerHTML = "";
+
+  lines.forEach((line) => {
+    const item = document.createElement("p");
+    item.className = "painters-fix-line";
+    item.textContent = line;
+    notanFixList.appendChild(item);
+  });
+}
+
+function syncNotanAccessState() {
+  if (!notanFixPanel) {
+    return;
+  }
+
+  const unlocked = hasUnlockedAccess();
+  notanFixPanel.classList.toggle("is-locked", !unlocked);
+  notanFixLock.classList.toggle("hidden", unlocked);
+
+  if (currentNotanReading) {
+    renderNotanFixLines(unlocked ? currentNotanReading.unlockedFixLines : currentNotanReading.lockedFixLines);
+  }
+}
+
+function handleNotanSurfaceClick(event) {
+  if (!hasUploadedImage || !currentNotanReading) {
+    return;
+  }
+
+  event.stopPropagation();
+
+  const rect = analysisSurface.getBoundingClientRect();
+  if (!rect.width || !rect.height) {
+    return;
+  }
+
+  const normalizedX = clamp((event.clientX - rect.left) / rect.width, 0, 0.9999);
+  const normalizedY = clamp((event.clientY - rect.top) / rect.height, 0, 0.9999);
+  const sampleX = Math.min(currentNotanReading.width - 1, Math.floor(normalizedX * currentNotanReading.width));
+  const sampleY = Math.min(currentNotanReading.height - 1, Math.floor(normalizedY * currentNotanReading.height));
+  const index = sampleY * currentNotanReading.width + sampleX;
+  const regionId = currentNotanReading.labels[index];
+  const region = currentNotanReading.regionMap.get(regionId);
+
+  if (!region) {
+    return;
+  }
+
+  const isMainMass = regionId === currentNotanReading.largestRegion.id
+    || region.size / currentNotanReading.totalPixels >= NOTAN_SIGNIFICANT_REGION_RATIO * 1.7;
+
+  notanTooltip.textContent = isMainMass
+    ? "This is part of the main mass."
+    : "This area breaks the main shape.";
+  notanTooltip.classList.remove("hidden");
+}
+
+function buildNotanReading(image) {
+  const sample = getImageSampleData(image, NOTAN_SAMPLE_SIZE);
+  if (!sample) {
+    return null;
+  }
+
+  const { width, height, luminance, averageLuminance, spread } = sample;
+  const totalPixels = width * height;
+  const threshold = getOtsuThreshold(luminance, averageLuminance);
+  const binary = new Uint8Array(totalPixels);
+  const labels = new Int32Array(totalPixels);
+  const regions = [];
+  const queue = new Int32Array(totalPixels);
+  let lightPixels = 0;
+
+  for (let index = 0; index < totalPixels; index += 1) {
+    const isLight = luminance[index] >= threshold ? 1 : 0;
+    binary[index] = isLight;
+    if (isLight) {
+      lightPixels += 1;
+    }
+  }
+
+  let regionId = 0;
+  for (let index = 0; index < totalPixels; index += 1) {
+    if (labels[index]) {
+      continue;
+    }
+
+    regionId += 1;
+    const targetValue = binary[index];
+    let head = 0;
+    let tail = 0;
+    let size = 0;
+    labels[index] = regionId;
+    queue[tail] = index;
+    tail += 1;
+
+    while (head < tail) {
+      const currentIndex = queue[head];
+      head += 1;
+      size += 1;
+      const x = currentIndex % width;
+      const y = Math.floor(currentIndex / width);
+      const neighbors = [
+        currentIndex - 1,
+        currentIndex + 1,
+        currentIndex - width,
+        currentIndex + width
+      ];
+
+      neighbors.forEach((neighborIndex, neighborPosition) => {
+        if (neighborPosition === 0 && x === 0) {
+          return;
+        }
+        if (neighborPosition === 1 && x === width - 1) {
+          return;
+        }
+        if (neighborPosition === 2 && y === 0) {
+          return;
+        }
+        if (neighborPosition === 3 && y === height - 1) {
+          return;
+        }
+        if (labels[neighborIndex] || binary[neighborIndex] !== targetValue) {
+          return;
+        }
+        labels[neighborIndex] = regionId;
+        queue[tail] = neighborIndex;
+        tail += 1;
+      });
+    }
+
+    regions.push({
+      id: regionId,
+      value: targetValue,
+      size
+    });
+  }
+
+  regions.sort((a, b) => b.size - a.size);
+
+  const lightShare = lightPixels / totalPixels;
+  const darkShare = 1 - lightShare;
+  const largestRegion = regions[0] || { id: 0, size: 0, value: 0 };
+  const largestRegionRatio = largestRegion.size / Math.max(totalPixels, 1);
+  const significantRegions = regions.filter((region) => region.size / totalPixels >= NOTAN_SIGNIFICANT_REGION_RATIO);
+  const smallRegions = regions.filter((region) => region.size / totalPixels <= NOTAN_SMALL_REGION_RATIO);
+  const smallAreaShare = smallRegions.reduce((sum, region) => sum + region.size, 0) / Math.max(totalPixels, 1);
+  const shapeCountEstimate = significantRegions.length <= 4 ? "low" : significantRegions.length <= 8 ? "medium" : "high";
+  const fragmentationScore = clamp((smallRegions.length / Math.max(regions.length, 1)) * 0.8 + (smallAreaShare * 1.8), 0, 1);
+  const fragmentation = fragmentationScore > 0.55 ? "high" : fragmentationScore > 0.28 ? "medium" : "low";
+  const dominanceDelta = Math.abs(lightShare - darkShare);
+  const dominanceStrength = clamp((Math.max(dominanceDelta, largestRegionRatio) - 0.12) / 0.42, 0, 1);
+  const simplicityStrength = 1 - clamp((significantRegions.length - 3) / 10, 0, 1);
+  const score = Math.round(clamp(
+    (simplicityStrength * 0.42)
+      + (dominanceStrength * 0.34)
+      + ((1 - fragmentationScore) * 0.24),
+    0,
+    1
+  ) * 100);
+  const readability = score >= 72 ? "strong" : score >= 48 ? "moderate" : "weak";
+  const dominantShape = dominanceDelta < 0.08 ? "balanced" : lightShare > darkShare ? "light" : "dark";
+  const problems = [];
+
+  if (smallRegions.length >= 9 || smallAreaShare > 0.14) {
+    problems.push("The design is fragmented into too many small shapes.");
+  }
+  if (largestRegionRatio < 0.16) {
+    problems.push("There is no clear dominant value mass.");
+  }
+  if (dominanceDelta < 0.08 || spread < 0.22) {
+    problems.push("The image lacks strong value hierarchy.");
+  }
+  if (!problems.length) {
+    problems.push("The major light and dark masses read with decent clarity.");
+  }
+
+  const unlockedFixLines = buildNotanFixLines({
+    dominantShape,
+    fragmentation,
+    largestRegionRatio,
+    shapeCountEstimate,
+    dominanceDelta,
+    spread
+  });
+  const lockedFixLines = [
+    "Merge smaller shapes into a stronger mass.",
+    "Reduce noise in midtone areas."
+  ];
+
+  return {
+    width,
+    height,
+    totalPixels,
+    labels,
+    regionMap: new Map(regions.map((region) => [region.id, region])),
+    largestRegion,
+    score,
+    dominantShape,
+    shapeCountEstimate,
+    fragmentation,
+    readability,
+    problems,
+    lockedFixLines,
+    unlockedFixLines
+  };
+}
+
+function buildNotanFixLines(context) {
+  const lines = [];
+
+  if (context.fragmentation === "high") {
+    lines.push("Merge the smaller islands into one broader value family before refining edges.");
+  }
+  if (context.largestRegionRatio < 0.16) {
+    lines.push("Enlarge one dominant mass so the design lands on a single clear read.");
+  }
+  if (context.dominanceDelta < 0.08) {
+    lines.push("Push the light-dark split harder so one value family clearly leads.");
+  }
+  if (context.shapeCountEstimate === "high") {
+    lines.push("Collapse secondary breaks so the silhouette reads in fewer, larger statements.");
+  }
+  if (context.dominantShape === "balanced") {
+    lines.push("Choose whether the light or dark pattern should carry the design and simplify the other.");
+  }
+  if (context.spread < 0.22) {
+    lines.push("Separate your main masses with a cleaner value jump before adding accent notes.");
+  }
+
+  lines.push("Keep the biggest shape calm, then place smaller accents where they support the focal read.");
+  return uniqueLines(lines).slice(0, 4);
+}
+
+function getOtsuThreshold(luminance, fallbackThreshold) {
+  const histogram = new Array(256).fill(0);
+  let total = 0;
+  let weightedSum = 0;
+
+  for (let index = 0; index < luminance.length; index += 1) {
+    const value = clamp(Math.round(luminance[index]), 0, 255);
+    histogram[value] += 1;
+    total += 1;
+    weightedSum += value;
+  }
+
+  let sumBackground = 0;
+  let weightBackground = 0;
+  let maxVariance = -1;
+  let threshold = Math.round(fallbackThreshold || 128);
+
+  for (let value = 0; value < histogram.length; value += 1) {
+    weightBackground += histogram[value];
+    if (!weightBackground) {
+      continue;
+    }
+
+    const weightForeground = total - weightBackground;
+    if (!weightForeground) {
+      break;
+    }
+
+    sumBackground += value * histogram[value];
+    const meanBackground = sumBackground / weightBackground;
+    const meanForeground = (weightedSum - sumBackground) / weightForeground;
+    const betweenVariance = weightBackground * weightForeground * (meanBackground - meanForeground) ** 2;
+
+    if (betweenVariance > maxVariance) {
+      maxVariance = betweenVariance;
+      threshold = value;
+    }
+  }
+
+  return threshold;
+}
+
+function capitalizeFirstLetter(text) {
+  if (!text) {
+    return text;
+  }
+
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 }
 
 function updateBreakdownUI() {

@@ -125,6 +125,49 @@
               </div>
             </div>
           </div>
+
+          <div id="notanReadingPanel" class="notan-reading-panel hidden">
+            <div class="notan-reading-head">
+              <div>
+                <p class="section-label">Notan Reading</p>
+                <p id="notanStrength" class="notan-strength">Notan Strength: --</p>
+              </div>
+              <p id="notanTooltip" class="notan-tooltip hidden">Click the image to inspect the main mass.</p>
+            </div>
+
+            <div class="notan-reading-grid">
+              <div class="result-block">
+                <p class="result-block-title">Dominant Shape</p>
+                <p id="notanDominantShape" class="detail-copy">Waiting for image upload.</p>
+              </div>
+              <div class="result-block">
+                <p class="result-block-title">Shape Count Estimate</p>
+                <p id="notanShapeCount" class="detail-copy">Waiting for image upload.</p>
+              </div>
+              <div class="result-block">
+                <p class="result-block-title">Fragmentation</p>
+                <p id="notanFragmentation" class="detail-copy">Waiting for image upload.</p>
+              </div>
+              <div class="result-block">
+                <p class="result-block-title">Readability</p>
+                <p id="notanReadability" class="detail-copy">Waiting for image upload.</p>
+              </div>
+            </div>
+
+            <div class="breakdown-section">
+              <p class="breakdown-section-title">Problem Detection</p>
+              <ul id="notanProblems" class="breakdown-list"></ul>
+            </div>
+
+            <div id="notanFixPanel" class="painters-fix notan-fix-panel">
+              <p class="result-block-title">How to fix your Notan</p>
+              <div id="notanFixList" class="painters-fix-list"></div>
+              <div id="notanFixLock" class="painters-fix-lock hidden">
+                <p>Unlock full breakdown</p>
+                <button id="notanUnlockButton" class="button premium-unlock-button analysis-button" type="button">Unlock Full Breakdown</button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section class="card studio-note-card">
@@ -234,6 +277,11 @@
                   </div>
                 </div>
                 <div id="quickCheckBlocks" class="result-blocks"></div>
+                <div id="paintersFix" class="painters-fix">
+                  <p class="result-block-title">Painter&rsquo;s Fix</p>
+                  <div id="paintersFixList" class="painters-fix-list"></div>
+                  <p id="paintersFixLock" class="painters-fix-lock hidden">Unlock to see how a real painter would fix this</p>
+                </div>
                 <div id="quickCheckSuggestion" class="result-suggestion">
                   <p class="section-label result-label">Suggestion</p>
                   <p id="quickCheckSuggestionText" class="detail-copy">Push the focal point farther away from the center and clarify the major value shapes.</p>

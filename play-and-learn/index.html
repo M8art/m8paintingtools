@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Play &amp; Learn</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Painter Training Games</p>
+        <h1>M8 Play &amp; Learn</h1>
+        <p class="subtitle">Train your painter&rsquo;s eye through fast interactive studio games.</p>
+        <p class="intro">Train your painter&rsquo;s eye with fast study games focused on value, focus, and color decisions.</p>
+      </div>
+
+      <div class="hero-note">
+        <p class="section-label">Internal Prototype</p>
+        <p>This section is being developed and is not yet part of the main public tool set.</p>
+      </div>
+    </header>
+
+    <main class="games-grid">
+      <article class="game-card" data-game-card>
+        <div class="card-head">
+          <div>
+            <div class="status-row">
+              <p class="section-label">Value Study</p>
+              <span class="status-pill">Prototype</span>
+            </div>
+            <h2>Value Stacker</h2>
+            <p class="card-description">Stack falling grayscale blocks and build rows that respect painterly value logic, smooth gradients, and clean light flow.</p>
+          </div>
+          <a class="button-secondary card-toggle card-link" href="../value-sniper/index.html">Open Game</a>
+        </div>
+
+        <div class="preview-panel value-preview">
+          <div class="preview-stage">
+            <div class="stacker-preview-grid" aria-hidden="true">
+              <span class="stacker-preview-cell tone-04"></span>
+              <span class="stacker-preview-cell tone-06"></span>
+              <span class="stacker-preview-cell tone-09"></span>
+              <span class="stacker-preview-cell tone-11"></span>
+              <span class="stacker-preview-cell tone-12"></span>
+              <span class="stacker-preview-cell tone-15"></span>
+              <span class="stacker-preview-cell tone-08"></span>
+              <span class="stacker-preview-cell tone-10"></span>
+              <span class="stacker-preview-cell tone-13"></span>
+              <span class="stacker-preview-cell tone-17"></span>
+              <span class="stacker-preview-cell tone-12"></span>
+              <span class="stacker-preview-cell tone-14"></span>
+              <span class="stacker-preview-cell tone-16"></span>
+              <span class="stacker-preview-cell tone-18"></span>
+              <span class="stacker-preview-cell tone-19"></span>
+            </div>
+          </div>
+          <div class="value-scale" aria-label="Mock value scale">
+            <span>1</span>
+            <span>4</span>
+            <span>8</span>
+            <span>12</span>
+            <span>16</span>
+            <span>20</span>
+          </div>
+        </div>
+        <div class="prototype-panel value-card-note">
+          <p class="surface-label">Standalone Prototype</p>
+          <p class="surface-text">Open a dedicated game page with a falling-block value grid, painterly scoring rules, and mode switching for classic, light-direction, and timed play.</p>
+        </div>
+      </article>
+
+      <article class="game-card" data-game-card>
+        <div class="card-head">
+          <div>
+            <div class="status-row">
+              <p class="section-label">Focus Study</p>
+              <span class="status-pill">Prototype</span>
+            </div>
+            <h2>Find the Focal Point</h2>
+            <p class="card-description">Click where you think the eye lands first and compare your instinct with the compositional read.</p>
+          </div>
+          <button class="button-secondary card-toggle" type="button" data-toggle-card aria-expanded="false">Open Game</button>
+        </div>
+
+        <div class="preview-panel focal-preview">
+          <div class="preview-stage">
+            <div class="focal-marker"></div>
+            <div class="focal-ring"></div>
+            <div class="focal-composition"></div>
+          </div>
+        </div>
+
+        <div class="prototype-panel" data-prototype-panel hidden>
+          <div class="prototype-body">
+            <div class="prototype-surface">
+              <p class="surface-label">Prototype View</p>
+              <button class="surface-stage focal-stage" type="button" data-focal-stage>
+                <span class="focal-grid" aria-hidden="true"></span>
+                <span class="focal-halo" data-focal-halo aria-hidden="true"></span>
+                <span class="focal-crosshair" data-focal-crosshair aria-hidden="true"></span>
+                <span class="surface-title">Tap the area where the eye lands first</span>
+                <span class="surface-text">The final version can compare your instinct with the compositional read and focal weighting.</span>
+              </button>
+            </div>
+            <div class="prototype-aside">
+              <p class="surface-label">Prototype Logic</p>
+              <p class="surface-text">This placeholder stage only stores a guessed landing point. It is ready for future comparison logic and painter feedback.</p>
+            </div>
+          </div>
+          <div class="prototype-actions">
+            <button class="button prototype-action" type="button" data-prototype-action="focal">Start Prototype</button>
+            <p class="prototype-feedback" data-feedback>Focus read shell ready for click testing.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="game-card" data-game-card>
+        <div class="card-head">
+          <div>
+            <div class="status-row">
+              <p class="section-label">Color Study</p>
+              <span class="status-pill">Prototype</span>
+            </div>
+            <h2>Color Match</h2>
+            <p class="card-description">Practice guessing which pigments would build the sampled color using M8&rsquo;s painting logic.</p>
+          </div>
+          <button class="button-secondary card-toggle" type="button" data-toggle-card aria-expanded="false">Open Game</button>
+        </div>
+
+        <div class="preview-panel color-preview">
+          <div class="color-swatch" data-color-swatch-preview></div>
+          <div class="pigment-row" aria-label="Mock pigment chips">
+            <span class="pigment-chip warm"></span>
+            <span class="pigment-chip earth"></span>
+            <span class="pigment-chip cool"></span>
+            <span class="pigment-chip neutral"></span>
+          </div>
+        </div>
+
+        <div class="prototype-panel" data-prototype-panel hidden>
+          <div class="prototype-body">
+            <div class="prototype-surface">
+              <p class="surface-label">Prototype View</p>
+              <div class="surface-stage color-stage">
+                <div class="target-swatch" data-color-swatch></div>
+                <div class="surface-copy">
+                  <p class="surface-title">Build the sampled color from painterly choices</p>
+                  <p class="surface-text">A later version can tie this directly into M8 mixing logic, pigment families, and cleaner comparison feedback.</p>
+                </div>
+              </div>
+            </div>
+            <div class="prototype-aside">
+              <p class="surface-label">Pigment Chips</p>
+              <div class="pigment-row pigment-row-large">
+                <button class="pigment-chip warm" type="button" data-pigment-name="Warm"></button>
+                <button class="pigment-chip earth" type="button" data-pigment-name="Earth"></button>
+                <button class="pigment-chip cool" type="button" data-pigment-name="Cool"></button>
+                <button class="pigment-chip neutral" type="button" data-pigment-name="Neutral"></button>
+              </div>
+              <p class="surface-text">This shell hints at the future Color Mixer language without adding final mixing systems yet.</p>
+            </div>
+          </div>
+          <div class="prototype-actions">
+            <button class="button prototype-action" type="button" data-prototype-action="color">Start Prototype</button>
+            <p class="prototype-feedback" data-feedback>Color shell ready for pigment-choice testing.</p>
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <footer class="development-note">
+      <p>This prototype area is being built before integration into the main M8 tools experience.</p>
+    </footer>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

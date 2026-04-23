@@ -156,6 +156,39 @@
             <p class="section-label">Status</p>
             <p id="statusNote" class="detail-copy">Upload an image to start.</p>
           </div>
+          <div id="thirdsReadingCard" class="detail-card hidden">
+            <p class="section-label">Thirds Reading</p>
+            <div class="control-stack thirds-reading-stack">
+              <p id="thirdsReadScore" class="dynamic-score">Rule of Thirds Read: --</p>
+              <div class="thirds-reading-grid">
+                <p class="detail-copy"><strong>Primary focus:</strong> <span id="thirdsPrimaryFocus">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Focus alignment:</strong> <span id="thirdsFocusAlignment">--</span></p>
+                <p class="detail-copy"><strong>Balance:</strong> <span id="thirdsBalance">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Placement:</strong> <span id="thirdsPlacement">Waiting for image.</span></p>
+              </div>
+              <p id="thirdsInsight" class="dynamic-tooltip">Upload an image to read the thirds structure.</p>
+              <p id="thirdsClickReadout" class="detail-copy hidden"></p>
+            </div>
+          </div>
+          <div id="centerReadingCard" class="detail-card hidden">
+            <p class="section-label">Center Reading</p>
+            <div class="control-stack center-reading-stack">
+              <p id="centerLockValue" class="dynamic-score">Center Lock: --</p>
+              <div class="thirds-reading-grid">
+                <p class="detail-copy"><strong>Visual weight:</strong> <span id="centerWeightHorizontal">Left: -- / Right: --</span></p>
+                <p class="detail-copy"><strong>Vertical weight:</strong> <span id="centerWeightVertical">Top: -- / Bottom: --</span></p>
+                <p class="detail-copy"><strong>Symmetry:</strong> <span id="centerSymmetry">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Offset suggestion:</strong> <span id="centerOffsetSuggestion">Waiting for image.</span></p>
+              </div>
+              <p id="centerWarning" class="dynamic-tooltip">Upload an image to diagnose center lock.</p>
+              <p id="centerClickReadout" class="detail-copy hidden"></p>
+              <div id="centerFixCard" class="center-fix-card">
+                <p class="result-block-title">How to fix center composition</p>
+                <div id="centerFixList" class="center-fix-list"></div>
+                <p id="centerFixLock" class="center-fix-lock hidden">Unlock to see the painter fix.</p>
+              </div>
+            </div>
+          </div>
         <div id="gridControlsCard" class="detail-card hidden">
             <p class="section-label">Grid Size</p>
             <div class="control-stack">

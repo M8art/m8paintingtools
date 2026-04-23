@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Value Stacker</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Play &amp; Learn Prototype</p>
+        <div class="title-row">
+          <h1>Value Stacker</h1>
+          <span class="status-pill">Standalone</span>
+        </div>
+        <p class="intro">A painterly stacker inspired by Tetris. Drop grayscale blocks, shape rows with strong value relationships, and keep the grid readable under pressure.</p>
+      </div>
+
+      <div class="header-actions">
+        <a class="button-secondary" href="../play-and-learn/index.html">Back to Play &amp; Learn</a>
+        <button id="pauseButton" class="button-secondary" type="button">Pause</button>
+        <button id="restartButton" class="button" type="button">Restart</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card workspace-card">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Grid</p>
+            <h2>Painterly Drop Zone</h2>
+          </div>
+          <div class="mode-switcher" role="tablist" aria-label="Game modes">
+            <button class="mode-button active" type="button" data-mode="classic" role="tab" aria-selected="true">Classic</button>
+            <button class="mode-button" type="button" data-mode="light_top" role="tab" aria-selected="false">Light Top</button>
+            <button class="mode-button" type="button" data-mode="light_side" role="tab" aria-selected="false">Light Side</button>
+            <button class="mode-button" type="button" data-mode="timed" role="tab" aria-selected="false">Timed</button>
+          </div>
+        </div>
+
+        <div class="game-shell">
+          <div class="board-stage">
+            <div class="stage-hud">
+              <div class="hud-chip">
+                <span class="hud-label">Score</span>
+                <strong id="scoreValue">0</strong>
+              </div>
+              <div class="hud-chip">
+                <span class="hud-label">Combo</span>
+                <strong id="comboValue">x1</strong>
+              </div>
+              <div class="hud-chip">
+                <span class="hud-label">Mode</span>
+                <strong id="modeValue">Classic</strong>
+              </div>
+            </div>
+
+            <div class="board-wrap">
+              <div id="gameBoard" class="game-board" aria-label="Value stacker grid"></div>
+              <div class="board-vignette" aria-hidden="true"></div>
+              <div id="feedbackFloat" class="feedback-float" hidden></div>
+              <div id="pauseOverlay" class="pause-overlay hidden">
+                <div class="pause-panel">
+                  <p class="section-label">Paused</p>
+                  <p class="pause-title">Take a second, then stack clean values again.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="timer-panel">
+              <div class="timer-copy">
+                <span class="hud-label">Timed Clock</span>
+                <strong id="timeValue">--</strong>
+              </div>
+              <div class="timer-meter" aria-label="Remaining time in timed mode">
+                <div id="timerFill" class="timer-meter-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="control-rail">
+            <div class="glass-panel preview-panel">
+              <p class="section-label">Next Piece</p>
+              <div id="nextPiece" class="next-piece" aria-label="Preview of next falling block"></div>
+            </div>
+
+            <div class="glass-panel controls-panel">
+              <p class="section-label">Controls</p>
+              <div class="controls-grid">
+                <span><strong>Left / Right</strong> move</span>
+                <span><strong>Down</strong> soft drop</span>
+                <span><strong>Up</strong> rotate</span>
+                <span><strong>Space</strong> hard drop</span>
+              </div>
+            </div>
+
+            <div class="glass-panel status-panel">
+              <p class="section-label">Current Read</p>
+              <p id="statusText" class="detail-copy">Build rows with clean value intention. Smooth ramps, value matching, and readable light flow all score.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <aside class="card side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Scoring Logic</p>
+            <h2>Painter Feedback</h2>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <p class="section-label">Rewards</p>
+          <p class="detail-copy">Rows gain points for smooth gradients, matching values, strong readable contrast, and correct light logic for the active mode.</p>
+        </div>
+
+        <div class="detail-card">
+          <p class="section-label">Penalties</p>
+          <p class="detail-copy">Chaotic rows, broken light flow, and rushed placements cut into the score and reset the combo.</p>
+        </div>
+
+        <div class="detail-card feedback-log-card">
+          <p class="section-label">Latest Feedback</p>
+          <div id="feedbackLog" class="feedback-log">
+            <p class="feedback-log-empty">No row feedback yet. Clear a line to see the read.</p>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

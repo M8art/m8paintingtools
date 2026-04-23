@@ -1,8 +1,8 @@
 const MODES = {
   thirds: {
     title: "Rule of Thirds",
-    description: "Check whether the main shapes and accents land in strong compositional zones.",
-    tip: "Look for pressure near the intersections and whether the design feels stable or forced."
+    description: "Tests whether the main emphasis sits in stronger off-center positions rather than locking into the middle.",
+    tip: "Look for focal pressure near the intersections, supporting shapes along the thirds lines, and whether the design feels balanced or too centered."
   },
   grid: {
     title: "Grid",
@@ -11,8 +11,8 @@ const MODES = {
   },
   center: {
     title: "Center Lines",
-    description: "Judge symmetry, balance, and how the subject sits against the middle of the picture.",
-    tip: "Check whether the main structure locks into the center or creates a more intentional offset."
+    description: "Checks whether the subject locks into the middle, how weight balances around the center axes, and whether symmetry is helping or flattening the design.",
+    tip: "Look for center lock, pressure on the vertical and horizontal axes, and whether the image gains strength from symmetry or needs a more intentional offset."
   },
   diagonal: {
     title: "Diagonal Flow",
@@ -88,6 +88,25 @@ const advancedUnlockCard = document.getElementById("advancedUnlockCard");
 const advancedUnlockCopy = document.getElementById("advancedUnlockCopy");
 const advancedUnlockButton = document.getElementById("advancedUnlockButton");
 const premiumToast = document.getElementById("premiumToast");
+const thirdsReadingCard = document.getElementById("thirdsReadingCard");
+const thirdsReadScore = document.getElementById("thirdsReadScore");
+const thirdsPrimaryFocus = document.getElementById("thirdsPrimaryFocus");
+const thirdsFocusAlignment = document.getElementById("thirdsFocusAlignment");
+const thirdsBalance = document.getElementById("thirdsBalance");
+const thirdsPlacement = document.getElementById("thirdsPlacement");
+const thirdsInsight = document.getElementById("thirdsInsight");
+const thirdsClickReadout = document.getElementById("thirdsClickReadout");
+const centerReadingCard = document.getElementById("centerReadingCard");
+const centerLockValue = document.getElementById("centerLockValue");
+const centerWeightHorizontal = document.getElementById("centerWeightHorizontal");
+const centerWeightVertical = document.getElementById("centerWeightVertical");
+const centerSymmetry = document.getElementById("centerSymmetry");
+const centerOffsetSuggestion = document.getElementById("centerOffsetSuggestion");
+const centerWarning = document.getElementById("centerWarning");
+const centerClickReadout = document.getElementById("centerClickReadout");
+const centerFixCard = document.getElementById("centerFixCard");
+const centerFixList = document.getElementById("centerFixList");
+const centerFixLock = document.getElementById("centerFixLock");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
@@ -172,6 +191,7 @@ const GRID_DIVISION_OPTIONS = [2, 4, 6, 8, 10, 12];
 const BASIC_OVERLAY_LINE_WIDTH = 1.75;
 const DYNAMIC_SYMMETRY_MAX_POINTS = 42;
 const DYNAMIC_SYMMETRY_SAMPLE_SIZE = 180;
+const THIRDS_SAMPLE_SIZE = 112;
 
 const OVERLAY_COLOR_CLASSES = ["overlay-color-black", "overlay-color-white", "overlay-color-red"];
 const OVERLAY_COLOR_NAMES = {
@@ -221,7 +241,16 @@ const state = {
     feedback: "Upload an image to detect structural alignment.",
     tooltip: null
   },
+  thirdsAnalysis: {
+    key: null,
+    reading: null
+  },
   thirdsSelection: null,
+  centerAnalysis: {
+    key: null,
+    reading: null
+  },
+  centerSelection: null,
   spiral: {
     ...SPIRAL_DEFAULTS
   }
@@ -628,6 +657,16 @@ function handleOverlayClick(event) {
     return;
   }
 
+  if (canAnalyzeCenter()) {
+    const point = getOverlayPoint(event);
+    if (!point) {
+      return;
+    }
+
+    updateCenterSelection(point);
+    return;
+  }
+
   if (canSnapGoldenSpiral()) {
     const point = getOverlayPoint(event);
     if (!point) {
@@ -964,12 +1003,14 @@ function updateThirdsSelection(point) {
     normalizedPoint.y - nearestPowerPoint.y
   );
   const centerDistance = Math.hypot(normalizedPoint.x - 0.5, normalizedPoint.y - 0.5);
+  const readout = getThirdsClickReadout(normalizedPoint, distance);
 
   state.thirdsSelection = {
     point: normalizedPoint,
     nearestPowerPoint,
     distance,
-    centerDistance
+    centerDistance,
+    readout
   };
 
   updateModeUI();
@@ -993,14 +1034,16 @@ function getNearestThirdsPowerPoint(point) {
 }
 
 function getThirdsStatusCopy() {
+  const reading = getThirdsReading();
+
   if (!state.thirdsSelection) {
+    if (reading) {
+      return reading.status;
+    }
     return "Overlay is active. Click the image to test how close a placement sits to a power point.";
   }
 
-  const distanceMessage = getThirdsDistanceMessage(state.thirdsSelection.distance);
-  return state.thirdsSelection.centerDistance <= 0.09
-    ? `${distanceMessage} Center-dominant placement may feel more static.`
-    : distanceMessage;
+  return state.thirdsSelection.readout;
 }
 
 function getThirdsDistanceMessage(distance) {
@@ -1013,6 +1056,532 @@ function getThirdsDistanceMessage(distance) {
   }
 
   return "Far from the nearest power point.";
+}
+
+function getThirdsClickReadout(point, distance) {
+  const verticalDistance = Math.min(Math.abs(point.x - (1 / 3)), Math.abs(point.x - (2 / 3)));
+  const horizontalDistance = Math.min(Math.abs(point.y - (1 / 3)), Math.abs(point.y - (2 / 3)));
+  const edgeDistance = Math.min(point.x, 1 - point.x, point.y, 1 - point.y);
+
+  if (distance <= 0.075) {
+    return "Near intersection.";
+  }
+  if (verticalDistance <= 0.055 && horizontalDistance <= 0.055) {
+    return "Strong thirds zone.";
+  }
+  if (verticalDistance <= 0.06) {
+    return "Near vertical thirds line.";
+  }
+  if (horizontalDistance <= 0.06) {
+    return "Near horizontal thirds line.";
+  }
+  if (edgeDistance <= 0.09) {
+    return "Outside key thirds structure.";
+  }
+  return "Between main thirds zones.";
+}
+
+function canAnalyzeCenter() {
+  return state.imageLoaded && state.analysisMode === "basic" && state.mode === "center";
+}
+
+function updateCenterSelection(point) {
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const normalizedPoint = {
+    x: clamp(point.x / width, 0, 1),
+    y: clamp(point.y / height, 0, 1)
+  };
+  const verticalDistance = Math.abs(normalizedPoint.x - 0.5);
+  const horizontalDistance = Math.abs(normalizedPoint.y - 0.5);
+
+  state.centerSelection = {
+    point: normalizedPoint,
+    verticalDistance,
+    horizontalDistance,
+    readout: getCenterClickReadout(verticalDistance, horizontalDistance)
+  };
+
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+function getCenterClickReadout(verticalDistance, horizontalDistance) {
+  if (verticalDistance <= 0.04 && horizontalDistance <= 0.04) {
+    return "Near both center lines.";
+  }
+  if (verticalDistance <= 0.05) {
+    return "Near vertical center line.";
+  }
+  if (horizontalDistance <= 0.05) {
+    return "Near horizontal center line.";
+  }
+  return "Off central axis.";
+}
+
+function getThirdsReading() {
+  if (!canAnalyzeThirds()) {
+    return null;
+  }
+
+  const key = `${compositionImage.currentSrc || compositionImage.src}|${compositionImage.naturalWidth}x${compositionImage.naturalHeight}`;
+  if (state.thirdsAnalysis.key === key && state.thirdsAnalysis.reading) {
+    return state.thirdsAnalysis.reading;
+  }
+
+  const sample = getCompositionSampleData(compositionImage, THIRDS_SAMPLE_SIZE);
+  if (!sample) {
+    return null;
+  }
+
+  const focalArea = detectFocalArea(sample);
+  const nearestPowerPoint = getNearestThirdsPoint(focalArea);
+  const alignmentScore = calculateThirdsAlignmentScore(focalArea, nearestPowerPoint, sample.weightDistribution);
+  const read = generateThirdsReading(alignmentScore, focalArea, sample.weightDistribution, nearestPowerPoint);
+
+  state.thirdsAnalysis.key = key;
+  state.thirdsAnalysis.reading = read;
+  return read;
+}
+
+function updateThirdsReadingUI() {
+  if (!thirdsReadingCard) {
+    return;
+  }
+
+  const reading = getThirdsReading();
+  thirdsReadScore.textContent = `Rule of Thirds Read: ${reading ? reading.read : "--"}`;
+  thirdsPrimaryFocus.textContent = reading ? reading.primaryFocus : "Waiting for image.";
+  thirdsFocusAlignment.textContent = reading ? `${reading.focusAlignment}%` : "--";
+  thirdsBalance.textContent = reading ? reading.balance : "Waiting for image.";
+  thirdsPlacement.textContent = reading ? reading.placement : "Waiting for image.";
+  thirdsInsight.textContent = reading ? reading.insight : "Upload an image to read the thirds structure.";
+  thirdsClickReadout.textContent = state.thirdsSelection?.readout || "";
+  thirdsClickReadout.classList.toggle("hidden", !state.thirdsSelection?.readout);
+}
+
+function getCompositionSampleData(image, maxDimension) {
+  const width = image.naturalWidth;
+  const height = image.naturalHeight;
+
+  if (!width || !height) {
+    return null;
+  }
+
+  const scale = Math.min(1, maxDimension / Math.max(width, height));
+  const sampleWidth = Math.max(48, Math.round(width * scale));
+  const sampleHeight = Math.max(48, Math.round(height * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+
+  if (!context) {
+    return null;
+  }
+
+  canvas.width = sampleWidth;
+  canvas.height = sampleHeight;
+  context.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+  const { data } = context.getImageData(0, 0, sampleWidth, sampleHeight);
+  const luminance = new Float32Array(sampleWidth * sampleHeight);
+  let total = 0;
+
+  for (let index = 0, pixel = 0; index < data.length; index += 4, pixel += 1) {
+    const value = (0.2126 * data[index]) + (0.7152 * data[index + 1]) + (0.0722 * data[index + 2]);
+    luminance[pixel] = value;
+    total += value;
+  }
+
+  return {
+    width: sampleWidth,
+    height: sampleHeight,
+    luminance,
+    averageLuminance: total / Math.max(luminance.length, 1),
+    weightDistribution: getWeightDistribution(luminance, sampleWidth, sampleHeight)
+  };
+}
+
+function detectFocalArea(sample) {
+  const { width, height, luminance, averageLuminance } = sample;
+  let totalWeight = 0;
+  let weightedX = 0;
+  let weightedY = 0;
+  let strongestWeight = 0;
+
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      const index = y * width + x;
+      const brightness = luminance[index];
+      const horizontalGradient = Math.abs(luminance[index + 1] - luminance[index - 1]) / 255;
+      const verticalGradient = Math.abs(luminance[index + width] - luminance[index - width]) / 255;
+      const gradientStrength = Math.hypot(horizontalGradient, verticalGradient);
+      const contrastStrength = Math.abs(brightness - averageLuminance) / 255;
+      const darknessBias = Math.max(0, (averageLuminance - brightness) / 255);
+      const localWeight = (gradientStrength * 0.62) + (contrastStrength * 0.26) + (darknessBias * 0.12);
+      const normalizedX = width > 1 ? x / (width - 1) : 0.5;
+      const normalizedY = height > 1 ? y / (height - 1) : 0.5;
+
+      totalWeight += localWeight;
+      weightedX += normalizedX * localWeight;
+      weightedY += normalizedY * localWeight;
+      if (localWeight > strongestWeight) {
+        strongestWeight = localWeight;
+      }
+    }
+  }
+
+  const safeTotal = Math.max(totalWeight, 0.0001);
+  const x = weightedX / safeTotal;
+  const y = weightedY / safeTotal;
+  const centerDistance = Math.hypot(x - 0.5, y - 0.5);
+  const edgeDistance = Math.min(x, 1 - x, y, 1 - y);
+
+  return {
+    x,
+    y,
+    centerDistance,
+    edgeDistance,
+    strength: clamp(strongestWeight / 1.1, 0, 1)
+  };
+}
+
+function getWeightDistribution(luminance, width, height) {
+  let left = 0;
+  let right = 0;
+  let top = 0;
+  let bottom = 0;
+  let total = 0;
+  const average = luminance.reduce((sum, value) => sum + value, 0) / Math.max(luminance.length, 1);
+
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      const index = y * width + x;
+      const brightness = luminance[index];
+      const horizontalGradient = Math.abs(luminance[index + 1] - luminance[index - 1]) / 255;
+      const verticalGradient = Math.abs(luminance[index + width] - luminance[index - width]) / 255;
+      const gradientStrength = Math.hypot(horizontalGradient, verticalGradient);
+      const contrastStrength = Math.abs(brightness - average) / 255;
+      const weight = (gradientStrength * 0.58) + (contrastStrength * 0.42);
+
+      total += weight;
+      if (x / width < 0.5) {
+        left += weight;
+      } else {
+        right += weight;
+      }
+      if (y / height < 0.5) {
+        top += weight;
+      } else {
+        bottom += weight;
+      }
+    }
+  }
+
+  return { left, right, top, bottom, total: Math.max(total, 0.0001) };
+}
+
+function getNearestThirdsPoint(focalPoint) {
+  return getThirdsPowerPoints().reduce((nearest, point) => {
+    const distance = Math.hypot(focalPoint.x - point.x, focalPoint.y - point.y);
+    return distance < nearest.distance ? { point, distance } : nearest;
+  }, { point: getThirdsPowerPoints()[0], distance: Number.POSITIVE_INFINITY });
+}
+
+function calculateThirdsAlignmentScore(focalPoint, nearestThirdsPoint, weightDistribution) {
+  const thirdsProximity = 1 - clamp(nearestThirdsPoint.distance / 0.34, 0, 1);
+  const centeredPenalty = clamp((0.14 - focalPoint.centerDistance) / 0.14, 0, 1);
+  const edgePenalty = clamp((0.1 - focalPoint.edgeDistance) / 0.1, 0, 1);
+  const horizontalImbalance = Math.abs(weightDistribution.left - weightDistribution.right) / weightDistribution.total;
+  const verticalImbalance = Math.abs(weightDistribution.top - weightDistribution.bottom) / weightDistribution.total;
+  const balanceQuality = 1 - clamp((horizontalImbalance * 0.62) + (verticalImbalance * 0.38), 0, 1);
+
+  return Math.round(clamp(
+    (thirdsProximity * 0.62)
+      + (balanceQuality * 0.22)
+      + (focalPoint.strength * 0.16)
+      - (centeredPenalty * 0.2)
+      - (edgePenalty * 0.16),
+    0,
+    1
+  ) * 100);
+}
+
+function generateThirdsReading(score, focalArea, weightDistribution, nearestThirdsPoint) {
+  const primaryFocus = getThirdsPrimaryFocusLabel(focalArea);
+  const balance = getThirdsBalanceLabel(weightDistribution);
+  const placement = getThirdsPlacementLabel(score, focalArea);
+  const insight = getThirdsInsight(score, focalArea, balance);
+  const status = score >= 68
+    ? `Focus reads near the ${primaryFocus.replace("-", " ")} thirds zone.`
+    : focalArea.centerDistance <= 0.12
+    ? "Composition reads as centered with weaker thirds tension."
+    : `Focus reads ${placement.toLowerCase()} against the thirds structure.`;
+
+  return {
+    read: score,
+    primaryFocus,
+    focusAlignment: score,
+    balance,
+    placement,
+    insight,
+    status,
+    nearestPowerPoint: nearestThirdsPoint.point
+  };
+}
+
+function getCenterReading() {
+  if (!canAnalyzeCenter()) {
+    return null;
+  }
+
+  const key = `${compositionImage.currentSrc || compositionImage.src}|${compositionImage.naturalWidth}x${compositionImage.naturalHeight}`;
+  if (state.centerAnalysis.key === key && state.centerAnalysis.reading) {
+    return state.centerAnalysis.reading;
+  }
+
+  const sample = getCompositionSampleData(compositionImage, THIRDS_SAMPLE_SIZE);
+  if (!sample) {
+    return null;
+  }
+
+  const focalArea = detectFocalArea(sample);
+  const weightDistribution = sample.weightDistribution;
+  const symmetry = detectApproximateSymmetry(sample);
+  const reading = generateCenterReading(focalArea, weightDistribution, symmetry);
+
+  state.centerAnalysis.key = key;
+  state.centerAnalysis.reading = reading;
+  return reading;
+}
+
+function updateCenterReadingUI() {
+  if (!centerReadingCard) {
+    return;
+  }
+
+  const reading = getCenterReading();
+  centerLockValue.textContent = `Center Lock: ${reading ? reading.centerLock : "--"}`;
+  centerWeightHorizontal.textContent = reading
+    ? `Left: ${reading.leftPercent}% / Right: ${reading.rightPercent}%`
+    : "Left: -- / Right: --";
+  centerWeightVertical.textContent = reading
+    ? `Top: ${reading.topPercent}% / Bottom: ${reading.bottomPercent}%`
+    : "Top: -- / Bottom: --";
+  centerSymmetry.textContent = reading ? reading.symmetryLine : "Waiting for image.";
+  centerOffsetSuggestion.textContent = reading ? reading.offsetSuggestion : "Waiting for image.";
+  centerWarning.textContent = reading ? reading.warning : "Upload an image to diagnose center lock.";
+  centerClickReadout.textContent = state.centerSelection?.readout || "";
+  centerClickReadout.classList.toggle("hidden", !state.centerSelection?.readout);
+  renderCenterFixUI(reading);
+}
+
+function renderCenterFixUI(reading) {
+  if (!centerFixList) {
+    return;
+  }
+
+  centerFixList.innerHTML = "";
+  const lines = reading
+    ? (isUnlocked() ? reading.unlockedFixLines : reading.lockedFixLines)
+    : [];
+
+  lines.forEach((line) => {
+    const item = document.createElement("p");
+    item.className = "center-fix-line";
+    item.textContent = line;
+    centerFixList.appendChild(item);
+  });
+
+  centerFixCard.classList.toggle("is-locked", !isUnlocked());
+  centerFixLock.classList.toggle("hidden", isUnlocked());
+}
+
+function getCenterStatusCopy() {
+  const reading = getCenterReading();
+
+  if (state.centerSelection?.readout) {
+    return state.centerSelection.readout;
+  }
+
+  if (!reading) {
+    return "Overlay is active. Click the image to test its relationship to the center axes.";
+  }
+
+  return reading.status;
+}
+
+function detectApproximateSymmetry(sample) {
+  const { width, height, luminance } = sample;
+  let verticalDifference = 0;
+  let verticalCount = 0;
+  let horizontalDifference = 0;
+  let horizontalCount = 0;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < Math.floor(width / 2); x += 1) {
+      const left = luminance[y * width + x];
+      const right = luminance[y * width + (width - 1 - x)];
+      verticalDifference += Math.abs(left - right) / 255;
+      verticalCount += 1;
+    }
+  }
+
+  for (let y = 0; y < Math.floor(height / 2); y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const top = luminance[y * width + x];
+      const bottom = luminance[(height - 1 - y) * width + x];
+      horizontalDifference += Math.abs(top - bottom) / 255;
+      horizontalCount += 1;
+    }
+  }
+
+  return {
+    vertical: 1 - (verticalDifference / Math.max(verticalCount, 1)),
+    horizontal: 1 - (horizontalDifference / Math.max(horizontalCount, 1))
+  };
+}
+
+function generateCenterReading(focalArea, weightDistribution, symmetry) {
+  const centerLock = getCenterLockLabel(focalArea.centerDistance);
+  const leftPercent = Math.round((weightDistribution.left / weightDistribution.total) * 100);
+  const rightPercent = Math.round((weightDistribution.right / weightDistribution.total) * 100);
+  const topPercent = Math.round((weightDistribution.top / weightDistribution.total) * 100);
+  const bottomPercent = Math.round((weightDistribution.bottom / weightDistribution.total) * 100);
+  const warning = getCenterWarning(focalArea.centerDistance);
+  const offsetSuggestion = getCenterOffsetSuggestion(focalArea, weightDistribution);
+  const symmetryLine = (symmetry.vertical >= 0.82 || symmetry.horizontal >= 0.82)
+    ? "The composition relies on central symmetry."
+    : "The image breaks symmetry and creates asymmetry.";
+  const status = focalArea.centerDistance <= 0.08
+    ? "Subject reads locked into the center."
+    : focalArea.centerDistance <= 0.16
+    ? "Composition still reads close to the center."
+    : "Main emphasis sits away from the center axis.";
+  const unlockedFixLines = buildCenterFixLines(focalArea, weightDistribution, symmetry);
+
+  return {
+    centerLock,
+    leftPercent,
+    rightPercent,
+    topPercent,
+    bottomPercent,
+    warning,
+    offsetSuggestion,
+    symmetryLine,
+    status,
+    lockedFixLines: [
+      "Break the center lock by shifting the main mass off the middle.",
+      "Let one side carry slightly more visual pressure."
+    ],
+    unlockedFixLines
+  };
+}
+
+function getCenterLockLabel(centerDistance) {
+  if (centerDistance <= 0.08) {
+    return "High";
+  }
+  if (centerDistance <= 0.16) {
+    return "Medium";
+  }
+  return "Low";
+}
+
+function getCenterWarning(centerDistance) {
+  if (centerDistance <= 0.08) {
+    return "The subject is locked to the center, reducing visual tension.";
+  }
+  if (centerDistance <= 0.16) {
+    return "The composition still feels too centered.";
+  }
+  return "The composition escapes center lock and gains more tension.";
+}
+
+function getCenterOffsetSuggestion(focalArea, weightDistribution) {
+  if (focalArea.centerDistance > 0.16) {
+    return "Offset already feels intentional.";
+  }
+
+  const horizontalDelta = weightDistribution.left - weightDistribution.right;
+  const verticalDelta = weightDistribution.top - weightDistribution.bottom;
+  if (Math.abs(horizontalDelta) >= Math.abs(verticalDelta)) {
+    return horizontalDelta >= 0
+      ? "Try shifting the main subject slightly to the right."
+      : "Try shifting the main subject slightly to the left.";
+  }
+
+  return verticalDelta >= 0
+    ? "Try shifting the main subject slightly downward."
+    : "Try shifting the main subject slightly upward.";
+}
+
+function buildCenterFixLines(focalArea, weightDistribution, symmetry) {
+  const lines = [];
+  if (focalArea.centerDistance <= 0.08) {
+    lines.push("Move the main mass off the crossing point so the composition stops locking into the middle.");
+  }
+  if (Math.abs(weightDistribution.left - weightDistribution.right) / weightDistribution.total < 0.08) {
+    lines.push("Let one side carry a little more value pressure so the image gains directional pull.");
+  }
+  if (symmetry.vertical >= 0.82 || symmetry.horizontal >= 0.82) {
+    lines.push("If symmetry is not the goal, break one side with a secondary accent or shift in value weight.");
+  }
+  lines.push("Keep the center clear unless the idea depends on a frontal, symmetrical statement.");
+  return [...new Set(lines)].slice(0, 4);
+}
+
+function getThirdsPrimaryFocusLabel(focalArea) {
+  if (focalArea.centerDistance <= 0.1) {
+    return "centered";
+  }
+  if (focalArea.strength < 0.12) {
+    return "unclear";
+  }
+
+  const horizontal = focalArea.x < 0.5 ? "left" : "right";
+  const vertical = focalArea.y < 0.5 ? "upper" : "lower";
+  return `${vertical}-${horizontal}`;
+}
+
+function getThirdsBalanceLabel(weightDistribution) {
+  const horizontalDelta = (weightDistribution.left - weightDistribution.right) / weightDistribution.total;
+  const verticalDelta = (weightDistribution.top - weightDistribution.bottom) / weightDistribution.total;
+
+  if (Math.abs(horizontalDelta) < 0.08 && Math.abs(verticalDelta) < 0.08) {
+    return "balanced";
+  }
+  if (Math.abs(horizontalDelta) >= Math.abs(verticalDelta)) {
+    return horizontalDelta > 0 ? "left-heavy" : "right-heavy";
+  }
+  return verticalDelta > 0 ? "top-heavy" : "bottom-heavy";
+}
+
+function getThirdsPlacementLabel(score, focalArea) {
+  if (focalArea.centerDistance <= 0.12) {
+    return "too centered";
+  }
+  if (focalArea.edgeDistance <= 0.09) {
+    return "edge-bound";
+  }
+  if (score >= 72) {
+    return "strong";
+  }
+  return "acceptable";
+}
+
+function getThirdsInsight(score, focalArea, balance) {
+  if (score >= 74) {
+    return "The focal area sits close to a strong thirds point.";
+  }
+  if (focalArea.centerDistance <= 0.12) {
+    return "The image reads slightly too centered for a strong thirds structure.";
+  }
+  if (focalArea.edgeDistance <= 0.09) {
+    return "The main emphasis leans toward the edge rather than a stable thirds zone.";
+  }
+  if (balance === "balanced") {
+    return "The composition uses off-center placement well.";
+  }
+  return "The composition hints at thirds placement, but the emphasis could lock in more clearly.";
 }
 
 function formatGridMeasurement(value) {
@@ -1062,6 +1631,7 @@ function updateModeUI() {
   const config = MODES[state.mode];
   const advancedConfig = ADVANCED_MODES[state.advancedMode];
   const isThirdsMode = isBasic && state.mode === "thirds";
+  const isCenterMode = isBasic && state.mode === "center";
   const isGridMode = isBasic && state.mode === "grid";
   const isGoldenSpiral = !isBasic && state.advancedMode === "golden-spiral";
   const isNotan = !isBasic && state.advancedMode === "notan";
@@ -1078,9 +1648,10 @@ function updateModeUI() {
   dynamicSymmetryControlsCard.classList.toggle("hidden", !isDynamicSymmetry);
   gridControlsCard.classList.toggle("hidden", !isGridMode);
   gridTransferCard.classList.toggle("hidden", !isGridMode);
+  thirdsReadingCard.classList.toggle("hidden", !isThirdsMode);
+  centerReadingCard.classList.toggle("hidden", !isCenterMode);
   gridOverlayInfo.classList.toggle("hidden", !isGridMode || !state.imageLoaded);
-  overlayColorControl.classList.toggle("hidden", isNotan);
-  overlayCanvas.style.display = state.imageLoaded ? "block" : "none";
+  overlayColorControl.classList.toggle("hidden", isNotan || advancedLocked);
   clearNotesButton.classList.toggle("hidden", !isFocalBalance);
   clearNotesButton.disabled = !isFocalBalance || state.focalPoints.length === 0;
   clearNotesButton.textContent = "Reset Focal Points";
@@ -1088,6 +1659,9 @@ function updateModeUI() {
   dynamicAlignmentOnlyToggle.checked = state.dynamicSymmetry.showAlignmentsOnly;
   dynamicAlignmentOnlyToggle.disabled = !isDynamicSymmetry || !state.imageLoaded;
   updateDynamicSymmetryReadout();
+  updateThirdsReadingUI();
+  updateCenterReadingUI();
+  updateWorkspaceStageVisibility(advancedLocked);
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
 
   if (isBasic) {
@@ -1100,6 +1674,8 @@ function updateModeUI() {
       : state.loadErrorMessage || (state.imageLoaded
       ? (isThirdsMode
         ? "Click on the image to compare a placement with the nearest power point."
+        : isCenterMode
+        ? "Click on the image to compare a point against the center axes."
         : "Use the active overlay to study the structure of the composition.")
       : "Upload an image to begin your composition study.");
     statusNote.textContent = state.imageLoading
@@ -1107,6 +1683,8 @@ function updateModeUI() {
       : state.loadErrorMessage || (state.imageLoaded
       ? (isThirdsMode
         ? getThirdsStatusCopy()
+        : isCenterMode
+        ? getCenterStatusCopy()
         : isGridMode
         ? "Grid is active. Adjust the divisions and use the transfer helper below to match your canvas."
         : "Overlay is active. Switch tools to compare different compositional guides.")
@@ -1118,7 +1696,7 @@ function updateModeUI() {
       ? "Preparing analysis..."
       : state.loadErrorMessage || (advancedLocked
       ? (state.imageLoaded
-        ? "Preview the advanced layout here. Unlock full access to use overlays, controls, and export."
+        ? "Advanced tools stay locked until payment. Uploads from Basic remain hidden here until full unlock."
         : "Preview the advanced layout here. Unlock full access to upload and use advanced composition tools.")
       : (state.imageLoaded
         ? "Study the image with the selected advanced composition guide."
@@ -1128,14 +1706,16 @@ function updateModeUI() {
     advancedStatusNote.textContent = state.imageLoading
       ? "Preparing analysis..."
       : state.loadErrorMessage || (advancedLocked
-      ? "Advanced tools are visible for preview. Unlock full access when you're ready to use overlays, controls, and export."
+      ? (state.imageLoaded
+        ? "Advanced workspace is locked. The uploaded image is hidden here until full unlock."
+        : "Advanced tools are visible for preview. Unlock full access when you're ready to upload, use overlays, controls, and export.")
       : (state.imageLoaded
         ? getAdvancedStatusCopy(advancedConfig.status)
         : advancedConfig.status));
   }
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
-  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry);
+  overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry, isCenterMode);
   downloadCompositionAnalysisButton.disabled = !state.imageLoaded;
 
   spiralScale.value = String(Math.round(state.spiral.scale * 100));
@@ -1189,10 +1769,46 @@ function updateModeUI() {
   });
 }
 
+function updateWorkspaceStageVisibility(advancedLocked) {
+  const shouldHideImage = advancedLocked && !state.imageLoading;
+  const shouldShowImage = state.imageLoaded && !shouldHideImage;
+
+  compositionStage.style.display = shouldShowImage ? "block" : "none";
+  compositionImage.style.display = shouldShowImage ? "block" : "none";
+  overlayCanvas.style.display = shouldShowImage ? "block" : "none";
+
+  if (state.imageLoading) {
+    emptyState.style.display = "none";
+    return;
+  }
+
+  if (shouldHideImage) {
+    canvasWrap.classList.remove("has-load-error");
+    emptyState.style.display = "grid";
+    if (emptyStateLabel) {
+      emptyStateLabel.textContent = "Unlock advanced tools to upload and work in this section";
+    }
+    return;
+  }
+
+  if (state.imageLoaded) {
+    emptyState.style.display = "none";
+    return;
+  }
+
+  resetWorkspaceEmptyState();
+}
+
 function beginImageLoad() {
   state.imageLoaded = false;
   state.imageLoading = true;
   state.loadErrorMessage = "";
+  state.centerAnalysis.key = null;
+  state.centerAnalysis.reading = null;
+  state.centerSelection = null;
+  state.thirdsAnalysis.key = null;
+  state.thirdsAnalysis.reading = null;
+  state.thirdsSelection = null;
   state.dynamicSymmetry.analysisKey = null;
   state.dynamicSymmetry.points = [];
   state.dynamicSymmetry.alignedPoints = [];
@@ -1257,7 +1873,7 @@ function getAdvancedStatusCopy(defaultStatus) {
   return `${sourceLabel} ${state.focalPoints.length}/3 points placed. Click a point to remove it or reset to start again.`;
 }
 
-function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry) {
+function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry, isCenterMode) {
   if (isAdvancedLocked()) {
     return "default";
   }
@@ -1271,6 +1887,10 @@ function getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynami
   }
 
   if (isThirdsMode && state.imageLoaded) {
+    return "crosshair";
+  }
+
+  if (isCenterMode && state.imageLoaded) {
     return "crosshair";
   }
 
@@ -1550,24 +2170,30 @@ function drawThirds(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLA
 function drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette) {
   const glowRadius = Math.max(18, Math.min(width, height) * 0.055);
   const ringRadius = glowRadius * 0.42;
+  const reading = getThirdsReading();
 
   ctx.save();
   getThirdsPowerPoints().forEach((point) => {
     const x = point.x * width;
     const y = point.y * height;
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+    const isPreferred = reading && reading.nearestPowerPoint
+      && Math.abs(reading.nearestPowerPoint.x - point.x) < 0.001
+      && Math.abs(reading.nearestPowerPoint.y - point.y) < 0.001;
+    const localGlowRadius = isPreferred ? glowRadius * 1.16 : glowRadius;
+    const localRingRadius = isPreferred ? ringRadius * 1.12 : ringRadius;
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, localGlowRadius);
     gradient.addColorStop(0, overlayPalette.fillSoft);
     gradient.addColorStop(0.55, overlayPalette.fillVerySoft);
     gradient.addColorStop(1, toOverlayAlphaColor(getActiveOverlayColor(), 0));
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+    ctx.arc(x, y, localGlowRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = overlayPalette.strokeSoft;
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = isPreferred ? overlayPalette.strokeStrong : overlayPalette.strokeSoft;
+    ctx.lineWidth = isPreferred ? 1.25 : 1;
     ctx.beginPath();
-    ctx.arc(x, y, ringRadius, 0, Math.PI * 2);
+    ctx.arc(x, y, localRingRadius, 0, Math.PI * 2);
     ctx.stroke();
   });
   ctx.restore();
@@ -1622,6 +2248,26 @@ function drawThirdsSelection(ctx, width, height, overlayPalette) {
   ctx.moveTo(nearestPowerPoint.x, nearestPowerPoint.y - targetRadius - 3);
   ctx.lineTo(nearestPowerPoint.x, nearestPowerPoint.y + targetRadius + 3);
   ctx.stroke();
+
+  if (state.thirdsSelection.readout) {
+    const label = state.thirdsSelection.readout;
+    ctx.font = "700 12px Segoe UI";
+    const paddingX = 10;
+    const boxHeight = 32;
+    const boxWidth = Math.min(width - 24, ctx.measureText(label).width + paddingX * 2);
+    const boxX = clamp(point.x + 14, 12, width - boxWidth - 12);
+    const boxY = clamp(point.y - boxHeight - 12, 12, height - boxHeight - 12);
+    ctx.fillStyle = "rgba(252,250,246,0.92)";
+    drawRoundedRect(ctx, boxX, boxY, boxWidth, boxHeight, 13);
+    ctx.fill();
+    ctx.strokeStyle = overlayPalette.strokeSoft;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = "#1f1c18";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, boxX + paddingX, boxY + boxHeight / 2);
+  }
   ctx.restore();
 }
 
@@ -1648,6 +2294,7 @@ function drawGrid(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_
 }
 
 function drawCenterLines(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
+  drawCenterDangerZone(ctx, width, height, overlayPalette);
   ctx.strokeStyle = overlayPalette.stroke;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
@@ -1656,6 +2303,77 @@ function drawCenterLines(ctx, width, height, overlayPalette, lineWidth = BASIC_O
   ctx.moveTo(0, height / 2);
   ctx.lineTo(width, height / 2);
   ctx.stroke();
+  drawCenterSelection(ctx, width, height, overlayPalette);
+}
+
+function drawCenterDangerZone(ctx, width, height, overlayPalette) {
+  const zoneSize = Math.min(width, height) * 0.18;
+  const x = (width - zoneSize) / 2;
+  const y = (height - zoneSize) / 2;
+
+  ctx.save();
+  ctx.fillStyle = overlayPalette.fillVerySoft;
+  ctx.strokeStyle = overlayPalette.strokeSoft;
+  ctx.lineWidth = 1;
+  drawRoundedRect(ctx, x, y, zoneSize, zoneSize, 18);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCenterSelection(ctx, width, height, overlayPalette) {
+  if (!state.centerSelection) {
+    return;
+  }
+
+  const point = {
+    x: state.centerSelection.point.x * width,
+    y: state.centerSelection.point.y * height
+  };
+  const centerPoint = { x: width / 2, y: height / 2 };
+  const markerRadius = Math.max(5, Math.min(width, height) * 0.01);
+
+  ctx.save();
+  ctx.strokeStyle = overlayPalette.strokeMuted;
+  ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.moveTo(point.x, point.y);
+  ctx.lineTo(centerPoint.x, point.y);
+  ctx.moveTo(point.x, point.y);
+  ctx.lineTo(point.x, centerPoint.y);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, markerRadius + 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = overlayPalette.strokeStrong;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, markerRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  if (state.centerSelection.readout) {
+    const label = state.centerSelection.readout;
+    ctx.font = "700 12px Segoe UI";
+    const paddingX = 10;
+    const boxHeight = 32;
+    const boxWidth = Math.min(width - 24, ctx.measureText(label).width + paddingX * 2);
+    const boxX = clamp(point.x + 14, 12, width - boxWidth - 12);
+    const boxY = clamp(point.y - boxHeight - 12, 12, height - boxHeight - 12);
+    ctx.fillStyle = "rgba(252,250,246,0.92)";
+    drawRoundedRect(ctx, boxX, boxY, boxWidth, boxHeight, 13);
+    ctx.fill();
+    ctx.strokeStyle = overlayPalette.strokeSoft;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = "#1f1c18";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, boxX + paddingX, boxY + boxHeight / 2);
+  }
+
+  ctx.restore();
 }
 
 function drawDiagonals(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {

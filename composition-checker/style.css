@@ -768,6 +768,79 @@ a {
   background: rgba(255, 255, 255, 0.52);
   border: 1px solid rgba(50, 44, 38, 0.08);
 }
+
+.thirds-reading-stack {
+  gap: 12px;
+}
+
+.thirds-reading-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.thirds-reading-grid .detail-copy {
+  margin: 0;
+}
+
+.thirds-reading-grid strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+#thirdsClickReadout {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.center-reading-stack {
+  gap: 12px;
+}
+
+#centerClickReadout {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.center-fix-card {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1px solid rgba(50, 44, 38, 0.08);
+  overflow: hidden;
+}
+
+.center-fix-list {
+  display: grid;
+  gap: 8px;
+}
+
+.center-fix-line {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.center-fix-card.is-locked .center-fix-line {
+  filter: blur(3px);
+  user-select: none;
+}
+
+.center-fix-lock {
+  position: absolute;
+  inset: auto 12px 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(252, 250, 246, 0.88);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 12px 26px rgba(50, 39, 28, 0.12);
+}
 @media (max-width: 720px) {
   .grid-transfer-inputs {
     grid-template-columns: 1fr;
