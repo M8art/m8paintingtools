@@ -38,9 +38,16 @@ const quickCheckCurrentScoreSummary = document.getElementById("quickCheckCurrent
 const quickCheckScoreDelta = document.getElementById("quickCheckScoreDelta");
 const quickCheckComparisonText = document.getElementById("quickCheckComparisonText");
 const quickCheckTags = document.getElementById("quickCheckTags");
+const dynamicBreakdown = document.getElementById("dynamicBreakdown");
+const breakdownWorks = document.getElementById("breakdownWorks");
+const breakdownWeakness = document.getElementById("breakdownWeakness");
+const breakdownTest = document.getElementById("breakdownTest");
 const breakdownToggleButton = document.getElementById("breakdownToggleButton");
 const quickCheckDetails = document.getElementById("quickCheckDetails");
 const freeCheckNote = document.getElementById("freeCheckNote");
+const freeDailyNote = document.getElementById("freeDailyNote");
+const streakNote = document.getElementById("streakNote");
+const freeLimitHelper = document.getElementById("freeLimitHelper");
 const lockedAnalysisState = document.getElementById("lockedAnalysisState");
 const unlockFullAccessButton = document.getElementById("unlockFullAccessButton");
 const premiumToast = document.getElementById("premiumToast");
@@ -50,11 +57,37 @@ const analysisUploadLabels = Array.from(document.querySelectorAll('label[for="an
 
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
-const FULL_ANALYSIS_STORAGE_KEY = "m8_full_analysis_used";
-const FREE_FULL_ANALYSIS_LIMIT = 3;
+const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
+const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
+const LAST_STREAK_DAY_STORAGE_KEY = "m8_last_streak_day";
+const RECENT_BREAKDOWN_LINES_STORAGE_KEY = "m8_recent_lines";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
+const WORKS_POOL = [
+  "The focal point reads clearly.",
+  "The overall balance feels stable.",
+  "Value relationships are controlled.",
+  "The composition holds together well.",
+  "There is a clear dominant area.",
+  "The structure feels organized."
+];
+const WEAKNESS_POOL = [
+  "Movement between forms feels limited.",
+  "The eye has no strong directional path.",
+  "The image feels slightly static.",
+  "Value contrast could be pushed further.",
+  "Secondary areas compete too much.",
+  "The rhythm between shapes is weak."
+];
+const TEST_POOL = [
+  "Try strengthening directional flow.",
+  "Push contrast in one key area.",
+  "Simplify secondary elements.",
+  "Guide the eye with a clearer path.",
+  "Group values more aggressively.",
+  "Reduce noise in less important areas."
+];
 const ANALYSIS_SEQUENCE = [
   { className: "stage-grid", helper: "Preparing your quick check", message: "Reading structure...", delay: 980 },
   { className: "stage-grayscale", helper: "Preparing your quick check", message: "Mapping value groups...", delay: 1180 },
@@ -117,6 +150,7 @@ let premiumToastTimeoutId = null;
 let imageLoadRequestId = 0;
 let feedbackToastTimeoutId = null;
 let scoreAnimationFrameId = null;
+let currentAnalysisUsesFreeSlot = false;
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -190,8 +224,13 @@ runAnalysisButton.addEventListener("click", () => {
   }
 
   if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
-    showLockedAnalysisState();
+    showFreeLimitReachedState();
     return;
+  }
+
+  currentAnalysisUsesFreeSlot = !DEV_MODE && !hasUnlockedAccess();
+  if (currentAnalysisUsesFreeSlot) {
+    markFreeAnalysisUsedToday();
   }
 
   runQuickCheck();
@@ -248,6 +287,8 @@ function showPreview(file) {
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
+  freeDailyNote.classList.add("hidden");
+  streakNote.classList.add("hidden");
   setAnalysisStage("");
   updateAnalysisAccessUI();
   resetEmptyState();
@@ -328,7 +369,8 @@ function hasUsedFullAnalysis() {
     return false;
   }
 
-  return getRecentFreeAnalysisTimestamps().length >= FREE_FULL_ANALYSIS_LIMIT;
+  const lastFreeCheck = getLastFreeCheckTimestamp();
+  return Boolean(lastFreeCheck) && Date.now() - lastFreeCheck < FREE_FULL_ANALYSIS_WINDOW_MS;
 }
 
 function hasUnlockedAccess() {
@@ -344,48 +386,58 @@ function getTodayAnalysisStamp() {
 }
 
 function markFreeAnalysisUsedToday() {
-  const recentTimestamps = getRecentFreeAnalysisTimestamps();
-  recentTimestamps.push(Date.now());
-  localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, JSON.stringify(recentTimestamps));
+  localStorage.setItem(LAST_FREE_CHECK_STORAGE_KEY, String(Date.now()));
 }
 
-function getRecentFreeAnalysisTimestamps() {
-  const now = Date.now();
-  const cutoff = now - FREE_FULL_ANALYSIS_WINDOW_MS;
-  const storedValue = localStorage.getItem(FULL_ANALYSIS_STORAGE_KEY);
+function markStreakForCompletedFreeAnalysis() {
+  updateStreakForToday();
+}
 
-  if (!storedValue) {
-    return [];
+function getLastFreeCheckTimestamp() {
+  const storedValue = Number(localStorage.getItem(LAST_FREE_CHECK_STORAGE_KEY));
+  return Number.isFinite(storedValue) && storedValue > 0 ? storedValue : 0;
+}
+
+function updateStreakForToday() {
+  const today = getTodayAnalysisStamp();
+  const lastStreakDay = localStorage.getItem(LAST_STREAK_DAY_STORAGE_KEY);
+
+  if (lastStreakDay === today) {
+    return getCurrentStreakCount();
   }
 
-  let timestamps = [];
+  const nextStreak = isYesterday(lastStreakDay, today) ? getCurrentStreakCount() + 1 : 1;
+  localStorage.setItem(STREAK_COUNT_STORAGE_KEY, String(nextStreak));
+  localStorage.setItem(LAST_STREAK_DAY_STORAGE_KEY, today);
+  return nextStreak;
+}
 
-  if (storedValue === "true") {
-    timestamps = [now];
-  } else {
-    try {
-      const parsed = JSON.parse(storedValue);
-      if (Array.isArray(parsed)) {
-        timestamps = parsed
-          .map((value) => Number(value))
-          .filter((value) => Number.isFinite(value));
-      } else {
-        const legacyDate = new Date(`${storedValue}T00:00:00`);
-        if (!Number.isNaN(legacyDate.getTime())) {
-          timestamps = [legacyDate.getTime()];
-        }
-      }
-    } catch (error) {
-      const legacyDate = new Date(`${storedValue}T00:00:00`);
-      if (!Number.isNaN(legacyDate.getTime())) {
-        timestamps = [legacyDate.getTime()];
-      }
-    }
+function getCurrentStreakCount() {
+  const storedValue = Number(localStorage.getItem(STREAK_COUNT_STORAGE_KEY));
+  return Number.isFinite(storedValue) && storedValue > 0 ? storedValue : 0;
+}
+
+function isYesterday(previousDay, today) {
+  if (!previousDay) {
+    return false;
   }
 
-  const recentTimestamps = timestamps.filter((timestamp) => timestamp >= cutoff);
-  localStorage.setItem(FULL_ANALYSIS_STORAGE_KEY, JSON.stringify(recentTimestamps));
-  return recentTimestamps;
+  const previousDate = new Date(`${previousDay}T00:00:00`);
+  const todayDate = new Date(`${today}T00:00:00`);
+  if (Number.isNaN(previousDate.getTime()) || Number.isNaN(todayDate.getTime())) {
+    return false;
+  }
+
+  return todayDate.getTime() - previousDate.getTime() === FREE_FULL_ANALYSIS_WINDOW_MS;
+}
+
+function getStreakMessage() {
+  const streakCount = getCurrentStreakCount();
+  if (streakCount >= 3) {
+    return `Day ${streakCount} 🔥 You're training your eye`;
+  }
+
+  return `Day ${Math.max(1, streakCount)} ✅`;
 }
 
 function handleUnlockReturn() {
@@ -403,12 +455,27 @@ function handleUnlockReturn() {
 }
 
 function updateAnalysisAccessUI() {
+  freeLimitHelper.classList.add("hidden");
+
+  if (isAnalysisRunning) {
+    runAnalysisButton.textContent = "Run Analysis";
+    runAnalysisButton.disabled = true;
+    return;
+  }
+
+  if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
+    runAnalysisButton.textContent = "Free analysis used. Come back tomorrow.";
+    runAnalysisButton.disabled = true;
+    freeLimitHelper.classList.remove("hidden");
+    return;
+  }
+
   runAnalysisButton.textContent = "Run Analysis";
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
 }
 
 function shouldBlockAnalysisUpload() {
-  return !DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis();
+  return false;
 }
 
 function updateOverlayColorUI() {
@@ -487,6 +554,7 @@ function completeQuickCheck() {
   quickCheckStrengthText.textContent = result.strength;
   quickCheckWeaknessText.textContent = result.weakness;
   renderResultBlocks(result.blocks);
+  renderDynamicBreakdown();
   quickCheckSuggestionText.textContent = result.suggestion;
   quickCheckFastestFixText.textContent = result.fastestFix;
   renderScoreBreakdown(result.scoreBreakdown);
@@ -504,9 +572,21 @@ function completeQuickCheck() {
   if (hasUnlockedAccess()) {
     freeCheckNote.textContent = "Unlimited access is now active.";
     freeCheckNote.classList.remove("hidden");
-  } else {
-    freeCheckNote.textContent = "This used one of your 3 free full checks in the last 24 hours.";
+    freeDailyNote.classList.add("hidden");
+    streakNote.classList.add("hidden");
+  } else if (DEV_MODE) {
+    freeCheckNote.textContent = "Dev mode active.";
     freeCheckNote.classList.remove("hidden");
+    freeDailyNote.classList.add("hidden");
+    streakNote.classList.add("hidden");
+  } else {
+    if (currentAnalysisUsesFreeSlot) {
+      markStreakForCompletedFreeAnalysis();
+    }
+    freeCheckNote.classList.add("hidden");
+    freeDailyNote.classList.remove("hidden");
+    streakNote.textContent = getStreakMessage();
+    streakNote.classList.remove("hidden");
   }
   quickCheckResult.classList.remove("hidden");
   window.requestAnimationFrame(() => {
@@ -519,10 +599,8 @@ function completeQuickCheck() {
     metrics: { ...result.metrics }
   };
 
-  if (!DEV_MODE && !hasUnlockedAccess()) {
-    markFreeAnalysisUsedToday();
-  }
   isAnalysisRunning = false;
+  currentAnalysisUsesFreeSlot = false;
   analysisTimeoutIds = [];
   updateAnalysisAccessUI();
 }
@@ -1496,6 +1574,7 @@ function resetAnalysisSequence() {
   statusNote.classList.remove("is-fading");
   analysisTimeoutIds = [];
   isAnalysisRunning = false;
+  currentAnalysisUsesFreeSlot = false;
   latestQuickCheckResult = null;
   clearGuidanceOverlay();
   setAnalysisStage("");
@@ -1534,22 +1613,58 @@ function showUploadError(message) {
 
 function renderResultBlocks(blocks) {
   quickCheckBlocks.innerHTML = "";
-  blocks.forEach((block) => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "result-block result-reveal";
+}
 
-    const title = document.createElement("p");
-    title.className = "result-block-title";
-    title.textContent = block.title;
+function renderDynamicBreakdown() {
+  const selectedWorks = selectBreakdownLines(WORKS_POOL);
+  const selectedWeaknesses = selectBreakdownLines(WEAKNESS_POOL);
+  const selectedTests = selectBreakdownLines(TEST_POOL);
+  const selectedLines = [...selectedWorks, ...selectedWeaknesses, ...selectedTests];
 
-    const copy = document.createElement("p");
-    copy.className = "detail-copy";
-    copy.textContent = block.text;
+  renderBreakdownList(breakdownWorks, selectedWorks);
+  renderBreakdownList(breakdownWeakness, selectedWeaknesses);
+  renderBreakdownList(breakdownTest, selectedTests);
+  rememberBreakdownLines(selectedLines);
+}
 
-    wrapper.appendChild(title);
-    wrapper.appendChild(copy);
-    quickCheckBlocks.appendChild(wrapper);
+function renderBreakdownList(listElement, lines) {
+  listElement.innerHTML = "";
+  lines.forEach((line) => {
+    const item = document.createElement("li");
+    item.textContent = line;
+    listElement.appendChild(item);
   });
+}
+
+function selectBreakdownLines(pool) {
+  const recentLines = getRecentBreakdownLines();
+  const targetCount = 2 + Math.floor(Math.random() * 2);
+  const freshLines = shuffleLines(pool.filter((line) => !recentLines.includes(line)));
+  const fallbackLines = shuffleLines(pool.filter((line) => recentLines.includes(line)));
+  return [...freshLines, ...fallbackLines].slice(0, targetCount);
+}
+
+function getRecentBreakdownLines() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_BREAKDOWN_LINES_STORAGE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.filter((line) => typeof line === "string") : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function rememberBreakdownLines(lines) {
+  const nextLines = [...lines, ...getRecentBreakdownLines()];
+  localStorage.setItem(RECENT_BREAKDOWN_LINES_STORAGE_KEY, JSON.stringify([...new Set(nextLines)].slice(0, 10)));
+}
+
+function shuffleLines(lines) {
+  const shuffled = [...lines];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
 }
 
 function resetResultRevealState() {
@@ -1569,7 +1684,9 @@ function resetResultRevealState() {
     quickCheckSuggestion,
     quickCheckTags,
     quickCheckBlocks,
-    freeCheckNote
+    freeCheckNote,
+    freeDailyNote,
+    streakNote
   ].forEach((element) => {
     element?.classList.remove("is-visible");
   });
@@ -1599,7 +1716,9 @@ function revealResultPanel() {
     { element: quickCheckScoreBreakdown, delay: 540 },
     { element: quickCheckComparison, delay: 640, skip: quickCheckComparison.classList.contains("hidden") },
     { element: quickCheckTags, delay: 760 },
-    { element: freeCheckNote, delay: 860 }
+    { element: freeCheckNote, delay: 860, skip: freeCheckNote.classList.contains("hidden") },
+    { element: freeDailyNote, delay: 860, skip: freeDailyNote.classList.contains("hidden") },
+    { element: streakNote, delay: 940, skip: streakNote.classList.contains("hidden") }
   ];
 
   revealSteps.forEach(({ element, delay, skip }) => {
@@ -1619,9 +1738,22 @@ function showLockedAnalysisState() {
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.remove("hidden");
   freeCheckNote.classList.add("hidden");
+  freeDailyNote.classList.add("hidden");
+  streakNote.classList.add("hidden");
   updateStatusMessage("Unlock full access to continue.");
   workspaceHint.textContent = "Your 3 free full checks in the last 24 hours are used. One payment unlocks the full app.";
   showPremiumLimitToast("Your 3 free checks in the last 24 hours are used. Tap Unlock All Tools to continue.");
+}
+
+function showFreeLimitReachedState() {
+  statusHelper.classList.add("hidden");
+  freeCheckNote.classList.add("hidden");
+  freeDailyNote.classList.add("hidden");
+  streakNote.classList.add("hidden");
+  runAnalysisButton.textContent = "Free analysis used. Come back tomorrow.";
+  runAnalysisButton.disabled = true;
+  freeLimitHelper.classList.remove("hidden");
+  updateStatusMessage("Your next free analysis will be available in 24 hours.");
 }
 
 function renderScoreBreakdown(items) {

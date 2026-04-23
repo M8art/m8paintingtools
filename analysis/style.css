@@ -1103,6 +1103,35 @@ a {
   opacity: 1;
 }
 
+.dynamic-breakdown {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(50, 44, 38, 0.08);
+}
+
+.breakdown-section {
+  display: grid;
+  gap: 6px;
+}
+
+.breakdown-section-title {
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.breakdown-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.55;
+  display: grid;
+  gap: 4px;
+}
+
 #quickCheckTopSections {
   display: grid;
   gap: 10px;
@@ -1278,15 +1307,29 @@ a {
   line-height: 1.5;
 }
 
-#freeCheckNote {
+#freeCheckNote,
+#freeDailyNote,
+#streakNote {
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 320ms ease, transform 380ms ease;
 }
 
-#freeCheckNote.is-visible {
+#freeCheckNote.is-visible,
+#freeDailyNote.is-visible,
+#streakNote.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.streak-note {
+  font-weight: 700;
+  color: #c96a3d;
+}
+
+.free-limit-helper {
+  margin-top: -6px;
+  text-align: center;
 }
 
 .locked-title {

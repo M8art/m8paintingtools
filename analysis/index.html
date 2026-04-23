@@ -217,17 +217,33 @@
                 <span class="result-tag">Left Heavy</span>
                 <span class="result-tag">Compressed Values</span>
               </div>
-              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full breakdown</button>
               <div id="quickCheckDetails" class="result-details" aria-hidden="true">
-                <p class="result-helper">Quick visual estimate based on structure, balance, and value distribution.</p>
+                <div id="dynamicBreakdown" class="dynamic-breakdown">
+                  <p class="result-block-title">Breakdown</p>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">What works</p>
+                    <ul id="breakdownWorks" class="breakdown-list"></ul>
+                  </div>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">What weakens the image</p>
+                    <ul id="breakdownWeakness" class="breakdown-list"></ul>
+                  </div>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">What I would test next</p>
+                    <ul id="breakdownTest" class="breakdown-list"></ul>
+                  </div>
+                </div>
                 <div id="quickCheckBlocks" class="result-blocks"></div>
                 <div id="quickCheckSuggestion" class="result-suggestion">
                   <p class="section-label result-label">Suggestion</p>
                   <p id="quickCheckSuggestionText" class="detail-copy">Push the focal point farther away from the center and clarify the major value shapes.</p>
                 </div>
                 <p class="result-note">This check focuses on structure rather than subject or style.</p>
+                <p id="freeCheckNote" class="result-note hidden">This was your free full check.</p>
+                <p id="freeDailyNote" class="result-note hidden">You&rsquo;ve used your free daily analysis.<br>Come back tomorrow to train your eye again.</p>
+                <p id="streakNote" class="result-note streak-note hidden">Day 1 ✅</p>
               </div>
-              <p id="freeCheckNote" class="result-note hidden">This was your free full check.</p>
+              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full breakdown</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
               <p class="section-label result-label">Premium Access</p>
@@ -240,6 +256,7 @@
           </div>
 
           <button id="runAnalysisButton" class="button-secondary analysis-button" type="button" disabled>Run Analysis</button>
+          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">Your next free analysis will be available in 24 hours.</p>
         </div>
       </aside>
     </main>
