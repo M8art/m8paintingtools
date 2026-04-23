@@ -106,6 +106,8 @@
                 <div class="analysis-overlay center-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay scanning-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay focal-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay guidance-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay pull-overlay" aria-hidden="true"></div>
               </div>
             </div>
 
@@ -172,6 +174,13 @@
             <div id="quickCheckResult" class="quick-check-result hidden">
               <p class="section-label result-label">Quick Check Score</p>
               <p id="quickCheckScore" class="quick-check-score">72 / 100</p>
+              <div id="quickCheckWhyScore" class="result-block result-reveal">
+                <p class="result-block-title">Why This Score</p>
+                <div class="result-reason-list">
+                  <p id="quickCheckWhyPositive" class="detail-copy">The score is helped by a stable left-right balance.</p>
+                  <p id="quickCheckWhyLimiting" class="detail-copy">The score drops because the focal pull sits too close to the center.</p>
+                </div>
+              </div>
               <div id="quickCheckTopSections" class="result-blocks">
                 <div id="quickCheckKeyInsightBlock" class="result-block">
                   <p class="result-block-title">Key Insight</p>
@@ -185,6 +194,23 @@
                   <p class="result-block-title">Weakness</p>
                   <p id="quickCheckWeaknessText" class="detail-copy">The focal area blends too much with surrounding values.</p>
                 </div>
+              </div>
+              <div id="quickCheckFastestFix" class="result-suggestion result-reveal">
+                <p class="section-label result-label">Fastest Fix</p>
+                <p id="quickCheckFastestFixText" class="detail-copy">Push the focal contrast farther away from the center.</p>
+              </div>
+              <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
+                <p class="result-block-title">Score Breakdown</p>
+                <div id="quickCheckBreakdownRows" class="score-breakdown-list"></div>
+              </div>
+              <div id="quickCheckComparison" class="result-block result-reveal hidden">
+                <p class="result-block-title">Compared To Previous Check</p>
+                <div class="result-compare-summary">
+                  <p id="quickCheckPreviousScore" class="detail-copy">Previous score: 72 / 100</p>
+                  <p id="quickCheckCurrentScoreSummary" class="detail-copy">Current score: 76 / 100</p>
+                  <p id="quickCheckScoreDelta" class="detail-copy">Difference: +4</p>
+                </div>
+                <p id="quickCheckComparisonText" class="detail-copy">Focal clarity improved.</p>
               </div>
               <div id="quickCheckTags" class="result-tags">
                 <span class="result-tag">Center Dominant</span>
@@ -217,6 +243,15 @@
         </div>
       </aside>
     </main>
+
+    <footer class="footer" aria-label="Site footer">
+      <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <div class="footer-links">
+        <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
+        <a class="footer-link" href="../terms/index.html">Terms of Use</a>
+        <a class="footer-link" href="../contact/index.html">Contact</a>
+      </div>
+    </footer>
   </div>
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
