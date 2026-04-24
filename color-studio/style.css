@@ -374,6 +374,14 @@ a {
   cursor: pointer;
 }
 
+.image-wrap.zoomed {
+  cursor: grab;
+}
+
+.image-wrap.dragging {
+  cursor: grabbing;
+}
+
 .image-wrap.is-loading .image-loading-overlay,
 .image-wrap.has-load-error .image-loading-overlay {
   opacity: 1;
@@ -383,14 +391,30 @@ a {
   cursor: crosshair;
 }
 
+.image-wrap.sampling-enabled.zoomed {
+  cursor: grab;
+}
+
+.image-wrap.sampling-enabled.dragging {
+  cursor: grabbing;
+}
+
 .preview-image {
   display: none;
-  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: auto;
   height: auto;
-  max-height: 75vh;
-  object-fit: contain;
+  max-width: none;
+  max-height: none;
+  object-fit: fill;
   opacity: 0;
   transition: opacity 240ms ease;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+  z-index: 1;
 }
 
 .preview-image.is-loaded {

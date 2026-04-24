@@ -253,7 +253,9 @@
   </div>
 
   <script>
+    const SITE_URL = "https://m8paintingtools.com";
     const PERSONAL_FEEDBACK_ACCESS_KEY = "m8_personal_feedback_paid";
+    const PERSONAL_FEEDBACK_SUBMISSION_SUCCESS_URL = `${SITE_URL}/personal-feedback/?success=true`;
     const successMessage = document.getElementById("successMessage");
     const accessPanel = document.getElementById("accessPanel");
     const formPanel = document.getElementById("formPanel");
@@ -280,7 +282,7 @@
       accessPanel.classList.add("is-visible");
     }
 
-    form.querySelector('input[name="_next"]').value = `${window.location.origin}${window.location.pathname}?success=true`;
+    form.querySelector('input[name="_next"]').value = PERSONAL_FEEDBACK_SUBMISSION_SUCCESS_URL;
 
     form.addEventListener("submit", () => {
       localStorage.removeItem(PERSONAL_FEEDBACK_ACCESS_KEY);

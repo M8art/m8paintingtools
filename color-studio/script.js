@@ -243,7 +243,19 @@ const state = {
   trainerSelection: [],
   trainerEvaluation: null,
   imageLoading: false,
-  loadErrorMessage: ""
+  loadErrorMessage: "",
+  viewScale: 1,
+  minScale: 1,
+  maxScale: 6,
+  viewOffsetX: 0,
+  viewOffsetY: 0,
+  isDragging: false,
+  dragMoved: false,
+  suppressClick: false,
+  dragStartX: 0,
+  dragStartY: 0,
+  dragOriginX: 0,
+  dragOriginY: 0
 };
 let imageLoadRequestId = 0;
 let feedbackToastTimeoutId = null;
@@ -266,6 +278,8 @@ uploadLabels.forEach((label) => {
   });
 });
 imageWrap.addEventListener("click", handleImageWrapClick);
+imageWrap.addEventListener("wheel", handleWorkspaceWheel, { passive: false });
+imageWrap.addEventListener("mousedown", handlePanStart);
 imageWrap.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
@@ -277,6 +291,9 @@ imageWrap.addEventListener("keydown", (event) => {
     fileInput.click();
   }
 });
+window.addEventListener("mousemove", handlePanMove);
+window.addEventListener("mouseup", handlePanEnd);
+window.addEventListener("resize", handleWorkspaceResize);
 
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => setTab(button.dataset.tab));
@@ -421,10 +438,12 @@ function handleUpload(event) {
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
     statusNote.textContent = ["mixer", "trainer"].includes(state.activeTab) ? "Click a point in the image to begin." : "Palette analysis ready.";
     hidePremiumUnlockCard();
+    resetWorkspaceZoom();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", ["mixer", "trainer"].includes(state.activeTab));
     setWorkspaceLoadingState(false);
     window.requestAnimationFrame(() => {
+      renderWorkspaceView();
       previewImage.classList.add("is-loaded");
     });
     extractPalette(previewImage);
@@ -468,10 +487,12 @@ function loadPaletteFromDataUrl(dataUrl) {
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
     statusNote.textContent = "Palette analysis ready.";
     hidePremiumUnlockCard();
+    resetWorkspaceZoom();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", false);
     setWorkspaceLoadingState(false);
     window.requestAnimationFrame(() => {
+      renderWorkspaceView();
       previewImage.classList.add("is-loaded");
     });
     extractPalette(previewImage);
@@ -559,10 +580,12 @@ function loadPaletteFromObjectFile(file) {
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
     statusNote.textContent = "Palette analysis ready.";
     hidePremiumUnlockCard();
+    resetWorkspaceZoom();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", false);
     setWorkspaceLoadingState(false);
     window.requestAnimationFrame(() => {
+      renderWorkspaceView();
       previewImage.classList.add("is-loaded");
     });
     extractPalette(previewImage);
@@ -605,6 +628,10 @@ async function consumeLandingHandoff() {
 
 function handleImageWrapClick(event) {
   if (state.imageLoading) {
+    return;
+  }
+  if (state.suppressClick) {
+    state.suppressClick = false;
     return;
   }
   const hasImage = previewImage.src && previewImage.style.display === "block" && previewImage.naturalWidth;
@@ -655,6 +682,8 @@ function setTab(tab) {
   if (sampleMarker) {
     sampleMarker.classList.toggle("hidden", !((tab === "mixer" || tab === "trainer") && state.sampledPoint));
   }
+  updateSampleMarkerPosition();
+  updateWorkspaceCursor();
 
   if (tab === "palette") {
     hidePremiumUnlockCard();
@@ -779,6 +808,7 @@ function setTab(tab) {
 function beginImageLoad() {
   state.imageLoading = true;
   state.loadErrorMessage = "";
+  resetWorkspaceZoom();
   previewImage.classList.remove("is-loaded");
   previewImage.style.display = "none";
   resetWorkspaceEmptyState();
@@ -800,6 +830,7 @@ function resetWorkspaceEmptyState() {
 function showWorkspaceLoadError(message) {
   state.imageLoading = false;
   state.loadErrorMessage = message;
+  resetWorkspaceZoom();
   previewImage.removeAttribute("src");
   previewImage.classList.remove("is-loaded");
   previewImage.style.display = "none";
@@ -987,6 +1018,7 @@ function resetMixerSampling() {
   if (sampleMarker) {
     sampleMarker.classList.add("hidden");
   }
+  updateSampleMarkerPosition();
   renderM8ColorMixer(null);
   renderMixTrainer();
   if (state.activeTab === "trainer") {
@@ -1078,16 +1110,11 @@ function sampleMixerPoint(event) {
   }
 
   const rect = previewImage.getBoundingClientRect();
-  const wrapRect = imageWrap.getBoundingClientRect();
   const relativeX = clamp((event.clientX - rect.left) / rect.width, 0, 1);
   const relativeY = clamp((event.clientY - rect.top) / rect.height, 0, 1);
 
   state.sampledPoint = { x: relativeX, y: relativeY };
-  if (sampleMarker) {
-    sampleMarker.classList.remove("hidden");
-    sampleMarker.style.left = `${event.clientX - wrapRect.left}px`;
-    sampleMarker.style.top = `${event.clientY - wrapRect.top}px`;
-  }
+  updateSampleMarkerPosition();
 
   state.sampledColor = sampleTargetColor(previewImage, relativeX, relativeY);
   state.mixerResult = buildM8MixerResult(state.sampledColor);
@@ -1112,6 +1139,184 @@ function sampleMixerPoint(event) {
         : "Mixer suggestion ready. Your free Color Mixer uses are finished after this result.";
     }
   }
+}
+
+function hasLoadedImage() {
+  return !!(previewImage.src && previewImage.style.display === "block" && previewImage.naturalWidth);
+}
+
+function getWorkspaceImagePlacement(scale = state.viewScale, offsetX = state.viewOffsetX, offsetY = state.viewOffsetY) {
+  if (!hasLoadedImage()) {
+    return null;
+  }
+
+  const wrapWidth = imageWrap.clientWidth;
+  const wrapHeight = imageWrap.clientHeight;
+  const fitScale = Math.min(wrapWidth / previewImage.naturalWidth, wrapHeight / previewImage.naturalHeight, 1);
+  const baseWidth = Math.max(1, Math.round(previewImage.naturalWidth * fitScale));
+  const baseHeight = Math.max(1, Math.round(previewImage.naturalHeight * fitScale));
+  const width = baseWidth * scale;
+  const height = baseHeight * scale;
+  const originX = (wrapWidth - width) / 2;
+  const originY = (wrapHeight - height) / 2;
+
+  return {
+    wrapWidth,
+    wrapHeight,
+    baseWidth,
+    baseHeight,
+    width,
+    height,
+    originX,
+    originY,
+    x: originX + offsetX,
+    y: originY + offsetY
+  };
+}
+
+function constrainWorkspaceView() {
+  const placement = getWorkspaceImagePlacement();
+  if (!placement) {
+    state.viewOffsetX = 0;
+    state.viewOffsetY = 0;
+    return;
+  }
+
+  const maxOffsetX = Math.max(0, (placement.width - placement.wrapWidth) / 2);
+  const maxOffsetY = Math.max(0, (placement.height - placement.wrapHeight) / 2);
+  state.viewOffsetX = maxOffsetX ? clamp(state.viewOffsetX, -maxOffsetX, maxOffsetX) : 0;
+  state.viewOffsetY = maxOffsetY ? clamp(state.viewOffsetY, -maxOffsetY, maxOffsetY) : 0;
+}
+
+function renderWorkspaceView() {
+  if (!hasLoadedImage()) {
+    return;
+  }
+
+  constrainWorkspaceView();
+  const placement = getWorkspaceImagePlacement();
+  if (!placement) {
+    return;
+  }
+
+  previewImage.style.left = `${placement.x}px`;
+  previewImage.style.top = `${placement.y}px`;
+  previewImage.style.width = `${placement.width}px`;
+  previewImage.style.height = `${placement.height}px`;
+  updateSampleMarkerPosition(placement);
+  updateWorkspaceCursor();
+}
+
+function updateSampleMarkerPosition(placement = getWorkspaceImagePlacement()) {
+  if (!sampleMarker) {
+    return;
+  }
+
+  if (!state.sampledPoint || !placement) {
+    sampleMarker.classList.add("hidden");
+    return;
+  }
+
+  sampleMarker.style.left = `${placement.x + (state.sampledPoint.x * placement.width)}px`;
+  sampleMarker.style.top = `${placement.y + (state.sampledPoint.y * placement.height)}px`;
+  sampleMarker.classList.toggle("hidden", !((state.activeTab === "mixer" || state.activeTab === "trainer") && state.sampledPoint));
+}
+
+function updateWorkspaceCursor() {
+  imageWrap.classList.toggle("zoomed", hasLoadedImage() && state.viewScale > 1 && !state.isDragging);
+  imageWrap.classList.toggle("dragging", state.isDragging);
+}
+
+function resetWorkspaceZoom() {
+  state.viewScale = 1;
+  state.viewOffsetX = 0;
+  state.viewOffsetY = 0;
+  state.isDragging = false;
+  state.dragMoved = false;
+  state.suppressClick = false;
+  updateWorkspaceCursor();
+}
+
+function handleWorkspaceWheel(event) {
+  if (!hasLoadedImage()) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const wrapRect = imageWrap.getBoundingClientRect();
+  const pointerX = event.clientX - wrapRect.left;
+  const pointerY = event.clientY - wrapRect.top;
+  const currentPlacement = getWorkspaceImagePlacement();
+  if (!currentPlacement) {
+    return;
+  }
+
+  const imageX = (pointerX - currentPlacement.x) / state.viewScale;
+  const imageY = (pointerY - currentPlacement.y) / state.viewScale;
+  const zoomFactor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const nextScale = clamp(state.viewScale * zoomFactor, state.minScale, state.maxScale);
+
+  if (nextScale === state.viewScale) {
+    return;
+  }
+
+  const nextPlacement = getWorkspaceImagePlacement(nextScale, 0, 0);
+  state.viewScale = nextScale;
+  state.viewOffsetX = pointerX - nextPlacement.originX - (imageX * nextScale);
+  state.viewOffsetY = pointerY - nextPlacement.originY - (imageY * nextScale);
+  renderWorkspaceView();
+}
+
+function handlePanStart(event) {
+  if (event.button !== 0 || !hasLoadedImage() || state.viewScale <= 1 || event.target !== previewImage) {
+    return;
+  }
+
+  state.isDragging = true;
+  state.dragMoved = false;
+  state.dragStartX = event.clientX;
+  state.dragStartY = event.clientY;
+  state.dragOriginX = state.viewOffsetX;
+  state.dragOriginY = state.viewOffsetY;
+  updateWorkspaceCursor();
+  event.preventDefault();
+}
+
+function handlePanMove(event) {
+  if (!state.isDragging) {
+    return;
+  }
+
+  const deltaX = event.clientX - state.dragStartX;
+  const deltaY = event.clientY - state.dragStartY;
+  if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+    state.dragMoved = true;
+  }
+
+  state.viewOffsetX = state.dragOriginX + deltaX;
+  state.viewOffsetY = state.dragOriginY + deltaY;
+  renderWorkspaceView();
+}
+
+function handlePanEnd() {
+  if (!state.isDragging) {
+    return;
+  }
+
+  state.isDragging = false;
+  if (state.dragMoved) {
+    state.suppressClick = true;
+  }
+  updateWorkspaceCursor();
+}
+
+function handleWorkspaceResize() {
+  if (!hasLoadedImage()) {
+    return;
+  }
+
+  renderWorkspaceView();
 }
 
 function sampleTargetColor(image, relativeX, relativeY) {

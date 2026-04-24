@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patreon Access | M8 Painting Studio</title>
+  <style>
+    :root {
+      --bg: #e8e3d8;
+      --panel: rgba(252, 250, 246, 0.92);
+      --panel-soft: #f3efe6;
+      --ink: #1f1c18;
+      --muted: #69635d;
+      --line: rgba(50, 44, 38, 0.14);
+      --shadow: 0 22px 55px rgba(50, 39, 28, 0.12);
+      --accent: #c96a3d;
+      --success: #3f6b4f;
+      --error: #a04837;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
+        linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .intro {
+      max-width: 56ch;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .top-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .top-nav-link {
+      padding: 0 16px;
+      color: var(--ink);
+      font-size: 0.96rem;
+      line-height: 1;
+      border-right: 1px solid rgba(50, 44, 38, 0.18);
+      transition: color 180ms ease, opacity 180ms ease;
+    }
+
+    .top-nav-link:first-child {
+      padding-left: 0;
+    }
+
+    .top-nav-link:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+
+    .top-nav-link:hover,
+    .top-nav-link.is-current {
+      color: var(--accent);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      transition: color 180ms ease, transform 180ms ease;
+    }
+
+    .back-link:hover {
+      color: var(--ink);
+      transform: translateX(-2px);
+    }
+
+    .back-link svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 28px;
+    }
+
+    .access-wrap {
+      display: grid;
+      justify-items: center;
+    }
+
+    .access-card {
+      width: min(560px, 100%);
+      display: grid;
+      gap: 18px;
+    }
+
+    .access-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.02;
+    }
+
+    .access-subtitle {
+      color: var(--ink);
+      font-size: 1.08rem;
+      line-height: 1.55;
+    }
+
+    .access-copy,
+    .access-helper {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .access-form {
+      display: grid;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .access-input {
+      width: 100%;
+      min-height: 54px;
+      padding: 0 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(59, 52, 45, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      font: inherit;
+      outline: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .access-input:focus {
+      border-color: rgba(201, 106, 61, 0.46);
+      box-shadow: 0 0 0 4px rgba(201, 106, 61, 0.12);
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 0 20px;
+      border-radius: 999px;
+      border: 0;
+      background: #2f2a26;
+      color: #f8f3ec;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      background: #201c19;
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+    }
+
+    .access-message {
+      min-height: 1.6em;
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .access-message.is-success {
+      color: var(--success);
+    }
+
+    .access-message.is-error {
+      color: var(--error);
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding: 20px 24px;
+      border-radius: 22px;
+      border: 1px solid rgba(59, 52, 45, 0.1);
+      background: rgba(255, 255, 255, 0.42);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .footer-copy {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .footer-links {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .footer-link {
+      color: var(--ink);
+      font-size: 0.94rem;
+    }
+
+    .footer-link:hover {
+      color: var(--accent);
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100% - 22px, 1120px);
+        padding-top: 22px;
+      }
+
+      .topbar,
+      .footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .top-nav {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      .footer-links {
+        grid-auto-flow: row;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">M8 Painting Studio</p>
+        <h1 class="access-title">Patreon Access</h1>
+        <p class="intro">Unlock unlimited access to all premium painting tools.</p>
+      </div>
+
+      <nav class="top-nav" aria-label="Tool navigation">
+        <a class="top-nav-link" href="../analysis/index.html">Quick Check</a>
+        <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+        <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
+        <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+        <a class="top-nav-link is-current" href="./index.html" aria-current="page">Patreon Access</a>
+      </nav>
+    </header>
+
+    <a class="back-link" href="../index.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+      Back to Home
+    </a>
+
+    <main class="access-wrap">
+      <section class="card access-card">
+        <div>
+          <p class="eyebrow">Premium Access</p>
+          <h2>Patreon Access</h2>
+        </div>
+
+        <p class="access-subtitle">Unlock unlimited access to all premium painting tools.</p>
+        <p class="access-copy">Enter your Patreon member password to unlock all premium tools.</p>
+
+        <form id="accessForm" class="access-form">
+          <input id="passwordInput" class="access-input" type="password" placeholder="Enter password" autocomplete="current-password">
+          <button id="unlockButton" class="button" type="submit">Unlock Tools</button>
+        </form>
+
+        <p id="accessMessage" class="access-message" aria-live="polite"></p>
+        <p class="access-helper">Patreon members can find the password in the latest Patreon post.</p>
+      </section>
+    </main>
+
+    <footer class="footer" aria-label="Site footer">
+      <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <div class="footer-links">
+        <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
+        <a class="footer-link" href="../terms/index.html">Terms of Use</a>
+        <a class="footer-link" href="../contact/index.html">Contact</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+    const PATREON_PASSWORD = "patreonmate";
+    const REDIRECT_PATH = "../analysis/index.html";
+    const accessForm = document.getElementById("accessForm");
+    const passwordInput = document.getElementById("passwordInput");
+    const unlockButton = document.getElementById("unlockButton");
+    const accessMessage = document.getElementById("accessMessage");
+
+    accessForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const normalizedValue = (passwordInput.value || "").trim().toLowerCase();
+      accessMessage.classList.remove("is-success", "is-error");
+
+      if (normalizedValue === PATREON_PASSWORD) {
+        localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+        accessMessage.textContent = "Access unlocked. You now have unlimited access to all premium tools.";
+        accessMessage.classList.add("is-success");
+        unlockButton.disabled = true;
+        passwordInput.disabled = true;
+
+        window.setTimeout(() => {
+          window.location.href = REDIRECT_PATH;
+        }, 1400);
+        return;
+      }
+
+      accessMessage.textContent = "Wrong password. Please check your Patreon post.";
+      accessMessage.classList.add("is-error");
+    });
+  </script>
+</body>
+</html>
