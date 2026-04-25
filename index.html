@@ -491,9 +491,9 @@
 
     .hero-preview-card {
       display: grid;
-      gap: 12px;
+      gap: 10px;
       min-height: 184px;
-      padding: 16px;
+      padding: 14px;
       border-radius: 22px;
       background: rgba(255, 255, 255, 0.82);
       border: 1px solid rgba(61, 51, 40, 0.08);
@@ -529,6 +529,18 @@
       color: var(--muted);
       font-size: 0.9rem;
       line-height: 1.55;
+    }
+
+    .hero-preview-image {
+      display: block;
+      width: 100%;
+      aspect-ratio: 0.68;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 18px;
+      border: 1px solid rgba(50, 44, 38, 0.08);
+      box-shadow: 0 12px 24px rgba(50, 39, 28, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(221, 214, 203, 0.76));
     }
 
     .hero-value-bars,
@@ -1099,16 +1111,17 @@
       <div class="landing-hero-grid">
         <div class="landing-hero-copy">
           <p class="eyebrow">Painting Tools System</p>
-          <h2 class="landing-hero-title">Paint Smarter Before You Touch the Canvas</h2>
-          <p class="landing-hero-explainer">A set of simple tools that help painters see values, improve composition, and understand color faster.</p>
-          <p class="landing-hero-subheadline">Analyze values, composition, and color with practical tools designed for real painters.</p>
+          <h2 class="landing-hero-title">Stop Guessing. Start Painting With Confidence.</h2>
+          <p class="landing-hero-explainer">Most painting mistakes happen before the first brushstroke. Catch weak values, shaky composition, and confused color before you waste hours on a weak painting.</p>
+          <p class="landing-hero-subheadline">Use focused visual checks built for painters who want stronger decisions before paint touches canvas.</p>
           <div class="button-row">
-            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start with Value Checker</a>
+            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Catch Value Problems Fast</a>
             <a class="button-secondary" href="#tool-system">Explore All Tools</a>
           </div>
           <div class="landing-hero-meta" aria-label="Hero details">
             <span class="landing-hero-note">Built for painters, not generic editing</span>
-            <span class="landing-hero-note">Fast visual checks before paint touches canvas</span>
+            <span class="landing-hero-note">Find weak spots before paint touches canvas</span>
+            <span class="landing-hero-note">Fast visual checks. Better decisions.</span>
           </div>
         </div>
 
@@ -1117,43 +1130,33 @@
             <button id="heroUploadTrigger" class="hero-upload-mock" type="button">
               <span class="hero-upload-icon" aria-hidden="true">+</span>
               <span class="hero-upload-title">Upload your reference</span>
-              <span class="hero-upload-copy">Preview how the studio tools help you read value, structure, and palette at a glance.</span>
+              <span class="hero-upload-copy">Catch value, composition, and color problems before they waste your painting.</span>
             </button>
 
             <div class="hero-preview-grid">
               <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
                 <span class="hero-preview-kicker">Value analysis</span>
-                <h3 class="hero-preview-title">Simplify the big tonal pattern</h3>
-                <div class="hero-value-bars">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <p class="hero-preview-copy">Check whether the main value design reads clearly before small details take over.</p>
+                <h3 class="hero-preview-title">Find weak value structure fast</h3>
+                <img class="hero-preview-image" src="./assets/images/value%20check.png" alt="Value Checker preview">
+                <p class="hero-preview-copy">See if your lights, darks, and midtones are carrying the painting before detail takes over.</p>
               </a>
 
               <a class="hero-preview-card" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">
                 <span class="hero-preview-kicker">Composition preview</span>
-                <h3 class="hero-preview-title">See structure and focal pull faster</h3>
-                <div class="hero-composition-lines"></div>
-                <p class="hero-preview-copy">Use practical guides to study balance, placement, and movement without guesswork.</p>
+                <h3 class="hero-preview-title">Spot composition problems early</h3>
+                <img class="hero-preview-image" src="./assets/images/composition%20check.png" alt="Composition Checker preview">
+                <p class="hero-preview-copy">Check focal placement, movement, and balance before the painting drifts off course.</p>
               </a>
 
               <a class="hero-preview-card" href="./color-studio/index.html">
                 <span class="hero-preview-kicker">Color preview</span>
-                <h3 class="hero-preview-title">Understand palette relationships</h3>
-                <div class="hero-color-swatches">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <p class="hero-preview-copy">Compare temperature shifts and color families with a calmer, more controlled read.</p>
+                <h3 class="hero-preview-title">Stop second-guessing your color</h3>
+                <img class="hero-preview-image" src="./assets/images/Color%20check.png" alt="Color Checker preview">
+                <p class="hero-preview-copy">See how palette structure and temperature shifts support the painting before you start mixing.</p>
               </a>
             </div>
 
-            <p class="hero-microcopy">No guesswork. See your painting before you paint it.</p>
+            <p class="hero-microcopy">No guesswork. Clear visual feedback instantly.</p>
           </div>
         </div>
       </div>
@@ -1189,13 +1192,13 @@
     <input id="landingUploadInput" class="visually-hidden" type="file" accept="image/*">
 
     <section class="card quick-check-banner" aria-label="Quick Check call to action">
-      <h2>Test your painting in seconds</h2>
-      <p class="quick-check-banner-copy">Upload your image and instantly reveal its value, composition, and color structure.</p>
+      <h2>See What&rsquo;s Wrong With Your Painting in Seconds</h2>
+      <p class="quick-check-banner-copy">Upload your image and instantly reveal its value, composition, and color structure before you commit to the canvas.</p>
       <div class="button-row">
         <a class="button" href="./analysis/index.html">Start Quick Check</a>
       </div>
       <div class="quick-check-banner-meta">
-        <p>No signup needed. Works instantly.</p>
+        <p>No guesswork. Clear visual feedback instantly.</p>
         <p>Use your own image or try a demo.</p>
       </div>
     </section>
@@ -1204,24 +1207,24 @@
       <div class="card section-card">
         <div class="section-intro">
           <p class="eyebrow">How It Works</p>
-          <h2>Simple steps, faster visual decisions</h2>
-          <p class="section-copy">Use the tools the same way you would study a reference in the studio: start with the image, isolate the problem, then paint with more clarity.</p>
+          <h2>Simple steps. Better painting decisions.</h2>
+          <p class="section-copy">Check the big problems first, then paint from a stronger foundation instead of fixing avoidable mistakes later.</p>
         </div>
         <div class="steps-grid">
           <div class="step-card">
             <span class="step-number">1</span>
             <h3>Upload your image</h3>
-            <p>Bring in a reference, painting, or study and open it in the tool that matches the problem you want to solve.</p>
+            <p>Bring in a reference, painting, or study and open it inside the tool that matches the problem you want to solve.</p>
           </div>
           <div class="step-card">
             <span class="step-number">2</span>
-            <h3>Analyze values, composition, or color</h3>
-            <p>Use focused tools to strip the image down and see what is really carrying the read.</p>
+            <h3>Check values, composition, and color</h3>
+            <p>Use focused tools to reveal weak value structure, poor focal balance, unclear color harmony, and other hidden issues.</p>
           </div>
           <div class="step-card">
             <span class="step-number">3</span>
-            <h3>Make better painting decisions</h3>
-            <p>Adjust the big structure first so color, edges, and finish rest on a stronger foundation.</p>
+            <h3>Paint with more confidence</h3>
+            <p>Make the big decisions first, so your final painting starts from a stronger foundation.</p>
           </div>
         </div>
       </div>
@@ -1232,11 +1235,11 @@
           <h2>Most painting problems show up early</h2>
         </div>
         <div class="matter-list">
-          <div class="matter-item">Most painting problems are value problems first, even when they appear to be color issues.</div>
-          <div class="matter-item">Composition issues are easier to see when guides and overlays reveal spacing, pressure, and movement.</div>
-          <div class="matter-item">Color works better when the value structure is strong enough to carry the image on its own.</div>
+          <div class="matter-item">Weak values often make a painting look flat before the details even matter.</div>
+          <div class="matter-item">Poor composition can pull the viewer&rsquo;s eye away from the focal point.</div>
+          <div class="matter-item">Color choices work better when the value structure is strong enough to carry them.</div>
         </div>
-        <p class="micro-trust">Built for painters who want fast clarity before committing paint.</p>
+        <p class="micro-trust">Catch the problem early, and the whole painting gets easier.</p>
       </div>
     </section>
 
@@ -1245,7 +1248,7 @@
         <div class="tool-heading">
           <p class="eyebrow">Tool One</p>
           <h2>Value Checker</h2>
-          <p class="subheadline">Study value structure, simplify tonal masses, and better understand how the painting is really working before small value errors settle in.</p>
+          <p class="subheadline">Find Your Biggest Value Mistakes Instantly</p>
         </div>
 
         <div class="button-row">
@@ -1255,22 +1258,23 @@
 
         <div>
           <p class="feature-label">Key tools:</p>
+          <p class="section-copy">Check whether your lights, darks, and midtones are carrying the painting before small details distract you.</p>
         </div>
 
         <div class="features">
           <div class="feature">
             <h3 class="feature-title">Value Picker</h3>
-            <p class="feature-copy">Sample a grayscale image and place any point on a 20-step painter's value scale.</p>
+            <p class="feature-copy">Pick any point in your image and compare it to a clear grayscale value scale.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">7-Value Map</h3>
-            <p class="feature-copy">Reduce a reference into seven tonal bands to reveal the big value design fast.</p>
+            <p class="feature-copy">Reduce your reference into seven tonal groups so the big light and shadow pattern becomes obvious.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Compare Values</h3>
-            <p class="feature-copy">Compare reference and painting with an overlay that shows lighter, darker, and matching passages.</p>
+            <p class="feature-copy">Compare your painting against your reference and see what is too light, too dark, or off.</p>
           </div>
         </div>
 
@@ -1280,7 +1284,7 @@
         <div class="tool-heading">
           <p class="eyebrow">Tool Two</p>
           <h2>Composition Checker</h2>
-          <p class="subheadline">Study composition through multiple visual guides and overlays. Analyze structure, balance, movement, and focal flow using tools like grids, diagonals, and dynamic systems.</p>
+          <p class="subheadline">Fix Your Composition Before It Ruins the Painting</p>
         </div>
 
         <div class="button-row">
@@ -1289,27 +1293,28 @@
 
         <div>
           <p class="feature-label">Key tools:</p>
+          <p class="section-copy">Use visual guides to see focal placement, movement, balance, and structural problems before they become hard to fix.</p>
         </div>
 
         <div class="features">
           <div class="feature">
             <h3 class="feature-title">Basic Guides</h3>
-            <p class="feature-copy">Use essentials like the rule of thirds and grid overlays to check placement, spacing, and structural balance.</p>
+            <p class="feature-copy">Use rule of thirds, center lines, grids, and other overlays to check placement and balance.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Directional Tools</h3>
-            <p class="feature-copy">Study diagonals and visual movement to understand how the eye travels through the image.</p>
+            <p class="feature-copy">Study movement, visual direction, and how the viewer&rsquo;s eye travels through the image.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Golden Spiral</h3>
-            <p class="feature-copy">Test focal flow and visual rhythm with a true spiral construction overlay that can be positioned over the artwork.</p>
+            <p class="feature-copy">Use a golden ratio spiral overlay to check visual rhythm and focal placement.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Advanced Analysis</h3>
-            <p class="feature-copy">Explore more advanced systems and overlays for balance, dynamic structure, and compositional pressure.</p>
+            <p class="feature-copy">Explore balance, structure, movement, and compositional pressure with advanced overlays.</p>
           </div>
         </div>
       </div>
@@ -1318,7 +1323,7 @@
         <div class="tool-heading">
           <p class="eyebrow">Tool Three</p>
           <h2>Color Checker</h2>
-          <p class="subheadline">Explore color relationships, palette structure, and temperature shifts. Understand how colors interact and build stronger, more controlled palettes.</p>
+          <p class="subheadline">Stop Guessing Colors. Build Stronger Harmony.</p>
         </div>
 
         <div class="button-row">
@@ -1327,27 +1332,28 @@
 
         <div>
           <p class="feature-label">Key tools:</p>
+          <p class="section-copy">Extract palettes, study relationships, and see how colors work together before you start mixing paint.</p>
         </div>
 
         <div class="features">
           <div class="feature">
             <h3 class="feature-title">Palette Structure</h3>
-            <p class="feature-copy">Simplify complex palettes and study how color families are organized across the painting.</p>
+            <p class="feature-copy">Extract key colors and see how the palette is organized across the painting.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Color Relationships</h3>
-            <p class="feature-copy">Explore temperature, contrast, and interaction so color choices feel more intentional and unified.</p>
+            <p class="feature-copy">Check temperature shifts, contrast, saturation, and how colors support each other.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Color Harmony</h3>
-            <p class="feature-copy">See how the palette groups into harmony schemes and understand how the painting holds together chromatically.</p>
+            <p class="feature-copy">See whether your palette leans monochromatic, analogous, complementary, or another harmony type.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">M8 Color Mixer</h3>
-            <p class="feature-copy">Sample a color from the image and study how M8 would most likely mix it in oil with a practical limited palette.</p>
+            <p class="feature-copy">Use the extracted color as a starting point and get practical paint-mixing suggestions based on a limited painter&rsquo;s palette.</p>
           </div>
         </div>
       </div>
