@@ -53,6 +53,11 @@
 
     <main class="layout">
       <section class="card game-card">
+        <a class="back-button" href="../index.html" aria-label="Back to landing page">
+          <span aria-hidden="true">&larr;</span>
+          <span>Back</span>
+        </a>
+
         <div class="card-head">
           <div>
             <p class="section-label">Flight</p>
@@ -76,12 +81,16 @@
           </div>
           <div class="hud-item">
             <span class="hud-label">Power</span>
-            <span id="powerValue" class="hud-value">â€”</span>
+            <span id="powerValue" class="hud-value">&mdash;</span>
           </div>
         </div>
 
         <div class="game-shell">
           <canvas id="gameCanvas" width="1040" height="560" aria-label="Flying Brush game"></canvas>
+          <div id="checkpointBanner" class="checkpoint-banner hidden" aria-live="polite">
+            <p id="checkpointTitle" class="checkpoint-title">Checkpoint 50!</p>
+            <p id="checkpointCopy" class="checkpoint-copy">Ovace. Keep flying.</p>
+          </div>
           <div id="gameOverlay" class="game-overlay">
             <div class="overlay-card">
               <p class="section-label">Flying Brush</p>
@@ -97,6 +106,7 @@
                   <span id="overlayBest" class="hud-value">0</span>
                 </div>
               </div>
+              <div id="overlayAchievements" class="overlay-achievements hidden"></div>
               <button id="startButton" class="button" type="button">Start Flight</button>
             </div>
           </div>

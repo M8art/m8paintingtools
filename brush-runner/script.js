@@ -9,7 +9,11 @@ const overlayTitle = document.getElementById("overlayTitle");
 const overlayMessage = document.getElementById("overlayMessage");
 const overlayScore = document.getElementById("overlayScore");
 const overlayBest = document.getElementById("overlayBest");
+const overlayAchievements = document.getElementById("overlayAchievements");
 const startButton = document.getElementById("startButton");
+const checkpointBanner = document.getElementById("checkpointBanner");
+const checkpointTitle = document.getElementById("checkpointTitle");
+const checkpointCopy = document.getElementById("checkpointCopy");
 
 const BEST_KEY = "m8-flying-brush-best-score";
 const PLAYER_X = 220;
@@ -34,6 +38,8 @@ const DOUBLE_SCORE_DURATION = 8;
 const BONUS_CHANCE = 0.12;
 const PERFECT_WINDOW = 18;
 const NEAR_MISS_EDGE = 20;
+const CHECKPOINT_INTERVAL = 50;
+const CHECKPOINT_DURATION = 1;
 const PALETTES = [
   ["#b55d4c", "#577a9b", "#b38a4a", "#6c4f3d", "#8a6f53", "#7f5f86"],
   ["#8c5f44", "#4c7386", "#c49a56", "#5b473f", "#9a6b5a", "#6f6f8d"],
@@ -85,12 +91,21 @@ const state = {
   spawnTimer: SPAWN_DELAY,
   rhythmIndex: 0,
   streak: 0,
+  pipesCleared: 0,
+  perfectStreak: 0,
+  comboMultiplier: 1,
+  bestComboMultiplier: 1,
+  perfectPasses: 0,
+  nearMisses: 0,
+  checkpointsHit: 0,
   paletteIndex: 0,
   paletteBlend: 1,
   targetPaletteIndex: 0,
   screenShake: 0,
   invincibleTimer: 0,
   doubleScoreTimer: 0,
+  checkpointTimer: 0,
+  checkpointValue: 0,
   backgroundScroll: 0,
   cycleTime: 0
 };
@@ -139,12 +154,21 @@ function startFlight() {
   state.spawnTimer = 0.9;
   state.rhythmIndex = 0;
   state.streak = 0;
+  state.pipesCleared = 0;
+  state.perfectStreak = 0;
+  state.comboMultiplier = 1;
+  state.bestComboMultiplier = 1;
+  state.perfectPasses = 0;
+  state.nearMisses = 0;
+  state.checkpointsHit = 0;
   state.paletteIndex = 0;
   state.paletteBlend = 1;
   state.targetPaletteIndex = 0;
   state.screenShake = 0;
   state.invincibleTimer = 0;
   state.doubleScoreTimer = 0;
+  state.checkpointTimer = 0;
+  state.checkpointValue = 0;
   state.backgroundScroll = 0;
   state.cycleTime = 0;
 
@@ -159,6 +183,9 @@ function startFlight() {
   overlayScore.textContent = "0";
   overlayBest.textContent = String(state.best);
   overlay.classList.add("hidden");
+  checkpointBanner.classList.add("hidden");
+  overlayAchievements.classList.add("hidden");
+  overlayAchievements.innerHTML = "";
   startButton.textContent = "Restart Flight";
 
   requestAnimationFrame(gameLoop);
@@ -210,16 +237,18 @@ function gameLoop(timestamp) {
 }
 
 function update(delta) {
-  state.speed += delta * SPEED_GROWTH;
-  state.paletteBlend = Math.min(1, state.paletteBlend + delta * 0.9);
+  const scaledDelta = delta;
+  state.speed += scaledDelta * SPEED_GROWTH;
+  state.paletteBlend = Math.min(1, state.paletteBlend + scaledDelta * 0.9);
   state.screenShake = Math.max(0, state.screenShake - delta * 6);
   state.invincibleTimer = Math.max(0, state.invincibleTimer - delta);
   state.doubleScoreTimer = Math.max(0, state.doubleScoreTimer - delta);
-  state.backgroundScroll += state.speed * delta * 0.16;
-  state.cycleTime += delta;
+  state.checkpointTimer = Math.max(0, state.checkpointTimer - delta);
+  state.backgroundScroll += state.speed * scaledDelta * 0.16;
+  state.cycleTime += scaledDelta;
   player.lastY = player.y;
-  player.velocityY += BASE_GRAVITY * delta;
-  player.y += player.velocityY * delta;
+  player.velocityY += BASE_GRAVITY * scaledDelta;
+  player.y += player.velocityY * scaledDelta;
 
   if (player.y - player.radius <= 0) {
     endFlight("ceiling");
@@ -231,7 +260,7 @@ function update(delta) {
     return;
   }
 
-  state.spawnTimer -= delta;
+  state.spawnTimer -= scaledDelta;
   if (state.spawnTimer <= 0) {
     spawnPipePair();
     const rhythm = RHYTHM_PATTERN[state.rhythmIndex % RHYTHM_PATTERN.length];
@@ -250,7 +279,7 @@ function update(delta) {
   state.trail = state.trail.filter((point) => point.alpha > 0.01);
 
   for (const pipe of state.pipes) {
-    pipe.x -= state.speed * delta;
+    pipe.x -= state.speed * scaledDelta;
 
     if (!pipe.passed && pipe.x + PIPE_WIDTH < player.x) {
       pipe.passed = true;
@@ -267,8 +296,8 @@ function update(delta) {
 
   state.pipes = state.pipes.filter((pipe) => pipe.x + PIPE_WIDTH > -40);
   state.stars.forEach((star) => {
-    star.x -= state.speed * delta;
-    star.spin += delta * 5.4;
+    star.x -= state.speed * scaledDelta;
+    star.spin += scaledDelta * 5.4;
   });
   state.stars = state.stars.filter((star) => star.x + star.radius > -30);
   for (let index = state.stars.length - 1; index >= 0; index -= 1) {
@@ -279,9 +308,9 @@ function update(delta) {
     }
   }
   state.bonuses.forEach((bonus) => {
-    bonus.x -= state.speed * delta;
-    bonus.spin += delta * 3.8;
-    bonus.float += delta * 4.4;
+    bonus.x -= state.speed * scaledDelta;
+    bonus.spin += scaledDelta * 3.8;
+    bonus.float += scaledDelta * 4.4;
   });
   state.bonuses = state.bonuses.filter((bonus) => bonus.x + bonus.radius > -40);
   for (let index = state.bonuses.length - 1; index >= 0; index -= 1) {
@@ -294,19 +323,22 @@ function update(delta) {
   state.effects.forEach((effect) => {
     effect.life = Math.max(0, effect.life - delta);
     effect.particles.forEach((particle) => {
-      particle.x += particle.vx * delta;
-      particle.y += particle.vy * delta;
-      particle.alpha = Math.max(0, particle.alpha - delta * 1.8);
-      particle.radius = Math.max(1, particle.radius - delta * 3.2);
+      particle.vy += (particle.ay || 0) * scaledDelta;
+      particle.x += particle.vx * scaledDelta;
+      particle.y += particle.vy * scaledDelta;
+      particle.rotation = (particle.rotation || 0) + (particle.spin || 0) * scaledDelta;
+      particle.alpha = Math.max(0, particle.alpha - scaledDelta * 1.8);
+      particle.radius = Math.max(1, particle.radius - scaledDelta * 3.2);
     });
   });
   state.effects = state.effects.filter((effect) => effect.life > 0);
   state.feedbacks.forEach((feedback) => {
-    feedback.life = Math.max(0, feedback.life - delta);
-    feedback.y -= delta * 24;
-    feedback.alpha = Math.max(0, feedback.alpha - delta * 1.2);
+    feedback.life = Math.max(0, feedback.life - scaledDelta);
+    feedback.y -= scaledDelta * 24;
+    feedback.alpha = Math.max(0, feedback.alpha - scaledDelta * 1.2);
   });
   state.feedbacks = state.feedbacks.filter((feedback) => feedback.life > 0);
+  checkpointBanner.classList.toggle("hidden", state.checkpointTimer <= 0);
   speedValue.textContent = `${(state.speed / BASE_SPEED).toFixed(1)}x`;
   powerValue.textContent = getPowerStatusText();
 }
@@ -347,6 +379,7 @@ function spawnPipePair() {
 }
 
 function handlePipePass(pipe) {
+  state.pipesCleared += 1;
   const gapCenter = pipe.topHeight + pipe.gapHeight * 0.5;
   const centerDistance = Math.abs(player.y - gapCenter);
   const topClearance = Math.abs((player.y - player.radius) - pipe.topHeight);
@@ -358,13 +391,26 @@ function handlePipePass(pipe) {
   if (perfectPass) {
     scoreGain += 1;
     state.streak += 1;
+    state.perfectStreak += 1;
+    state.perfectPasses += 1;
+    state.comboMultiplier = 1 + Math.min(4, Math.floor(state.perfectStreak / 2)) * 0.5;
+    state.bestComboMultiplier = Math.max(state.bestComboMultiplier, state.comboMultiplier);
+    scoreGain = Math.round(scoreGain * state.comboMultiplier);
     addFeedback("Perfect", player.x + 48, player.y - 28, pipe.color);
+    if (state.comboMultiplier > 1) {
+      addFeedback(`Combo x${state.comboMultiplier.toFixed(1)}`, player.x + 68, player.y - 56, "#f0c96b");
+    }
   } else {
     state.streak = Math.max(0, state.streak - 0.25);
+    state.perfectStreak = 0;
+    state.comboMultiplier = 1;
   }
 
   if (nearMiss && !perfectPass) {
+    state.nearMisses += 1;
+    state.screenShake = Math.max(state.screenShake, 4);
     addFeedback("Close!", player.x + 42, player.y - 20, shadeColor(pipe.color, -18));
+    addFeedback("Close call", player.x + 54, player.y - 48, "#f7f4ee");
   }
 
   if (state.doubleScoreTimer > 0) {
@@ -382,6 +428,11 @@ function handlePipePass(pipe) {
     state.paletteIndex = state.targetPaletteIndex;
     state.targetPaletteIndex = nextPaletteIndex;
     state.paletteBlend = 0;
+  }
+
+  if (state.pipesCleared % CHECKPOINT_INTERVAL === 0) {
+    state.checkpointsHit += 1;
+    triggerCheckpointCelebration(state.pipesCleared, pipe.color);
   }
 }
 
@@ -427,6 +478,7 @@ function endFlight(reason = "fall") {
   overlayMessage.textContent = `${gameOverCopy.message} You reached ${state.score} clean passes. Press Space, Up Arrow, tap, or use the button to fly again.`;
   overlayScore.textContent = String(state.score);
   overlayBest.textContent = String(state.best);
+  renderRunAchievements();
   overlay.classList.remove("hidden");
   drawScene();
 }
@@ -732,10 +784,16 @@ function drawPassEffects() {
     effect.particles.forEach((particle) => {
       ctx.save();
       ctx.globalAlpha = particle.alpha;
-      ctx.fillStyle = hexToRgba(effect.color, 1);
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = particle.color || hexToRgba(effect.color, 1);
+      if (particle.shape === "rect") {
+        ctx.translate(particle.x, particle.y);
+        ctx.rotate(particle.rotation || 0);
+        ctx.fillRect(-particle.radius * 0.7, -particle.radius * 0.45, particle.radius * 1.4, particle.radius * 0.9);
+      } else {
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
     });
   });
@@ -811,6 +869,51 @@ function spawnCrashEffect(x, y, color) {
   });
 }
 
+function triggerCheckpointCelebration(checkpointValue, color) {
+  state.checkpointTimer = CHECKPOINT_DURATION;
+  state.checkpointValue = checkpointValue;
+  checkpointTitle.textContent = `Checkpoint ${checkpointValue}!`;
+  checkpointCopy.textContent = "Ovace. Keep flying.";
+  checkpointBanner.classList.remove("hidden");
+  checkpointBanner.style.animation = "none";
+  checkpointBanner.offsetHeight;
+  checkpointBanner.style.animation = "";
+  addFeedback("Checkpoint!", player.x + 56, player.y - 62, "#f0c96b");
+  addFeedback("Crowd goes wild!", player.x + 74, player.y - 22, "#f7f4ee");
+  spawnCheckpointConfetti(color);
+  playCheckpointSound();
+}
+
+function spawnCheckpointConfetti(color) {
+  const confettiPalette = ["#f0c96b", "#d36d3b", "#ffffff", color, "#8aa5c4", "#b55d4c"];
+  const particles = Array.from({ length: 60 }, (_, index) => {
+    const fromLeft = index % 2 === 0;
+    const x = fromLeft ? randomBetween(70, canvas.width * 0.38) : randomBetween(canvas.width * 0.62, canvas.width - 70);
+    const y = randomBetween(40, 140);
+    const angle = fromLeft ? randomBetween(-1.25, -0.4) : randomBetween(-2.74, -1.9);
+    const speed = randomBetween(80, 190);
+    return {
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      ay: 220,
+      radius: randomBetween(5, 10),
+      alpha: randomBetween(0.54, 0.92),
+      rotation: Math.random() * Math.PI * 2,
+      spin: randomBetween(-7, 7),
+      shape: "rect",
+      color: confettiPalette[index % confettiPalette.length]
+    };
+  });
+
+  state.effects.push({
+    color,
+    life: 1.1,
+    particles
+  });
+}
+
 function addTrailPoints() {
   return;
 }
@@ -826,20 +929,48 @@ function addFeedback(text, x, y, color) {
   });
 }
 
+function renderRunAchievements() {
+  const items = [
+    `Pipes cleared: ${state.pipesCleared}`,
+    `Perfect passes: ${state.perfectPasses}`,
+    `Best combo: x${state.bestComboMultiplier.toFixed(1)}`
+  ];
+
+  if (state.checkpointsHit > 0) {
+    items.push(`Checkpoints hit: ${state.checkpointsHit}`);
+  }
+
+  if (state.nearMisses > 0) {
+    items.push(`Near misses: ${state.nearMisses}`);
+  }
+
+  overlayAchievements.innerHTML = items
+    .slice(0, 4)
+    .map((item) => `<p class="overlay-achievement">${item}</p>`)
+    .join("");
+  overlayAchievements.classList.remove("hidden");
+}
+
 function getPowerStatusText() {
-  if (state.invincibleTimer > 0 && state.doubleScoreTimer > 0) {
-    return `Star ${state.invincibleTimer.toFixed(1)}s | 2x ${state.doubleScoreTimer.toFixed(1)}s`;
+  const parts = [];
+
+  if (state.comboMultiplier > 1) {
+    parts.push(`Combo x${state.comboMultiplier.toFixed(1)}`);
   }
 
   if (state.invincibleTimer > 0) {
-    return `Star ${state.invincibleTimer.toFixed(1)}s`;
+    parts.push(`Star ${state.invincibleTimer.toFixed(1)}s`);
   }
 
   if (state.doubleScoreTimer > 0) {
-    return `2x ${state.doubleScoreTimer.toFixed(1)}s`;
+    parts.push(`2x ${state.doubleScoreTimer.toFixed(1)}s`);
   }
 
-  return "â€”";
+  if (parts.length) {
+    return parts.join(" | ");
+  }
+
+  return "—";
 }
 
 function getCycleBlend() {
@@ -1104,4 +1235,28 @@ function playStarSound() {
   gain.connect(audio.destination);
   oscillator.start(now);
   oscillator.stop(now + 0.18);
+}
+
+function playCheckpointSound() {
+  const audio = getAudioContext();
+  if (!audio) {
+    return;
+  }
+
+  const now = audio.currentTime;
+  [0, 0.08, 0.16].forEach((offset, index) => {
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+    oscillator.type = index === 2 ? "triangle" : "sine";
+    const base = [660, 830, 990][index];
+    oscillator.frequency.setValueAtTime(base, now + offset);
+    oscillator.frequency.exponentialRampToValueAtTime(base * 1.04, now + offset + 0.14);
+    gain.gain.setValueAtTime(0.0001, now + offset);
+    gain.gain.exponentialRampToValueAtTime(0.06, now + offset + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.22);
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+    oscillator.start(now + offset);
+    oscillator.stop(now + offset + 0.24);
+  });
 }
