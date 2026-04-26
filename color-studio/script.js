@@ -362,7 +362,7 @@ function hidePremiumUnlockCard() {
 function showUnlockPaywall(context = {}) {
   state.premiumUnlockVisible = true;
   if (premiumUnlockTitle) {
-    premiumUnlockTitle.textContent = context.title || "We Found Issues in Your Painting";
+    premiumUnlockTitle.textContent = context.title || "Unlock All Tools";
   }
   if (premiumUnlockText) {
     premiumUnlockText.textContent = GLOBAL_UNLOCK_BODY;
@@ -652,9 +652,9 @@ function handleImageWrapClick(event) {
 function getUploadLockContext() {
   if (state.activeTab === "trainer" && !isUnlocked()) {
     return {
-      title: "We Found Issues in Your Painting",
+      title: "Unlock All Tools",
       note: "One-time unlock — $10",
-      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "You’ve reached your free analysis limit."
     };
   }
@@ -663,7 +663,7 @@ function getUploadLockContext() {
     return {
       title: "Free Color Mixer limit reached",
       note: "One-time unlock — $10",
-      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "You’ve reached your free analysis limit."
     };
   }
@@ -780,7 +780,7 @@ function setTab(tab) {
       ? "Preparing analysis..."
       : state.loadErrorMessage || (isUnlocked()
         ? (state.sampledColor ? "Choose your pigments, then check your mix." : "Click a point in the image to begin training.")
-        : "Your analysis is ready. Unlock the full result to see the problems clearly.");
+        : "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.");
     return;
   }
 
@@ -1091,9 +1091,9 @@ function sampleMixerPoint(event) {
 
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
-      title: "We Found Issues in Your Painting",
+      title: "Unlock All Tools",
       note: "One-time unlock — $10",
-      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "You’ve reached your free analysis limit."
     });
     return;
@@ -1103,7 +1103,7 @@ function sampleMixerPoint(event) {
     showUnlockPaywall({
       title: "Free Color Mixer limit reached",
       note: "One-time unlock — $10",
-      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "You’ve reached your free analysis limit."
     });
     return;
@@ -1775,7 +1775,7 @@ function renderMixTrainer() {
       : state.activeTab === "trainer"
         ? "Upload an image, then click the exact passage you want to train on."
         : "Switch to Mix Trainer and click a passage in the image to begin.")
-    : "Your analysis is ready. Unlock the full result to see the problems clearly.";
+    : "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
 
   trainerSwatch.style.background = hasSample ? state.sampledColor.rgb : "linear-gradient(180deg, rgba(255,255,255,0.42), rgba(220,214,203,0.8))";
   trainerValue.textContent = hasSample ? `${state.sampledColor.valueStep} / 20` : "--";
@@ -1889,9 +1889,9 @@ function toggleTrainerPigment(name) {
 function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
-      title: "We Found Issues in Your Painting",
+      title: "Unlock All Tools",
       note: "One-time unlock — $10",
-      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "You’ve reached your free analysis limit."
     });
     return;
