@@ -5,3 +5,13 @@
   for = "/.well-known/*"
   [headers.values]
     Content-Type = "application/json"
+
+[[redirects]]
+  from = "/.well-known/*"
+  to = "/.well-known/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
