@@ -201,7 +201,7 @@ const OVERLAY_COLOR_NAMES = {
 };
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
-const GLOBAL_UNLOCK_BODY = "One payment unlocks all M8 Painting Tools. Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is separate.";
+const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -347,9 +347,9 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = `Unlock full access to use ${actionName}.`;
-  workspaceHint.textContent = "Advanced tools are visible for preview. Real advanced actions unlock with one full-app payment.";
-  showPremiumLimitToast(`Advanced action locked. Tap Unlock All Tools to use ${actionName}.`);
+  advancedStatusNote.textContent = "You’ve reached your free analysis limit.";
+  workspaceHint.textContent = "Your analysis is ready. Unlock the full result to see the problems clearly.";
+  showPremiumLimitToast("You’ve reached your free analysis limit.");
 }
 
 function requireUnlock(actionName = "advanced composition tools") {

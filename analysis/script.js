@@ -182,8 +182,8 @@ updateAnalysisAccessUI();
 updateOverlayColorUI();
 
 if (justUnlockedFromStripe) {
-  updateStatusMessage("Unlimited access unlocked.", true);
-  workspaceHint.textContent = "Unlimited access unlocked.";
+  updateStatusMessage("Unlocked forever. You now have full access.", true);
+  workspaceHint.textContent = "Unlocked forever. You now have full access.";
 }
 
 uploadZone.addEventListener("click", () => {
@@ -492,7 +492,7 @@ function updateAnalysisAccessUI() {
   }
 
   if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
-    runAnalysisButton.textContent = "Free analysis used. Come back tomorrow.";
+    runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
     runAnalysisButton.disabled = true;
     freeLimitHelper.classList.remove("hidden");
     return;
@@ -1946,9 +1946,9 @@ function showLockedAnalysisState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  updateStatusMessage("Unlock full access to continue.");
-  workspaceHint.textContent = "Your 3 free full checks in the last 24 hours are used. One payment unlocks the full app.";
-  showPremiumLimitToast("Your 3 free checks in the last 24 hours are used. Tap Unlock All Tools to continue.");
+  updateStatusMessage("You’ve reached your free analysis limit.");
+  workspaceHint.textContent = "Your analysis is ready. Unlock the full result to see the problems clearly.";
+  showPremiumLimitToast("You’ve reached your free analysis limit.");
 }
 
 function showFreeLimitReachedState() {
@@ -1956,10 +1956,11 @@ function showFreeLimitReachedState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  runAnalysisButton.textContent = "Free analysis used. Come back tomorrow.";
+  runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
   runAnalysisButton.disabled = true;
   freeLimitHelper.classList.remove("hidden");
-  updateStatusMessage("Your next free analysis will be available in 24 hours.");
+  updateStatusMessage("You’ve reached your free analysis limit.");
+  workspaceHint.textContent = "Your analysis is ready. Unlock the full result to see the problems clearly.";
 }
 
 function renderScoreBreakdown(items) {

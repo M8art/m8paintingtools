@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#e8e3d8">
+  <meta name="background-color" content="#e8e3d8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="M8 Painting Tools">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/pwa/apple-touch-icon.png">
   <title>M8 Painting Studio</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
@@ -1112,15 +1120,15 @@
         <div class="landing-hero-copy">
           <p class="eyebrow">Painting Tools System</p>
           <h2 class="landing-hero-title">Stop Guessing. Start Painting With Confidence.</h2>
-          <p class="landing-hero-explainer">Most painting mistakes happen before the first brushstroke. Catch weak values, shaky composition, and confused color before you waste hours on a weak painting.</p>
-          <p class="landing-hero-subheadline">Use focused visual checks built for painters who want stronger decisions before paint touches canvas.</p>
+          <p class="landing-hero-explainer">Most paintings fail before the first brushstroke - this shows you exactly why.</p>
+          <p class="landing-hero-subheadline">Instantly check your values, composition, and color before you waste hours on a painting that doesn&rsquo;t work.</p>
           <div class="button-row">
-            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Catch Value Problems Fast</a>
+            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start Quick Check</a>
             <a class="button-secondary" href="#tool-system">Explore All Tools</a>
           </div>
           <div class="landing-hero-meta" aria-label="Hero details">
-            <span class="landing-hero-note">Built for painters, not generic editing</span>
-            <span class="landing-hero-note">Find weak spots before paint touches canvas</span>
+            <span class="landing-hero-note">Built from real studio practice - not theory</span>
+            <span class="landing-hero-note">Find problems before paint touches canvas</span>
             <span class="landing-hero-note">Fast visual checks. Better decisions.</span>
           </div>
         </div>
@@ -1129,30 +1137,30 @@
           <div class="hero-preview-frame">
             <button id="heroUploadTrigger" class="hero-upload-mock" type="button">
               <span class="hero-upload-icon" aria-hidden="true">+</span>
-              <span class="hero-upload-title">Upload your reference</span>
-              <span class="hero-upload-copy">Catch value, composition, and color problems before they waste your painting.</span>
+              <span class="hero-upload-title">Upload your painting</span>
+              <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, and color - before you touch the canvas.</span>
             </button>
 
             <div class="hero-preview-grid">
               <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
                 <span class="hero-preview-kicker">Value analysis</span>
-                <h3 class="hero-preview-title">Find weak value structure fast</h3>
+                <h3 class="hero-preview-title">Fix flat paintings caused by bad values</h3>
                 <img class="hero-preview-image" src="./assets/images/value%20check.png" alt="Value Checker preview">
-                <p class="hero-preview-copy">See if your lights, darks, and midtones are carrying the painting before detail takes over.</p>
+                <p class="hero-preview-copy">Check whether your lights, shadows, and midtones are actually working before details take over.</p>
               </a>
 
               <a class="hero-preview-card" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">
                 <span class="hero-preview-kicker">Composition preview</span>
-                <h3 class="hero-preview-title">Spot composition problems early</h3>
+                <h3 class="hero-preview-title">Fix your composition before it ruins the painting</h3>
                 <img class="hero-preview-image" src="./assets/images/composition%20check.png" alt="Composition Checker preview">
-                <p class="hero-preview-copy">Check focal placement, movement, and balance before the painting drifts off course.</p>
+                <p class="hero-preview-copy">See focal placement, movement, and balance before they become hard to fix.</p>
               </a>
 
               <a class="hero-preview-card" href="./color-studio/index.html">
                 <span class="hero-preview-kicker">Color preview</span>
-                <h3 class="hero-preview-title">Stop second-guessing your color</h3>
+                <h3 class="hero-preview-title">Stop guessing colors. Know what to mix.</h3>
                 <img class="hero-preview-image" src="./assets/images/Color%20check.png" alt="Color Checker preview">
-                <p class="hero-preview-copy">See how palette structure and temperature shifts support the painting before you start mixing.</p>
+                <p class="hero-preview-copy">Extract palettes and understand how colors work together before you start mixing paint.</p>
               </a>
             </div>
 
@@ -1208,18 +1216,18 @@
         <div class="section-intro">
           <p class="eyebrow">How It Works</p>
           <h2>Simple steps. Better painting decisions.</h2>
-          <p class="section-copy">Check the big problems first, then paint from a stronger foundation instead of fixing avoidable mistakes later.</p>
+          <p class="section-copy">Make the big decisions first so your painting starts from a stronger foundation.</p>
         </div>
         <div class="steps-grid">
           <div class="step-card">
             <span class="step-number">1</span>
             <h3>Upload your image</h3>
-            <p>Bring in a reference, painting, or study and open it inside the tool that matches the problem you want to solve.</p>
+            <p>Bring in a reference, study, or painting and open it in the tool that matches your problem.</p>
           </div>
           <div class="step-card">
             <span class="step-number">2</span>
             <h3>Check values, composition, and color</h3>
-            <p>Use focused tools to reveal weak value structure, poor focal balance, unclear color harmony, and other hidden issues.</p>
+            <p>Reveal weak value structure, poor focal balance, and unclear color relationships.</p>
           </div>
           <div class="step-card">
             <span class="step-number">3</span>
@@ -1235,9 +1243,9 @@
           <h2>Most painting problems show up early</h2>
         </div>
         <div class="matter-list">
-          <div class="matter-item">Weak values often make a painting look flat before the details even matter.</div>
-          <div class="matter-item">Poor composition can pull the viewer&rsquo;s eye away from the focal point.</div>
-          <div class="matter-item">Color choices work better when the value structure is strong enough to carry them.</div>
+          <div class="matter-item">Weak values make paintings look flat before details even matter.</div>
+          <div class="matter-item">Poor composition pulls the viewer&rsquo;s eye away from the focal point.</div>
+          <div class="matter-item">Color only works when the value structure underneath is solid.</div>
         </div>
         <p class="micro-trust">Catch the problem early, and the whole painting gets easier.</p>
       </div>
@@ -1252,13 +1260,13 @@
         </div>
 
         <div class="button-row">
-          <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Open Value Checker</a>
+          <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Fix My Values</a>
           <a class="button-secondary" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer">Watch Demo</a>
         </div>
 
         <div>
           <p class="feature-label">Key tools:</p>
-          <p class="section-copy">Check whether your lights, darks, and midtones are carrying the painting before small details distract you.</p>
+          <p class="section-copy">Check whether your lights, shadows, and midtones are actually working before details take over.</p>
         </div>
 
         <div class="features">
@@ -1269,12 +1277,12 @@
 
           <div class="feature">
             <h3 class="feature-title">7-Value Map</h3>
-            <p class="feature-copy">Reduce your reference into seven tonal groups so the big light and shadow pattern becomes obvious.</p>
+            <p class="feature-copy">Reduce your image into simple tonal groups so the big light and shadow pattern becomes obvious.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Compare Values</h3>
-            <p class="feature-copy">Compare your painting against your reference and see what is too light, too dark, or off.</p>
+            <p class="feature-copy">Instantly see what&rsquo;s too dark, too light, or off.</p>
           </div>
         </div>
 
@@ -1288,12 +1296,12 @@
         </div>
 
         <div class="button-row">
-          <a class="button" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Open Composition Checker</a>
+          <a class="button" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Check My Composition</a>
         </div>
 
         <div>
           <p class="feature-label">Key tools:</p>
-          <p class="section-copy">Use visual guides to see focal placement, movement, balance, and structural problems before they become hard to fix.</p>
+          <p class="section-copy">See focal placement, movement, and balance before they become hard to fix.</p>
         </div>
 
         <div class="features">
@@ -1304,17 +1312,17 @@
 
           <div class="feature">
             <h3 class="feature-title">Directional Tools</h3>
-            <p class="feature-copy">Study movement, visual direction, and how the viewer&rsquo;s eye travels through the image.</p>
+            <p class="feature-copy">Understand how the viewer&rsquo;s eye moves through your painting.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Golden Spiral</h3>
-            <p class="feature-copy">Use a golden ratio spiral overlay to check visual rhythm and focal placement.</p>
+            <p class="feature-copy">Test focal placement using a golden ratio overlay.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Advanced Analysis</h3>
-            <p class="feature-copy">Explore balance, structure, movement, and compositional pressure with advanced overlays.</p>
+            <p class="feature-copy">Explore balance, structure, and visual pressure.</p>
           </div>
         </div>
       </div>
@@ -1323,37 +1331,37 @@
         <div class="tool-heading">
           <p class="eyebrow">Tool Three</p>
           <h2>Color Checker</h2>
-          <p class="subheadline">Stop Guessing Colors. Build Stronger Harmony.</p>
+          <p class="subheadline">Stop Guessing Colors. Know What to Mix.</p>
         </div>
 
         <div class="button-row">
-          <a class="button" href="./color-studio/index.html" onclick="gtag('event', 'open_color_tool', { page_location: window.location.href })">Open Color Checker</a>
+          <a class="button" href="./color-studio/index.html" onclick="gtag('event', 'open_color_tool', { page_location: window.location.href })">Fix My Colors</a>
         </div>
 
         <div>
           <p class="feature-label">Key tools:</p>
-          <p class="section-copy">Extract palettes, study relationships, and see how colors work together before you start mixing paint.</p>
+          <p class="section-copy">Extract palettes and understand how colors actually work together before you start mixing paint.</p>
         </div>
 
         <div class="features">
           <div class="feature">
             <h3 class="feature-title">Palette Structure</h3>
-            <p class="feature-copy">Extract key colors and see how the palette is organized across the painting.</p>
+            <p class="feature-copy">See how the palette is organized across the painting.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Color Relationships</h3>
-            <p class="feature-copy">Check temperature shifts, contrast, saturation, and how colors support each other.</p>
+            <p class="feature-copy">Analyze temperature, contrast, and interaction between colors.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">Color Harmony</h3>
-            <p class="feature-copy">See whether your palette leans monochromatic, analogous, complementary, or another harmony type.</p>
+            <p class="feature-copy">Identify harmony types like monochromatic, analogous, or complementary.</p>
           </div>
 
           <div class="feature">
             <h3 class="feature-title">M8 Color Mixer</h3>
-            <p class="feature-copy">Use the extracted color as a starting point and get practical paint-mixing suggestions based on a limited painter&rsquo;s palette.</p>
+            <p class="feature-copy">Get practical mixing guidance based on a painter&rsquo;s palette.</p>
           </div>
         </div>
       </div>
@@ -1376,6 +1384,16 @@
       </div>
     </footer>
   </div>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {
+          // Keep app behavior unchanged if service worker registration fails.
+        });
+      });
+    }
+  </script>
 
   <script>
     const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";

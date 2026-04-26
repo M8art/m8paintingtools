@@ -1,0 +1,24 @@
+{
+  "name": "M8 Painting Tools",
+  "short_name": "M8 Tools",
+  "description": "Painter-focused studio tools for checking values, composition, and color before you paint.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#e8e3d8",
+  "theme_color": "#e8e3d8",
+  "icons": [
+    {
+      "src": "/assets/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

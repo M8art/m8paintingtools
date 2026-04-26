@@ -177,7 +177,7 @@ const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const COLOR_MIXER_USES_STORAGE_KEY = "m8_color_mixer_uses";
 const FREE_COLOR_MIXER_LIMIT = 3;
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
-const GLOBAL_UNLOCK_BODY = "One payment unlocks all M8 Painting Tools. Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is separate.";
+const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
 const M8_PALETTE = {
   whites: ["Titanium White", "Lead White"],
   yellows: ["Cadmium Yellow Deep", "Cadmium Yellow Medium", "Yellow Ochre", "Raw Sienna", "Naples Yellow Light"],
@@ -362,19 +362,19 @@ function hidePremiumUnlockCard() {
 function showUnlockPaywall(context = {}) {
   state.premiumUnlockVisible = true;
   if (premiumUnlockTitle) {
-    premiumUnlockTitle.textContent = context.title || "Unlock full access";
+    premiumUnlockTitle.textContent = context.title || "We Found Issues in Your Painting";
   }
   if (premiumUnlockText) {
     premiumUnlockText.textContent = GLOBAL_UNLOCK_BODY;
   }
   if (premiumUnlockNote) {
-    premiumUnlockNote.textContent = context.note || "This payment unlocks the full app, not just this section.";
+    premiumUnlockNote.textContent = context.note || "One-time unlock — $10";
   }
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
     statusNote.textContent = context.status;
   }
-  showPremiumLimitToast(context.toast || "Free limit reached. Tap Unlock All Tools to continue.");
+  showPremiumLimitToast(context.toast || "You’ve reached your free analysis limit.");
 }
 
 function showPremiumLimitToast(message) {
@@ -652,19 +652,19 @@ function handleImageWrapClick(event) {
 function getUploadLockContext() {
   if (state.activeTab === "trainer" && !isUnlocked()) {
     return {
-      title: "Unlock full access",
-      note: "Mix Trainer is part of the full-app premium unlock. Personal Feedback is separate.",
-      status: "Unlock full access to train against M8 mixing logic.",
-      toast: "Mix Trainer is premium. Tap Unlock All Tools to continue."
+      title: "We Found Issues in Your Painting",
+      note: "One-time unlock — $10",
+      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      toast: "You’ve reached your free analysis limit."
     };
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     return {
       title: "Free Color Mixer limit reached",
-      note: "Your 3 free Color Mixer uses are finished. One payment unlocks the full app, not just this section.",
-      status: "Unlock full access to keep using Color Mixer without limits.",
-      toast: "Your free Color Mixer limit is reached. Tap Unlock All Tools to continue."
+      note: "One-time unlock — $10",
+      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      toast: "You’ve reached your free analysis limit."
     };
   }
 
@@ -780,7 +780,7 @@ function setTab(tab) {
       ? "Preparing analysis..."
       : state.loadErrorMessage || (isUnlocked()
         ? (state.sampledColor ? "Choose your pigments, then check your mix." : "Click a point in the image to begin training.")
-        : "Mix Trainer is part of full premium access. Open a point to unlock the full app.");
+        : "Your analysis is ready. Unlock the full result to see the problems clearly.");
     return;
   }
 
@@ -1091,10 +1091,10 @@ function sampleMixerPoint(event) {
 
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock full access",
-      note: "Mix Trainer is part of the full-app premium unlock. Personal Feedback is separate.",
-      status: "Unlock full access to train against M8 mixing logic.",
-      toast: "Mix Trainer is premium. Tap Unlock All Tools to continue."
+      title: "We Found Issues in Your Painting",
+      note: "One-time unlock — $10",
+      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      toast: "You’ve reached your free analysis limit."
     });
     return;
   }
@@ -1102,9 +1102,9 @@ function sampleMixerPoint(event) {
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     showUnlockPaywall({
       title: "Free Color Mixer limit reached",
-      note: "Your 3 free Color Mixer uses are finished. One payment unlocks the full app, not just this section.",
-      status: "Unlock full access to keep using Color Mixer without limits.",
-      toast: "Your free Color Mixer limit is reached. Tap Unlock All Tools to continue."
+      note: "One-time unlock — $10",
+      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      toast: "You’ve reached your free analysis limit."
     });
     return;
   }
@@ -1693,7 +1693,7 @@ function renderM8ColorMixer(result) {
       const remainingUses = getRemainingColorMixerUses();
       mixerIntro.textContent = remainingUses > 0
         ? `Upload an image, then click the exact passage you want to mix. ${remainingUses} free ${remainingUses === 1 ? "use" : "uses"} remaining.`
-        : "Your 3 free Color Mixer uses have been used. Unlock full access to keep mixing.";
+        : "You’ve reached your free analysis limit.";
     } else {
       mixerIntro.textContent = state.activeTab === "mixer"
         ? "Upload an image, then click the exact passage you want to mix."
@@ -1775,7 +1775,7 @@ function renderMixTrainer() {
       : state.activeTab === "trainer"
         ? "Upload an image, then click the exact passage you want to train on."
         : "Switch to Mix Trainer and click a passage in the image to begin.")
-    : "Mix Trainer is part of the full premium unlock. Open a passage when you're ready to unlock the full app.";
+    : "Your analysis is ready. Unlock the full result to see the problems clearly.";
 
   trainerSwatch.style.background = hasSample ? state.sampledColor.rgb : "linear-gradient(180deg, rgba(255,255,255,0.42), rgba(220,214,203,0.8))";
   trainerValue.textContent = hasSample ? `${state.sampledColor.valueStep} / 20` : "--";
@@ -1889,10 +1889,10 @@ function toggleTrainerPigment(name) {
 function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock full access",
-      note: "Mix Trainer is included in the full-app unlock. Personal Feedback is separate.",
-      status: "Unlock full access to compare your mix with M8 logic.",
-      toast: "Mix Trainer is premium. Tap Unlock All Tools to continue."
+      title: "We Found Issues in Your Painting",
+      note: "One-time unlock — $10",
+      status: "Your analysis is ready. Unlock the full result to see the problems clearly.",
+      toast: "You’ve reached your free analysis limit."
     });
     return;
   }

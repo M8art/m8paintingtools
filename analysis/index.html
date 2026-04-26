@@ -163,8 +163,18 @@
               <p class="result-block-title">How to fix your Notan</p>
               <div id="notanFixList" class="painters-fix-list"></div>
               <div id="notanFixLock" class="painters-fix-lock hidden">
-                <p>Unlock full breakdown</p>
-                <button id="notanUnlockButton" class="button premium-unlock-button analysis-button" type="button">Unlock Full Breakdown</button>
+                <p>Your analysis is ready. Unlock the full result to see the problems clearly.</p>
+                <div class="notes-list">
+                  <p class="detail-copy">Analysis preview:</p>
+                  <p class="detail-copy">• Weak value contrast may be reducing impact</p>
+                  <p class="detail-copy">• Focal point may not be clear enough</p>
+                  <p class="detail-copy">• Color relationships may need stronger harmony</p>
+                </div>
+                <button id="notanUnlockButton" class="button premium-unlock-button analysis-button" type="button">Fix My Painting</button>
+                <p class="result-note">One-time unlock — $10</p>
+                <p class="result-note">Unlimited analyses. No subscription.</p>
+                <p class="result-note">You already uploaded your painting.<br>Don&rsquo;t leave without seeing the result.</p>
+                <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
               </div>
             </div>
           </div>
@@ -294,17 +304,31 @@
               <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full breakdown</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
-              <p class="section-label result-label">Premium Access</p>
-              <h3 class="locked-title">Unlock full access</h3>
-              <p class="detail-copy">One payment unlocks all M8 Painting Tools. Includes Quick Check, Advanced Composition, Color Mixer, Mix Trainer, and all premium modules. Personal Feedback is separate.</p>
-              <p class="result-note">Your free check will refresh again in 24 hours.</p>
-              <p class="result-note">This payment unlocks the full app, not just this section.</p>
-              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button">Unlock All Tools</button>
+              <p class="section-label result-label">Analysis Ready</p>
+              <h3 class="locked-title">We Found Issues in Your Painting</h3>
+              <p class="detail-copy">Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.</p>
+              <div class="notes-list">
+                <p class="detail-copy">Analysis preview:</p>
+                <p class="detail-copy">• Weak value contrast may be reducing impact</p>
+                <p class="detail-copy">• Focal point may not be clear enough</p>
+                <p class="detail-copy">• Color relationships may need stronger harmony</p>
+              </div>
+              <p class="result-note">One-time unlock — $10</p>
+              <p class="result-note">Unlimited analyses. No subscription.</p>
+              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button">Fix My Painting</button>
+              <p class="result-note">You already uploaded your painting.<br>Don&rsquo;t leave without seeing the result.</p>
+              <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
+              <div class="notes-list">
+                <p class="detail-copy">Unlimited analyses</p>
+                <p class="detail-copy">Full painter breakdowns</p>
+                <p class="detail-copy">Painter's Fix</p>
+                <p class="detail-copy">Future updates included</p>
+              </div>
             </div>
           </div>
 
           <button id="runAnalysisButton" class="button-secondary analysis-button" type="button" disabled>Run Analysis</button>
-          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">Your next free analysis will be available in 24 hours.</p>
+          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">You&rsquo;ve reached your free analysis limit.</p>
         </div>
       </aside>
     </main>
