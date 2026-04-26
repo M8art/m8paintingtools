@@ -1947,7 +1947,7 @@ function showLockedAnalysisState() {
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
   updateStatusMessage("You’ve reached your free analysis limit.");
-  workspaceHint.textContent = "Your analysis is ready. Unlock the full result to see the problems clearly.";
+  workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
   showPremiumLimitToast("You’ve reached your free analysis limit.");
 }
 
@@ -1960,7 +1960,7 @@ function showFreeLimitReachedState() {
   runAnalysisButton.disabled = true;
   freeLimitHelper.classList.remove("hidden");
   updateStatusMessage("You’ve reached your free analysis limit.");
-  workspaceHint.textContent = "Your analysis is ready. Unlock the full result to see the problems clearly.";
+  workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
 }
 
 function renderScoreBreakdown(items) {
