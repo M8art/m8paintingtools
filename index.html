@@ -2316,7 +2316,7 @@
                   <div class="onboarding-dropzone"><span>Drop painting here</span></div>
                   <span class="onboarding-floating-label onboarding-value-picker-label" aria-hidden="true">Value Picker</span>
                   <div class="onboarding-sample-art">
-                    <img src="./assets/images/demo-painting.jpg" alt="Demo painting for onboarding demo" class="demo-painting-image onboarding-sample-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <img src="/assets/images/demo-painting.jpg" data-onboarding-demo="true" alt="Demo painting for onboarding demo" class="demo-painting-image onboarding-sample-image">
                     <div class="onboarding-image-fallback">Demo image failed to load</div>
                     <div class="onboarding-value-overlay"></div>
                   </div>
@@ -2361,7 +2361,7 @@
                 </div>
                 <div class="onboarding-canvas">
                   <div class="onboarding-sample-art">
-                    <img src="./assets/images/demo-painting.jpg" alt="Demo painting for onboarding demo" class="demo-painting-image onboarding-sample-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <img src="/assets/images/demo-painting.jpg" data-onboarding-demo="true" alt="Demo painting for onboarding demo" class="demo-painting-image onboarding-sample-image">
                     <div class="onboarding-image-fallback">Demo image failed to load</div>
                     <div class="onboarding-composition-overlay">
                       <div class="onboarding-guide-layer"></div>
@@ -2404,7 +2404,7 @@
                 <div class="onboarding-canvas">
                   <div class="onboarding-color-brush"></div>
                   <div class="onboarding-color-thumb">
-                    <img src="./assets/images/demo-painting.jpg" alt="Demo painting for onboarding demo" class="demo-painting-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <img src="/assets/images/demo-painting.jpg" data-onboarding-demo="true" alt="Demo painting for onboarding demo" class="demo-painting-image">
                     <div class="onboarding-image-fallback">Demo image failed to load</div>
                   </div>
                   <div class="onboarding-swatches" aria-hidden="true">
@@ -2844,9 +2844,13 @@
     const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
     const LANDING_HANDOFF_STORE = "uploads";
     const LANDING_HANDOFF_RECORD = "latest";
+    const ONBOARDING_DEMO_IMAGE_PATH = window.location.protocol === "file:"
+      ? new URL("./assets/images/demo-painting.jpg", window.location.href).href
+      : "/assets/images/demo-painting.jpg";
     const onboardingOverlay = document.getElementById("onboardingOverlay");
     const onboardingStage = document.getElementById("onboardingStage");
     const onboardingSlides = Array.from(document.querySelectorAll("[data-onboarding-slide]"));
+    const onboardingDemoImages = Array.from(document.querySelectorAll("[data-onboarding-demo]"));
     const onboardingDots = Array.from(document.querySelectorAll("[data-onboarding-dot]"));
     const onboardingSkipButton = document.getElementById("onboardingSkipButton");
     const onboardingStartButton = document.getElementById("onboardingStartButton");
@@ -2923,7 +2927,7 @@
       if (!onboardingOverlay || onboardingOverlay.classList.contains("hidden")) {
         return;
       }
-      if (!isMobileViewport() || onboardingUserInteracted) {
+      if (onboardingUserInteracted) {
         return;
       }
       if (activeOnboardingSlide >= onboardingSlides.length - 1) {
@@ -2990,6 +2994,32 @@
         return;
       }
       renderOnboardingSlide(activeOnboardingSlide - 1);
+    }
+
+    function hydrateOnboardingDemoImages() {
+      onboardingDemoImages.forEach((image) => {
+        const fallback = image.nextElementSibling;
+        image.style.display = "block";
+        if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
+          fallback.style.display = "none";
+        }
+
+        image.onload = () => {
+          image.style.display = "block";
+          if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
+            fallback.style.display = "none";
+          }
+        };
+
+        image.onerror = () => {
+          image.style.display = "none";
+          if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
+            fallback.style.display = "grid";
+          }
+        };
+
+        image.src = ONBOARDING_DEMO_IMAGE_PATH;
+      });
     }
 
     function openUploadToolModal() {
@@ -3084,6 +3114,7 @@
     }
 
     handleLandingUnlockReturn();
+    hydrateOnboardingDemoImages();
     openOnboarding();
 
     replayOnboardingButton?.addEventListener("click", () => openOnboarding(true));
