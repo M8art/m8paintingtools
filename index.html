@@ -2143,12 +2143,25 @@
 
       .onboarding-stage {
         min-height: auto;
+        display: block;
       }
 
       .onboarding-slide {
+        position: relative;
+        inset: auto;
+        display: none;
         grid-template-columns: 1fr;
         gap: 12px;
         align-content: start;
+        opacity: 1;
+        transform: none;
+        pointer-events: none;
+        min-height: 0;
+      }
+
+      .onboarding-slide.is-active {
+        display: grid;
+        pointer-events: auto;
       }
 
       .onboarding-copy {
@@ -2177,9 +2190,14 @@
         line-height: 1.35;
       }
 
+      .onboarding-head {
+        margin-bottom: 4px;
+      }
+
       .onboarding-foot {
         flex-direction: column;
         align-items: stretch;
+        margin-top: 10px;
       }
 
       .onboarding-next,
