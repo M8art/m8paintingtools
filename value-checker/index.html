@@ -37,6 +37,12 @@
         linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
       color: var(--ink);
       font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+      overflow-x: hidden;
+    }
+
+    html {
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     h1, h2, h3 {
@@ -213,6 +219,83 @@
     .button-secondary {
       background: rgba(255, 255, 255, 0.55);
       color: var(--ink);
+    }
+
+    .mobile-value-toolbar,
+    .mobile-picker-hint,
+    .mobile-value-result-card {
+      display: none;
+    }
+
+    .mobile-value-toolbar {
+      gap: 10px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 12px;
+    }
+
+    .mobile-toolbar-button {
+      padding: 10px 12px;
+      font-size: 0.86rem;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .mobile-picker-hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin: 0 0 10px;
+    }
+
+    .mobile-value-result-card {
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(243, 239, 230, 0.96));
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      box-shadow: 0 12px 24px rgba(50, 39, 28, 0.08);
+    }
+
+    .mobile-value-result-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mobile-value-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(59, 52, 45, 0.12);
+      background: #dddddd;
+      flex: 0 0 auto;
+    }
+
+    .mobile-value-reading {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .mobile-value-scale-note,
+    .mobile-value-status {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.86rem;
+    }
+
+    .mobile-scale-details {
+      display: block;
+    }
+
+    .mobile-scale-details summary {
+      display: none;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .mobile-scale-details summary::-webkit-details-marker {
+      display: none;
     }
 
     .button:hover,
@@ -1444,9 +1527,16 @@
     }
 
     @media (max-width: 720px) {
+      html,
+      body,
+      .app {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
       .app {
         width: min(100% - 22px, 1360px);
-        padding-top: 22px;
+        padding-top: 16px;
       }
 
       .topbar,
@@ -1454,7 +1544,7 @@
       .value-hero {
         flex-direction: column;
         align-items: flex-start;
-        gap: 14px;
+        gap: 10px;
       }
 
       .title-row {
@@ -1462,8 +1552,6 @@
       }
 
       .controls,
-      .button,
-      .button-secondary,
       .tab-button {
         width: 100%;
       }
@@ -1480,12 +1568,6 @@
       .feedback-helper,
       .workspace-meta .hint {
         display: none;
-      }
-
-      .button,
-      .button-secondary,
-      .tab-button {
-        text-align: center;
       }
 
       .group-row {
@@ -1522,18 +1604,102 @@
         flex: 0 0 auto;
       }
 
+      .layout {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
       .layout > .card:first-child,
       .layout > .card:last-child {
         padding: 14px;
         border-radius: 22px;
       }
 
+      .panel-heading {
+        margin-bottom: 10px;
+      }
+
+      .panel-heading h2 {
+        font-size: 1.12rem;
+      }
+
+      .header-controls:not(#compareControls) {
+        display: none;
+      }
+
+      .mobile-value-toolbar {
+        display: grid;
+      }
+
+      .mobile-picker-hint {
+        display: block;
+      }
+
+      .mobile-value-result-card {
+        display: grid;
+        margin-top: 12px;
+      }
+
+      #analysisValuePicker .placeholder-panel,
+      #analysisSevenValue .placeholder-panel {
+        display: none;
+      }
+
+      .mobile-scale-details {
+        border: 1px solid rgba(59, 52, 45, 0.08);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.58);
+        overflow: hidden;
+      }
+
+      .mobile-scale-details > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 12px 14px;
+        color: var(--ink);
+        font-size: 0.86rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .mobile-scale-details > summary::after {
+        content: "+";
+        font-size: 1rem;
+        color: var(--muted);
+      }
+
+      .mobile-scale-details[open] > summary::after {
+        content: "−";
+      }
+
+      .mobile-scale-details .value-scale-card {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        padding: 0 14px 14px;
+      }
+
+      .value-picker-actions .button,
+      .value-scale-media .button-secondary {
+        width: auto;
+        padding: 10px 14px;
+        min-height: 40px;
+        font-size: 0.84rem;
+      }
+
+      .value-picker-actions {
+        margin-top: 10px;
+      }
+
       .canvas-wrap {
-        position: sticky;
-        top: 8px;
+        position: relative;
         z-index: 30;
-        min-height: clamp(320px, 50vh, 460px);
-        height: clamp(320px, 50vh, 460px);
+        min-height: clamp(300px, 45vh, 420px);
+        height: clamp(300px, 45vh, 420px);
         max-height: none;
         overflow: hidden;
         border-radius: 22px;
@@ -1553,9 +1719,10 @@
       .layout > .card:last-child {
         position: relative;
         z-index: 10;
-        margin-top: 12px;
+        margin-top: 0;
       }
 
+      .picker-panel-grid,
       .workspace-card,
       .analysis-grid {
         gap: 12px;
@@ -1655,6 +1822,14 @@
           <p id="workspaceHint" class="hint">Click the image to sample a value.</p>
         </div>
 
+        <div id="mobileValueToolbar" class="mobile-value-toolbar">
+          <label class="button mobile-toolbar-button" for="fileInput">Upload</label>
+          <button id="mobileResetButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Reset</button>
+          <button id="mobileDownloadButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Download</button>
+        </div>
+
+        <p id="mobilePickerHint" class="mobile-picker-hint">Tap the image to read its value.</p>
+
         <div id="workspaceValuePicker" class="mode-panel">
           <div class="canvas-wrap" id="canvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
             <div class="image-stage">
@@ -1671,6 +1846,17 @@
                 <p class="upload-empty-label">Click to upload your image</p>
               </div>
             </div>
+          </div>
+
+          <div id="mobileValueResultCard" class="mobile-value-result-card">
+            <div class="mobile-value-result-row">
+              <div id="mobileValueSwatch" class="mobile-value-swatch" aria-hidden="true"></div>
+              <div>
+                <div id="mobileValueReading" class="mobile-value-reading">Value -- / 20</div>
+                <p class="mobile-value-scale-note">1 = lightest, 20 = darkest</p>
+              </div>
+            </div>
+            <p id="mobileValueStatus" class="mobile-value-status">Tap the image to read its value.</p>
           </div>
         </div>
 
@@ -1803,20 +1989,23 @@
             </div>
 
             <div class="picker-panel-column">
-              <div class="value-scale-card">
-                <div>
-                  <p class="section-label">Use the M8 Value Scale</p>
+              <details class="mobile-scale-details" open>
+                <summary>Value scale reference</summary>
+                <div class="value-scale-card">
+                  <div>
+                    <p class="section-label">Use the M8 Value Scale</p>
+                  </div>
+                  <div class="value-scale-media">
+                    <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
+                    <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
+                  </div>
+                  <div class="value-scale-steps">
+                    <div class="value-scale-step">1. Sample a value in the app</div>
+                    <div class="value-scale-step">2. Mix your paint to match</div>
+                    <div class="value-scale-step">3. Compare it on the printed scale</div>
+                  </div>
                 </div>
-                <div class="value-scale-media">
-                  <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
-                  <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
-                </div>
-                <div class="value-scale-steps">
-                  <div class="value-scale-step">1. Sample a value in the app</div>
-                  <div class="value-scale-step">2. Mix your paint to match</div>
-                  <div class="value-scale-step">3. Compare it on the printed scale</div>
-                </div>
-              </div>
+              </details>
             </div>
           </div>
         </div>
@@ -1844,21 +2033,35 @@
             </div>
 
             <div class="picker-panel-column">
-              <div class="value-scale-card">
-                <div>
-                  <p class="section-label">Use the M8 Value Scale</p>
+              <details class="mobile-scale-details" open>
+                <summary>Value scale reference</summary>
+                <div class="value-scale-card">
+                  <div>
+                    <p class="section-label">Use the M8 Value Scale</p>
+                  </div>
+                  <div class="value-scale-media">
+                    <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
+                    <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
+                  </div>
+                  <div class="value-scale-steps">
+                    <div class="value-scale-step">1. See the large value groups</div>
+                    <div class="value-scale-step">2. Compare the bands to your painting</div>
+                    <div class="value-scale-step">3. Use the scale while simplifying</div>
+                  </div>
                 </div>
-                <div class="value-scale-media">
-                  <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
-                  <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
-                </div>
-                <div class="value-scale-steps">
-                  <div class="value-scale-step">1. See the large value groups</div>
-                  <div class="value-scale-step">2. Compare the bands to your painting</div>
-                  <div class="value-scale-step">3. Use the scale while simplifying</div>
-                </div>
+              </details>
+            </div>
+          </div>
+
+          <div id="mobileValueResultCard" class="mobile-value-result-card">
+            <div class="mobile-value-result-row">
+              <div id="mobileValueSwatch" class="mobile-value-swatch" aria-hidden="true"></div>
+              <div>
+                <div id="mobileValueReading" class="mobile-value-reading">Value -- / 20</div>
+                <p class="mobile-value-scale-note">1 = lightest, 20 = darkest</p>
               </div>
             </div>
+            <p id="mobileValueStatus" class="mobile-value-status">Tap the image to read its value.</p>
           </div>
         </div>
 
@@ -2076,6 +2279,15 @@
     const challengeCanvasWrap = document.getElementById("challengeCanvasWrap");
     const challengeEmptyState = document.getElementById("challengeEmptyState");
     const downloadValueAnalysisButton = document.getElementById("downloadValueAnalysisButton");
+    const mobileValueToolbar = document.getElementById("mobileValueToolbar");
+    const mobilePickerHint = document.getElementById("mobilePickerHint");
+    const mobileResetButton = document.getElementById("mobileResetButton");
+    const mobileDownloadButton = document.getElementById("mobileDownloadButton");
+    const mobileValueResultCard = document.getElementById("mobileValueResultCard");
+    const mobileValueSwatch = document.getElementById("mobileValueSwatch");
+    const mobileValueReading = document.getElementById("mobileValueReading");
+    const mobileValueStatus = document.getElementById("mobileValueStatus");
+    const mobileScaleDetails = Array.from(document.querySelectorAll(".mobile-scale-details"));
     const challengeSlider = document.getElementById("challengeSlider");
     const challengeSessionProgress = document.getElementById("challengeSessionProgress");
     const challengeBestScore = document.getElementById("challengeBestScore");
@@ -2382,6 +2594,14 @@
       resetButton.disabled = !state.imageLoaded && !state.referenceImage && !state.paintingImage && !state.imageLoading;
       downloadValueAnalysisButton.disabled = !state.imageLoaded || !state.savedSamples.length || state.imageLoading;
       downloadSevenValueAnalysisButton.disabled = !state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height || state.imageLoading;
+
+      if (mobileResetButton) {
+        mobileResetButton.disabled = resetButton.disabled;
+      }
+
+      if (mobileDownloadButton) {
+        mobileDownloadButton.disabled = downloadValueAnalysisButton.disabled;
+      }
     }
 
     function getCanvasWrapFor(targetCanvas) {
@@ -2505,7 +2725,15 @@
       resetTool();
       showStatusToast("Workspace reset");
     });
+    mobileResetButton?.addEventListener("click", () => {
+      if (!state.imageLoaded && !state.referenceImage && !state.paintingImage) {
+        return;
+      }
+      resetTool();
+      showStatusToast("Workspace reset");
+    });
     downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
+    mobileDownloadButton?.addEventListener("click", downloadValueAnalysis);
     downloadSevenValueAnalysisButton.addEventListener("click", downloadSevenValueAnalysis);
     challengeSlider.addEventListener("input", handleChallengeSliderInput);
     submitGuessButton.addEventListener("click", submitChallengeGuess);
@@ -2568,6 +2796,8 @@
     function setMode(mode) {
       state.mode = mode;
       const config = MODE_CONFIG[mode];
+      const showMobilePickerTools = mode === "value-picker";
+      const isCompactMobile = window.matchMedia("(max-width: 720px)").matches;
 
       workspaceSectionLabel.textContent = config.workspaceSectionLabel;
       workspaceTitle.textContent = config.workspaceTitle;
@@ -2588,6 +2818,16 @@
       });
 
       compareControls.classList.toggle("hidden", mode !== "compare-values");
+
+      mobileValueToolbar?.classList.toggle("hidden", !showMobilePickerTools);
+      mobilePickerHint?.classList.toggle("hidden", !showMobilePickerTools);
+      mobileValueResultCard?.classList.toggle("hidden", !showMobilePickerTools);
+
+      if (isCompactMobile) {
+        mobileScaleDetails.forEach((details) => {
+          details.open = false;
+        });
+      }
 
       if (state.imageLoaded && mode !== "compare-values") {
         syncPrimaryCanvasViewport(getActiveCanvas());
@@ -3930,6 +4170,15 @@
       swatch.style.background = gray;
       valueNumber.textContent = value;
       statusNote.textContent = `Selected point reads as value ${value} on the M8 value scale.`;
+      if (mobileValueSwatch) {
+        mobileValueSwatch.style.background = gray;
+      }
+      if (mobileValueReading) {
+        mobileValueReading.textContent = `Value ${value} / 20`;
+      }
+      if (mobileValueStatus) {
+        mobileValueStatus.textContent = `Selected point reads as value ${value}.`;
+      }
       highlightScale(value);
     }
 
@@ -4583,6 +4832,15 @@
       swatch.style.background = "#dddddd";
       valueNumber.textContent = "-";
       statusNote.textContent = "No point selected yet.";
+      if (mobileValueSwatch) {
+        mobileValueSwatch.style.background = "#dddddd";
+      }
+      if (mobileValueReading) {
+        mobileValueReading.textContent = "Value -- / 20";
+      }
+      if (mobileValueStatus) {
+        mobileValueStatus.textContent = "Tap the image to read its value.";
+      }
       state.groupedSamples = {
         highlights: [],
         lights: [],
