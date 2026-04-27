@@ -111,6 +111,7 @@
 
     .support-links {
       display: flex;
+      gap: 14px;
       justify-content: flex-end;
       width: 100%;
     }
@@ -123,6 +124,14 @@
 
     .support-link:hover {
       color: #c96a3d;
+    }
+
+    .support-link-button {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
     }
 
     .header-actions {
@@ -212,6 +221,1031 @@
 
     .hidden {
       display: none !important;
+    }
+
+    .onboarding-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(31, 28, 24, 0.4);
+      backdrop-filter: blur(16px);
+    }
+
+    .onboarding-card {
+      width: min(980px, 100%);
+      display: grid;
+      gap: 22px;
+      padding: clamp(22px, 4vw, 30px);
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at top right, rgba(201, 106, 61, 0.16), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(158, 124, 80, 0.12), transparent 26%),
+        linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(244, 238, 229, 0.97));
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      box-shadow: 0 36px 90px rgba(30, 25, 20, 0.2);
+    }
+
+    .onboarding-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .onboarding-skip {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color 180ms ease, transform 180ms ease;
+    }
+
+    .onboarding-skip:hover {
+      color: var(--ink);
+      transform: translateY(-1px);
+    }
+
+    .onboarding-stage {
+      position: relative;
+      min-height: 470px;
+      cursor: pointer;
+    }
+
+    .onboarding-slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+      gap: 28px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(18px);
+      pointer-events: none;
+      transition: opacity 340ms ease, transform 340ms ease;
+    }
+
+    .onboarding-slide.is-active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .onboarding-copy {
+      display: grid;
+      gap: 16px;
+      align-content: center;
+    }
+
+    .onboarding-title {
+      font-size: clamp(2.1rem, 4vw, 3.2rem);
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+    }
+
+    .onboarding-text {
+      max-width: 35ch;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .onboarding-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .onboarding-dots {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .onboarding-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(31, 28, 24, 0.12);
+      transition: transform 220ms ease, background 220ms ease;
+    }
+
+    .onboarding-dot.is-active {
+      background: #c96a3d;
+      transform: scale(1.18);
+    }
+
+    .onboarding-next {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .onboarding-cta {
+      min-width: 180px;
+    }
+
+    .onboarding-visual {
+      position: relative;
+      min-height: 340px;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .onboarding-demo-shell,
+    .onboarding-workflow-shell {
+      position: relative;
+      width: min(100%, 460px);
+      min-height: 330px;
+      border-radius: 30px;
+      padding: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(248, 242, 233, 0.64)),
+        rgba(255, 255, 255, 0.48);
+      border: 1px solid rgba(61, 51, 40, 0.08);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 24px 54px rgba(50, 39, 28, 0.16);
+      overflow: hidden;
+    }
+
+    .onboarding-demo-shell::before,
+    .onboarding-workflow-shell::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 24px;
+      background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 42%);
+      pointer-events: none;
+    }
+
+    .onboarding-demo-shell::after {
+      content: "";
+      position: absolute;
+      inset: auto 24px 16px;
+      height: 24px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(31, 28, 24, 0.18), transparent 68%);
+      filter: blur(12px);
+      opacity: 0.3;
+    }
+
+    .onboarding-app-frame {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      border-radius: 24px;
+      background: rgba(24, 22, 20, 0.94);
+      box-shadow: 0 18px 36px rgba(24, 22, 20, 0.24);
+      overflow: hidden;
+      animation: onboardingFrameFloat 5s ease-in-out infinite;
+    }
+
+    .onboarding-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 248, 237, 0.86);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.08));
+    }
+
+    .onboarding-toolbar span:last-child {
+      color: rgba(223, 183, 134, 0.9);
+    }
+
+    .onboarding-canvas {
+      position: relative;
+      height: 245px;
+      margin: 16px;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        radial-gradient(circle at 72% 18%, rgba(233, 178, 103, 0.2), transparent 20%),
+        linear-gradient(135deg, rgba(82, 62, 48, 0.96), rgba(31, 34, 39, 0.96));
+    }
+
+    .onboarding-canvas::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 34%, rgba(154, 74, 63, 0.72), transparent 18%),
+        radial-gradient(circle at 66% 44%, rgba(240, 190, 118, 0.78), transparent 20%),
+        radial-gradient(circle at 58% 70%, rgba(87, 99, 83, 0.68), transparent 22%),
+        linear-gradient(135deg, rgba(77, 64, 59, 0.34), rgba(255, 255, 255, 0.06));
+      filter: saturate(1.08);
+    }
+
+    .onboarding-canvas::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 28%),
+        radial-gradient(circle at 78% 14%, rgba(255, 255, 255, 0.18), transparent 18%);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .onboarding-upload-glow {
+      position: absolute;
+      inset: 58px 56px 82px;
+      border-radius: 24px;
+      border: 1px dashed rgba(223, 183, 134, 0.36);
+      background: rgba(255, 250, 244, 0.05);
+      z-index: 1;
+      animation: onboardingUploadGlow 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-dropzone {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      width: 132px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px dashed rgba(255, 246, 234, 0.4);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 247, 237, 0.74);
+      font-size: 0.8rem;
+      line-height: 1.3;
+      z-index: 2;
+      transform-origin: top left;
+      animation: onboardingDropZone 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-sample-art {
+      position: absolute;
+      left: 54px;
+      top: 44px;
+      width: 210px;
+      height: 150px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 251, 245, 0.18);
+      background: #1d1c1a;
+      box-shadow: 0 22px 32px rgba(12, 12, 12, 0.32);
+      z-index: 2;
+      overflow: hidden;
+      animation: onboardingPaintingDrop 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-sample-art::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 24%),
+        linear-gradient(0deg, rgba(9, 9, 9, 0.12), transparent 42%);
+      pointer-events: none;
+    }
+
+    .onboarding-sample-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(0);
+      transform: scale(1.01);
+    }
+
+    .onboarding-slide[data-onboarding-slide="0"] .onboarding-sample-image {
+      animation: onboardingImageToGrayscale 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(22, 22, 22, 0.12));
+      opacity: 0;
+      animation: onboardingValueReveal 3.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .onboarding-scan-line {
+      position: absolute;
+      left: 48px;
+      top: 40px;
+      width: 222px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 234, 216, 0.95), rgba(255, 255, 255, 0));
+      box-shadow: 0 0 24px rgba(233, 183, 129, 0.78);
+      z-index: 3;
+      animation: onboardingScanLine 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-scale {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 7px;
+      padding: 0 16px 18px;
+    }
+
+    .onboarding-value-scale span {
+      height: 14px;
+      border-radius: 999px;
+      animation: onboardingBarPulse 2.8s ease-in-out infinite;
+    }
+
+    .onboarding-value-scale span:nth-child(1) { background: #0d0d0d; }
+    .onboarding-value-scale span:nth-child(2) { background: #202020; }
+    .onboarding-value-scale span:nth-child(3) { background: #343434; }
+    .onboarding-value-scale span:nth-child(4) { background: #4a4a4a; }
+    .onboarding-value-scale span:nth-child(5) { background: #636363; }
+    .onboarding-value-scale span:nth-child(6) { background: #7c7c7c; }
+    .onboarding-value-scale span:nth-child(7) { background: #999999; }
+    .onboarding-value-scale span:nth-child(8) { background: #b9b9b9; }
+    .onboarding-value-scale span:nth-child(9) { background: #dddddd; }
+    .onboarding-value-scale span:nth-child(10) { background: #f5f5f5; }
+    .onboarding-value-scale span:nth-child(2n) { animation-delay: 0.15s; }
+
+    .onboarding-value-analysis {
+      position: absolute;
+      top: 56px;
+      right: 20px;
+      width: 132px;
+      padding: 12px 12px 10px;
+      border-radius: 18px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid rgba(80, 66, 52, 0.12);
+      box-shadow: 0 16px 24px rgba(17, 15, 12, 0.16);
+      z-index: 3;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: onboardingValuePanelIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-analysis::before {
+      content: "";
+      position: absolute;
+      left: -36px;
+      top: 48%;
+      width: 34px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(201, 106, 61, 0), rgba(201, 106, 61, 0.72));
+      opacity: 0;
+      animation: onboardingValueLinkIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-analysis::after {
+      content: "";
+      position: absolute;
+      left: -11px;
+      top: calc(48% - 4px);
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(201, 106, 61, 0.9);
+      box-shadow: 0 0 0 5px rgba(201, 106, 61, 0.16);
+      opacity: 0;
+      animation: onboardingValueLinkIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-analysis-title {
+      display: block;
+      margin-bottom: 10px;
+      color: #352b24;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .onboarding-value-map {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .onboarding-value-map-swatch {
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: onboardingValueSwatchIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-map-swatch:nth-child(2) { animation-delay: 0.08s; }
+    .onboarding-value-map-swatch:nth-child(3) { animation-delay: 0.16s; }
+    .onboarding-value-map-swatch:nth-child(4) { animation-delay: 0.24s; }
+    .onboarding-value-map-swatch:nth-child(5) { animation-delay: 0.32s; }
+    .onboarding-value-map-swatch:nth-child(6) { animation-delay: 0.4s; }
+    .onboarding-value-map-swatch:nth-child(7) { animation-delay: 0.48s; }
+
+    .onboarding-value-map-swatch span:first-child {
+      width: 100%;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(33, 28, 23, 0.08);
+    }
+
+    .onboarding-value-map-swatch:nth-child(1) span:first-child { background: #171717; }
+    .onboarding-value-map-swatch:nth-child(2) span:first-child { background: #343434; }
+    .onboarding-value-map-swatch:nth-child(3) span:first-child { background: #555555; }
+    .onboarding-value-map-swatch:nth-child(4) span:first-child { background: #777777; }
+    .onboarding-value-map-swatch:nth-child(5) span:first-child { background: #9b9b9b; }
+    .onboarding-value-map-swatch:nth-child(6) span:first-child { background: #c4c4c4; }
+    .onboarding-value-map-swatch:nth-child(7) span:first-child { background: #ececec; }
+
+    .onboarding-value-map-swatch span:last-child {
+      color: #5f554d;
+      font-size: 0.62rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .onboarding-value-result {
+      margin: 0;
+      color: #6b6159;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      opacity: 0;
+      animation: onboardingValueResultIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-composition-overlay {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 3;
+    }
+
+    .onboarding-guide-layer,
+    .onboarding-diagonal-layer,
+    .onboarding-precision-grid,
+    .onboarding-composition-labels {
+      position: absolute;
+      inset: 0;
+    }
+
+    .onboarding-guide-layer {
+      background:
+        linear-gradient(to right, transparent 33.33%, rgba(255, 255, 255, 0.76) 33.33%, rgba(255, 255, 255, 0.76) 34%, transparent 34%, transparent 66.66%, rgba(255, 255, 255, 0.76) 66.66%, rgba(255, 255, 255, 0.76) 67.33%, transparent 67.33%),
+        linear-gradient(to bottom, transparent 33.33%, rgba(255, 255, 255, 0.76) 33.33%, rgba(255, 255, 255, 0.76) 34%, transparent 34%, transparent 66.66%, rgba(255, 255, 255, 0.76) 66.66%, rgba(255, 255, 255, 0.76) 67.33%, transparent 67.33%);
+      opacity: 0;
+      transform-origin: center;
+      animation: onboardingCompositionGridSequence 12s ease-in-out infinite;
+    }
+
+    .onboarding-diagonal-layer {
+      z-index: 2;
+      opacity: 0;
+      animation: onboardingCompositionDiagonalSequence 12s ease-in-out infinite;
+    }
+
+    .onboarding-diagonal-layer::before,
+    .onboarding-diagonal-layer::after {
+      content: "";
+      position: absolute;
+      left: -10%;
+      top: 50%;
+      width: 120%;
+      height: 2px;
+      background: rgba(255, 248, 235, 0.82);
+      transform-origin: center;
+    }
+
+    .onboarding-diagonal-layer::before {
+      transform: rotate(35.5deg);
+    }
+
+    .onboarding-diagonal-layer::after {
+      transform: rotate(-35.5deg);
+    }
+
+    .onboarding-precision-grid {
+      z-index: 2;
+      opacity: 0;
+      background:
+        linear-gradient(to right, transparent 12.5%, rgba(255, 255, 255, 0.46) 12.5%, rgba(255, 255, 255, 0.46) 13.1%, transparent 13.1%, transparent 25%, rgba(255, 255, 255, 0.46) 25%, rgba(255, 255, 255, 0.46) 25.6%, transparent 25.6%, transparent 37.5%, rgba(255, 255, 255, 0.46) 37.5%, rgba(255, 255, 255, 0.46) 38.1%, transparent 38.1%, transparent 50%, rgba(255, 255, 255, 0.46) 50%, rgba(255, 255, 255, 0.46) 50.6%, transparent 50.6%, transparent 62.5%, rgba(255, 255, 255, 0.46) 62.5%, rgba(255, 255, 255, 0.46) 63.1%, transparent 63.1%, transparent 75%, rgba(255, 255, 255, 0.46) 75%, rgba(255, 255, 255, 0.46) 75.6%, transparent 75.6%, transparent 87.5%, rgba(255, 255, 255, 0.46) 87.5%, rgba(255, 255, 255, 0.46) 88.1%, transparent 88.1%),
+        linear-gradient(to bottom, transparent 16.66%, rgba(255, 255, 255, 0.46) 16.66%, rgba(255, 255, 255, 0.46) 17.26%, transparent 17.26%, transparent 33.33%, rgba(255, 255, 255, 0.46) 33.33%, rgba(255, 255, 255, 0.46) 33.93%, transparent 33.93%, transparent 50%, rgba(255, 255, 255, 0.46) 50%, rgba(255, 255, 255, 0.46) 50.6%, transparent 50.6%, transparent 66.66%, rgba(255, 255, 255, 0.46) 66.66%, rgba(255, 255, 255, 0.46) 67.26%, transparent 67.26%, transparent 83.33%, rgba(255, 255, 255, 0.46) 83.33%, rgba(255, 255, 255, 0.46) 83.93%, transparent 83.93%);
+      animation: onboardingCompositionPrecisionSequence 12s ease-in-out infinite;
+    }
+
+    .onboarding-composition-readout {
+      position: absolute;
+      right: 18px;
+      top: 56px;
+      width: 148px;
+      padding: 12px 12px 10px;
+      border-radius: 18px;
+      background: rgba(255, 250, 243, 0.94);
+      border: 1px solid rgba(80, 66, 52, 0.12);
+      box-shadow: 0 16px 24px rgba(17, 15, 12, 0.16);
+      z-index: 3;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: onboardingCompositionReadoutIn 12s ease-in-out infinite;
+    }
+
+    .onboarding-composition-readout-title {
+      display: block;
+      margin-bottom: 8px;
+      color: #352b24;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .onboarding-composition-readout-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      color: #6b6159;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+
+    .onboarding-composition-readout-list li {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: onboardingCompositionReadoutItemIn 12s ease-in-out infinite;
+    }
+
+    .onboarding-composition-readout-list li:nth-child(2) { animation-delay: 0.7s; }
+    .onboarding-composition-readout-list li:nth-child(3) { animation-delay: 1.4s; }
+
+    .onboarding-composition-labels,
+    .onboarding-color-labels {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 3;
+    }
+
+    .onboarding-demo-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(18, 17, 16, 0.48);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 247, 237, 0.9);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: translateY(10px);
+      animation: onboardingLabelIn 3.4s ease-in-out infinite;
+    }
+
+    .onboarding-floating-label {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(18, 17, 16, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 247, 237, 0.92);
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      line-height: 1;
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: translateY(10px);
+      z-index: 4;
+    }
+
+    .onboarding-value-picker-label {
+      left: 28px;
+      top: 86px;
+      animation: onboardingValuePickerLabelIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-value-sampling-label {
+      left: 84px;
+      top: 28px;
+      animation: onboardingValueSamplingLabelIn 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-composition-labels {
+      z-index: 4;
+    }
+
+    .onboarding-composition-labels .onboarding-demo-label,
+    .onboarding-color-labels .onboarding-demo-label {
+      position: absolute;
+    }
+
+    .onboarding-composition-label-rule {
+      left: 16px;
+      bottom: 16px;
+      animation: onboardingCompositionRuleLabel 12s ease-in-out infinite;
+    }
+
+    .onboarding-composition-label-diagonals {
+      right: 16px;
+      top: 16px;
+      animation: onboardingCompositionDiagonalsLabel 12s ease-in-out infinite;
+    }
+
+    .onboarding-composition-label-precision {
+      right: 16px;
+      bottom: 16px;
+      animation: onboardingCompositionPrecisionLabel 12s ease-in-out infinite;
+    }
+
+    .onboarding-color-brush {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: 118px;
+      height: 78px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 18% 50%, rgba(203, 113, 72, 0.5), transparent 18%),
+        radial-gradient(circle at 38% 54%, rgba(99, 124, 155, 0.4), transparent 20%),
+        radial-gradient(circle at 62% 48%, rgba(127, 150, 103, 0.42), transparent 20%),
+        radial-gradient(circle at 80% 52%, rgba(217, 184, 122, 0.46), transparent 18%);
+      filter: blur(12px);
+      opacity: 0.88;
+    }
+
+    .onboarding-color-thumb {
+      position: absolute;
+      left: 22px;
+      top: 24px;
+      width: 106px;
+      height: 106px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #1d1c1a;
+      box-shadow: 0 14px 30px rgba(20, 16, 12, 0.28);
+      z-index: 2;
+    }
+
+    .onboarding-color-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .onboarding-swatches {
+      position: absolute;
+      right: 22px;
+      top: 28px;
+      width: min(240px, calc(100% - 156px));
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      z-index: 2;
+    }
+
+    .onboarding-swatch {
+      display: grid;
+      gap: 5px;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: onboardingSwatchIn 3.2s ease-in-out infinite;
+    }
+
+    .onboarding-swatch:nth-child(2) { animation-delay: 0.16s; }
+    .onboarding-swatch:nth-child(3) { animation-delay: 0.32s; }
+    .onboarding-swatch:nth-child(4) { animation-delay: 0.48s; }
+    .onboarding-swatch:nth-child(5) { animation-delay: 0.64s; }
+    .onboarding-swatch:nth-child(6) { animation-delay: 0.8s; }
+
+    .onboarding-swatch-chip {
+      height: 48px;
+      border-radius: 16px;
+      border: 1px solid rgba(61, 51, 40, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .onboarding-swatch:nth-child(1) .onboarding-swatch-chip { background: #cf7348; }
+    .onboarding-swatch:nth-child(2) .onboarding-swatch-chip { background: #8d9770; }
+    .onboarding-swatch:nth-child(3) .onboarding-swatch-chip { background: #6b8094; }
+    .onboarding-swatch:nth-child(4) .onboarding-swatch-chip { background: #d8c092; }
+    .onboarding-swatch:nth-child(5) .onboarding-swatch-chip { background: #7d5b66; }
+    .onboarding-swatch:nth-child(6) .onboarding-swatch-chip { background: #baa17f; }
+
+    .onboarding-swatch-label {
+      color: rgba(255, 247, 237, 0.74);
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .onboarding-harmony-wheel {
+      position: absolute;
+      left: 28px;
+      bottom: 26px;
+      width: 96px;
+      height: 96px;
+      border-radius: 999px;
+      background: conic-gradient(#cf7348 0 16%, #d8c092 16% 32%, #8d9770 32% 52%, #6b8094 52% 72%, #7d5b66 72% 88%, #baa17f 88% 100%);
+      mask: radial-gradient(circle at center, transparent 0 43%, #000 45%);
+      -webkit-mask: radial-gradient(circle at center, transparent 0 43%, #000 45%);
+      box-shadow: 0 12px 20px rgba(20, 16, 12, 0.18);
+      z-index: 2;
+      animation: onboardingWheelRotate 5.2s ease-in-out infinite;
+    }
+
+    .onboarding-focal-glow {
+      position: absolute;
+      left: 60%;
+      top: 31%;
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255, 235, 170, 0.34), rgba(255, 235, 170, 0.08) 48%, transparent 70%);
+      z-index: 3;
+      opacity: 0;
+      animation: onboardingBirdGlow 3.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .onboarding-color-labels {
+      left: 136px;
+      right: 22px;
+      bottom: 24px;
+      justify-content: flex-start;
+      display: block;
+    }
+
+    .onboarding-color-label-dominant {
+      left: 0;
+      top: 0;
+      animation-delay: 0.12s;
+    }
+
+    .onboarding-color-label-accent {
+      left: 88px;
+      top: 0;
+      animation-delay: 0.24s;
+    }
+
+    .onboarding-color-label-shadow {
+      left: 0;
+      top: 38px;
+      animation-delay: 0.36s;
+    }
+
+    .onboarding-color-label-harmony {
+      left: 92px;
+      top: 38px;
+      animation-delay: 0.5s;
+    }
+
+    .onboarding-workflow-shell {
+      padding: 20px;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+    }
+
+    .onboarding-workflow-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(201, 106, 61, 0.16), transparent 22%),
+        radial-gradient(circle at bottom left, rgba(111, 101, 93, 0.14), transparent 26%);
+      pointer-events: none;
+    }
+
+    .onboarding-workflow {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 14px;
+    }
+
+    .onboarding-workflow-row {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 15px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(61, 51, 40, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: onboardingWorkflowIn 3.4s ease-in-out infinite;
+    }
+
+    .onboarding-workflow-row:nth-child(2) { animation-delay: 0.22s; }
+    .onboarding-workflow-row:nth-child(3) { animation-delay: 0.44s; }
+
+    .onboarding-workflow-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 8px 10px;
+      background: rgba(201, 106, 61, 0.12);
+      color: #9b5b37;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .onboarding-workflow-copy {
+      display: grid;
+      gap: 6px;
+    }
+
+    .onboarding-workflow-copy strong {
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .onboarding-workflow-copy span {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.92rem;
+    }
+
+    @keyframes onboardingFrameFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes onboardingUploadGlow {
+      0%, 22% { opacity: 0.25; transform: scale(0.98); }
+      40%, 72% { opacity: 0.8; transform: scale(1); }
+      100% { opacity: 0.18; transform: scale(0.99); }
+    }
+
+    @keyframes onboardingDropZone {
+      0%, 18% { opacity: 1; transform: translateY(0) scale(1); }
+      30%, 100% { opacity: 0.32; transform: translateY(-6px) scale(0.96); }
+    }
+
+    @keyframes onboardingPaintingDrop {
+      0%, 10% { opacity: 0; transform: translate(24px, -30px) rotate(-7deg) scale(0.9); }
+      24%, 40% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
+      54%, 100% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
+    }
+
+    @keyframes onboardingScanLine {
+      0%, 24% { opacity: 0; transform: translateY(0); }
+      34%, 74% { opacity: 1; transform: translateY(132px); }
+      100% { opacity: 0; transform: translateY(160px); }
+    }
+
+    @keyframes onboardingValueReveal {
+      0%, 34% { opacity: 0; }
+      46%, 78% { opacity: 0.5; }
+      100% { opacity: 0.42; }
+    }
+
+    @keyframes onboardingValuePanelIn {
+      0%, 52% { opacity: 0; transform: translateY(10px); }
+      62%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.32; transform: translateY(0); }
+    }
+
+    @keyframes onboardingValueLinkIn {
+      0%, 56% { opacity: 0; }
+      66%, 88% { opacity: 1; }
+      100% { opacity: 0.18; }
+    }
+
+    @keyframes onboardingValueSwatchIn {
+      0%, 58% { opacity: 0; transform: translateY(10px); }
+      68%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.26; transform: translateY(0); }
+    }
+
+    @keyframes onboardingValueResultIn {
+      0%, 74% { opacity: 0; }
+      82%, 92% { opacity: 1; }
+      100% { opacity: 0.34; }
+    }
+
+    @keyframes onboardingValuePickerLabelIn {
+      0%, 20% { opacity: 0; transform: translateY(8px); }
+      28%, 48% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.2; transform: translateY(0); }
+    }
+
+    @keyframes onboardingValueSamplingLabelIn {
+      0%, 34% { opacity: 0; transform: translateY(10px); }
+      42%, 72% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.18; transform: translateY(0); }
+    }
+
+    @keyframes onboardingImageToGrayscale {
+      0%, 30% { filter: grayscale(0); }
+      46%, 78% { filter: grayscale(1); }
+      100% { filter: grayscale(1); }
+    }
+
+    @keyframes onboardingBarPulse {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.08); }
+    }
+
+    @keyframes onboardingCompositionGridSequence {
+      0%, 6.5% { opacity: 0; transform: scale(1) translate(0, 0); }
+      8%, 17% { opacity: 1; transform: scale(1) translate(0, 0); }
+      17%, 19% { opacity: 1; transform: scale(1.03) translate(2px, -1px); }
+      21%, 100% { opacity: 0; transform: scale(1.03) translate(2px, -1px); }
+    }
+
+    @keyframes onboardingCompositionDiagonalSequence {
+      0%, 21% { opacity: 0; }
+      23%, 33% { opacity: 1; }
+      35%, 100% { opacity: 0; }
+    }
+
+    @keyframes onboardingCompositionPrecisionSequence {
+      0%, 35% { opacity: 0; }
+      37%, 46% { opacity: 1; }
+      48%, 100% { opacity: 0; }
+    }
+
+    @keyframes onboardingCompositionReadoutIn {
+      0%, 46% { opacity: 0; transform: translateY(10px); }
+      49%, 53% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes onboardingCompositionReadoutItemIn {
+      0%, 48% { opacity: 0; transform: translateY(8px); }
+      52%, 100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes onboardingCompositionRuleLabel {
+      0%, 8% { opacity: 0; transform: translateY(8px); }
+      10%, 19% { opacity: 1; transform: translateY(0); }
+      21%, 100% { opacity: 0; transform: translateY(-2px); }
+    }
+
+    @keyframes onboardingCompositionDiagonalsLabel {
+      0%, 23% { opacity: 0; transform: translateY(8px); }
+      25%, 33% { opacity: 1; transform: translateY(0); }
+      35%, 100% { opacity: 0; transform: translateY(-2px); }
+    }
+
+    @keyframes onboardingCompositionPrecisionLabel {
+      0%, 37% { opacity: 0; transform: translateY(8px); }
+      39%, 46% { opacity: 1; transform: translateY(0); }
+      48%, 100% { opacity: 0; transform: translateY(-2px); }
+    }
+
+    @keyframes onboardingFocusPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 8px rgba(201, 106, 61, 0.16); }
+      50% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(201, 106, 61, 0.24); }
+    }
+
+    @keyframes onboardingLabelIn {
+      0%, 24% { opacity: 0; transform: translateY(10px); }
+      38%, 88% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.2; transform: translateY(-4px); }
+    }
+
+    @keyframes onboardingSwatchIn {
+      0%, 10% { opacity: 0; transform: translateY(16px); }
+      22%, 88% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.2; transform: translateY(-4px); }
+    }
+
+    @keyframes onboardingWheelRotate {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(12deg); }
+    }
+
+    @keyframes onboardingBirdGlow {
+      0%, 36% { opacity: 0; transform: scale(0.9); }
+      48%, 82% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.2; transform: scale(1.04); }
+    }
+
+    @keyframes onboardingWorkflowIn {
+      0%, 14% { opacity: 0; transform: translateY(12px); }
+      24%, 86% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0.24; transform: translateY(-6px); }
     }
 
     .unlock-success-banner {
@@ -1053,10 +2087,349 @@
       .button-secondary {
         width: 100%;
       }
+
+      .onboarding-overlay {
+        padding: 16px;
+      }
+
+      .onboarding-card {
+        gap: 18px;
+        padding: 20px;
+        border-radius: 24px;
+      }
+
+      .onboarding-stage {
+        min-height: 600px;
+      }
+
+      .onboarding-slide {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .onboarding-visual {
+        min-height: 280px;
+      }
+
+      .onboarding-text {
+        max-width: none;
+      }
+
+      .onboarding-foot {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .onboarding-next,
+      .onboarding-dots {
+        justify-content: center;
+      }
+
+      .onboarding-cta {
+        width: 100%;
+      }
+
+      .onboarding-demo-shell,
+      .onboarding-workflow-shell {
+        width: 100%;
+        min-height: 300px;
+      }
+
+      .onboarding-color-thumb {
+        width: 78px;
+        height: 78px;
+      }
+
+      .onboarding-swatches {
+        width: calc(100% - 138px);
+      }
+
+      .onboarding-sample-art {
+        left: 28px;
+        top: 54px;
+        width: calc(100% - 176px);
+        max-width: 210px;
+        height: 144px;
+      }
+
+      .onboarding-scan-line {
+        left: 24px;
+        width: calc(100% - 168px);
+        max-width: 220px;
+      }
+
+      .onboarding-value-analysis {
+        right: 14px;
+        width: 120px;
+        top: 58px;
+        padding: 10px 10px 9px;
+      }
+
+      .onboarding-value-analysis::before {
+        left: -22px;
+        width: 20px;
+      }
+
+      .onboarding-value-map-swatch span:first-child {
+        height: 24px;
+      }
+
+      .onboarding-value-result {
+        font-size: 0.68rem;
+      }
+
+      .onboarding-value-picker-label {
+        left: 18px;
+        top: 84px;
+      }
+
+      .onboarding-value-sampling-label {
+        left: 56px;
+        top: 26px;
+      }
+
+      .onboarding-color-labels {
+        left: 22px;
+        right: 22px;
+        bottom: 16px;
+      }
+
+      .onboarding-color-label-accent,
+      .onboarding-color-label-harmony {
+        left: 96px;
+      }
+
+      .onboarding-composition-label-focus {
+        left: 42%;
+      }
+
+      .onboarding-composition-label-rule,
+      .onboarding-composition-label-diagonals,
+      .onboarding-composition-label-precision {
+        max-width: 112px;
+      }
+
+      .onboarding-composition-readout {
+        right: 12px;
+        top: 62px;
+        width: 126px;
+        padding: 10px 10px 9px;
+      }
+
+      .onboarding-harmony-wheel {
+        width: 84px;
+        height: 84px;
+        bottom: 94px;
+      }
+
+      .onboarding-workflow-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
+  <div id="onboardingOverlay" class="onboarding-overlay hidden" aria-modal="true" role="dialog" aria-labelledby="onboardingTitle">
+    <div class="onboarding-card">
+      <div class="onboarding-head">
+        <p class="eyebrow">How It Works</p>
+        <button id="onboardingSkipButton" class="onboarding-skip" type="button">Skip</button>
+      </div>
+
+      <div id="onboardingStage" class="onboarding-stage" tabindex="0" aria-label="Tap to continue onboarding">
+        <article class="onboarding-slide is-active" data-onboarding-slide="0">
+          <div class="onboarding-copy">
+            <h2 id="onboardingTitle" class="onboarding-title">See Values Instantly</h2>
+            <p class="onboarding-text">Use the Value Picker to sample tones directly from your painting. Build a clear 7-step value map and compare your structure against reality.</p>
+            <p class="micro-trust">Value Picker<br>7-step Value Map<br>Value Comparison</p>
+          </div>
+          <div class="onboarding-visual">
+            <div class="onboarding-demo-shell">
+              <div class="onboarding-app-frame">
+                <div class="onboarding-toolbar">
+                  <span>Quick Check</span>
+                  <span>Value Scan</span>
+                </div>
+                <div class="onboarding-canvas">
+                  <div class="onboarding-upload-glow"></div>
+                  <div class="onboarding-dropzone"><span>Drop painting here</span></div>
+                  <span class="onboarding-floating-label onboarding-value-picker-label" aria-hidden="true">Value Picker</span>
+                  <div class="onboarding-sample-art">
+                    <img class="onboarding-sample-image" src="./assets/demo-painting.jpg" alt="Demo painting preview for onboarding">
+                    <div class="onboarding-value-overlay"></div>
+                  </div>
+                  <div class="onboarding-scan-line"></div>
+                  <span class="onboarding-floating-label onboarding-value-sampling-label" aria-hidden="true">Sampling tones...</span>
+                  <div class="onboarding-focal-glow"></div>
+                  <div class="onboarding-value-analysis" aria-hidden="true">
+                    <span class="onboarding-value-analysis-title">Value Map</span>
+                    <div class="onboarding-value-map">
+                      <div class="onboarding-value-map-swatch"><span></span><span>1</span></div>
+                      <div class="onboarding-value-map-swatch"><span></span><span>2</span></div>
+                      <div class="onboarding-value-map-swatch"><span></span><span>3</span></div>
+                      <div class="onboarding-value-map-swatch"><span></span><span>4</span></div>
+                      <div class="onboarding-value-map-swatch"><span></span><span>5</span></div>
+                      <div class="onboarding-value-map-swatch"><span></span><span>6</span></div>
+                      <div class="onboarding-value-map-swatch"><span></span><span>7</span></div>
+                    </div>
+                    <p class="onboarding-value-result">7 value groups detected</p>
+                  </div>
+                </div>
+                <div class="onboarding-value-scale" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="onboarding-slide" data-onboarding-slide="1">
+          <div class="onboarding-copy">
+            <h2 class="onboarding-title">Fix Composition Faster</h2>
+            <p class="onboarding-text">Test your composition with thirds, diagonals, and precision guides. See whether the structure feels balanced before you keep painting.</p>
+            <p class="micro-trust">Rule of Thirds<br>Diagonals<br>Precision Grid</p>
+          </div>
+          <div class="onboarding-visual">
+            <div class="onboarding-demo-shell">
+              <div class="onboarding-app-frame">
+                <div class="onboarding-toolbar">
+                  <span>Composition</span>
+                  <span>Guide View</span>
+                </div>
+                <div class="onboarding-canvas">
+                  <div class="onboarding-sample-art">
+                    <img class="onboarding-sample-image" src="./assets/demo-painting.jpg" alt="Demo painting with composition overlays">
+                    <div class="onboarding-composition-overlay">
+                      <div class="onboarding-guide-layer"></div>
+                      <div class="onboarding-diagonal-layer"></div>
+                      <div class="onboarding-precision-grid"></div>
+                      <div class="onboarding-composition-labels">
+                        <span class="onboarding-demo-label onboarding-composition-label-rule">Rule of Thirds</span>
+                        <span class="onboarding-demo-label onboarding-composition-label-diagonals">Diagonals</span>
+                        <span class="onboarding-demo-label onboarding-composition-label-precision">Precision Grid</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="onboarding-composition-readout" aria-hidden="true">
+                    <span class="onboarding-composition-readout-title">Composition Analysis</span>
+                    <ul class="onboarding-composition-readout-list">
+                      <li>Focal point detected</li>
+                      <li>Balance: Medium</li>
+                      <li>Alignment: Slightly off-center</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="onboarding-slide" data-onboarding-slide="2">
+          <div class="onboarding-copy">
+            <h2 class="onboarding-title">Understand Color Like a Painter</h2>
+            <p class="onboarding-text">Extract real color relationships from your painting and analyze harmony. Get painter-friendly mixing guidance, not just color codes.</p>
+            <p class="micro-trust">Color Extraction<br>Harmony Detection<br>Mixing Hints</p>
+          </div>
+          <div class="onboarding-visual">
+            <div class="onboarding-demo-shell">
+              <div class="onboarding-app-frame">
+                <div class="onboarding-toolbar">
+                  <span>Color Checker</span>
+                  <span>Harmony Read</span>
+                </div>
+                <div class="onboarding-canvas">
+                  <div class="onboarding-color-brush"></div>
+                  <div class="onboarding-color-thumb">
+                    <img src="./assets/demo-painting.jpg" alt="Demo painting color thumbnail">
+                  </div>
+                  <div class="onboarding-swatches" aria-hidden="true">
+                    <div class="onboarding-swatch">
+                      <span class="onboarding-swatch-chip"></span>
+                      <span class="onboarding-swatch-label">Dominant</span>
+                    </div>
+                    <div class="onboarding-swatch">
+                      <span class="onboarding-swatch-chip"></span>
+                      <span class="onboarding-swatch-label">Accent</span>
+                    </div>
+                    <div class="onboarding-swatch">
+                      <span class="onboarding-swatch-chip"></span>
+                      <span class="onboarding-swatch-label">Shadow</span>
+                    </div>
+                    <div class="onboarding-swatch">
+                      <span class="onboarding-swatch-chip"></span>
+                      <span class="onboarding-swatch-label">Light</span>
+                    </div>
+                    <div class="onboarding-swatch">
+                      <span class="onboarding-swatch-chip"></span>
+                      <span class="onboarding-swatch-label">Bridge</span>
+                    </div>
+                    <div class="onboarding-swatch">
+                      <span class="onboarding-swatch-chip"></span>
+                      <span class="onboarding-swatch-label">Neutral</span>
+                    </div>
+                  </div>
+                  <div class="onboarding-harmony-wheel"></div>
+                  <div class="onboarding-color-labels">
+                    <span class="onboarding-demo-label onboarding-color-label-dominant">Dominant</span>
+                    <span class="onboarding-demo-label onboarding-color-label-accent">Accent</span>
+                    <span class="onboarding-demo-label onboarding-color-label-shadow">Shadow</span>
+                    <span class="onboarding-demo-label onboarding-color-label-harmony">Harmony detected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="onboarding-slide" data-onboarding-slide="3">
+          <div class="onboarding-copy">
+            <h2 class="onboarding-title">Start Improving Your Painting</h2>
+            <p class="onboarding-text">Check value, composition, and color before you spend hours painting in the wrong direction.</p>
+          </div>
+          <div class="onboarding-visual">
+            <div class="onboarding-workflow-shell">
+              <div class="onboarding-workflow">
+                <div class="onboarding-workflow-row">
+                  <span class="onboarding-workflow-chip">Value</span>
+                  <div class="onboarding-workflow-copy">
+                    <strong>Catch weak contrast first.</strong>
+                    <span>See the big tonal pattern before detail takes over.</span>
+                  </div>
+                </div>
+                <div class="onboarding-workflow-row">
+                  <span class="onboarding-workflow-chip">Composition</span>
+                  <div class="onboarding-workflow-copy">
+                    <strong>Test focal strength early.</strong>
+                    <span>Use guides while changes are still easy to make.</span>
+                  </div>
+                </div>
+                <div class="onboarding-workflow-row">
+                  <span class="onboarding-workflow-chip">Color</span>
+                  <div class="onboarding-workflow-copy">
+                    <strong>Mix with clearer intent.</strong>
+                    <span>Check harmony before the palette leads you off course.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="onboarding-foot">
+        <div class="onboarding-dots" aria-hidden="true">
+          <span class="onboarding-dot is-active" data-onboarding-dot="0"></span>
+          <span class="onboarding-dot" data-onboarding-dot="1"></span>
+          <span class="onboarding-dot" data-onboarding-dot="2"></span>
+          <span class="onboarding-dot" data-onboarding-dot="3"></span>
+        </div>
+        <p id="onboardingNextHint" class="onboarding-next">Tap to continue</p>
+        <button id="onboardingStartButton" class="button onboarding-cta hidden" type="button">Start Analysis</button>
+      </div>
+    </div>
+  </div>
+
   <div class="page">
     <section id="unlockSuccessBanner" class="card unlock-success-banner hidden" aria-live="polite">
       <div>
@@ -1111,6 +2484,7 @@
 
         <div class="support-links">
           <a class="support-link" href="./access/index.html">Patreon Access</a>
+          <button id="replayOnboardingButton" class="support-link support-link-button" type="button">How it works</button>
         </div>
       </div>
     </header>
@@ -1123,7 +2497,7 @@
           <p class="landing-hero-explainer">Most paintings fail before the first brushstroke - this shows you exactly why.</p>
           <p class="landing-hero-subheadline">Instantly check your values, composition, and color before you waste hours on a painting that doesn&rsquo;t work.</p>
           <div class="button-row">
-            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start Quick Check</a>
+            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start With Value</a>
             <a class="button-secondary" href="#tool-system">Explore All Tools</a>
           </div>
           <div class="landing-hero-meta" aria-label="Hero details">
@@ -1396,12 +2770,21 @@
   </script>
 
   <script>
+    const ONBOARDING_SEEN_KEY = "m8_onboarding_seen";
     const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
     const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
     const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
     const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
     const LANDING_HANDOFF_STORE = "uploads";
     const LANDING_HANDOFF_RECORD = "latest";
+    const onboardingOverlay = document.getElementById("onboardingOverlay");
+    const onboardingStage = document.getElementById("onboardingStage");
+    const onboardingSlides = Array.from(document.querySelectorAll("[data-onboarding-slide]"));
+    const onboardingDots = Array.from(document.querySelectorAll("[data-onboarding-dot]"));
+    const onboardingSkipButton = document.getElementById("onboardingSkipButton");
+    const onboardingStartButton = document.getElementById("onboardingStartButton");
+    const onboardingNextHint = document.getElementById("onboardingNextHint");
+    const replayOnboardingButton = document.getElementById("replayOnboardingButton");
     const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
     const heroUploadTrigger = document.getElementById("heroUploadTrigger");
     const uploadToolModal = document.getElementById("uploadToolModal");
@@ -1413,6 +2796,7 @@
       composition: "./composition-checker/index.html",
       color: "./color-studio/index.html"
     };
+    let activeOnboardingSlide = 0;
     let pendingUploadTarget = "";
 
     function isUnlocked() {
@@ -1432,6 +2816,63 @@
 
     function showGlobalUnlockSuccess() {
       unlockSuccessBanner?.classList.remove("hidden");
+    }
+
+    function markOnboardingSeen() {
+      try {
+        window.localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
+      } catch (error) {
+        // Ignore localStorage issues and keep app usable.
+      }
+    }
+
+    function hasSeenOnboarding() {
+      try {
+        return window.localStorage.getItem(ONBOARDING_SEEN_KEY) === "true";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function renderOnboardingSlide(index) {
+      activeOnboardingSlide = index;
+      onboardingSlides.forEach((slide, slideIndex) => {
+        slide.classList.toggle("is-active", slideIndex === index);
+      });
+      onboardingDots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("is-active", dotIndex === index);
+      });
+
+      const isFinalSlide = index === onboardingSlides.length - 1;
+      onboardingStartButton?.classList.toggle("hidden", !isFinalSlide);
+      if (onboardingNextHint) {
+        onboardingNextHint.textContent = isFinalSlide ? "Ready to start" : "Tap to continue";
+      }
+    }
+
+    function closeOnboarding() {
+      markOnboardingSeen();
+      onboardingOverlay?.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    function openOnboarding(forceReplay = false) {
+      if (!forceReplay && hasSeenOnboarding()) {
+        return;
+      }
+
+      renderOnboardingSlide(0);
+      onboardingOverlay?.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function advanceOnboarding() {
+      if (activeOnboardingSlide >= onboardingSlides.length - 1) {
+        closeOnboarding();
+        return;
+      }
+
+      renderOnboardingSlide(activeOnboardingSlide + 1);
     }
 
     function openUploadToolModal() {
@@ -1526,7 +2967,23 @@
     }
 
     handleLandingUnlockReturn();
+    openOnboarding();
 
+    replayOnboardingButton?.addEventListener("click", () => openOnboarding(true));
+    onboardingSkipButton?.addEventListener("click", closeOnboarding);
+    onboardingStartButton?.addEventListener("click", closeOnboarding);
+    onboardingStage?.addEventListener("click", (event) => {
+      if (event.target.closest("button")) {
+        return;
+      }
+      advanceOnboarding();
+    });
+    onboardingStage?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        advanceOnboarding();
+      }
+    });
     heroUploadTrigger?.addEventListener("click", openUploadToolModal);
     uploadToolModalClose?.addEventListener("click", closeUploadToolModal);
     uploadToolModal?.addEventListener("click", (event) => {
