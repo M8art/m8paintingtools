@@ -480,7 +480,7 @@
       color: rgba(255, 247, 237, 0.74);
       font-size: 0.8rem;
       line-height: 1.3;
-      z-index: 2;
+      z-index: 14;
       transform-origin: top left;
       animation: onboardingDropZone 3.6s ease-in-out infinite;
     }
@@ -495,7 +495,7 @@
       border: 1px solid rgba(255, 251, 245, 0.18);
       background: #1d1c1a;
       box-shadow: 0 22px 32px rgba(12, 12, 12, 0.32);
-      z-index: 2;
+      z-index: 10;
       overflow: hidden;
       animation: onboardingPaintingDrop 3.6s ease-in-out infinite;
     }
@@ -505,18 +505,24 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 24%),
-        linear-gradient(0deg, rgba(9, 9, 9, 0.12), transparent 42%);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 22%),
+        linear-gradient(0deg, rgba(9, 9, 9, 0.04), transparent 40%);
       pointer-events: none;
+      z-index: 12;
     }
 
     .onboarding-sample-image {
+      position: relative;
       display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      opacity: 1;
+      visibility: visible;
       filter: grayscale(0);
+      filter: blur(0) grayscale(0);
       transform: scale(1.01);
+      z-index: 11;
     }
 
     .onboarding-slide[data-onboarding-slide="0"] .onboarding-sample-image {
@@ -526,10 +532,11 @@
     .onboarding-value-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(22, 22, 22, 0.12));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(22, 22, 22, 0.05));
       opacity: 0;
       animation: onboardingValueReveal 3.6s ease-in-out infinite;
       pointer-events: none;
+      z-index: 13;
     }
 
     .onboarding-scan-line {
@@ -580,7 +587,7 @@
       background: rgba(255, 250, 243, 0.92);
       border: 1px solid rgba(80, 66, 52, 0.12);
       box-shadow: 0 16px 24px rgba(17, 15, 12, 0.16);
-      z-index: 3;
+      z-index: 14;
       opacity: 0;
       transform: translateY(10px);
       animation: onboardingValuePanelIn 3.6s ease-in-out infinite;
@@ -680,7 +687,7 @@
       position: absolute;
       inset: 0;
       overflow: hidden;
-      z-index: 3;
+      z-index: 12;
     }
 
     .onboarding-guide-layer,
@@ -701,7 +708,7 @@
     }
 
     .onboarding-diagonal-layer {
-      z-index: 2;
+      z-index: 13;
       opacity: 0;
       animation: onboardingCompositionDiagonalSequence 12s ease-in-out infinite;
     }
@@ -727,7 +734,7 @@
     }
 
     .onboarding-precision-grid {
-      z-index: 2;
+      z-index: 13;
       opacity: 0;
       background:
         linear-gradient(to right, transparent 12.5%, rgba(255, 255, 255, 0.46) 12.5%, rgba(255, 255, 255, 0.46) 13.1%, transparent 13.1%, transparent 25%, rgba(255, 255, 255, 0.46) 25%, rgba(255, 255, 255, 0.46) 25.6%, transparent 25.6%, transparent 37.5%, rgba(255, 255, 255, 0.46) 37.5%, rgba(255, 255, 255, 0.46) 38.1%, transparent 38.1%, transparent 50%, rgba(255, 255, 255, 0.46) 50%, rgba(255, 255, 255, 0.46) 50.6%, transparent 50.6%, transparent 62.5%, rgba(255, 255, 255, 0.46) 62.5%, rgba(255, 255, 255, 0.46) 63.1%, transparent 63.1%, transparent 75%, rgba(255, 255, 255, 0.46) 75%, rgba(255, 255, 255, 0.46) 75.6%, transparent 75.6%, transparent 87.5%, rgba(255, 255, 255, 0.46) 87.5%, rgba(255, 255, 255, 0.46) 88.1%, transparent 88.1%),
@@ -745,7 +752,7 @@
       background: rgba(255, 250, 243, 0.94);
       border: 1px solid rgba(80, 66, 52, 0.12);
       box-shadow: 0 16px 24px rgba(17, 15, 12, 0.16);
-      z-index: 3;
+      z-index: 14;
       opacity: 0;
       transform: translateY(10px);
       animation: onboardingCompositionReadoutIn 12s ease-in-out infinite;
@@ -827,7 +834,7 @@
       backdrop-filter: blur(8px);
       opacity: 0;
       transform: translateY(10px);
-      z-index: 4;
+      z-index: 15;
     }
 
     .onboarding-value-picker-label {
@@ -843,7 +850,7 @@
     }
 
     .onboarding-composition-labels {
-      z-index: 4;
+      z-index: 15;
     }
 
     .onboarding-composition-labels .onboarding-demo-label,
@@ -1102,21 +1109,21 @@
     }
 
     @keyframes onboardingPaintingDrop {
-      0%, 10% { opacity: 0; transform: translate(24px, -30px) rotate(-7deg) scale(0.9); }
-      24%, 40% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
+      0% { opacity: 1; transform: translate(24px, -30px) rotate(-7deg) scale(0.9); }
+      10%, 40% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
       54%, 100% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
     }
 
     @keyframes onboardingScanLine {
-      0%, 24% { opacity: 0; transform: translateY(0); }
-      34%, 74% { opacity: 1; transform: translateY(132px); }
+      0%, 30% { opacity: 0; transform: translateY(0); }
+      38%, 74% { opacity: 1; transform: translateY(132px); }
       100% { opacity: 0; transform: translateY(160px); }
     }
 
     @keyframes onboardingValueReveal {
-      0%, 34% { opacity: 0; }
-      46%, 78% { opacity: 0.5; }
-      100% { opacity: 0.42; }
+      0%, 42% { opacity: 0; }
+      52%, 78% { opacity: 0.18; }
+      100% { opacity: 0.14; }
     }
 
     @keyframes onboardingValuePanelIn {
@@ -1144,20 +1151,20 @@
     }
 
     @keyframes onboardingValuePickerLabelIn {
-      0%, 20% { opacity: 0; transform: translateY(8px); }
-      28%, 48% { opacity: 1; transform: translateY(0); }
+      0%, 14% { opacity: 0; transform: translateY(8px); }
+      18%, 40% { opacity: 1; transform: translateY(0); }
       100% { opacity: 0.2; transform: translateY(0); }
     }
 
     @keyframes onboardingValueSamplingLabelIn {
-      0%, 34% { opacity: 0; transform: translateY(10px); }
-      42%, 72% { opacity: 1; transform: translateY(0); }
+      0%, 24% { opacity: 0; transform: translateY(10px); }
+      28%, 58% { opacity: 1; transform: translateY(0); }
       100% { opacity: 0.18; transform: translateY(0); }
     }
 
     @keyframes onboardingImageToGrayscale {
-      0%, 30% { filter: grayscale(0); }
-      46%, 78% { filter: grayscale(1); }
+      0%, 44% { filter: grayscale(0); }
+      56%, 78% { filter: grayscale(1); }
       100% { filter: grayscale(1); }
     }
 
@@ -2255,7 +2262,7 @@
                   <div class="onboarding-dropzone"><span>Drop painting here</span></div>
                   <span class="onboarding-floating-label onboarding-value-picker-label" aria-hidden="true">Value Picker</span>
                   <div class="onboarding-sample-art">
-                    <img class="onboarding-sample-image" src="/assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
+                    <img class="onboarding-sample-image" src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
                     <div class="onboarding-value-overlay"></div>
                   </div>
                   <div class="onboarding-scan-line"></div>
@@ -2299,7 +2306,7 @@
                 </div>
                 <div class="onboarding-canvas">
                   <div class="onboarding-sample-art">
-                    <img class="onboarding-sample-image" src="/assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
+                    <img class="onboarding-sample-image" src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
                     <div class="onboarding-composition-overlay">
                       <div class="onboarding-guide-layer"></div>
                       <div class="onboarding-diagonal-layer"></div>
@@ -2341,7 +2348,7 @@
                 <div class="onboarding-canvas">
                   <div class="onboarding-color-brush"></div>
                   <div class="onboarding-color-thumb">
-                    <img src="/assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
+                    <img src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
                   </div>
                   <div class="onboarding-swatches" aria-hidden="true">
                     <div class="onboarding-swatch">
