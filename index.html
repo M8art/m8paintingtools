@@ -2847,6 +2847,9 @@
     const ONBOARDING_DEMO_IMAGE_PATH = window.location.protocol === "file:"
       ? new URL("./assets/images/demo-painting.jpg", window.location.href).href
       : "/assets/images/demo-painting.jpg";
+    const ONBOARDING_DEMO_IMAGE_FALLBACK_PATH = window.location.protocol === "file:"
+      ? new URL("./assets/images/demo-painting.png", window.location.href).href
+      : "/assets/images/demo-painting.png";
     const onboardingOverlay = document.getElementById("onboardingOverlay");
     const onboardingStage = document.getElementById("onboardingStage");
     const onboardingSlides = Array.from(document.querySelectorAll("[data-onboarding-slide]"));
@@ -2999,6 +3002,7 @@
     function hydrateOnboardingDemoImages() {
       onboardingDemoImages.forEach((image) => {
         const fallback = image.nextElementSibling;
+        let triedPngFallback = false;
         image.style.display = "block";
         if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
           fallback.style.display = "none";
@@ -3012,6 +3016,11 @@
         };
 
         image.onerror = () => {
+          if (!triedPngFallback) {
+            triedPngFallback = true;
+            image.src = ONBOARDING_DEMO_IMAGE_FALLBACK_PATH;
+            return;
+          }
           image.style.display = "none";
           if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
             fallback.style.display = "grid";
