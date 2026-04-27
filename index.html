@@ -540,38 +540,22 @@
       z-index: 12;
     }
 
-    .demo-painting-image,
+    .onboarding-demo-image,
     .onboarding-sample-image {
-      position: relative;
+      position: absolute;
+      inset: 0;
       display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 1;
-      visibility: visible;
-      filter: none;
-      mix-blend-mode: normal;
-      transform: scale(1.01);
       z-index: 11;
+      transform: scale(1.01);
+      filter: none;
     }
 
-    .onboarding-slide[data-onboarding-slide="0"] .demo-painting-image,
+    .onboarding-slide[data-onboarding-slide="0"] .onboarding-demo-image,
     .onboarding-slide[data-onboarding-slide="0"] .onboarding-sample-image {
       animation: onboardingImageToGrayscale 3.6s ease-in-out infinite;
-    }
-
-    .onboarding-image-fallback {
-      position: absolute;
-      inset: 0;
-      display: none;
-      place-items: center;
-      padding: 14px;
-      text-align: center;
-      color: rgba(255, 248, 237, 0.92);
-      font-size: 0.82rem;
-      line-height: 1.4;
-      background: rgba(29, 28, 26, 0.78);
-      z-index: 16;
     }
 
     .onboarding-value-overlay {
@@ -950,11 +934,9 @@
       z-index: 2;
     }
 
-    .onboarding-color-thumb img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .onboarding-color-thumb .onboarding-demo-image {
+      inset: 0;
+      transform: none;
     }
 
     .onboarding-swatches {
@@ -2316,8 +2298,7 @@
                   <div class="onboarding-dropzone"><span>Drop painting here</span></div>
                   <span class="onboarding-floating-label onboarding-value-picker-label" aria-hidden="true">Value Picker</span>
                   <div class="onboarding-sample-art">
-                    <img src="/assets/images/demo-painting.jpg" data-onboarding-demo="true" alt="Demo painting for onboarding demo" class="demo-painting-image onboarding-sample-image">
-                    <div class="onboarding-image-fallback">Demo image failed to load</div>
+                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for onboarding demo" class="onboarding-demo-image onboarding-sample-image">
                     <div class="onboarding-value-overlay"></div>
                   </div>
                   <div class="onboarding-scan-line"></div>
@@ -2361,8 +2342,7 @@
                 </div>
                 <div class="onboarding-canvas">
                   <div class="onboarding-sample-art">
-                    <img src="/assets/images/demo-painting.jpg" data-onboarding-demo="true" alt="Demo painting for onboarding demo" class="demo-painting-image onboarding-sample-image">
-                    <div class="onboarding-image-fallback">Demo image failed to load</div>
+                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for onboarding demo" class="onboarding-demo-image onboarding-sample-image">
                     <div class="onboarding-composition-overlay">
                       <div class="onboarding-guide-layer"></div>
                       <div class="onboarding-diagonal-layer"></div>
@@ -2404,8 +2384,7 @@
                 <div class="onboarding-canvas">
                   <div class="onboarding-color-brush"></div>
                   <div class="onboarding-color-thumb">
-                    <img src="/assets/images/demo-painting.jpg" data-onboarding-demo="true" alt="Demo painting for onboarding demo" class="demo-painting-image">
-                    <div class="onboarding-image-fallback">Demo image failed to load</div>
+                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for onboarding demo" class="onboarding-demo-image">
                   </div>
                   <div class="onboarding-swatches" aria-hidden="true">
                     <div class="onboarding-swatch">
@@ -2844,16 +2823,9 @@
     const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
     const LANDING_HANDOFF_STORE = "uploads";
     const LANDING_HANDOFF_RECORD = "latest";
-    const ONBOARDING_DEMO_IMAGE_PATH = window.location.protocol === "file:"
-      ? new URL("./assets/images/demo-painting.jpg", window.location.href).href
-      : "/assets/images/demo-painting.jpg";
-    const ONBOARDING_DEMO_IMAGE_FALLBACK_PATH = window.location.protocol === "file:"
-      ? new URL("./assets/images/demo-painting.png", window.location.href).href
-      : "/assets/images/demo-painting.png";
     const onboardingOverlay = document.getElementById("onboardingOverlay");
     const onboardingStage = document.getElementById("onboardingStage");
     const onboardingSlides = Array.from(document.querySelectorAll("[data-onboarding-slide]"));
-    const onboardingDemoImages = Array.from(document.querySelectorAll("[data-onboarding-demo]"));
     const onboardingDots = Array.from(document.querySelectorAll("[data-onboarding-dot]"));
     const onboardingSkipButton = document.getElementById("onboardingSkipButton");
     const onboardingStartButton = document.getElementById("onboardingStartButton");
@@ -2999,38 +2971,6 @@
       renderOnboardingSlide(activeOnboardingSlide - 1);
     }
 
-    function hydrateOnboardingDemoImages() {
-      onboardingDemoImages.forEach((image) => {
-        const fallback = image.nextElementSibling;
-        let triedPngFallback = false;
-        image.style.display = "block";
-        if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
-          fallback.style.display = "none";
-        }
-
-        image.onload = () => {
-          image.style.display = "block";
-          if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
-            fallback.style.display = "none";
-          }
-        };
-
-        image.onerror = () => {
-          if (!triedPngFallback) {
-            triedPngFallback = true;
-            image.src = ONBOARDING_DEMO_IMAGE_FALLBACK_PATH;
-            return;
-          }
-          image.style.display = "none";
-          if (fallback && fallback.classList.contains("onboarding-image-fallback")) {
-            fallback.style.display = "grid";
-          }
-        };
-
-        image.src = ONBOARDING_DEMO_IMAGE_PATH;
-      });
-    }
-
     function openUploadToolModal() {
       uploadToolModal?.classList.remove("hidden");
     }
@@ -3123,7 +3063,6 @@
     }
 
     handleLandingUnlockReturn();
-    hydrateOnboardingDemoImages();
     openOnboarding();
 
     replayOnboardingButton?.addEventListener("click", () => openOnboarding(true));
