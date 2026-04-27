@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v2";
+const CACHE_NAME = "m8-painting-tools-shell-v3";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -13,7 +13,6 @@ const SHELL_URLS = [
   "/brush-runner/",
   "/brush-runner/index.html",
   "/manifest.webmanifest",
-  "/assets/images/demo-painting.jpg?v=2",
   "/assets/pwa/icon-192.png",
   "/assets/pwa/icon-512.png",
   "/assets/pwa/apple-touch-icon.png"
@@ -70,6 +69,39 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (requestUrl.pathname.startsWith("/assets/images/")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const contentType = response.headers.get("Content-Type") || "";
+          if (
+            response &&
+            response.status === 200 &&
+            response.type === "basic" &&
+            contentType.startsWith("image/")
+          ) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cachedResponse = await caches.match(request);
+          if (!cachedResponse) {
+            return Response.error();
+          }
+
+          const cachedContentType = cachedResponse.headers.get("Content-Type") || "";
+          if (!cachedContentType.startsWith("image/")) {
+            return Response.error();
+          }
+
+          return cachedResponse;
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -77,7 +109,13 @@ self.addEventListener("fetch", (event) => {
       }
 
       return fetch(request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== "basic") {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (
+          !response ||
+          response.status !== 200 ||
+          response.type !== "basic" ||
+          (request.destination === "image" && !contentType.startsWith("image/"))
+        ) {
           return response;
         }
 
