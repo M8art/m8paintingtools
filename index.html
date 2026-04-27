@@ -511,6 +511,7 @@
       z-index: 12;
     }
 
+    .demo-painting-image,
     .onboarding-sample-image {
       position: relative;
       display: block;
@@ -519,14 +520,29 @@
       object-fit: cover;
       opacity: 1;
       visibility: visible;
-      filter: grayscale(0);
-      filter: blur(0) grayscale(0);
+      filter: none;
+      mix-blend-mode: normal;
       transform: scale(1.01);
       z-index: 11;
     }
 
+    .onboarding-slide[data-onboarding-slide="0"] .demo-painting-image,
     .onboarding-slide[data-onboarding-slide="0"] .onboarding-sample-image {
       animation: onboardingImageToGrayscale 3.6s ease-in-out infinite;
+    }
+
+    .onboarding-image-fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 14px;
+      text-align: center;
+      color: rgba(255, 248, 237, 0.92);
+      font-size: 0.82rem;
+      line-height: 1.4;
+      background: rgba(29, 28, 26, 0.78);
+      z-index: 16;
     }
 
     .onboarding-value-overlay {
@@ -2262,7 +2278,8 @@
                   <div class="onboarding-dropzone"><span>Drop painting here</span></div>
                   <span class="onboarding-floating-label onboarding-value-picker-label" aria-hidden="true">Value Picker</span>
                   <div class="onboarding-sample-art">
-                    <img class="onboarding-sample-image" src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
+                    <img src="/assets/images/demo-painting.jpg" data-fallback-src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis" class="demo-painting-image onboarding-sample-image" onerror="if(!this.dataset.fallbackTried){this.dataset.fallbackTried='true';this.src=this.dataset.fallbackSrc;return;}this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <div class="onboarding-image-fallback">Demo image failed to load</div>
                     <div class="onboarding-value-overlay"></div>
                   </div>
                   <div class="onboarding-scan-line"></div>
@@ -2306,7 +2323,8 @@
                 </div>
                 <div class="onboarding-canvas">
                   <div class="onboarding-sample-art">
-                    <img class="onboarding-sample-image" src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
+                    <img src="/assets/images/demo-painting.jpg" data-fallback-src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis" class="demo-painting-image onboarding-sample-image" onerror="if(!this.dataset.fallbackTried){this.dataset.fallbackTried='true';this.src=this.dataset.fallbackSrc;return;}this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <div class="onboarding-image-fallback">Demo image failed to load</div>
                     <div class="onboarding-composition-overlay">
                       <div class="onboarding-guide-layer"></div>
                       <div class="onboarding-diagonal-layer"></div>
@@ -2348,7 +2366,8 @@
                 <div class="onboarding-canvas">
                   <div class="onboarding-color-brush"></div>
                   <div class="onboarding-color-thumb">
-                    <img src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis">
+                    <img src="/assets/images/demo-painting.jpg" data-fallback-src="./assets/images/demo-painting.jpg" alt="Demo painting for value analysis" class="demo-painting-image" onerror="if(!this.dataset.fallbackTried){this.dataset.fallbackTried='true';this.src=this.dataset.fallbackSrc;return;}this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <div class="onboarding-image-fallback">Demo image failed to load</div>
                   </div>
                   <div class="onboarding-swatches" aria-hidden="true">
                     <div class="onboarding-swatch">
