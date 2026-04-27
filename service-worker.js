@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v1";
+const CACHE_NAME = "m8-painting-tools-shell-v2";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -13,6 +13,7 @@ const SHELL_URLS = [
   "/brush-runner/",
   "/brush-runner/index.html",
   "/manifest.webmanifest",
+  "/assets/images/demo-painting.jpg?v=2",
   "/assets/pwa/icon-192.png",
   "/assets/pwa/icon-512.png",
   "/assets/pwa/apple-touch-icon.png"
