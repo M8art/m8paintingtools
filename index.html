@@ -2128,30 +2128,53 @@
       }
 
       .onboarding-overlay {
-        padding: 16px;
+        padding: 10px;
+        align-items: flex-start;
       }
 
       .onboarding-card {
-        gap: 18px;
-        padding: 20px;
+        gap: 14px;
+        padding: 16px;
         border-radius: 24px;
+        width: 100%;
+        max-height: calc(100dvh - 20px);
+        overflow-y: auto;
       }
 
       .onboarding-stage {
-        min-height: 600px;
+        min-height: auto;
       }
 
       .onboarding-slide {
         grid-template-columns: 1fr;
-        gap: 18px;
+        gap: 12px;
+        align-content: start;
+      }
+
+      .onboarding-copy {
+        gap: 10px;
+        align-content: start;
+      }
+
+      .onboarding-title {
+        font-size: clamp(2.4rem, 11vw, 3.4rem);
+        line-height: 0.96;
       }
 
       .onboarding-visual {
-        min-height: 280px;
+        order: -1;
+        min-height: clamp(320px, 44vh, 420px);
       }
 
       .onboarding-text {
         max-width: none;
+        font-size: 0.98rem;
+        line-height: 1.45;
+      }
+
+      .micro-trust {
+        font-size: 0.88rem;
+        line-height: 1.35;
       }
 
       .onboarding-foot {
@@ -2175,30 +2198,37 @@
       .onboarding-demo-shell,
       .onboarding-workflow-shell {
         width: 100%;
-        min-height: 300px;
+        min-height: clamp(320px, 44vh, 420px);
+        padding: 14px;
+        border-radius: 26px;
+      }
+
+      .onboarding-app-frame {
+        border-radius: 22px;
       }
 
       .onboarding-color-thumb {
-        width: 78px;
-        height: 78px;
+        width: 94px;
+        height: 94px;
       }
 
       .onboarding-swatches {
-        width: calc(100% - 138px);
+        width: calc(100% - 152px);
       }
 
       .onboarding-sample-art {
-        left: 28px;
+        left: 18px;
+        right: 18px;
         top: 54px;
-        width: calc(100% - 176px);
-        max-width: 210px;
-        height: 144px;
+        width: auto;
+        max-width: none;
+        height: calc(100% - 96px);
       }
 
       .onboarding-scan-line {
-        left: 24px;
-        width: calc(100% - 168px);
-        max-width: 220px;
+        left: 18px;
+        width: calc(100% - 36px);
+        max-width: none;
       }
 
       .onboarding-value-analysis {
@@ -2223,11 +2253,11 @@
 
       .onboarding-value-picker-label {
         left: 18px;
-        top: 84px;
+        top: 76px;
       }
 
       .onboarding-value-sampling-label {
-        left: 56px;
+        left: 24px;
         top: 26px;
       }
 

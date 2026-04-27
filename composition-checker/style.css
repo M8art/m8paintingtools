@@ -1028,6 +1028,13 @@ a {
     padding-top: 22px;
   }
 
+  .workspace-card {
+    position: sticky;
+    top: 10px;
+    z-index: 20;
+    background: var(--panel);
+  }
+
   .topbar {
     flex-direction: column;
     align-items: flex-start;
@@ -1076,10 +1083,23 @@ a {
 
   .canvas-wrap {
     min-height: 360px;
+    max-height: 55vh;
+    overflow: hidden;
+  }
+
+  .composition-stage,
+  .workspace-image,
+  .overlay-canvas {
+    max-height: 55vh;
   }
 
   .image-loading-overlay {
     inset: 14px;
+  }
+
+  .side-panel {
+    position: relative;
+    z-index: 10;
   }
 
   .status-toast {

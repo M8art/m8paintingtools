@@ -1449,6 +1449,13 @@
         padding-top: 22px;
       }
 
+      .layout > .card:first-child {
+        position: sticky;
+        top: 10px;
+        z-index: 20;
+        background: var(--panel);
+      }
+
       .topbar,
       .panel-heading,
       .value-hero {
@@ -1504,10 +1511,22 @@
 
       .canvas-wrap {
         min-height: 350px;
+        max-height: 55vh;
+        overflow: hidden;
+      }
+
+      .image-stage,
+      canvas {
+        max-height: 55vh;
       }
 
       .image-loading-overlay {
         inset: 14px;
+      }
+
+      .layout > .card:last-child {
+        position: relative;
+        z-index: 10;
       }
 
       .status-toast {
