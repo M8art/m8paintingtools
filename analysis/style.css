@@ -1582,16 +1582,10 @@ a {
     padding-top: 22px;
   }
 
-  .workspace-card {
-    position: sticky;
-    top: 10px;
-    z-index: 20;
-    background: var(--panel);
-  }
-
   .topbar {
     flex-direction: column;
     align-items: flex-start;
+    gap: 14px;
   }
 
   .header-actions,
@@ -1609,9 +1603,16 @@ a {
     justify-content: flex-start;
   }
 
+  .intro,
+  .feedback-helper,
+  .workspace-meta .hint {
+    display: none;
+  }
+
   .panel-heading {
     flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 8px;
   }
 
   .overlay-color-control,
@@ -1636,19 +1637,54 @@ a {
     text-align: left;
   }
 
+  .mode-switcher {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mode-switcher::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-button,
+  .home-tab-button {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .workspace-card,
+  .side-panel {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .workspace-card {
+    gap: 10px;
+  }
+
   .canvas-wrap,
   .image-stage {
-    min-height: 360px;
-    max-height: 55vh;
+    position: sticky;
+    top: 8px;
+    z-index: 30;
+    min-height: clamp(320px, 50vh, 460px);
+    height: clamp(320px, 50vh, 460px);
+    max-height: none;
     overflow: hidden;
+    border-radius: 22px;
+    box-shadow: 0 16px 34px rgba(50, 39, 28, 0.14);
   }
 
   .workspace-image {
-    max-height: 56vh;
+    max-height: none;
+    height: 100%;
   }
 
   .analysis-surface {
-    max-height: 55vh;
+    max-height: none;
+    height: 100%;
     overflow: hidden;
   }
 
@@ -1659,6 +1695,17 @@ a {
   .side-panel {
     position: relative;
     z-index: 10;
+    margin-top: 12px;
+  }
+
+  .analysis-grid,
+  .left-column,
+  .side-panel {
+    gap: 12px;
+  }
+
+  .detail-copy {
+    line-height: 1.5;
   }
 
   .status-toast {
