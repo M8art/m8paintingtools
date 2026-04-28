@@ -1613,6 +1613,18 @@ a {
     justify-items: stretch;
   }
 
+  .eyebrow {
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+  }
+
+  .title-row h1,
+  .topbar h1 {
+    font-size: clamp(2.1rem, 8vw, 2.8rem);
+    line-height: 0.94;
+  }
+
   .top-nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1646,9 +1658,9 @@ a {
   .feedback-button,
   .analysis-button {
     width: auto;
-    min-height: 40px;
-    padding: 10px 14px;
-    font-size: 0.85rem;
+    min-height: 38px;
+    padding: 9px 12px;
+    font-size: 0.8rem;
   }
 
   .intro,
@@ -1658,18 +1670,23 @@ a {
   }
 
   .panel-heading {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
   }
 
   .overlay-color-control,
   .overlay-color-button {
-    width: 100%;
+    width: auto;
   }
 
   .overlay-color-button {
     justify-content: center;
+    min-height: 38px;
+    padding: 9px 12px;
+    font-size: 0.78rem;
   }
 
   .overlay-color-menu {
@@ -1705,8 +1722,8 @@ a {
   .workspace-card,
   .side-panel,
   .studio-note-card {
-    padding: 14px;
-    border-radius: 22px;
+    padding: 12px;
+    border-radius: 20px;
   }
 
   .workspace-card {
@@ -1722,7 +1739,7 @@ a {
   .mobile-toolbar-button {
     width: 100%;
     min-width: 0;
-    padding: 9px 10px;
+    padding: 8px 10px;
     min-height: 38px;
     font-size: 0.78rem;
     font-weight: 700;
@@ -1778,15 +1795,17 @@ a {
   .analysis-grid,
   .left-column,
   .side-panel {
-    gap: 10px;
+    gap: 8px;
   }
 
   .layout {
-    gap: 14px;
+    gap: 12px;
   }
 
   .back-link {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
   }
 
   .panel-heading h2,
@@ -1794,7 +1813,8 @@ a {
   .artist-feedback-title,
   .feedback-title,
   .locked-title {
-    font-size: 1.22rem;
+    font-size: 1.12rem;
+    line-height: 1.04;
   }
 
   .detail-card,
@@ -1811,7 +1831,30 @@ a {
 
   .detail-copy {
     line-height: 1.45;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
+  }
+
+  .section-label,
+  .result-label {
+    font-size: 0.72rem;
+    margin-bottom: 6px;
+  }
+
+  .artist-feedback-list,
+  .notes-list,
+  .result-tags,
+  .score-breakdown-list {
+    gap: 8px;
+  }
+
+  .studio-note-card {
+    gap: 10px;
+  }
+
+  .status-note,
+  .result-note {
+    font-size: 0.78rem;
+    line-height: 1.4;
   }
 
   .status-toast {
