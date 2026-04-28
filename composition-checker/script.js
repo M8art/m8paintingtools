@@ -1644,6 +1644,11 @@ function updateModeUI() {
   advancedToolSwitcher.classList.toggle("hidden", isBasic);
   basicAnalysisPanel.classList.toggle("hidden", !isBasic);
   advancedAnalysisPanel.classList.toggle("hidden", isBasic);
+
+  basicToolSwitcher.style.display = isBasic ? "" : "none";
+  advancedToolSwitcher.style.display = isBasic ? "none" : "";
+  basicAnalysisPanel.style.display = isBasic ? "" : "none";
+  advancedAnalysisPanel.style.display = isBasic ? "none" : "";
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
   notanControlsCard.classList.toggle("hidden", !isNotan);
   focalControlsCard.classList.toggle("hidden", !isFocalBalance);
