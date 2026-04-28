@@ -13,6 +13,7 @@ const overlayColorMenu = document.getElementById("overlayColorMenu");
 const overlayColorPreview = document.getElementById("overlayColorPreview");
 const overlayColorSwatches = Array.from(document.querySelectorAll("[data-overlay-color]"));
 const runAnalysisButton = document.getElementById("runAnalysisButton");
+const mobileRunAnalysisButton = document.getElementById("mobileRunAnalysisButton");
 const quickCheckResult = document.getElementById("quickCheckResult");
 const quickCheckTopSections = document.getElementById("quickCheckTopSections");
 const quickCheckKeyInsightBlock = document.getElementById("quickCheckKeyInsightBlock");
@@ -115,6 +116,7 @@ const ANALYSIS_SEQUENCE = [
 ];
 const ANALYSIS_STAGE_CLASSES = ["stage-grid", "stage-grayscale", "stage-contrast", "stage-posterize", "stage-center", "stage-focus-lock", "stage-final"];
 const MESSAGE_FADE_DURATION = 220;
+const MOBILE_LAYOUT_BREAKPOINT = 768;
 const KEY_INSIGHT_INTROS = [
   "At a glance,",
   "Overall,",
@@ -170,6 +172,12 @@ let feedbackToastTimeoutId = null;
 let scoreAnimationFrameId = null;
 let currentAnalysisUsesFreeSlot = false;
 let currentNotanReading = null;
+let workspaceZoom = 1;
+let workspacePanX = 0;
+let workspacePanY = 0;
+let touchSession = null;
+let suppressSurfaceClick = false;
+let lastTapTimestamp = 0;
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -237,6 +245,11 @@ overlayColorSwatches.forEach((button) => {
 });
 document.addEventListener("click", handleDocumentClick);
 analysisSurface.addEventListener("click", handleNotanSurfaceClick);
+analysisSurface.addEventListener("click", handleWorkspaceSurfaceClickCapture, true);
+analysisSurface.addEventListener("touchstart", handleWorkspaceTouchStart, { passive: false });
+analysisSurface.addEventListener("touchmove", handleWorkspaceTouchMove, { passive: false });
+analysisSurface.addEventListener("touchend", handleWorkspaceTouchEnd, { passive: false });
+analysisSurface.addEventListener("touchcancel", handleWorkspaceTouchCancel, { passive: false });
 
 runAnalysisButton.addEventListener("click", () => {
   if (!hasUploadedImage || isAnalysisRunning) {
@@ -254,6 +267,18 @@ runAnalysisButton.addEventListener("click", () => {
   }
 
   runQuickCheck();
+});
+
+mobileRunAnalysisButton?.addEventListener("click", () => {
+  runAnalysisButton.click();
+});
+
+window.addEventListener("resize", () => {
+  if (!hasUploadedImage) {
+    resetWorkspaceViewport(true);
+    return;
+  }
+  applyWorkspaceTransform();
 });
 
 unlockFullAccessButton.addEventListener("click", () => {
@@ -345,6 +370,7 @@ function showPreview(file) {
     updateStatusMessage("Image uploaded. Ready to run check.", true);
     updateAnalysisAccessUI();
     updateNotanReading();
+    resetWorkspaceViewport();
     showStatusToast("Image loaded");
   };
   analysisPreview.onerror = () => {
@@ -360,6 +386,7 @@ function showPreview(file) {
     lockedAnalysisState.classList.add("hidden");
     resetNotanReading();
     showUploadError("Couldn't load image. Please try another file.");
+    resetWorkspaceViewport(true);
   };
   analysisPreview.src = currentObjectUrl;
 }
@@ -488,6 +515,7 @@ function updateAnalysisAccessUI() {
   if (isAnalysisRunning) {
     runAnalysisButton.textContent = "Run Analysis";
     runAnalysisButton.disabled = true;
+    syncMobileRunAnalysisButton();
     return;
   }
 
@@ -495,11 +523,13 @@ function updateAnalysisAccessUI() {
     runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
     runAnalysisButton.disabled = true;
     freeLimitHelper.classList.remove("hidden");
+    syncMobileRunAnalysisButton();
     return;
   }
 
   runAnalysisButton.textContent = "Run Analysis";
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
+  syncMobileRunAnalysisButton();
 }
 
 function shouldBlockAnalysisUpload() {
@@ -2255,6 +2285,183 @@ function handleNotanSurfaceClick(event) {
     ? "This is part of the main mass."
     : "This area breaks the main shape.";
   notanTooltip.classList.remove("hidden");
+}
+
+function syncMobileRunAnalysisButton() {
+  if (!mobileRunAnalysisButton) {
+    return;
+  }
+
+  mobileRunAnalysisButton.textContent = runAnalysisButton.textContent;
+  mobileRunAnalysisButton.disabled = runAnalysisButton.disabled;
+}
+
+function isMobileLayout() {
+  return window.innerWidth <= MOBILE_LAYOUT_BREAKPOINT;
+}
+
+function resetWorkspaceViewport(clearSuppression = false) {
+  workspaceZoom = 1;
+  workspacePanX = 0;
+  workspacePanY = 0;
+  applyWorkspaceTransform();
+  if (clearSuppression) {
+    suppressSurfaceClick = false;
+  }
+}
+
+function getWorkspacePanBounds(nextZoom = workspaceZoom) {
+  const availableWidth = uploadZone.clientWidth || analysisSurface.clientWidth || 0;
+  const availableHeight = uploadZone.clientHeight || analysisSurface.clientHeight || 0;
+  const contentWidth = analysisSurface.offsetWidth * nextZoom;
+  const contentHeight = analysisSurface.offsetHeight * nextZoom;
+  return {
+    x: Math.max(0, (contentWidth - availableWidth) / 2),
+    y: Math.max(0, (contentHeight - availableHeight) / 2)
+  };
+}
+
+function constrainWorkspacePan(nextZoom = workspaceZoom) {
+  const bounds = getWorkspacePanBounds(nextZoom);
+  workspacePanX = clamp(workspacePanX, -bounds.x, bounds.x);
+  workspacePanY = clamp(workspacePanY, -bounds.y, bounds.y);
+}
+
+function applyWorkspaceTransform() {
+  constrainWorkspacePan();
+  analysisSurface.style.transform = `translate(${workspacePanX}px, ${workspacePanY}px) scale(${workspaceZoom})`;
+  analysisSurface.classList.toggle("is-zoomed", workspaceZoom > 1.01);
+}
+
+function getTouchDistance(firstTouch, secondTouch) {
+  return Math.hypot(secondTouch.clientX - firstTouch.clientX, secondTouch.clientY - firstTouch.clientY);
+}
+
+function getTouchCenter(firstTouch, secondTouch) {
+  return {
+    x: (firstTouch.clientX + secondTouch.clientX) / 2,
+    y: (firstTouch.clientY + secondTouch.clientY) / 2
+  };
+}
+
+function startTouchSession(event) {
+  const touches = Array.from(event.touches);
+  if (touches.length === 1) {
+    touchSession = {
+      mode: "tap",
+      startX: touches[0].clientX,
+      startY: touches[0].clientY,
+      moved: false
+    };
+    return;
+  }
+
+  if (touches.length >= 2) {
+    const [firstTouch, secondTouch] = touches;
+    touchSession = {
+      mode: "pinch",
+      moved: true,
+      startDistance: getTouchDistance(firstTouch, secondTouch),
+      startCenter: getTouchCenter(firstTouch, secondTouch),
+      startZoom: workspaceZoom,
+      startPanX: workspacePanX,
+      startPanY: workspacePanY
+    };
+  }
+}
+
+function handleWorkspaceSurfaceClickCapture(event) {
+  if (!suppressSurfaceClick) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  suppressSurfaceClick = false;
+}
+
+function handleWorkspaceTouchStart(event) {
+  if (!isMobileLayout() || !hasUploadedImage) {
+    return;
+  }
+
+  if (event.touches.length >= 2 || workspaceZoom > 1.01) {
+    event.preventDefault();
+  }
+
+  startTouchSession(event);
+}
+
+function handleWorkspaceTouchMove(event) {
+  if (!isMobileLayout() || !hasUploadedImage || !touchSession) {
+    return;
+  }
+
+  const touches = Array.from(event.touches);
+  if (!touches.length) {
+    return;
+  }
+
+  if (touches.length >= 2) {
+    event.preventDefault();
+    const [firstTouch, secondTouch] = touches;
+    const distance = getTouchDistance(firstTouch, secondTouch);
+    const center = getTouchCenter(firstTouch, secondTouch);
+    const zoomRatio = distance / Math.max(touchSession.startDistance || distance, 1);
+    workspaceZoom = clamp((touchSession.startZoom || 1) * zoomRatio, 1, 4);
+    workspacePanX = (touchSession.startPanX || 0) + (center.x - (touchSession.startCenter?.x || center.x));
+    workspacePanY = (touchSession.startPanY || 0) + (center.y - (touchSession.startCenter?.y || center.y));
+    touchSession.moved = true;
+    applyWorkspaceTransform();
+    return;
+  }
+
+  if (workspaceZoom <= 1.01) {
+    const deltaX = touches[0].clientX - touchSession.startX;
+    const deltaY = touches[0].clientY - touchSession.startY;
+    if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+      touchSession.moved = true;
+    }
+    return;
+  }
+
+  event.preventDefault();
+  const deltaX = touches[0].clientX - touchSession.startX;
+  const deltaY = touches[0].clientY - touchSession.startY;
+  workspacePanX += deltaX;
+  workspacePanY += deltaY;
+  touchSession.startX = touches[0].clientX;
+  touchSession.startY = touches[0].clientY;
+  touchSession.moved = true;
+  applyWorkspaceTransform();
+}
+
+function handleWorkspaceTouchEnd(event) {
+  if (!isMobileLayout() || !hasUploadedImage || !touchSession) {
+    return;
+  }
+
+  if (!event.touches.length) {
+    const now = Date.now();
+    const isTap = !touchSession.moved && touchSession.mode === "tap";
+    if (isTap && now - lastTapTimestamp < 260) {
+      event.preventDefault();
+      resetWorkspaceViewport(true);
+      suppressSurfaceClick = true;
+      lastTapTimestamp = 0;
+    } else {
+      suppressSurfaceClick = touchSession.moved;
+      lastTapTimestamp = isTap ? now : 0;
+    }
+    touchSession = null;
+    return;
+  }
+
+  startTouchSession(event);
+}
+
+function handleWorkspaceTouchCancel() {
+  touchSession = null;
 }
 
 function buildNotanReading(image) {

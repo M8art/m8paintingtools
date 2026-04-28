@@ -83,6 +83,12 @@
 
           <input id="analysisFileInput" type="file" accept="image/png,image/jpeg,image/webp">
 
+          <div class="mobile-workspace-toolbar" aria-label="Quick Check mobile controls">
+            <label class="button-secondary mobile-toolbar-button" for="analysisFileInput">Upload</label>
+            <button id="mobileRunAnalysisButton" class="button mobile-toolbar-button" type="button" disabled>Analyze</button>
+            <a class="button-secondary mobile-toolbar-button" href="#quickCheckResultPanel">Results</a>
+          </div>
+
           <div id="uploadZone" class="canvas-wrap upload-enabled" tabindex="0" role="button" aria-label="Click to upload your painting">
             <div id="imageStage" class="image-stage hidden">
               <div id="analysisSurface" class="analysis-surface">
@@ -199,7 +205,7 @@
         </section>
       </div>
 
-      <aside class="card side-panel">
+      <aside id="quickCheckResultPanel" class="card side-panel">
         <div class="panel-heading">
           <div>
             <p class="section-label">Analysis Result</p>

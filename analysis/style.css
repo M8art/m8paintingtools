@@ -133,6 +133,10 @@ a {
   gap: 12px;
 }
 
+.mobile-workspace-toolbar {
+  display: none;
+}
+
 .header-controls {
   justify-content: flex-end;
 }
@@ -1577,30 +1581,74 @@ a {
 }
 
 @media (max-width: 720px) {
+  html,
+  body,
   .app {
-    width: min(100% - 22px, 1360px);
-    padding-top: 22px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: min(100% - 14px, 1360px);
+    padding-top: 14px;
   }
 
   .topbar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 14px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
   .header-actions,
   .top-nav,
   .social-links,
   .controls,
-  .button,
-  .button-secondary,
   .feedback-button {
     width: 100%;
+  }
+
+  .header-actions {
+    gap: 10px;
+    justify-items: stretch;
+  }
+
+  .top-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .top-nav-link {
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border-right: 0;
+    border: 1px solid rgba(50, 44, 38, 0.1);
+    background: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    font-size: 0.84rem;
   }
 
   .social-links,
   .controls {
     justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .social-link {
+    width: 34px;
+    height: 34px;
+  }
+
+  .button,
+  .button-secondary,
+  .feedback-button,
+  .analysis-button {
+    width: auto;
+    min-height: 40px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
   }
 
   .intro,
@@ -1655,7 +1703,8 @@ a {
   }
 
   .workspace-card,
-  .side-panel {
+  .side-panel,
+  .studio-note-card {
     padding: 14px;
     border-radius: 22px;
   }
@@ -1664,28 +1713,56 @@ a {
     gap: 10px;
   }
 
+  .mobile-workspace-toolbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mobile-toolbar-button {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 10px;
+    min-height: 38px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
   .canvas-wrap,
   .image-stage {
     position: sticky;
-    top: 8px;
+    top: 10px;
     z-index: 30;
-    min-height: clamp(320px, 50vh, 460px);
-    height: clamp(320px, 50vh, 460px);
+    min-height: clamp(300px, 46vh, 420px);
+    height: clamp(300px, 46vh, 420px);
     max-height: none;
     overflow: hidden;
-    border-radius: 22px;
-    box-shadow: 0 16px 34px rgba(50, 39, 28, 0.14);
+    border-radius: 18px;
+    box-shadow: 0 14px 28px rgba(50, 39, 28, 0.12);
   }
 
   .workspace-image {
-    max-height: none;
+    width: 100%;
     height: 100%;
+    max-height: none;
+    object-fit: contain;
   }
 
   .analysis-surface {
+    width: 100%;
     max-height: none;
     height: 100%;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  .analysis-surface.is-zoomed {
+    cursor: grab;
   }
 
   .image-loading-overlay {
@@ -1695,17 +1772,46 @@ a {
   .side-panel {
     position: relative;
     z-index: 10;
-    margin-top: 12px;
+    margin-top: 6px;
   }
 
   .analysis-grid,
   .left-column,
   .side-panel {
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .layout {
+    gap: 14px;
+  }
+
+  .back-link {
+    margin-bottom: 10px;
+  }
+
+  .panel-heading h2,
+  .side-panel h2,
+  .artist-feedback-title,
+  .feedback-title,
+  .locked-title {
+    font-size: 1.22rem;
+  }
+
+  .detail-card,
+  .placeholder-card,
+  .result-block,
+  .result-suggestion,
+  .result-breakdown,
+  .dynamic-breakdown,
+  .painters-fix,
+  .notan-reading-panel {
+    padding: 12px;
+    border-radius: 16px;
   }
 
   .detail-copy {
-    line-height: 1.5;
+    line-height: 1.45;
+    font-size: 0.92rem;
   }
 
   .status-toast {
@@ -1734,5 +1840,11 @@ a {
 
   .notan-tooltip {
     max-width: none;
+  }
+
+  .footer {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 18px;
   }
 }
