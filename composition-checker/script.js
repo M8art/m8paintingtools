@@ -1768,6 +1768,7 @@ function updateModeUI() {
   analysisModeButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.analysisMode === state.analysisMode);
     button.setAttribute("aria-selected", String(button.dataset.analysisMode === state.analysisMode));
+    button.classList.toggle("is-locked", button.dataset.analysisMode === "advanced" && !isUnlocked());
   });
 
   advancedModeButtons.forEach((button) => {
