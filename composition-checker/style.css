@@ -1023,23 +1023,53 @@ a {
 }
 
 @media (max-width: 720px) {
+  html,
+  body,
   .app {
-    width: min(100% - 22px, 1360px);
-    padding-top: 22px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: min(100% - 14px, 1360px);
+    padding-top: 14px;
   }
 
   .topbar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 14px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
   .header-actions,
   .top-nav,
   .social-links {
     width: 100%;
-    justify-items: stretch;
     justify-content: flex-start;
+  }
+
+  .header-actions {
+    display: grid;
+    gap: 10px;
+    justify-items: stretch;
+  }
+
+  .top-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .top-nav-link {
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border-right: 0;
+    border: 1px solid rgba(50, 44, 38, 0.1);
+    background: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    font-size: 0.84rem;
   }
 
   .intro,
@@ -1048,31 +1078,63 @@ a {
     display: none;
   }
 
-  .mode-switcher {
-    width: 100%;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .mode-switcher::-webkit-scrollbar {
-    display: none;
-  }
-
-  .tab-button,
-  .home-tab-button {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
   .controls,
   .header-controls {
     width: 100%;
+    gap: 8px;
+    justify-content: flex-start;
   }
 
-  .button,
-  .button-secondary {
+  .controls .button,
+  .controls .button-secondary {
+    width: auto;
+    min-height: 40px;
+    padding: 10px 14px;
+    font-size: 0.84rem;
+  }
+
+  .mode-switcher {
     width: 100%;
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 6px;
+    overflow: visible;
+    scrollbar-width: auto;
+  }
+
+  .primary-switcher {
+    grid-template-columns: 44px repeat(2, minmax(0, 1fr));
+  }
+
+  .secondary-switcher {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #advancedToolSwitcher.secondary-switcher {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #advancedToolSwitcher.secondary-switcher .tab-button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .tab-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 9px 10px;
+    font-size: 0.76rem;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  .home-tab-button {
+    width: 44px;
+    min-width: 44px;
+    height: 38px;
+    min-height: 38px;
+    justify-self: start;
   }
 
   .workspace-card,
@@ -1088,17 +1150,25 @@ a {
   .panel-heading {
     margin-bottom: 8px;
     align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
   }
 
   .workspace-meta,
   .overlay-color-control,
-  .overlay-color-button,
   .control-button-row,
-  .spiral-control-button,
   .spiral-display-button,
   .analysis-download-button,
   .control-reset {
     width: 100%;
+  }
+
+  .overlay-color-button,
+  .spiral-control-button {
+    width: auto;
+    min-height: 38px;
+    padding: 9px 12px;
+    font-size: 0.8rem;
   }
 
   .overlay-color-button {
@@ -1112,14 +1182,14 @@ a {
 
   .canvas-wrap {
     position: sticky;
-    top: 8px;
+    top: 10px;
     z-index: 30;
-    min-height: clamp(320px, 50vh, 460px);
-    height: clamp(320px, 50vh, 460px);
+    min-height: clamp(300px, 46vh, 420px);
+    height: clamp(300px, 46vh, 420px);
     max-height: none;
     overflow: hidden;
-    border-radius: 22px;
-    box-shadow: 0 16px 34px rgba(50, 39, 28, 0.14);
+    border-radius: 18px;
+    box-shadow: 0 14px 28px rgba(50, 39, 28, 0.12);
   }
 
   .composition-stage,
@@ -1136,20 +1206,48 @@ a {
   .side-panel {
     position: relative;
     z-index: 10;
-    margin-top: 12px;
+    margin-top: 6px;
   }
 
   .analysis-grid {
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .layout {
+    gap: 14px;
   }
 
   .detail-card,
   .placeholder-card {
-    padding: 14px;
+    padding: 12px;
+    border-radius: 16px;
   }
 
   .detail-copy {
-    line-height: 1.5;
+    line-height: 1.45;
+    font-size: 0.92rem;
+  }
+
+  .dynamic-score,
+  .feedback-title,
+  .panel-heading h2 {
+    font-size: 1.18rem;
+  }
+
+  .control-stack,
+  .thirds-reading-grid,
+  .grid-transfer-inputs,
+  .notes-list {
+    gap: 8px;
+  }
+
+  .control-group {
+    gap: 8px;
+  }
+
+  .grid-transfer-input,
+  .control-slider {
+    min-height: 38px;
   }
 
   .status-toast {
@@ -1160,6 +1258,9 @@ a {
   .footer {
     flex-direction: column;
     align-items: flex-start;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 18px;
   }
 
   .footer-links {
