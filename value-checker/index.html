@@ -1767,8 +1767,8 @@
       .canvas-wrap {
         position: relative;
         z-index: 30;
-        min-height: clamp(300px, 45vh, 420px);
-        height: clamp(300px, 45vh, 420px);
+        min-height: var(--mobile-canvas-height, clamp(300px, 45vh, 420px));
+        height: var(--mobile-canvas-height, clamp(300px, 45vh, 420px));
         max-height: none;
         overflow: hidden;
         border-radius: 22px;
@@ -2698,15 +2698,54 @@
       return canvasWrap;
     }
 
+    function getSingleImageCanvasWraps() {
+      return [canvasWrap, sevenValueCanvasWrap, challengeCanvasWrap];
+    }
+
+    function updateMobileCanvasHeightsForImage(image = state.sourceImage) {
+      const wraps = getSingleImageCanvasWraps();
+
+      if (!image || window.innerWidth > 720) {
+        wraps.forEach((wrap) => wrap?.style.removeProperty("--mobile-canvas-height"));
+        return;
+      }
+
+      const sourceWidth = image.naturalWidth || image.width || 1;
+      const sourceHeight = image.naturalHeight || image.height || 1;
+      const aspectRatio = sourceHeight / sourceWidth;
+      const viewportHeight = window.innerHeight || 800;
+      const fallbackWidth = Math.max(320, Math.round(canvasWrap.getBoundingClientRect().width || 320));
+
+      wraps.forEach((wrap) => {
+        if (!wrap) {
+          return;
+        }
+
+        const wrapBounds = wrap.getBoundingClientRect();
+        const wrapWidth = Math.max(280, Math.round(wrapBounds.width || fallbackWidth));
+        const desiredHeight = Math.round(wrapWidth * aspectRatio);
+        const minHeight = Math.round(viewportHeight * 0.34);
+        const maxHeight = aspectRatio > 1.05
+          ? Math.round(viewportHeight * 0.62)
+          : aspectRatio < 0.85
+            ? Math.round(viewportHeight * 0.42)
+            : Math.round(viewportHeight * 0.52);
+        const nextHeight = clamp(desiredHeight, minHeight, maxHeight);
+
+        wrap.style.setProperty("--mobile-canvas-height", `${nextHeight}px`);
+      });
+    }
+
     function getWorkspaceViewportDimensions(targetCanvas = canvas) {
       const targetWrap = getCanvasWrapFor(targetCanvas);
       const fallbackWrap = canvasWrap;
       const canvasBounds = targetWrap.getBoundingClientRect();
       const fallbackBounds = fallbackWrap.getBoundingClientRect();
       const measuredWidth = canvasBounds.width > 0 ? canvasBounds.width : fallbackBounds.width;
+      const measuredHeight = canvasBounds.height > 0 ? canvasBounds.height : fallbackBounds.height;
       return {
         width: Math.min(Math.max(320, Math.round(measuredWidth) - 2), 920),
-        height: Math.min(Math.max(320, Math.round(window.innerHeight * 0.74)), 780)
+        height: Math.min(Math.max(320, Math.round(measuredHeight) - 2), 780)
       };
     }
 
@@ -2938,6 +2977,7 @@
       }
 
       if (state.imageLoaded && mode !== "compare-values") {
+        updateMobileCanvasHeightsForImage();
         syncPrimaryCanvasViewport(getActiveCanvas());
       }
 
@@ -3055,6 +3095,7 @@
 
     function prepareGrayscaleImage(image) {
       state.sourceImage = image;
+      updateMobileCanvasHeightsForImage(image);
 
       const activeSingleCanvas = state.mode === "seven-value-map"
         ? sevenValueCanvas
@@ -4852,6 +4893,7 @@
       }
 
       const marker = state.marker;
+      updateMobileCanvasHeightsForImage(state.sourceImage);
       prepareGrayscaleImage(state.sourceImage);
       state.marker = marker;
       drawCurrentView();
@@ -5239,6 +5281,7 @@
       state.imageLoading = false;
       state.loadingTarget = "";
       state.loadErrorMessage = "";
+      updateMobileCanvasHeightsForImage(null);
       state.imageData = null;
       state.marker = null;
       state.sourceImage = null;
