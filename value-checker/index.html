@@ -229,15 +229,17 @@
 
     .mobile-value-toolbar {
       gap: 10px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       margin-bottom: 12px;
     }
 
     .mobile-toolbar-button {
-      padding: 10px 12px;
-      font-size: 0.86rem;
+      padding: 9px 8px;
+      font-size: 0.75rem;
+      min-height: 38px;
       text-align: center;
       justify-content: center;
+      white-space: nowrap;
     }
 
     .mobile-picker-hint {
@@ -1891,8 +1893,10 @@
 
         <div id="mobileValueToolbar" class="mobile-value-toolbar">
           <label class="button mobile-toolbar-button" for="fileInput">Upload</label>
+          <button id="mobileUndoButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Undo</button>
+          <button id="mobileClearMarkersButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Clear</button>
           <button id="mobileResetButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Reset</button>
-          <button id="mobileDownloadButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Download</button>
+          <button id="mobileDownloadButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Export</button>
         </div>
 
         <p id="mobilePickerHint" class="mobile-picker-hint">Tap the image to read its value.</p>
@@ -2339,6 +2343,8 @@
     const downloadValueAnalysisButton = document.getElementById("downloadValueAnalysisButton");
     const mobileValueToolbar = document.getElementById("mobileValueToolbar");
     const mobilePickerHint = document.getElementById("mobilePickerHint");
+    const mobileUndoButton = document.getElementById("mobileUndoButton");
+    const mobileClearMarkersButton = document.getElementById("mobileClearMarkersButton");
     const mobileResetButton = document.getElementById("mobileResetButton");
     const mobileDownloadButton = document.getElementById("mobileDownloadButton");
     const mobileValueResultCard = document.getElementById("mobileValueResultCard");
@@ -2660,9 +2666,18 @@
       resetButton.disabled = !state.imageLoaded && !state.referenceImage && !state.paintingImage && !state.imageLoading;
       downloadValueAnalysisButton.disabled = !state.imageLoaded || !state.savedSamples.length || state.imageLoading;
       downloadSevenValueAnalysisButton.disabled = !state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height || state.imageLoading;
+      const markersDisabled = !state.imageLoaded || !state.savedSamples.length || state.imageLoading;
 
       if (mobileResetButton) {
         mobileResetButton.disabled = resetButton.disabled;
+      }
+
+      if (mobileUndoButton) {
+        mobileUndoButton.disabled = markersDisabled;
+      }
+
+      if (mobileClearMarkersButton) {
+        mobileClearMarkersButton.disabled = markersDisabled;
       }
 
       if (mobileDownloadButton) {
@@ -2803,6 +2818,13 @@
       }
       resetTool();
       showStatusToast("Workspace reset");
+    });
+    mobileUndoButton?.addEventListener("click", () => {
+      removeLastSample();
+    });
+    mobileClearMarkersButton?.addEventListener("click", () => {
+      clearSavedSamples();
+      showStatusToast("Markers cleared");
     });
     downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
     mobileDownloadButton?.addEventListener("click", downloadValueAnalysis);
@@ -3266,11 +3288,7 @@
         state.activeMarkerTimeout = null;
       }
 
-      state.marker = { x: imagePoint.x, y: imagePoint.y };
-      state.activeMarkerId = savedSample.id;
-      drawCurrentView();
-      updateReadout(sample.pixel, brightness, value);
-      renderSampleGroups();
+      applySampleSelection(savedSample, sample.pixel);
     }
 
     function handleChallengeCanvasClick(event) {
@@ -4569,15 +4587,6 @@
       group.push(savedSample);
       state.savedSamples.push(savedSample);
 
-      if (group.length > 5) {
-        const removed = group.shift();
-        state.savedSamples = state.savedSamples.filter((sample) => sample.id !== removed.id);
-
-        if (state.activeMarkerId === removed.id) {
-          state.activeMarkerId = null;
-        }
-      }
-
       return savedSample;
     }
 
@@ -4622,22 +4631,134 @@
 
       downloadValueAnalysisButton.disabled = !state.imageLoaded || !state.savedSamples.length;
       downloadSevenValueAnalysisButton.disabled = !state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height;
+      const markersDisabled = !state.imageLoaded || !state.savedSamples.length;
+
+      if (mobileUndoButton) {
+        mobileUndoButton.disabled = markersDisabled;
+      }
+
+      if (mobileClearMarkersButton) {
+        mobileClearMarkersButton.disabled = markersDisabled;
+      }
+
+      if (mobileDownloadButton) {
+        mobileDownloadButton.disabled = downloadValueAnalysisButton.disabled;
+      }
     }
 
     function highlightMarker(sampleId) {
-      state.activeMarkerId = sampleId;
-      drawCurrentView();
-      renderSampleGroups();
+      const sample = state.savedSamples.find((entry) => entry.id === sampleId);
+      if (!sample) {
+        return;
+      }
+
+      applySampleSelection(sample);
+    }
+
+    function applySampleSelection(sample, pixel = null) {
+      state.marker = { x: sample.x, y: sample.y };
+      state.activeMarkerId = sample.id;
 
       if (state.activeMarkerTimeout) {
         clearTimeout(state.activeMarkerTimeout);
+        state.activeMarkerTimeout = null;
       }
 
-      state.activeMarkerTimeout = setTimeout(() => {
+      drawCurrentView();
+      updateReadout(pixel, sample.brightness, sample.value);
+      renderSampleGroups();
+    }
+
+    function resetReadoutDisplay() {
+      swatch.style.background = "#dddddd";
+      valueNumber.textContent = "-";
+      statusNote.textContent = "No point selected yet.";
+
+      if (mobileValueSwatch) {
+        mobileValueSwatch.style.background = "#dddddd";
+      }
+
+      if (mobileValueReading) {
+        mobileValueReading.textContent = "Value -- / 20";
+      }
+
+      if (mobileValueStatus) {
+        mobileValueStatus.textContent = "Tap the image to read its value.";
+      }
+
+      highlightScale(-1);
+    }
+
+    function removeSampleById(sampleId) {
+      const sampleIndex = state.savedSamples.findIndex((sample) => sample.id === sampleId);
+      if (sampleIndex === -1) {
+        return false;
+      }
+
+      const [removedSample] = state.savedSamples.splice(sampleIndex, 1);
+      const groupSamples = state.groupedSamples[removedSample.groupKey];
+      const groupIndex = groupSamples.findIndex((sample) => sample.id === sampleId);
+
+      if (groupIndex !== -1) {
+        groupSamples.splice(groupIndex, 1);
+      }
+
+      const fallbackSample = state.savedSamples[state.savedSamples.length - 1] || null;
+
+      if (fallbackSample) {
+        applySampleSelection(fallbackSample);
+      } else {
+        state.marker = null;
         state.activeMarkerId = null;
+
+        if (state.activeMarkerTimeout) {
+          clearTimeout(state.activeMarkerTimeout);
+          state.activeMarkerTimeout = null;
+        }
+
+        resetReadoutDisplay();
         drawCurrentView();
         renderSampleGroups();
-      }, 1200);
+      }
+
+      return true;
+    }
+
+    function removeLastSample() {
+      if (!state.savedSamples.length) {
+        return;
+      }
+
+      removeSampleById(state.savedSamples[state.savedSamples.length - 1].id);
+      showStatusToast("Last marker removed");
+    }
+
+    function clearSavedSamples() {
+      state.groupedSamples = {
+        highlights: [],
+        lights: [],
+        halftones: [],
+        shadows: []
+      };
+      state.savedSamples = [];
+      state.nextSampleId = 1;
+      state.marker = null;
+      state.activeMarkerId = null;
+
+      if (state.activeMarkerTimeout) {
+        clearTimeout(state.activeMarkerTimeout);
+        state.activeMarkerTimeout = null;
+      }
+
+      resetReadoutDisplay();
+      renderSampleGroups();
+      drawCurrentView();
+      buildSevenValueMap();
+      drawSevenValueMap();
+      renderChallengePanel();
+      drawChallengeView();
+      drawCompareCanvases();
+      updateActionButtonStates();
     }
 
     function highlightScale(activeValue) {
@@ -5073,40 +5194,7 @@
     }
 
     function resetReadout() {
-      swatch.style.background = "#dddddd";
-      valueNumber.textContent = "-";
-      statusNote.textContent = "No point selected yet.";
-      if (mobileValueSwatch) {
-        mobileValueSwatch.style.background = "#dddddd";
-      }
-      if (mobileValueReading) {
-        mobileValueReading.textContent = "Value -- / 20";
-      }
-      if (mobileValueStatus) {
-        mobileValueStatus.textContent = "Tap the image to read its value.";
-      }
-      state.groupedSamples = {
-        highlights: [],
-        lights: [],
-        halftones: [],
-        shadows: []
-      };
-      state.savedSamples = [];
-      state.nextSampleId = 1;
-      state.activeMarkerId = null;
-
-      if (state.activeMarkerTimeout) {
-        clearTimeout(state.activeMarkerTimeout);
-        state.activeMarkerTimeout = null;
-      }
-
-      renderSampleGroups();
-      highlightScale(-1);
-      buildSevenValueMap();
-      drawSevenValueMap();
-      renderChallengePanel();
-      drawChallengeView();
-      drawCompareCanvases();
+      clearSavedSamples();
     }
 
     function resetTool() {
@@ -5199,6 +5287,9 @@
       compareStatus.textContent = "Upload both images to begin the comparison.";
       downloadValueAnalysisButton.disabled = true;
       downloadSevenValueAnalysisButton.disabled = true;
+      if (mobileDownloadButton) {
+        mobileDownloadButton.disabled = true;
+      }
       drawChallengeView();
       drawCompareCanvases();
       updateActionButtonStates();
