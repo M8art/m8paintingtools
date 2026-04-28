@@ -57,9 +57,9 @@
 
     <nav class="mode-switcher" aria-label="Navigation">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
-      <button class="tab-button active" type="button" data-tab="palette">Palette Analysis</button>
-      <button class="tab-button" type="button" data-tab="mixer">Color Mixer</button>
-      <button class="tab-button" type="button" data-tab="trainer">Mix Trainer</button>
+      <button class="tab-button active" type="button" data-tab="palette"><span class="desktop-tab-label">Palette Analysis</span><span class="mobile-tab-label">Palette</span></button>
+      <button class="tab-button" type="button" data-tab="mixer"><span class="desktop-tab-label">Color Mixer</span><span class="mobile-tab-label">Mixer</span></button>
+      <button class="tab-button" type="button" data-tab="trainer"><span class="desktop-tab-label">Mix Trainer</span><span class="mobile-tab-label">Trainer</span></button>
     </nav>
 
     <main class="layout">
@@ -70,6 +70,10 @@
             <h2>Reference Image</h2>
           </div>
           <p id="workspaceHint" class="hint">Upload an image to study the dominant color families.</p>
+        </div>
+
+        <div class="mobile-workspace-toolbar" aria-label="Color mobile controls">
+          <label class="button mobile-toolbar-button" for="fileInput">Upload</label>
         </div>
 
         <div class="image-wrap upload-enabled" id="imageWrap" tabindex="0" role="button" aria-label="Click to upload your image">
