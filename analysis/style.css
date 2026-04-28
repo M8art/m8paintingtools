@@ -1604,7 +1604,8 @@ a {
   .top-nav,
   .social-links,
   .controls,
-  .feedback-button {
+  .feedback-button,
+  .header-controls {
     width: 100%;
   }
 
@@ -1648,6 +1649,15 @@ a {
     gap: 8px;
   }
 
+  .header-controls {
+    display: none;
+  }
+
+  .header-actions > .button,
+  .header-actions > label.button {
+    display: none !important;
+  }
+
   .social-link {
     width: 34px;
     height: 34px;
@@ -1666,6 +1676,10 @@ a {
   .intro,
   .feedback-helper,
   .workspace-meta .hint {
+    display: none;
+  }
+
+  .studio-note-copy {
     display: none;
   }
 
@@ -1727,13 +1741,14 @@ a {
   }
 
   .workspace-card {
-    gap: 10px;
+    gap: 8px;
   }
 
   .mobile-workspace-toolbar {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    margin-bottom: 8px;
   }
 
   .mobile-toolbar-button {
@@ -1743,6 +1758,30 @@ a {
     min-height: 38px;
     font-size: 0.78rem;
     font-weight: 700;
+  }
+
+  .mobile-workspace-toolbar .button {
+    background: #1f1c18;
+    color: #f7f4ee;
+    border-color: #1f1c18;
+    box-shadow: 0 10px 22px rgba(31, 28, 24, 0.16);
+  }
+
+  .mobile-workspace-toolbar .button:hover {
+    background: #1f1c18;
+    border-color: #1f1c18;
+  }
+
+  .mobile-workspace-toolbar .button-secondary {
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--ink);
+    border-color: var(--line);
+    box-shadow: none;
+  }
+
+  .mobile-workspace-toolbar .button-secondary:hover {
+    background: rgba(255, 255, 255, 0.66);
+    border-color: rgba(30, 25, 20, 0.28);
   }
 
   .canvas-wrap,
@@ -1815,6 +1854,43 @@ a {
   .locked-title {
     font-size: 1.12rem;
     line-height: 1.04;
+  }
+
+  .quick-check-score {
+    font-size: clamp(2.1rem, 10vw, 3rem);
+  }
+
+  .artist-feedback-block,
+  .locked-analysis-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .artist-feedback-list,
+  .feedback-list,
+  .notes-list {
+    gap: 6px;
+  }
+
+  .upload-empty-state-inner {
+    gap: 10px;
+  }
+
+  .upload-empty-label {
+    font-size: 0.92rem;
+  }
+
+  .upload-empty-subcopy {
+    font-size: 0.76rem;
+  }
+
+  .result-tags {
+    gap: 6px;
+  }
+
+  .result-tag {
+    padding: 6px 10px;
+    font-size: 0.76rem;
   }
 
   .detail-card,
