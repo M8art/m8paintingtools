@@ -491,6 +491,14 @@ a {
   transition: opacity 240ms ease;
 }
 
+.mobile-tab-label {
+  display: none;
+}
+
+.mobile-workspace-toolbar {
+  display: none;
+}
+
 .workspace-image.is-loaded {
   opacity: 1;
 }
@@ -1085,12 +1093,8 @@ a {
     justify-content: flex-start;
   }
 
-  .controls .button,
-  .controls .button-secondary {
-    width: auto;
-    min-height: 40px;
-    padding: 10px 14px;
-    font-size: 0.84rem;
+  .header-controls {
+    display: none;
   }
 
   .mode-switcher {
@@ -1105,53 +1109,66 @@ a {
 
   .primary-switcher {
     grid-template-columns: 44px repeat(2, minmax(0, 1fr));
+    align-items: stretch;
   }
 
   .secondary-switcher {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   #advancedToolSwitcher.secondary-switcher {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   #advancedToolSwitcher.secondary-switcher .tab-button:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .tab-button {
     width: 100%;
     min-width: 0;
-    min-height: 38px;
-    padding: 9px 10px;
-    font-size: 0.76rem;
-    line-height: 1.15;
+    min-height: 52px;
+    padding: 8px 6px;
+    font-size: 0.7rem;
+    line-height: 1.05;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .desktop-tab-label {
+    display: none;
+  }
+
+  .mobile-tab-label {
+    display: inline;
   }
 
   .home-tab-button {
-    width: 44px;
-    min-width: 44px;
-    height: 38px;
-    min-height: 38px;
-    justify-self: start;
+    width: 100%;
+    min-width: 0;
+    height: 52px;
+    min-height: 52px;
+    justify-self: stretch;
   }
 
   .workspace-card,
   .side-panel {
-    padding: 14px;
-    border-radius: 22px;
+    padding: 12px;
+    border-radius: 20px;
   }
 
   .workspace-card {
-    gap: 10px;
+    gap: 8px;
   }
 
   .panel-heading {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     align-items: flex-start;
     gap: 8px;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .workspace-meta,
@@ -1173,6 +1190,21 @@ a {
 
   .overlay-color-button {
     justify-content: center;
+  }
+
+  .mobile-workspace-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mobile-toolbar-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 9px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
   }
 
   .overlay-color-menu {
@@ -1217,6 +1249,24 @@ a {
     gap: 14px;
   }
 
+  .section-label {
+    font-size: 0.72rem;
+    margin-bottom: 6px;
+  }
+
+  .panel-heading h2,
+  .feedback-title,
+  .dynamic-score {
+    font-size: 1.12rem;
+    line-height: 1.04;
+  }
+
+  .control-label,
+  .control-value,
+  .result-block-title {
+    font-size: 0.74rem;
+  }
+
   .detail-card,
   .placeholder-card {
     padding: 12px;
@@ -1228,17 +1278,18 @@ a {
     font-size: 0.92rem;
   }
 
-  .dynamic-score,
-  .feedback-title,
-  .panel-heading h2 {
-    font-size: 1.18rem;
-  }
-
   .control-stack,
   .thirds-reading-grid,
   .grid-transfer-inputs,
   .notes-list {
     gap: 8px;
+  }
+
+  .grid-transfer-field,
+  .result-block,
+  .center-fix-card,
+  .detail-card {
+    gap: 6px;
   }
 
   .control-group {

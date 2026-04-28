@@ -57,6 +57,7 @@ const ADVANCED_MODES = {
 const fileInput = document.getElementById("fileInput");
 const uploadLabels = Array.from(document.querySelectorAll('label[for="fileInput"]'));
 const clearNotesButton = document.getElementById("clearNotesButton");
+const mobileClearNotesButton = document.getElementById("mobileClearNotesButton");
 const canvasWrap = document.getElementById("canvasWrap");
 const compositionStage = document.getElementById("compositionStage");
 const compositionImage = document.getElementById("compositionImage");
@@ -280,6 +281,7 @@ uploadLabels.forEach((label) => {
   });
 });
 clearNotesButton.addEventListener("click", clearNoteMarkers);
+mobileClearNotesButton?.addEventListener("click", clearNoteMarkers);
 canvasWrap.addEventListener("click", handleWorkspaceClick);
 canvasWrap.addEventListener("keydown", handleWorkspaceKeydown);
 overlayCanvas.addEventListener("click", handleOverlayClick);
@@ -1655,6 +1657,11 @@ function updateModeUI() {
   clearNotesButton.classList.toggle("hidden", !isFocalBalance);
   clearNotesButton.disabled = !isFocalBalance || state.focalPoints.length === 0;
   clearNotesButton.textContent = "Reset Focal Points";
+  mobileClearNotesButton?.classList.toggle("hidden", !isFocalBalance);
+  if (mobileClearNotesButton) {
+    mobileClearNotesButton.disabled = !isFocalBalance || state.focalPoints.length === 0;
+    mobileClearNotesButton.textContent = state.focalPoints.length > 0 ? "Clear Points" : "Clear";
+  }
   focalSuggestButton.disabled = !isFocalBalance || !state.imageLoaded;
   dynamicAlignmentOnlyToggle.checked = state.dynamicSymmetry.showAlignmentsOnly;
   dynamicAlignmentOnlyToggle.disabled = !isDynamicSymmetry || !state.imageLoaded;
