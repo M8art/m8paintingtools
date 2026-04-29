@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M8 Analysis Studio</title>
-  <link rel="stylesheet" href="./style.css?v=20260428c">
+  <link rel="stylesheet" href="./style.css?v=20260429f">
 </head>
 <body>
   <div class="app">
@@ -50,12 +50,13 @@
       </div>
     </header>
 
-    <a class="back-link" href="../index.html">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M15 18l-6-6 6-6"></path>
-      </svg>
-      Back to Home
-    </a>
+    <nav class="mode-switcher" aria-label="Quick Check navigation">
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
+      <a class="tab-button active" href="./index.html" aria-current="page"><span class="desktop-tab-label">Quick Check</span><span class="mobile-tab-label">Quick</span></a>
+      <a class="tab-button" href="../value-checker/index.html"><span class="desktop-tab-label">Value Checker</span><span class="mobile-tab-label">Value</span></a>
+      <a class="tab-button" href="../composition-checker/index.html"><span class="desktop-tab-label">Composition Checker</span><span class="mobile-tab-label">Comp</span></a>
+      <a class="tab-button" href="../color-studio/index.html"><span class="desktop-tab-label">Color Checker</span><span class="mobile-tab-label">Color</span></a>
+    </nav>
 
     <main class="layout">
       <div class="left-column">
@@ -84,8 +85,8 @@
           <input id="analysisFileInput" type="file" accept="image/png,image/jpeg,image/webp">
 
           <div class="mobile-workspace-toolbar" aria-label="Quick Check mobile controls">
-            <label class="button mobile-toolbar-button" for="analysisFileInput">Upload</label>
-            <button id="mobileRunAnalysisButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Analyze</button>
+            <button id="mobileRunAnalysisButton" class="button mobile-toolbar-button" type="button" disabled>Analyze</button>
+            <button id="mobileResetWorkspaceButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Reset</button>
             <a class="button-secondary mobile-toolbar-button" href="#quickCheckResultPanel">Results</a>
           </div>
 
@@ -114,6 +115,28 @@
                 <div class="analysis-overlay focal-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay guidance-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay pull-overlay" aria-hidden="true"></div>
+                <svg id="paintoverOverlay" class="paintover-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                  <defs>
+                    <marker id="paintoverArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L8,4.5 L0,9 Z"></path>
+                    </marker>
+                    <filter id="paintoverGlow" x="-40%" y="-40%" width="180%" height="180%">
+                      <feDropShadow dx="0" dy="1.2" stdDeviation="1.1" flood-color="#1f1c18" flood-opacity="0.35"></feDropShadow>
+                    </filter>
+                  </defs>
+                  <rect id="paintoverQuietZone" class="paintover-quiet-zone" x="0" y="0" width="0" height="100"></rect>
+                  <rect id="paintoverCropBox" class="paintover-crop-box" x="8" y="8" width="84" height="84"></rect>
+                  <path id="paintoverFlowPath" class="paintover-flow-path" d="M 50 50 C 54 45, 60 42, 66 39"></path>
+                  <line id="paintoverTargetLine" class="paintover-target-line" x1="50" y1="50" x2="66" y2="39"></line>
+                  <circle id="paintoverHotspotRing" class="paintover-hotspot-ring" cx="50" cy="50" r="8"></circle>
+                  <circle id="paintoverHotspotDot" class="paintover-hotspot-dot" cx="50" cy="50" r="1.5"></circle>
+                  <circle id="paintoverTargetDot" class="paintover-target-dot" cx="66" cy="39" r="2.2"></circle>
+                  <g id="paintoverLabel" class="paintover-label" transform="translate(8 10)">
+                    <rect x="0" y="0" width="42" height="9" rx="4.5"></rect>
+                    <text id="paintoverLabelText" x="4" y="6.4">FIX THIS FIRST</text>
+                  </g>
+                </svg>
+                <div id="paintoverBadge" class="paintover-badge" aria-hidden="true">Fix this first</div>
               </div>
             </div>
 
@@ -121,13 +144,12 @@
               <div class="upload-empty-state-inner">
                 <div class="upload-empty-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24">
-                    <path d="M12 16V6"></path>
-                    <path d="M8.5 9.5 12 6l3.5 3.5"></path>
-                    <path d="M5 18h14"></path>
+                    <path d="M12 6v12"></path>
+                    <path d="M6 12h12"></path>
                   </svg>
                 </div>
-                <p class="upload-empty-label">Drop an image here or click to upload</p>
-                <p class="upload-empty-subcopy">JPG, PNG, WebP</p>
+                <p class="upload-empty-label">Click to upload your image</p>
+                <p class="upload-empty-subcopy hidden">JPG, PNG, WebP</p>
               </div>
             </div>
           </div>
@@ -232,7 +254,11 @@
             <p id="statusNote" class="detail-copy">Waiting for image upload.</p>
             <div id="quickCheckResult" class="quick-check-result hidden">
               <p class="section-label result-label">Quick Check Score</p>
-              <p id="quickCheckScore" class="quick-check-score">72 / 100</p>
+              <div id="quickScoreHeader" class="quick-score-header">
+                <p id="quickCheckScore" class="quick-check-score">72 / 100</p>
+                <span id="quickCheckConfidenceBadge" class="confidence-badge">Usable</span>
+              </div>
+              <p id="quickCheckVerdict" class="quick-check-verdict">Your composition is readable, but the focal point needs a clearer job.</p>
               <div id="quickCheckWhyScore" class="result-block result-reveal">
                 <p class="result-block-title">Why This Score</p>
                 <div class="result-reason-list">
@@ -255,7 +281,7 @@
                 </div>
               </div>
               <div id="quickCheckFastestFix" class="result-suggestion result-reveal">
-                <p class="section-label result-label">Fastest Fix</p>
+                <p class="section-label result-label">Fix This First</p>
                 <p id="quickCheckFastestFixText" class="detail-copy">Push the focal contrast farther away from the center.</p>
               </div>
               <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
@@ -344,6 +370,6 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=20260428c"></script>
+  <script src="./script.js?v=20260429f"></script>
 </body>
 </html>

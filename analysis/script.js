@@ -14,6 +14,7 @@ const overlayColorPreview = document.getElementById("overlayColorPreview");
 const overlayColorSwatches = Array.from(document.querySelectorAll("[data-overlay-color]"));
 const runAnalysisButton = document.getElementById("runAnalysisButton");
 const mobileRunAnalysisButton = document.getElementById("mobileRunAnalysisButton");
+const mobileResetWorkspaceButton = document.getElementById("mobileResetWorkspaceButton");
 const quickCheckResult = document.getElementById("quickCheckResult");
 const quickCheckTopSections = document.getElementById("quickCheckTopSections");
 const quickCheckKeyInsightBlock = document.getElementById("quickCheckKeyInsightBlock");
@@ -24,6 +25,9 @@ const quickCheckWeaknessBlock = document.getElementById("quickCheckWeaknessBlock
 const quickCheckWeaknessText = document.getElementById("quickCheckWeaknessText");
 const quickCheckBlocks = document.getElementById("quickCheckBlocks");
 const quickCheckScore = document.getElementById("quickCheckScore");
+const quickScoreHeader = document.getElementById("quickScoreHeader");
+const quickCheckConfidenceBadge = document.getElementById("quickCheckConfidenceBadge");
+const quickCheckVerdict = document.getElementById("quickCheckVerdict");
 const quickCheckWhyScore = document.getElementById("quickCheckWhyScore");
 const quickCheckWhyPositive = document.getElementById("quickCheckWhyPositive");
 const quickCheckWhyLimiting = document.getElementById("quickCheckWhyLimiting");
@@ -48,6 +52,15 @@ const paintersFixList = document.getElementById("paintersFixList");
 const paintersFixLock = document.getElementById("paintersFixLock");
 const breakdownToggleButton = document.getElementById("breakdownToggleButton");
 const quickCheckDetails = document.getElementById("quickCheckDetails");
+const paintoverOverlay = document.getElementById("paintoverOverlay");
+const paintoverHotspotRing = document.getElementById("paintoverHotspotRing");
+const paintoverHotspotDot = document.getElementById("paintoverHotspotDot");
+const paintoverTargetDot = document.getElementById("paintoverTargetDot");
+const paintoverTargetLine = document.getElementById("paintoverTargetLine");
+const paintoverFlowPath = document.getElementById("paintoverFlowPath");
+const paintoverCropBox = document.getElementById("paintoverCropBox");
+const paintoverQuietZone = document.getElementById("paintoverQuietZone");
+const paintoverBadge = document.getElementById("paintoverBadge");
 const freeCheckNote = document.getElementById("freeCheckNote");
 const freeDailyNote = document.getElementById("freeDailyNote");
 const streakNote = document.getElementById("streakNote");
@@ -77,6 +90,7 @@ const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
 const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
 const LAST_STREAK_DAY_STORAGE_KEY = "m8_last_streak_day";
 const RECENT_BREAKDOWN_LINES_STORAGE_KEY = "m8_recent_lines";
+const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
@@ -200,7 +214,7 @@ uploadZone.addEventListener("click", () => {
     return;
   }
   analysisFileInput.click();
-});
+}, true);
 
 uploadZone.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
@@ -272,6 +286,8 @@ runAnalysisButton.addEventListener("click", () => {
 mobileRunAnalysisButton?.addEventListener("click", () => {
   runAnalysisButton.click();
 });
+
+mobileResetWorkspaceButton?.addEventListener("click", resetUploadedImage);
 
 window.addEventListener("resize", () => {
   if (!hasUploadedImage) {
@@ -357,7 +373,7 @@ function showPreview(file) {
     hasUploadedImage = true;
     imageStage.classList.remove("hidden");
     emptyState.classList.add("hidden");
-    workspaceHint.textContent = "Image is ready. Run the analysis when you want to continue.";
+    workspaceHint.textContent = "Image is ready. Tap the image to replace it or run the analysis.";
     statusHelper.classList.add("hidden");
     quickCheckResult.classList.add("hidden");
     lockedAnalysisState.classList.add("hidden");
@@ -513,9 +529,10 @@ function updateAnalysisAccessUI() {
   freeLimitHelper.classList.add("hidden");
 
   if (isAnalysisRunning) {
-    runAnalysisButton.textContent = "Run Analysis";
+    runAnalysisButton.textContent = "Analyzing...";
     runAnalysisButton.disabled = true;
     syncMobileRunAnalysisButton();
+    syncMobileResetWorkspaceButton();
     return;
   }
 
@@ -524,12 +541,14 @@ function updateAnalysisAccessUI() {
     runAnalysisButton.disabled = true;
     freeLimitHelper.classList.remove("hidden");
     syncMobileRunAnalysisButton();
+    syncMobileResetWorkspaceButton();
     return;
   }
 
   runAnalysisButton.textContent = "Run Analysis";
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
   syncMobileRunAnalysisButton();
+  syncMobileResetWorkspaceButton();
 }
 
 function shouldBlockAnalysisUpload() {
@@ -562,6 +581,9 @@ function applyOverlayColor() {
 
 function runQuickCheck() {
   isAnalysisRunning = true;
+  uploadZone.classList.add("is-analysis-running");
+  analysisSurface.classList.add("is-analysis-running");
+  statusHelper.classList.add("is-analysis-running");
   resetResultRevealState();
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
@@ -602,10 +624,15 @@ function completeQuickCheck() {
 
   setAnalysisStage("stage-final");
   applyGuidanceOverlay(result.metrics);
+  uploadZone.classList.remove("is-analysis-running");
+  analysisSurface.classList.remove("is-analysis-running");
+  statusHelper.classList.remove("is-analysis-running");
   statusHelper.classList.add("hidden");
   updateStatusMessage("Check complete.");
   workspaceHint.textContent = "Quick check complete. Review the composition notes on the right.";
   animateQuickCheckScore(result.score);
+  renderConfidenceBadge(result.metrics);
+  quickCheckVerdict.textContent = result.verdict;
   quickCheckWhyPositive.textContent = result.whyThisScore.positive;
   quickCheckWhyLimiting.textContent = result.whyThisScore.limiting;
   quickCheckKeyInsightText.textContent = result.keyInsight;
@@ -666,23 +693,95 @@ function completeQuickCheck() {
 function buildQuickCheckResult() {
   const metrics = analyzeUploadedImage();
   const composition = buildResultComposition();
+  const referenceCopy = metrics.referenceIssue ? buildReferenceIssueCopy(metrics, composition) : null;
 
   return {
     metrics,
     score: metrics.score,
-    whyThisScore: buildWhyThisScore(metrics),
-    keyInsight: composeKeyInsightText(getKeyInsightLine(metrics), composition),
-    strength: composeSectionText("strength", getStrengthLine(metrics), composition),
-    weakness: composeSectionText("weakness", getWeaknessLine(metrics), composition),
-    blocks: [
+    whyThisScore: referenceCopy?.whyThisScore || buildWhyThisScore(metrics),
+    keyInsight: referenceCopy?.keyInsight || composeKeyInsightText(getKeyInsightLine(metrics), composition),
+    strength: referenceCopy?.strength || composeSectionText("strength", getStrengthLine(metrics), composition),
+    weakness: referenceCopy?.weakness || composeSectionText("weakness", getWeaknessLine(metrics), composition),
+    blocks: referenceCopy?.blocks || [
       { title: "Structure", text: getStructureLine(metrics) },
-      { title: "Values", text: getValuesLine(metrics) }
+      { title: "Values", text: getValuesLine(metrics) },
+      { title: "Read Confidence", text: getReadConfidenceLine(metrics) }
     ],
-    suggestion: composeSectionText("suggestion", getSuggestionLine(metrics), composition),
-    fastestFix: buildFastestFix(metrics),
+    suggestion: referenceCopy?.suggestion || composeSectionText("suggestion", getSuggestionLine(metrics), composition),
+    fastestFix: referenceCopy?.fastestFix || buildFastestFix(metrics),
+    verdict: referenceCopy?.verdict || buildOneSentenceVerdict(metrics),
     scoreBreakdown: buildScoreBreakdown(metrics),
     composition,
     tags: buildTags(metrics)
+  };
+}
+
+function buildReferenceIssueCopy(metrics, composition) {
+  return {
+    whyThisScore: {
+      positive: pickVariant([
+        "The checker can still read contrast and balance signals, but those signals are coming from interface shapes.",
+        "There is enough light-dark information to analyze, but the source behaves more like a screenshot than a painting.",
+        "The scan found graphic structure, but it does not look like a usable artwork reference."
+      ]),
+      limiting: pickVariant([
+        "The score is held low because the upload looks like a UI screenshot or graphic panel, not a painting reference.",
+        "The score drops hard because large flat colors and screen-like edges make this a poor reference for composition critique.",
+        "The score stays low because the image appears to be an interface capture rather than the artwork itself."
+      ])
+    },
+    keyInsight: composeKeyInsightText(pickVariant([
+      "this does not read as a proper painting reference.",
+      "the upload looks more like a screen or graphic overlay than artwork.",
+      "the reference quality is too low for a fair painting check."
+    ]), composition),
+    strength: composeSectionText("strength", pickVariant([
+      "The app can still detect the broad dark-light arrangement.",
+      "The checker can still identify some large contrast masses.",
+      "There is enough tonal information to see a basic graphic structure."
+    ]), composition),
+    weakness: composeSectionText("weakness", pickVariant([
+      "The flat panels, hard UI edges, and limited color groups are not giving the checker a real painting to judge.",
+      "Most of the readable structure appears to come from screen elements rather than painted forms.",
+      "The image content behaves like an app screenshot, so composition feedback would be misleading."
+    ]), composition),
+    blocks: [
+      {
+        title: "Reference Quality",
+        text: pickVariant([
+          "This upload is being treated as a weak reference. It has too many flat screen-like shapes for a normal score.",
+          "The checker sees this as a low-confidence source because it looks more like UI than a painting or study image.",
+          "The reference is not strong enough for a fair critique, so the final score is intentionally capped low."
+        ])
+      },
+      {
+        title: "What Was Detected",
+        text: `Flat-color signal: ${Math.round((metrics.topColorRatio || 0) * 100)}%. Screen-like confidence: ${Math.round((metrics.screenLikeScore || 0) * 100)}%.`
+      },
+      {
+        title: "Better Upload",
+        text: pickVariant([
+          "Upload only the painting, sketch, or reference image without menus, payment screens, app UI, or screenshots around it.",
+          "Crop to the artwork itself and run Quick Check again. A real painting reference will get a much fairer read.",
+          "Use a photo or export of the artwork, not a capture of another app screen."
+        ])
+      }
+    ],
+    suggestion: composeSectionText("suggestion", pickVariant([
+      "rerun the check with the actual artwork cropped cleanly inside the frame.",
+      "upload the painting itself so the checker can judge composition instead of interface shapes.",
+      "remove UI panels and screen overlays before checking the image again."
+    ]), composition),
+    verdict: pickVariant([
+      "This upload is not a clean painting reference, so the score is intentionally low.",
+      "The checker sees this as a bad reference, not as artwork to critique.",
+      "Use the actual artwork instead of a screenshot before trusting the score."
+    ]),
+    fastestFix: pickVariant([
+      "Upload the artwork only, cropped cleanly.",
+      "Remove the screen or UI capture and use the real reference.",
+      "Crop out app panels, buttons, and overlays before scanning."
+    ])
   };
 }
 
@@ -707,6 +806,10 @@ function analyzeUploadedImage() {
   let leftWeight = 0;
   let rightWeight = 0;
   let centerWeight = 0;
+  let innerPixelCount = 0;
+  let edgePixels = 0;
+  let axisEdgePixels = 0;
+  let diagonalEdgePixels = 0;
 
   for (let y = 1; y < height - 1; y += 1) {
     for (let x = 1; x < width - 1; x += 1) {
@@ -716,10 +819,25 @@ function analyzeUploadedImage() {
       const brightness = luminance[index];
       const horizontalGradient = Math.abs(luminance[index + 1] - luminance[index - 1]) / 255;
       const verticalGradient = Math.abs(luminance[index + width] - luminance[index - width]) / 255;
+      const diagonalGradientA = Math.abs(luminance[index + width + 1] - luminance[index - width - 1]) / 255;
+      const diagonalGradientB = Math.abs(luminance[index + width - 1] - luminance[index - width + 1]) / 255;
       const gradientStrength = Math.hypot(horizontalGradient, verticalGradient);
       const contrastStrength = Math.abs(brightness - averageLuminance) / 255;
       const darknessBias = Math.max(0, (averageLuminance - brightness) / 255);
       const localWeight = (gradientStrength * 0.64) + (contrastStrength * 0.28) + (darknessBias * 0.18);
+      const strongestAxisEdge = Math.max(horizontalGradient, verticalGradient);
+      const strongestDiagonalEdge = Math.max(diagonalGradientA, diagonalGradientB);
+
+      innerPixelCount += 1;
+      if (gradientStrength > 0.09) {
+        edgePixels += 1;
+      }
+      if (strongestAxisEdge > 0.16) {
+        axisEdgePixels += 1;
+      }
+      if (strongestDiagonalEdge > 0.16) {
+        diagonalEdgePixels += 1;
+      }
 
       totalWeight += localWeight;
       weightedX += normalizedX * localWeight;
@@ -798,13 +916,23 @@ function analyzeUploadedImage() {
   const clarityQuality = focalClarity;
   const flowQuality = flowStrength;
   const depthQuality = depthStrength;
+  const edgeDensity = edgePixels / Math.max(innerPixelCount, 1);
+  const axisEdgeBias = axisEdgePixels / Math.max(axisEdgePixels + diagonalEdgePixels, 1);
+  const referenceAssessment = assessReferenceQuality({
+    ...sample,
+    edgeDensity,
+    axisEdgeBias
+  });
   const weightedQuality = (centerQuality * 0.22)
     + (balanceQuality * 0.18)
     + (valueQuality * 0.18)
     + (clarityQuality * 0.16)
     + (flowQuality * 0.14)
     + (depthQuality * 0.12);
-  const score = clamp(Math.round(58 + (weightedQuality * 32)), 58, 90);
+  const rawScore = clamp(Math.round(28 + (weightedQuality * 64)), 8, 94);
+  const score = referenceAssessment.referenceIssue
+    ? clamp(Math.round(rawScore * (0.28 + (referenceAssessment.referenceConfidence * 0.18))), 6, 38)
+    : rawScore;
 
   return {
     score,
@@ -825,7 +953,10 @@ function analyzeUploadedImage() {
     valueQuality,
     clarityQuality,
     flowQuality,
-    depthQuality
+    depthQuality,
+    edgeDensity,
+    axisEdgeBias,
+    ...referenceAssessment
   };
 }
 
@@ -854,15 +985,30 @@ function getImageSampleData(image, maxDimension) {
   const { data } = context.getImageData(0, 0, sampleWidth, sampleHeight);
   const luminance = new Float32Array(sampleWidth * sampleHeight);
   const luminanceValues = new Array(sampleWidth * sampleHeight);
+  const colorBins = new Uint32Array(512);
   let total = 0;
+  let saturationTotal = 0;
+  let nearGrayPixels = 0;
 
   for (let index = 0, pixel = 0; index < data.length; index += 4, pixel += 1) {
     const alpha = data[index + 3] / 255;
-    const luminanceValue = ((0.2126 * data[index]) + (0.7152 * data[index + 1]) + (0.0722 * data[index + 2])) * alpha
-      + (255 * (1 - alpha));
+    const red = (data[index] * alpha) + (255 * (1 - alpha));
+    const green = (data[index + 1] * alpha) + (255 * (1 - alpha));
+    const blue = (data[index + 2] * alpha) + (255 * (1 - alpha));
+    const luminanceValue = (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+    const maxChannel = Math.max(red, green, blue);
+    const minChannel = Math.min(red, green, blue);
+    const saturation = maxChannel <= 0 ? 0 : (maxChannel - minChannel) / maxChannel;
+    const colorBin = (Math.round(red) >> 5) * 64 + (Math.round(green) >> 5) * 8 + (Math.round(blue) >> 5);
+
     luminance[pixel] = luminanceValue;
     luminanceValues[pixel] = luminanceValue;
+    colorBins[colorBin] += 1;
     total += luminanceValue;
+    saturationTotal += saturation;
+    if (saturation < 0.08) {
+      nearGrayPixels += 1;
+    }
   }
 
   const averageLuminance = total / luminance.length;
@@ -874,6 +1020,25 @@ function getImageSampleData(image, maxDimension) {
   luminanceValues.sort((a, b) => a - b);
   const lower = luminanceValues[Math.floor(luminanceValues.length * 0.1)];
   const upper = luminanceValues[Math.floor(luminanceValues.length * 0.9)];
+  const pixelCount = luminance.length;
+  const colorGroupThreshold = pixelCount * 0.008;
+  let topColorCount = 0;
+  let colorGroupCount = 0;
+  let colorEntropy = 0;
+
+  colorBins.forEach((count) => {
+    if (!count) {
+      return;
+    }
+
+    topColorCount = Math.max(topColorCount, count);
+    if (count >= colorGroupThreshold) {
+      colorGroupCount += 1;
+    }
+
+    const probability = count / pixelCount;
+    colorEntropy -= probability * Math.log2(probability);
+  });
 
   return {
     width: sampleWidth,
@@ -881,7 +1046,56 @@ function getImageSampleData(image, maxDimension) {
     luminance,
     averageLuminance,
     stdDeviation: Math.sqrt(variance / luminance.length),
-    spread: (upper - lower) / 255
+    spread: (upper - lower) / 255,
+    topColorRatio: topColorCount / pixelCount,
+    colorGroupCount,
+    colorEntropy: colorEntropy / Math.log2(colorBins.length),
+    meanSaturation: saturationTotal / pixelCount,
+    nearGrayRatio: nearGrayPixels / pixelCount
+  };
+}
+
+function assessReferenceQuality(sample) {
+  const topColorRatio = sample.topColorRatio || 0;
+  const colorGroupCount = sample.colorGroupCount || 0;
+  const colorEntropy = sample.colorEntropy || 0;
+  const meanSaturation = sample.meanSaturation || 0;
+  const nearGrayRatio = sample.nearGrayRatio || 0;
+  const edgeDensity = sample.edgeDensity || 0;
+  const axisEdgeBias = sample.axisEdgeBias || 0;
+
+  const flatColorScore = clamp((topColorRatio - 0.16) / 0.22, 0, 1);
+  const limitedPaletteScore = clamp((14 - colorGroupCount) / 11, 0, 1);
+  const lowEntropyScore = clamp((0.48 - colorEntropy) / 0.28, 0, 1);
+  const axisScore = clamp((axisEdgeBias - 0.54) / 0.26, 0, 1);
+  const hardEdgeScore = clamp((edgeDensity - 0.045) / 0.12, 0, 1);
+  const grayscaleUiScore = clamp((nearGrayRatio - 0.68) / 0.24, 0, 1) * clamp((edgeDensity - 0.035) / 0.1, 0, 1);
+  const paintedTextureRelief = clamp((colorEntropy - 0.44) / 0.22, 0, 1) * clamp((1 - axisEdgeBias) / 0.42, 0, 1);
+  const screenLikeScore = clamp(
+    (flatColorScore * 0.3)
+      + (limitedPaletteScore * 0.22)
+      + (lowEntropyScore * 0.18)
+      + (axisScore * 0.16)
+      + (hardEdgeScore * 0.08)
+      + (grayscaleUiScore * 0.06)
+      - (paintedTextureRelief * 0.16),
+    0,
+    1
+  );
+  const referenceConfidence = clamp(1 - screenLikeScore, 0, 1);
+  const strongScreenSignals = topColorRatio > 0.22 || colorGroupCount <= 12 || colorEntropy < 0.34;
+  const referenceIssue = screenLikeScore > 0.56 && strongScreenSignals && meanSaturation < 0.42;
+
+  return {
+    referenceConfidence,
+    referenceIssue,
+    screenLikeScore,
+    referenceIssueType: referenceIssue ? "screen-or-graphic" : "",
+    topColorRatio,
+    colorGroupCount,
+    colorEntropy,
+    meanSaturation,
+    nearGrayRatio
   };
 }
 
@@ -1086,10 +1300,12 @@ function pickVariant(variants) {
 }
 
 function buildResultComposition() {
+  const flow = pickVariant(SECTION_FLOW_VARIANTS);
+
   return {
     intro: pickVariant(KEY_INSIGHT_INTROS),
-    topSectionOrder: ["keyInsight", "strength", "weakness"],
-    detailOrder: "blocks-first",
+    topSectionOrder: [...flow.topSectionOrder],
+    detailOrder: flow.detailOrder,
     bridgeKeys: Object.keys(SECTION_BRIDGE_PHRASES).filter(() => Math.random() < 0.28)
   };
 }
@@ -1542,8 +1758,116 @@ function getValuesLine(metrics) {
   return `${value} ${clarity} ${depth}`;
 }
 
+function getReadConfidenceLine(metrics) {
+  if (metrics.referenceConfidence < 0.46) {
+    return pickVariant([
+      "The checker is cautious here because the upload has some graphic or screen-like qualities.",
+      "The read confidence is lower because the image contains flat shapes that can behave like interface elements.",
+      "The analysis is less confident where the source looks more graphic than painterly."
+    ]);
+  }
+
+  if (metrics.referenceConfidence < 0.72) {
+    return pickVariant([
+      "The checker has a usable read, but a cleaner crop would make the result more reliable.",
+      "The reference is readable enough, though cropping closer to the artwork would improve confidence.",
+      "The result is usable, but a cleaner artwork-only source would sharpen the critique."
+    ]);
+  }
+
+  return pickVariant([
+    "The upload reads like a usable artwork reference, so the score is based on composition and value structure.",
+    "The checker has enough image information to judge the main visual structure.",
+    "The source looks usable for a quick composition read."
+  ]);
+}
+
+function buildOneSentenceVerdict(metrics) {
+  if (metrics.referenceIssue) {
+    return pickVariant([
+      "This is not a clean artwork reference, so the score should stay low.",
+      "The upload looks like a screenshot, not a painting to critique.",
+      "Use the actual artwork before trusting the composition score."
+    ]);
+  }
+
+  if (metrics.centerDominance > 0.56) {
+    return pickVariant([
+      "The composition is readable, but the focal pull sits too close to center.",
+      "Your image has a clear read, but the main attention feels too centered.",
+      "The quickest win is moving the focal contrast away from the middle."
+    ]);
+  }
+
+  if (metrics.balanceImbalance > 0.15) {
+    return metrics.balanceDirection === "left"
+      ? pickVariant([
+        "The read is clear, but the left side carries too much visual weight.",
+        "Your composition works, but the left side is pulling attention too hard.",
+        "The fastest improvement is quieting the left side of the frame."
+      ])
+      : pickVariant([
+        "The read is clear, but the right side carries too much visual weight.",
+        "Your composition works, but the right side is pulling attention too hard.",
+        "The fastest improvement is quieting the right side of the frame."
+      ]);
+  }
+
+  if (metrics.valueQuality < 0.46) {
+    return pickVariant([
+      "The composition has potential, but the value groups need stronger separation.",
+      "The image reads softly because light and dark families sit too close together.",
+      "A clearer light-dark hierarchy would make the structure feel stronger."
+    ]);
+  }
+
+  if (metrics.clarityQuality < 0.46) {
+    return pickVariant([
+      "The structure is usable, but the focal stop needs more clarity.",
+      "The eye needs a firmer landing point inside the composition.",
+      "Clarify the focal area before adding more detail."
+    ]);
+  }
+
+  return pickVariant([
+    "The composition reads well; protect the focal hierarchy and avoid extra noise.",
+    "This is a usable read with a clear enough focal structure.",
+    "The image is working; refine the main value path rather than adding complexity."
+  ]);
+}
+
+function renderConfidenceBadge(metrics) {
+  if (!quickCheckConfidenceBadge) {
+    return;
+  }
+
+  const badge = getConfidenceBadge(metrics);
+  quickCheckConfidenceBadge.textContent = badge.label;
+  quickCheckConfidenceBadge.className = `confidence-badge ${badge.className}`;
+}
+
+function getConfidenceBadge(metrics) {
+  if (metrics.referenceIssue) {
+    return { label: "Bad Upload", className: "confidence-bad" };
+  }
+
+  if (metrics.referenceConfidence < 0.46) {
+    return { label: "Low Confidence", className: "confidence-low" };
+  }
+
+  if (metrics.referenceConfidence < 0.72) {
+    return { label: "Usable", className: "confidence-usable" };
+  }
+
+  return { label: "Strong Reference", className: "confidence-strong" };
+}
+
 function buildTags(metrics) {
   const tags = [];
+
+  if (metrics.referenceIssue) {
+    return ["Not Artwork", "Screenshot / UI", "Low Confidence", "Re-upload"];
+  }
 
   if (metrics.centerDominance > 0.68) {
     tags.push("Center Dominant");
@@ -1590,7 +1914,7 @@ function buildTags(metrics) {
 
 function getFallbackMetrics() {
   return {
-    score: 72,
+    score: 18,
     centerDominance: 0.62,
     centerDistance: 0.12,
     centerWeightShare: 0.28,
@@ -1608,7 +1932,18 @@ function getFallbackMetrics() {
     valueQuality: 0.48,
     clarityQuality: 0.38,
     flowQuality: 0.46,
-    depthQuality: 0.35
+    depthQuality: 0.35,
+    edgeDensity: 0,
+    axisEdgeBias: 0,
+    referenceConfidence: 0.18,
+    referenceIssue: true,
+    screenLikeScore: 0.82,
+    referenceIssueType: "unreadable",
+    topColorRatio: 0,
+    colorGroupCount: 0,
+    colorEntropy: 0,
+    meanSaturation: 0,
+    nearGrayRatio: 0
   };
 }
 
@@ -1634,6 +1969,9 @@ function resetAnalysisSequence() {
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
   latestQuickCheckResult = null;
+  uploadZone.classList.remove("is-analysis-running");
+  analysisSurface.classList.remove("is-analysis-running");
+  statusHelper.classList.remove("is-analysis-running");
   clearGuidanceOverlay();
   setAnalysisStage("");
   resetResultRevealState();
@@ -1642,14 +1980,51 @@ function resetAnalysisSequence() {
 
 function resetEmptyState() {
   if (emptyStateLabel) {
-    emptyStateLabel.textContent = "Drop an image here or click to upload";
+    emptyStateLabel.textContent = "Click to upload your image";
   }
   if (emptyStateSubcopy) {
     emptyStateSubcopy.textContent = "JPG, PNG, WebP";
-    emptyStateSubcopy.classList.remove("hidden");
+    emptyStateSubcopy.classList.add("hidden");
   }
   emptyState.classList.remove("hidden");
   uploadZone.classList.remove("has-load-error");
+}
+
+function resetUploadedImage() {
+  if (!hasUploadedImage && !currentObjectUrl && !analysisPreview.getAttribute("src")) {
+    return;
+  }
+
+  imageLoadRequestId += 1;
+  resetAnalysisSequence();
+  resetNotanReading();
+  setUploadLoadingState(false);
+
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+
+  hasUploadedImage = false;
+  analysisPreview.onload = null;
+  analysisPreview.onerror = null;
+  analysisPreview.removeAttribute("src");
+  analysisPreview.classList.remove("is-loaded");
+  imageStage.classList.add("hidden");
+  quickCheckResult.classList.add("hidden");
+  lockedAnalysisState.classList.add("hidden");
+  freeCheckNote.classList.add("hidden");
+  freeDailyNote.classList.add("hidden");
+  streakNote.classList.add("hidden");
+  statusHelper.classList.add("hidden");
+  isBreakdownExpanded = false;
+  updateBreakdownUI();
+  resetEmptyState();
+  resetWorkspaceViewport(true);
+  workspaceHint.textContent = "Click the upload box to choose a painting.";
+  updateStatusMessage("Waiting for image upload.", true);
+  updateAnalysisAccessUI();
+  showStatusToast("Workspace reset");
 }
 
 function showUploadError(message) {
@@ -1671,6 +2046,21 @@ function showUploadError(message) {
 
 function renderResultBlocks(blocks) {
   quickCheckBlocks.innerHTML = "";
+
+  blocks.forEach((block) => {
+    const blockElement = document.createElement("div");
+    const titleElement = document.createElement("p");
+    const textElement = document.createElement("p");
+
+    blockElement.className = "result-block";
+    titleElement.className = "result-block-title";
+    textElement.className = "detail-copy";
+    titleElement.textContent = block.title;
+    textElement.textContent = block.text;
+
+    blockElement.append(titleElement, textElement);
+    quickCheckBlocks.appendChild(blockElement);
+  });
 }
 
 function renderDynamicBreakdown(result) {
@@ -1754,6 +2144,7 @@ function buildBreakdownContext(result) {
   return {
     tags,
     metrics,
+    isReferenceIssue: Boolean(metrics.referenceIssue),
     isCentered: hasTag("Center Dominant"),
     isBalanced: hasTag("Balanced"),
     isStatic: hasTag("Static Flow"),
@@ -1785,6 +2176,43 @@ function buildContextualBreakdownPools(context) {
     "Use one darker passage to stabilize the composition.",
     "Clarify the light path before adding smaller details."
   ];
+
+  if (context.isReferenceIssue) {
+    return {
+      works: [
+        "The checker can still identify broad dark-light masses.",
+        "The upload has enough contrast to show a basic graphic structure.",
+        "Some balance signals are readable, but they come from screen-like shapes."
+      ],
+      weaknesses: [
+        "The upload looks like a screenshot or UI panel rather than a painting reference.",
+        "Flat color blocks and hard rectangular edges make composition feedback unreliable.",
+        "The result is low-confidence because the checker is not seeing a clean artwork image."
+      ],
+      tests: [
+        "Upload the painting itself, cropped to the artwork only.",
+        "Remove app controls, payment panels, screenshots, borders, and overlays before checking.",
+        "Use a photo, scan, or export of the artwork instead of a screen capture."
+      ],
+      fixes: [
+        "Crop to the artwork only, then run Quick Check again.",
+        "Replace the screenshot with the real painting reference.",
+        "Remove UI panels and upload a clean artwork image."
+      ],
+      priorityWorks: [
+        "The app can still detect contrast, but this is not enough for a fair painting score."
+      ],
+      priorityWeaknesses: [
+        "The uploaded image does not look like a proper painting reference."
+      ],
+      priorityTests: [
+        "Upload only the artwork, without app UI or screen overlays."
+      ],
+      priorityFixes: [
+        "Rerun the check with a clean crop of the actual artwork."
+      ]
+    };
+  }
 
   if (context.isStatic) {
     priorityWeaknesses.push("The directional flow is limited, which reduces visual rhythm.");
@@ -1912,6 +2340,8 @@ function resetResultRevealState() {
   [
     quickCheckResult,
     quickCheckScore,
+    quickScoreHeader,
+    quickCheckVerdict,
     quickCheckWhyScore,
     quickCheckTopSections,
     quickCheckFastestFix,
@@ -1941,17 +2371,23 @@ function resetResultRevealState() {
 
   quickCheckComparison?.classList.add("hidden");
   quickCheckScore.textContent = "72 / 100";
+  quickCheckVerdict.textContent = "Your composition is readable, but the focal point needs a clearer job.";
+  if (quickCheckConfidenceBadge) {
+    quickCheckConfidenceBadge.textContent = "Usable";
+    quickCheckConfidenceBadge.className = "confidence-badge confidence-usable";
+  }
 }
 
 function revealResultPanel() {
   const revealSteps = [
-    { element: quickCheckScore, delay: 80 },
-    { element: quickCheckWhyScore, delay: 180 },
-    { element: quickCheckTopSections, delay: 300 },
-    { element: quickCheckFastestFix, delay: 420 },
-    { element: quickCheckScoreBreakdown, delay: 540 },
-    { element: quickCheckComparison, delay: 640, skip: quickCheckComparison.classList.contains("hidden") },
-    { element: quickCheckTags, delay: 760 },
+    { element: quickScoreHeader || quickCheckScore, delay: 80 },
+    { element: quickCheckVerdict, delay: 150 },
+    { element: quickCheckWhyScore, delay: 230 },
+    { element: quickCheckTopSections, delay: 340 },
+    { element: quickCheckFastestFix, delay: 460 },
+    { element: quickCheckScoreBreakdown, delay: 580 },
+    { element: quickCheckComparison, delay: 680, skip: quickCheckComparison.classList.contains("hidden") },
+    { element: quickCheckTags, delay: 780 },
     { element: freeCheckNote, delay: 860, skip: freeCheckNote.classList.contains("hidden") },
     { element: freeDailyNote, delay: 860, skip: freeDailyNote.classList.contains("hidden") },
     { element: streakNote, delay: 940, skip: streakNote.classList.contains("hidden") }
@@ -2065,6 +2501,16 @@ function animateQuickCheckScore(score) {
 }
 
 function buildScoreBreakdown(metrics) {
+  if (metrics.referenceIssue) {
+    return [
+      { label: "Reference Quality", score: normalizeQualityScore(metrics.referenceConfidence), quality: "Poor source" },
+      { label: "Artwork Confidence", score: normalizeQualityScore(1 - metrics.screenLikeScore), quality: "Low confidence" },
+      { label: "Focal Placement", score: Math.min(38, normalizeQualityScore(metrics.centerQuality)), quality: getQualityLabel(metrics.centerQuality) },
+      { label: "Value Structure", score: Math.min(38, normalizeQualityScore(metrics.valueQuality)), quality: getQualityLabel(metrics.valueQuality) },
+      { label: "Depth Read", score: Math.min(34, normalizeQualityScore(metrics.depthQuality)), quality: getQualityLabel(metrics.depthQuality) }
+    ];
+  }
+
   return [
     { label: "Focal Placement", score: normalizeQualityScore(metrics.centerQuality), quality: getQualityLabel(metrics.centerQuality) },
     { label: "Balance", score: normalizeQualityScore(metrics.balanceQuality), quality: getQualityLabel(metrics.balanceQuality) },
@@ -2076,18 +2522,88 @@ function buildScoreBreakdown(metrics) {
 
 function buildWhyThisScore(metrics) {
   const positives = [
-    { score: metrics.balanceQuality, text: "The score is helped by a stable left-right balance." },
-    { score: metrics.valueQuality, text: "The score is helped by value grouping that reads clearly enough." },
-    { score: metrics.flowQuality, text: "The score is helped by a readable eye path through the frame." },
-    { score: metrics.depthQuality, text: "The score is helped by enough depth separation to keep the image readable." },
-    { score: metrics.clarityQuality, text: "The score is helped by a focal area that lands with reasonable clarity." }
+    {
+      score: metrics.balanceQuality,
+      variants: [
+        "The score is helped by a stable left-right balance.",
+        "Side-to-side weight is behaving well enough to support the read.",
+        "The frame gains points from a reasonably even weight distribution."
+      ]
+    },
+    {
+      score: metrics.valueQuality,
+      variants: [
+        "The score is helped by value grouping that reads clearly enough.",
+        "The light and dark families are organized enough to support the structure.",
+        "The image gains points where the value groups separate into readable masses."
+      ]
+    },
+    {
+      score: metrics.flowQuality,
+      variants: [
+        "The score is helped by a readable eye path through the frame.",
+        "The eye has enough directional movement to travel through the composition.",
+        "The structure gains points where visual movement connects the main areas."
+      ]
+    },
+    {
+      score: metrics.depthQuality,
+      variants: [
+        "The score is helped by enough depth separation to keep the image readable.",
+        "Spatial layers separate enough to give the image some depth.",
+        "The value structure gives the scene enough layer separation to read."
+      ]
+    },
+    {
+      score: metrics.clarityQuality,
+      variants: [
+        "The score is helped by a focal area that lands with reasonable clarity.",
+        "The focal area has enough concentration for the eye to find it.",
+        "The image gains points where attention gathers into a readable focal stop."
+      ]
+    }
   ];
   const limits = [
-    { score: metrics.centerDominance, text: "The score drops because the focal pull sits too close to the center." },
-    { score: metrics.balanceImbalance, text: `The score drops because visual weight leans too far to the ${metrics.balanceDirection}.` },
-    { score: 1 - metrics.valueQuality, text: "The score drops because the value grouping still feels too compressed." },
-    { score: 1 - metrics.clarityQuality, text: "The score drops because the focal landing point is still too diffused." },
-    { score: 1 - metrics.depthQuality, text: "The score drops because depth separation is still too mild." }
+    {
+      score: metrics.centerDominance,
+      variants: [
+        "The score drops because the focal pull sits too close to the center.",
+        "The main attention is still a bit too centered, which makes the read feel locked.",
+        "The composition loses points where the focal weight gathers near the middle."
+      ]
+    },
+    {
+      score: metrics.balanceImbalance,
+      variants: [
+        `The score drops because visual weight leans too far to the ${metrics.balanceDirection}.`,
+        `The ${metrics.balanceDirection} side is carrying more pull than the opposite side.`,
+        `The frame loses points where the ${metrics.balanceDirection} side dominates the read.`
+      ]
+    },
+    {
+      score: 1 - metrics.valueQuality,
+      variants: [
+        "The score drops because the value grouping still feels too compressed.",
+        "The image loses points where light and dark groups stay too close together.",
+        "The value structure needs clearer separation before the score can climb."
+      ]
+    },
+    {
+      score: 1 - metrics.clarityQuality,
+      variants: [
+        "The score drops because the focal landing point is still too diffused.",
+        "The eye does not get a firm enough stopping point yet.",
+        "The focal area needs stronger separation from surrounding values."
+      ]
+    },
+    {
+      score: 1 - metrics.depthQuality,
+      variants: [
+        "The score drops because depth separation is still too mild.",
+        "Foreground and background layers need more value separation.",
+        "The space reads flatter where the main planes sit too close in value."
+      ]
+    }
   ];
 
   return {
@@ -2147,21 +2663,302 @@ function buildComparison(previousResult, currentResult) {
 function applyGuidanceOverlay(metrics) {
   clearGuidanceOverlay();
 
-  if (metrics.centerDominance > 0.56) {
-    analysisSurface.classList.add("guidance-centered");
+  const paintoverPlan = applyPaintoverOverlay(metrics);
+
+  if (metrics.referenceIssue) {
+    analysisSurface.classList.add("paintover-reference-warning");
+    return;
   }
 
-  if (metrics.balanceImbalance > 0.15) {
-    analysisSurface.classList.add(metrics.balanceDirection === "left" ? "guidance-left-heavy" : "guidance-right-heavy");
-  }
-
-  if (metrics.clarityQuality < 0.46) {
-    analysisSurface.classList.add("guidance-low-clarity");
-  }
+  paintoverPlan?.guidanceClasses?.forEach((className) => {
+    analysisSurface.classList.add(className);
+  });
 }
 
 function clearGuidanceOverlay() {
-  analysisSurface.classList.remove("guidance-centered", "guidance-left-heavy", "guidance-right-heavy", "guidance-low-clarity");
+  analysisSurface.classList.remove(
+    "guidance-centered",
+    "guidance-left-heavy",
+    "guidance-right-heavy",
+    "guidance-low-clarity",
+    "paintover-visible",
+    "paintover-reference-warning"
+  );
+}
+
+function applyPaintoverOverlay(metrics) {
+  if (!paintoverOverlay) {
+    return null;
+  }
+
+  const plan = buildPaintoverPlan(metrics);
+
+  setSvgNumber(paintoverHotspotRing, "cx", plan.hotspotX);
+  setSvgNumber(paintoverHotspotRing, "cy", plan.hotspotY);
+  setSvgNumber(paintoverHotspotRing, "r", plan.hotspotRadius);
+  setSvgNumber(paintoverHotspotDot, "cx", plan.hotspotX);
+  setSvgNumber(paintoverHotspotDot, "cy", plan.hotspotY);
+  setSvgNumber(paintoverTargetDot, "cx", plan.targetX);
+  setSvgNumber(paintoverTargetDot, "cy", plan.targetY);
+  setSvgNumber(paintoverTargetLine, "x1", plan.hotspotX);
+  setSvgNumber(paintoverTargetLine, "y1", plan.hotspotY);
+  setSvgNumber(paintoverTargetLine, "x2", plan.targetX);
+  setSvgNumber(paintoverTargetLine, "y2", plan.targetY);
+  paintoverFlowPath?.setAttribute("d", `M ${plan.flowStartX} ${plan.flowStartY} C ${plan.flowControlX} ${plan.flowControlY}, ${plan.hotspotX} ${plan.hotspotY}, ${plan.flowEndX} ${plan.flowEndY}`);
+  setSvgNumber(paintoverCropBox, "x", plan.cropX);
+  setSvgNumber(paintoverCropBox, "y", plan.cropY);
+  setSvgNumber(paintoverCropBox, "width", plan.cropWidth);
+  setSvgNumber(paintoverCropBox, "height", plan.cropHeight);
+  setSvgNumber(paintoverQuietZone, "x", plan.quietX);
+  setSvgNumber(paintoverQuietZone, "width", plan.quietWidth);
+  paintoverQuietZone?.setAttribute("height", "100");
+
+  if (paintoverBadge) {
+    paintoverBadge.textContent = plan.label;
+    analysisSurface.style.setProperty("--paintover-badge-x", `${plan.badgeX}%`);
+    analysisSurface.style.setProperty("--paintover-badge-y", `${plan.badgeY}%`);
+  }
+
+  analysisSurface.classList.add("paintover-visible");
+  return plan;
+}
+
+function buildPaintoverPlan(metrics) {
+  const hotspotX = clamp((metrics?.focalX ?? 0.5) * 100, 12, 88);
+  const hotspotY = clamp((metrics?.focalY ?? 0.5) * 100, 12, 88);
+
+  if (metrics.referenceIssue) {
+    return {
+      hotspotX: 50,
+      hotspotY: 50,
+      hotspotRadius: 24,
+      targetX: 50,
+      targetY: 50,
+      flowStartX: 20,
+      flowStartY: 82,
+      flowControlX: 35,
+      flowControlY: 36,
+      flowEndX: 80,
+      flowEndY: 18,
+      cropX: 8,
+      cropY: 8,
+      cropWidth: 84,
+      cropHeight: 84,
+      quietX: 0,
+      quietWidth: 100,
+      badgeX: 8,
+      badgeY: 8,
+      label: "Bad reference",
+      guidanceClasses: []
+    };
+  }
+
+  const issue = selectPaintoverIssue(metrics);
+  rememberPaintoverAction(issue.key);
+  const targetX = issue.targetX ?? getNearestThirdTarget(hotspotX, hotspotX < 50 ? 1 : 0);
+  const targetY = issue.targetY ?? getNearestThirdTarget(hotspotY, hotspotY < 50 ? 1 : 0);
+  const quietX = issue.quietSide === "left" ? 0 : issue.quietSide === "right" ? 68 : 0;
+  const quietWidth = issue.quietSide ? 32 : 0;
+  const flowStartX = issue.flowStartX ?? clamp(hotspotX + (hotspotX < 50 ? 28 : -28), 12, 88);
+  const flowStartY = issue.flowStartY ?? clamp(hotspotY + (hotspotY < 50 ? 30 : -30), 12, 88);
+  const flowEndX = issue.flowEndX ?? clamp(targetX + (targetX < 50 ? -18 : 18), 10, 90);
+  const flowEndY = issue.flowEndY ?? clamp(targetY + (targetY < 50 ? -12 : 12), 10, 90);
+
+  return {
+    hotspotX,
+    hotspotY,
+    hotspotRadius: issue.hotspotRadius ?? 7.6,
+    targetX,
+    targetY,
+    flowStartX,
+    flowStartY,
+    flowControlX: issue.flowControlX ?? clamp((hotspotX + targetX) / 2, 14, 86),
+    flowControlY: issue.flowControlY ?? clamp((hotspotY + targetY) / 2 - 18, 10, 90),
+    flowEndX,
+    flowEndY,
+    cropX: issue.cropX ?? 7,
+    cropY: issue.cropY ?? 7,
+    cropWidth: issue.cropWidth ?? 86,
+    cropHeight: issue.cropHeight ?? 86,
+    quietX,
+    quietWidth,
+    badgeX: issue.badgeX ?? clamp(Math.min(hotspotX, targetX) - 4, 6, 62),
+    badgeY: issue.badgeY ?? clamp(Math.min(hotspotY, targetY) - 13, 6, 82),
+    label: pickVariant(issue.labels),
+    guidanceClasses: issue.guidanceClasses
+  };
+}
+
+function selectPaintoverIssue(metrics) {
+  const hotspotX = clamp((metrics?.focalX ?? 0.5) * 100, 12, 88);
+  const hotspotY = clamp((metrics?.focalY ?? 0.5) * 100, 12, 88);
+  const issues = buildPaintoverIssues(metrics, hotspotX, hotspotY)
+    .filter((issue) => issue.score >= 0.34)
+    .sort((left, right) => right.score - left.score);
+  const fallbackIssue = buildProtectReadIssue(metrics, hotspotX, hotspotY);
+
+  if (!issues.length) {
+    return fallbackIssue;
+  }
+
+  const bestScore = issues[0].score;
+  const recentActions = getRecentPaintoverActions();
+  const shortlist = issues.filter((issue) => issue.score >= bestScore - 0.18 || issue.score >= 0.58);
+  const fresh = shortlist.filter((issue) => !recentActions.includes(issue.key));
+  if (!fresh.length && shortlist.length === 1 && recentActions.includes(shortlist[0].key)) {
+    return fallbackIssue;
+  }
+  return pickWeightedIssue(fresh.length ? fresh : shortlist) || fallbackIssue;
+}
+
+function buildPaintoverIssues(metrics, hotspotX, hotspotY) {
+  const targetX = getNearestThirdTarget(hotspotX, hotspotX < 50 ? 1 : 0);
+  const targetY = getNearestThirdTarget(hotspotY, hotspotY < 50 ? 1 : 0);
+  const side = metrics.balanceDirection === "left" ? "left" : "right";
+  const quietTargetX = side === "left" ? 24 : 76;
+  const valueTargetY = clamp(hotspotY < 50 ? hotspotY + 26 : hotspotY - 26, 14, 86);
+
+  return [
+    {
+      key: "move-focus",
+      score: clamp((metrics.centerDominance - 0.38) / 0.34, 0, 1),
+      labels: ["Move focus", "Shift focal pull", "Break the center"],
+      targetX,
+      targetY,
+      cropX: 10,
+      cropY: 9,
+      cropWidth: 80,
+      cropHeight: 82,
+      hotspotRadius: 8.4,
+      guidanceClasses: ["guidance-centered"]
+    },
+    {
+      key: `quiet-${side}`,
+      score: clamp((metrics.balanceImbalance - 0.08) / 0.18, 0, 1),
+      labels: side === "left"
+        ? ["Quiet left side", "Reduce left pull", "Soften left edge"]
+        : ["Quiet right side", "Reduce right pull", "Soften right edge"],
+      targetX: quietTargetX,
+      targetY: hotspotY,
+      flowEndX: quietTargetX,
+      flowEndY: clamp(hotspotY + 18, 12, 88),
+      quietSide: side,
+      hotspotRadius: 7.4,
+      guidanceClasses: [side === "left" ? "guidance-left-heavy" : "guidance-right-heavy"]
+    },
+    {
+      key: "separate-values",
+      score: clamp((0.72 - metrics.valueQuality) / 0.5, 0, 1),
+      labels: ["Separate values", "Push value groups", "Clarify light-dark"],
+      targetX: clamp(hotspotX + (hotspotX < 50 ? 20 : -20), 14, 86),
+      targetY: valueTargetY,
+      flowStartX: clamp(hotspotX + 24, 12, 88),
+      flowStartY: clamp(hotspotY - 24, 12, 88),
+      flowEndX: clamp(hotspotX - 24, 12, 88),
+      flowEndY: clamp(hotspotY + 24, 12, 88),
+      hotspotRadius: 9.5,
+      guidanceClasses: ["guidance-low-clarity"]
+    },
+    {
+      key: "clarify-focal-stop",
+      score: clamp((0.7 - metrics.clarityQuality) / 0.52, 0, 1),
+      labels: ["Clarify focal stop", "Simplify around focus", "Make focus land"],
+      targetX: hotspotX,
+      targetY: hotspotY,
+      flowStartX: clamp(hotspotX - 24, 12, 88),
+      flowStartY: clamp(hotspotY + 18, 12, 88),
+      flowEndX: hotspotX,
+      flowEndY: hotspotY,
+      hotspotRadius: 11,
+      guidanceClasses: ["guidance-low-clarity"]
+    },
+    {
+      key: "build-depth",
+      score: clamp((0.66 - metrics.depthQuality) / 0.48, 0, 1),
+      labels: ["Separate depth", "Push front/back", "Clarify planes"],
+      targetX: hotspotX,
+      targetY: clamp(hotspotY < 50 ? 76 : 24, 14, 86),
+      flowStartX: clamp(hotspotX - 28, 12, 88),
+      flowStartY: clamp(hotspotY < 50 ? 82 : 18, 12, 88),
+      flowEndX: clamp(hotspotX + 24, 12, 88),
+      flowEndY: clamp(hotspotY < 50 ? 22 : 78, 12, 88),
+      hotspotRadius: 8.8,
+      guidanceClasses: []
+    },
+    {
+      key: "build-eye-path",
+      score: clamp((0.62 - metrics.flowStrength) / 0.42, 0, 1),
+      labels: ["Build eye path", "Link the masses", "Guide the eye"],
+      targetX: clamp(hotspotX < 50 ? 72 : 28, 14, 86),
+      targetY: clamp(hotspotY < 50 ? 72 : 28, 14, 86),
+      flowStartX: clamp(hotspotX < 50 ? 18 : 82, 12, 88),
+      flowStartY: clamp(hotspotY < 50 ? 82 : 18, 12, 88),
+      flowEndX: clamp(hotspotX < 50 ? 82 : 18, 12, 88),
+      flowEndY: clamp(hotspotY < 50 ? 18 : 82, 12, 88),
+      hotspotRadius: 7.8,
+      guidanceClasses: []
+    }
+  ];
+}
+
+function buildProtectReadIssue(metrics, hotspotX, hotspotY) {
+  return {
+    key: "protect-read",
+    score: 0.4,
+    labels: ["Protect this read", "Keep focus clean", "Preserve hierarchy"],
+    targetX: hotspotX,
+    targetY: hotspotY,
+    flowStartX: clamp(hotspotX - 24, 12, 88),
+    flowStartY: clamp(hotspotY + 22, 12, 88),
+    flowEndX: clamp(hotspotX + 24, 12, 88),
+    flowEndY: clamp(hotspotY - 18, 12, 88),
+    hotspotRadius: 7.4,
+    guidanceClasses: []
+  };
+}
+
+function pickWeightedIssue(issues) {
+  const totalWeight = issues.reduce((sum, issue) => sum + Math.max(issue.score, 0.12), 0);
+  let cursor = Math.random() * totalWeight;
+
+  for (const issue of issues) {
+    cursor -= Math.max(issue.score, 0.12);
+    if (cursor <= 0) {
+      return issue;
+    }
+  }
+
+  return issues[0];
+}
+
+function getRecentPaintoverActions() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_PAINTOVER_ACTIONS_STORAGE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function rememberPaintoverAction(actionKey) {
+  if (!actionKey) {
+    return;
+  }
+
+  const nextActions = [actionKey, ...getRecentPaintoverActions().filter((key) => key !== actionKey)];
+  localStorage.setItem(RECENT_PAINTOVER_ACTIONS_STORAGE_KEY, JSON.stringify(nextActions.slice(0, 4)));
+}
+
+function getNearestThirdTarget(position, fallbackDirection) {
+  if (position > 42 && position < 58) {
+    return fallbackDirection >= 0.5 ? 66.6 : 33.3;
+  }
+
+  return Math.abs(position - 33.3) < Math.abs(position - 66.6) ? 33.3 : 66.6;
+}
+
+function setSvgNumber(element, name, value) {
+  element?.setAttribute(name, String(Number(value).toFixed(2)));
 }
 
 function normalizeQualityScore(value) {
@@ -2179,7 +2976,16 @@ function getQualityLabel(value) {
 }
 
 function pickHighestScoringText(items) {
-  return [...items].sort((left, right) => right.score - left.score)[0]?.text || "";
+  const selected = [...items].sort((left, right) => right.score - left.score)[0];
+  if (!selected) {
+    return "";
+  }
+
+  if (selected.variants) {
+    return pickVariant(selected.variants);
+  }
+
+  return selected.text || "";
 }
 
 function resetNotanReading() {
@@ -2292,8 +3098,18 @@ function syncMobileRunAnalysisButton() {
     return;
   }
 
-  mobileRunAnalysisButton.textContent = runAnalysisButton.textContent;
+  const desktopLabel = runAnalysisButton.textContent.trim();
+  const isLimitState = /free analysis limit/i.test(desktopLabel);
+  mobileRunAnalysisButton.textContent = isLimitState ? "Locked" : desktopLabel;
   mobileRunAnalysisButton.disabled = runAnalysisButton.disabled;
+}
+
+function syncMobileResetWorkspaceButton() {
+  if (!mobileResetWorkspaceButton) {
+    return;
+  }
+
+  mobileResetWorkspaceButton.disabled = isAnalysisRunning || !hasUploadedImage;
 }
 
 function isMobileLayout() {
