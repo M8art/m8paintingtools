@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260428c">
+  <link rel="stylesheet" href="./style.css?v=20260429f">
 </head>
 <body>
   <div class="app">
@@ -54,7 +54,6 @@
         </div>
 
         <div class="controls header-controls">
-          <label class="button" for="fileInput">Upload Image</label>
           <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
           <button id="clearNotesButton" class="button-secondary hidden" type="button" disabled>Clear Notes</button>
         </div>
@@ -62,12 +61,12 @@
     </header>
 
     <nav class="mode-switcher primary-switcher" aria-label="Composition modes">
-      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-analysis-mode="basic"><span class="desktop-tab-label">Basic Analysis</span><span class="mobile-tab-label">Basic</span></button>
       <button class="tab-button" type="button" data-analysis-mode="advanced"><span class="desktop-tab-label">Advanced Analysis</span><span class="mobile-tab-label">Pro</span></button>
     </nav>
 
     <div id="basicToolSwitcher" class="mode-switcher secondary-switcher" aria-label="Basic analysis tools">
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-mode="thirds"><span class="desktop-tab-label">Rule of Thirds</span><span class="mobile-tab-label">Thirds</span></button>
       <button class="tab-button" type="button" data-mode="grid"><span class="desktop-tab-label">Grid</span><span class="mobile-tab-label">Grid</span></button>
       <button class="tab-button" type="button" data-mode="center"><span class="desktop-tab-label">Center Lines</span><span class="mobile-tab-label">Center</span></button>
@@ -75,6 +74,7 @@
     </div>
 
     <div id="advancedToolSwitcher" class="mode-switcher secondary-switcher hidden" aria-label="Advanced analysis tools">
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-advanced-mode="golden-ratio"><span class="desktop-tab-label">Golden Ratio</span><span class="mobile-tab-label">Ratio</span></button>
       <button class="tab-button" type="button" data-advanced-mode="golden-spiral"><span class="desktop-tab-label">Golden Spiral</span><span class="mobile-tab-label">Spiral</span></button>
       <button class="tab-button" type="button" data-advanced-mode="dynamic-symmetry"><span class="desktop-tab-label">Dynamic Symmetry</span><span class="mobile-tab-label">Dynamic</span></button>
@@ -108,7 +108,6 @@
         </div>
 
         <div class="mobile-workspace-toolbar" aria-label="Composition mobile controls">
-          <label class="button mobile-toolbar-button" for="fileInput">Upload</label>
           <button id="mobileClearNotesButton" class="button-secondary mobile-toolbar-button hidden" type="button" disabled>Clear</button>
         </div>
 
