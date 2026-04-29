@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Analysis Studio</title>
+  <link rel="stylesheet" href="./style.css?v=20260429f">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Painting Analysis</p>
+        <div class="title-row">
+          <h1>M8 Analysis Studio</h1>
+        </div>
+        <p class="intro">
+          Upload your painting and receive clear visual feedback on composition, balance, and structure.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link is-current" href="./index.html" aria-current="page">Quick Check</a>
+          <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+          <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+        </nav>
+        <div class="social-links" aria-label="Social links">
+          <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"></path>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"></path>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"></path>
+            </svg>
+          </a>
+        </div>
+
+        <div class="controls header-controls">
+          <label class="button" for="analysisFileInput">Upload Image</label>
+        </div>
+      </div>
+    </header>
+
+    <nav class="mode-switcher" aria-label="Quick Check navigation">
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
+      <a class="tab-button active" href="./index.html" aria-current="page"><span class="desktop-tab-label">Quick Check</span><span class="mobile-tab-label">Quick</span></a>
+      <a class="tab-button" href="../value-checker/index.html"><span class="desktop-tab-label">Value Checker</span><span class="mobile-tab-label">Value</span></a>
+      <a class="tab-button" href="../composition-checker/index.html"><span class="desktop-tab-label">Composition Checker</span><span class="mobile-tab-label">Comp</span></a>
+      <a class="tab-button" href="../color-studio/index.html"><span class="desktop-tab-label">Color Checker</span><span class="mobile-tab-label">Color</span></a>
+    </nav>
+
+    <main class="layout">
+      <div class="left-column">
+        <section class="card workspace-card">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Workspace</p>
+              <h2>Upload Your Painting</h2>
+            </div>
+            <div class="workspace-meta">
+              <p id="workspaceHint" class="hint">Upload an image to prepare the analysis workspace.</p>
+              <div id="overlayColorControl" class="overlay-color-control">
+                <button id="overlayColorButton" class="overlay-color-button" type="button" aria-expanded="false" aria-label="Choose grid color">
+                  <span id="overlayColorPreview" class="overlay-color-preview overlay-color-black" aria-hidden="true"></span>
+                  <span class="overlay-color-label">Grid</span>
+                </button>
+                <div id="overlayColorMenu" class="overlay-color-menu hidden" role="menu" aria-label="Grid color options">
+                  <button class="overlay-swatch overlay-swatch-black active" type="button" data-overlay-color="#1f1c18" aria-label="Use black grid"></button>
+                  <button class="overlay-swatch overlay-swatch-white" type="button" data-overlay-color="#ffffff" aria-label="Use white grid"></button>
+                  <button class="overlay-swatch overlay-swatch-red" type="button" data-overlay-color="#c96a3d" aria-label="Use red grid"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <input id="analysisFileInput" type="file" accept="image/png,image/jpeg,image/webp">
+
+          <div class="mobile-workspace-toolbar" aria-label="Quick Check mobile controls">
+            <button id="mobileRunAnalysisButton" class="button mobile-toolbar-button" type="button" disabled>Analyze</button>
+            <button id="mobileResetWorkspaceButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Reset</button>
+            <a class="button-secondary mobile-toolbar-button" href="#quickCheckResultPanel">Results</a>
+          </div>
+
+          <div id="uploadZone" class="canvas-wrap upload-enabled" tabindex="0" role="button" aria-label="Click to upload your painting">
+            <div id="imageStage" class="image-stage hidden">
+              <div id="analysisSurface" class="analysis-surface">
+                <img id="analysisPreview" class="workspace-image" alt="Uploaded painting preview">
+                <svg class="filter-defs" aria-hidden="true" focusable="false">
+                  <filter id="valuePassFilter">
+                    <feColorMatrix
+                      type="matrix"
+                      values="0.2126 0.7152 0.0722 0 0
+                              0.2126 0.7152 0.0722 0 0
+                              0.2126 0.7152 0.0722 0 0
+                              0      0      0      1 0"></feColorMatrix>
+                    <feComponentTransfer color-interpolation-filters="sRGB">
+                      <feFuncR type="discrete" tableValues="0 0.16 0.32 0.48 0.64 0.8 1"></feFuncR>
+                      <feFuncG type="discrete" tableValues="0 0.16 0.32 0.48 0.64 0.8 1"></feFuncG>
+                      <feFuncB type="discrete" tableValues="0 0.16 0.32 0.48 0.64 0.8 1"></feFuncB>
+                    </feComponentTransfer>
+                  </filter>
+                </svg>
+                <div id="thirdsOverlay" class="analysis-overlay thirds-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay center-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay scanning-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay focal-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay guidance-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay pull-overlay" aria-hidden="true"></div>
+                <svg id="paintoverOverlay" class="paintover-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                  <defs>
+                    <marker id="paintoverArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L8,4.5 L0,9 Z"></path>
+                    </marker>
+                    <filter id="paintoverGlow" x="-40%" y="-40%" width="180%" height="180%">
+                      <feDropShadow dx="0" dy="1.2" stdDeviation="1.1" flood-color="#1f1c18" flood-opacity="0.35"></feDropShadow>
+                    </filter>
+                  </defs>
+                  <rect id="paintoverQuietZone" class="paintover-quiet-zone" x="0" y="0" width="0" height="100"></rect>
+                  <rect id="paintoverCropBox" class="paintover-crop-box" x="8" y="8" width="84" height="84"></rect>
+                  <path id="paintoverFlowPath" class="paintover-flow-path" d="M 50 50 C 54 45, 60 42, 66 39"></path>
+                  <line id="paintoverTargetLine" class="paintover-target-line" x1="50" y1="50" x2="66" y2="39"></line>
+                  <circle id="paintoverHotspotRing" class="paintover-hotspot-ring" cx="50" cy="50" r="8"></circle>
+                  <circle id="paintoverHotspotDot" class="paintover-hotspot-dot" cx="50" cy="50" r="1.5"></circle>
+                  <circle id="paintoverTargetDot" class="paintover-target-dot" cx="66" cy="39" r="2.2"></circle>
+                  <g id="paintoverLabel" class="paintover-label" transform="translate(8 10)">
+                    <rect x="0" y="0" width="42" height="9" rx="4.5"></rect>
+                    <text id="paintoverLabelText" x="4" y="6.4">FIX THIS FIRST</text>
+                  </g>
+                </svg>
+                <div id="paintoverBadge" class="paintover-badge" aria-hidden="true">Fix this first</div>
+              </div>
+            </div>
+
+            <div id="emptyState" class="empty-state upload-empty-state">
+              <div class="upload-empty-state-inner">
+                <div class="upload-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 6v12"></path>
+                    <path d="M6 12h12"></path>
+                  </svg>
+                </div>
+                <p class="upload-empty-label">Click to upload your image</p>
+                <p class="upload-empty-subcopy hidden">JPG, PNG, WebP</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="notanReadingPanel" class="notan-reading-panel hidden">
+            <div class="notan-reading-head">
+              <div>
+                <p class="section-label">Notan Reading</p>
+                <p id="notanStrength" class="notan-strength">Notan Strength: --</p>
+              </div>
+              <p id="notanTooltip" class="notan-tooltip hidden">Click the image to inspect the main mass.</p>
+            </div>
+
+            <div class="notan-reading-grid">
+              <div class="result-block">
+                <p class="result-block-title">Dominant Shape</p>
+                <p id="notanDominantShape" class="detail-copy">Waiting for image upload.</p>
+              </div>
+              <div class="result-block">
+                <p class="result-block-title">Shape Count Estimate</p>
+                <p id="notanShapeCount" class="detail-copy">Waiting for image upload.</p>
+              </div>
+              <div class="result-block">
+                <p class="result-block-title">Fragmentation</p>
+                <p id="notanFragmentation" class="detail-copy">Waiting for image upload.</p>
+              </div>
+              <div class="result-block">
+                <p class="result-block-title">Readability</p>
+                <p id="notanReadability" class="detail-copy">Waiting for image upload.</p>
+              </div>
+            </div>
+
+            <div class="breakdown-section">
+              <p class="breakdown-section-title">Problem Detection</p>
+              <ul id="notanProblems" class="breakdown-list"></ul>
+            </div>
+
+            <div id="notanFixPanel" class="painters-fix notan-fix-panel">
+              <p class="result-block-title">How to fix your Notan</p>
+              <div id="notanFixList" class="painters-fix-list"></div>
+              <div id="notanFixLock" class="painters-fix-lock hidden">
+                <p>Your analysis is ready. Unlock the full result to see the problems clearly.</p>
+                <div class="notes-list">
+                  <p class="detail-copy">Analysis preview:</p>
+                  <p class="detail-copy">• Weak value contrast may be reducing impact</p>
+                  <p class="detail-copy">• Focal point may not be clear enough</p>
+                  <p class="detail-copy">• Color relationships may need stronger harmony</p>
+                </div>
+                <button id="notanUnlockButton" class="button premium-unlock-button analysis-button" type="button">Unlock All Tools</button>
+                <p class="result-note">One-time unlock — $10</p>
+                <p class="result-note">Unlimited analyses. No subscription.</p>
+                <p class="result-note">You already uploaded your painting.<br>Don&rsquo;t leave without seeing the result.</p>
+                <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card studio-note-card">
+          <div class="studio-note-copy">
+            <p class="detail-copy">This quick check is based on measurable visual factors such as value distribution, contrast, and compositional balance. It estimates how the eye moves through the image, where visual weight sits, and how clearly the focal area stands out. It’s designed as a fast studio tool to help you see structure more clearly — not as a final artistic judgment.</p>
+          </div>
+
+          <div class="artist-feedback-block">
+            <p class="section-label">Personal Feedback</p>
+            <h3 class="artist-feedback-title">Want feedback from a real painter?</h3>
+            <p class="detail-copy">Get a personal critique focused on your composition, values, and clarity — with clear guidance on how to improve.</p>
+            <ul class="artist-feedback-list">
+              <li>Personal feedback by Mate</li>
+              <li>Focus on key weaknesses</li>
+              <li>Clear next steps</li>
+            </ul>
+            <a class="button-secondary artist-feedback-button" href="https://buy.stripe.com/3cIeVdbrVb2Pa2v4Cggw000">Request Personal Feedback</a>
+          </div>
+        </section>
+      </div>
+
+      <aside id="quickCheckResultPanel" class="card side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Analysis Result</p>
+            <h2>M8 Quick Check</h2>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+          <div class="placeholder-panel">
+            <p class="section-label">How It Works</p>
+            <div class="placeholder-card">
+              <p>Run a quick check to get a clear read on your composition and visual balance.</p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">What To Look For</p>
+            <p class="detail-copy">See how your focal point sits, whether the image feels centered, and how visual weight is distributed.</p>
+          </div>
+
+          <div class="detail-card">
+            <p class="section-label">Status</p>
+            <p id="statusHelper" class="status-helper hidden">Preparing your quick check</p>
+            <p id="statusNote" class="detail-copy">Waiting for image upload.</p>
+            <div id="quickCheckResult" class="quick-check-result hidden">
+              <p class="section-label result-label">Quick Check Score</p>
+              <div id="quickScoreHeader" class="quick-score-header">
+                <p id="quickCheckScore" class="quick-check-score">72 / 100</p>
+                <span id="quickCheckConfidenceBadge" class="confidence-badge">Usable</span>
+              </div>
+              <p id="quickCheckVerdict" class="quick-check-verdict">Your composition is readable, but the focal point needs a clearer job.</p>
+              <div id="quickCheckWhyScore" class="result-block result-reveal">
+                <p class="result-block-title">Why This Score</p>
+                <div class="result-reason-list">
+                  <p id="quickCheckWhyPositive" class="detail-copy">The score is helped by a stable left-right balance.</p>
+                  <p id="quickCheckWhyLimiting" class="detail-copy">The score drops because the focal pull sits too close to the center.</p>
+                </div>
+              </div>
+              <div id="quickCheckTopSections" class="result-blocks">
+                <div id="quickCheckKeyInsightBlock" class="result-block">
+                  <p class="result-block-title">Key Insight</p>
+                  <p id="quickCheckKeyInsightText" class="detail-copy">The focal point sits too close to the center, reducing visual tension.</p>
+                </div>
+                <div id="quickCheckStrengthBlock" class="result-block">
+                  <p class="result-block-title">Strength</p>
+                  <p id="quickCheckStrengthText" class="detail-copy">The overall balance creates a stable and readable composition.</p>
+                </div>
+                <div id="quickCheckWeaknessBlock" class="result-block">
+                  <p class="result-block-title">Weakness</p>
+                  <p id="quickCheckWeaknessText" class="detail-copy">The focal area blends too much with surrounding values.</p>
+                </div>
+              </div>
+              <div id="quickCheckFastestFix" class="result-suggestion result-reveal">
+                <p class="section-label result-label">Fix This First</p>
+                <p id="quickCheckFastestFixText" class="detail-copy">Push the focal contrast farther away from the center.</p>
+              </div>
+              <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
+                <p class="result-block-title">Score Breakdown</p>
+                <div id="quickCheckBreakdownRows" class="score-breakdown-list"></div>
+              </div>
+              <div id="quickCheckComparison" class="result-block result-reveal hidden">
+                <p class="result-block-title">Compared To Previous Check</p>
+                <div class="result-compare-summary">
+                  <p id="quickCheckPreviousScore" class="detail-copy">Previous score: 72 / 100</p>
+                  <p id="quickCheckCurrentScoreSummary" class="detail-copy">Current score: 76 / 100</p>
+                  <p id="quickCheckScoreDelta" class="detail-copy">Difference: +4</p>
+                </div>
+                <p id="quickCheckComparisonText" class="detail-copy">Focal clarity improved.</p>
+              </div>
+              <div id="quickCheckTags" class="result-tags">
+                <span class="result-tag">Center Dominant</span>
+                <span class="result-tag">Left Heavy</span>
+                <span class="result-tag">Compressed Values</span>
+              </div>
+              <div id="quickCheckDetails" class="result-details" aria-hidden="true">
+                <div id="dynamicBreakdown" class="dynamic-breakdown">
+                  <p class="result-block-title">Breakdown</p>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">What works</p>
+                    <ul id="breakdownWorks" class="breakdown-list"></ul>
+                  </div>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">What weakens the image</p>
+                    <ul id="breakdownWeakness" class="breakdown-list"></ul>
+                  </div>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">What I would test next</p>
+                    <ul id="breakdownTest" class="breakdown-list"></ul>
+                  </div>
+                </div>
+                <div id="quickCheckBlocks" class="result-blocks"></div>
+                <div id="paintersFix" class="painters-fix">
+                  <p class="result-block-title">Painter&rsquo;s Fix</p>
+                  <div id="paintersFixList" class="painters-fix-list"></div>
+                  <p id="paintersFixLock" class="painters-fix-lock hidden">Unlock to see how a real painter would fix this</p>
+                </div>
+                <div id="quickCheckSuggestion" class="result-suggestion">
+                  <p class="section-label result-label">Suggestion</p>
+                  <p id="quickCheckSuggestionText" class="detail-copy">Push the focal point farther away from the center and clarify the major value shapes.</p>
+                </div>
+                <p class="result-note">This check focuses on structure rather than subject or style.</p>
+                <p id="freeCheckNote" class="result-note hidden">This was your free full check.</p>
+                <p id="freeDailyNote" class="result-note hidden">You&rsquo;ve used your free daily analysis.<br>Come back tomorrow to train your eye again.</p>
+                <p id="streakNote" class="result-note streak-note hidden">Day 1 ✅</p>
+              </div>
+              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full breakdown</button>
+            </div>
+            <div id="lockedAnalysisState" class="quick-check-result hidden">
+              <p class="section-label result-label">Unlock</p>
+              <h3 class="locked-title">Unlock All Tools</h3>
+              <p class="detail-copy">Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.</p>
+              <p class="result-note">One-time unlock — $10</p>
+              <p class="result-note">Lifetime access. No subscription.</p>
+              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button">Unlock All Tools</button>
+              <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
+              <div class="notes-list">
+                <p class="detail-copy">Unlimited analyses</p>
+                <p class="detail-copy">Full painter breakdowns</p>
+                <p class="detail-copy">Painter's Fix</p>
+                <p class="detail-copy">Future updates included</p>
+              </div>
+            </div>
+          </div>
+
+          <button id="runAnalysisButton" class="button-secondary analysis-button" type="button" disabled>Run Analysis</button>
+          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">You&rsquo;ve reached your free analysis limit.</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer" aria-label="Site footer">
+      <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <div class="footer-links">
+        <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
+        <a class="footer-link" href="../terms/index.html">Terms of Use</a>
+        <a class="footer-link" href="../contact/index.html">Contact</a>
+      </div>
+    </footer>
+  </div>
+
+  <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
+
+  <script src="./script.js?v=20260429f"></script>
+</body>
+</html>
