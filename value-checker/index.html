@@ -161,6 +161,31 @@
       justify-content: flex-end;
     }
 
+    #compareControls {
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      width: auto;
+      max-width: 100%;
+      padding: 3px;
+      border: 1px solid rgba(50, 44, 38, 0.08);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.52);
+      box-shadow: 0 8px 18px rgba(50, 39, 28, 0.06);
+    }
+
+    #compareControls .button,
+    #compareControls .button-secondary {
+      min-height: 34px;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      box-shadow: none;
+    }
+
+    .mobile-compare-label {
+      display: none;
+    }
+
     .social-links {
       display: flex;
       align-items: center;
@@ -203,11 +228,15 @@
 
     .button,
     .button-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 999px;
       padding: 13px 18px;
       border: 1px solid var(--line);
       cursor: pointer;
       font: inherit;
+      text-decoration: none;
       transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
     }
 
@@ -291,6 +320,50 @@
       grid-template-columns: repeat(10, minmax(0, 1fr));
       gap: 6px;
       margin-top: 8px;
+    }
+
+    .mobile-reference-scale {
+      display: none;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .mobile-reference-scale-frame {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 78px;
+      padding: 6px 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      background: rgba(255, 255, 255, 0.5);
+      overflow: hidden;
+    }
+
+    .mobile-reference-scale-image {
+      display: block;
+      width: auto;
+      height: 210px;
+      max-width: none;
+      transform: rotate(90deg) scale(0.98);
+      transform-origin: center center;
+      filter: none;
+      object-fit: contain;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-reference-scale-download {
+      width: fit-content;
+      padding: 8px 14px;
+      min-height: 38px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 999px;
     }
 
     .mobile-scale-chip {
@@ -434,6 +507,10 @@
       gap: 16px;
       align-items: center;
       margin-bottom: 16px;
+    }
+
+    body[data-mode="value-challenge"] .layout > .card:last-child > .panel-heading {
+      display: none;
     }
 
     .section-label {
@@ -735,12 +812,50 @@
       position: relative;
       min-height: 210px;
       border-radius: 18px;
-      border: 1px solid rgba(59, 52, 45, 0.08);
+      border: 1px dashed rgba(62, 54, 47, 0.18);
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(241, 235, 225, 0.72));
+        repeating-linear-gradient(
+          45deg,
+          rgba(85, 76, 66, 0.05) 0,
+          rgba(85, 76, 66, 0.05) 14px,
+          transparent 14px,
+          transparent 28px
+        ),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(241, 235, 225, 0.8));
       overflow: hidden;
       display: grid;
       place-items: center;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .compare-preview-wrap.upload-enabled {
+      cursor: pointer;
+    }
+
+    .compare-preview-wrap.upload-enabled:hover,
+    .compare-preview-wrap.upload-enabled:focus-visible {
+      border-color: rgba(62, 54, 47, 0.28);
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(85, 76, 66, 0.06) 0,
+          rgba(85, 76, 66, 0.06) 14px,
+          transparent 14px,
+          transparent 28px
+        ),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(241, 235, 225, 0.84));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+      outline: none;
+    }
+
+    .compare-preview-wrap.upload-enabled:hover .upload-empty-icon,
+    .compare-preview-wrap.upload-enabled:focus-visible .upload-empty-icon {
+      transform: translateY(-1px);
+      border-color: rgba(62, 54, 47, 0.22);
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 14px 28px rgba(50, 39, 28, 0.08);
     }
 
     .compare-preview-canvas,
@@ -833,6 +948,12 @@
     .challenge-panel {
       display: grid;
       gap: 18px;
+    }
+
+    .challenge-controls {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
     }
 
     .challenge-summary {
@@ -1377,11 +1498,6 @@
       gap: 12px;
     }
 
-    .seven-value-download-actions {
-      margin-top: 14px;
-      justify-content: center;
-    }
-
     .scale {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1596,6 +1712,54 @@
         justify-content: flex-start;
       }
 
+      .header-actions {
+        grid-template-columns: max-content minmax(0, 1fr);
+        align-items: center;
+        justify-content: start;
+        justify-items: start;
+        column-gap: 9px;
+        row-gap: 8px;
+      }
+
+      .header-actions .top-nav {
+        grid-column: 1 / -1;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      .social-links {
+        width: auto;
+      }
+
+      #compareControls {
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
+        gap: 4px;
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: start;
+        flex-wrap: nowrap;
+      }
+
+      #compareControls .button,
+      #compareControls .button-secondary {
+        width: auto;
+        min-height: 32px;
+        padding: 7px 10px;
+        font-size: 0.72rem;
+      }
+
+      .desktop-compare-label {
+        display: none;
+      }
+
+      .mobile-compare-label {
+        display: inline;
+      }
+
       .intro,
       .feedback-helper,
       .workspace-meta .hint {
@@ -1702,6 +1866,10 @@
         display: grid;
       }
 
+      .mobile-reference-scale {
+        display: grid;
+      }
+
       #analysisValuePicker .placeholder-panel,
       #analysisSevenValue .placeholder-panel {
         display: none;
@@ -1711,6 +1879,10 @@
       #analysisValuePicker .sample-groups,
       #analysisValuePicker #statusNote,
       #analysisValuePicker .value-picker-actions {
+        display: none;
+      }
+
+      #analysisValuePicker .mobile-scale-details {
         display: none;
       }
 
@@ -1791,6 +1963,146 @@
         margin-top: 0;
       }
 
+      .layout:has(#workspaceValueChallenge:not(.hidden)) {
+        gap: 8px;
+      }
+
+      .layout:has(#workspaceValueChallenge:not(.hidden)) .card {
+        padding: 12px;
+      }
+
+      .layout:has(#workspaceValueChallenge:not(.hidden)) .panel-heading {
+        margin-bottom: 6px;
+      }
+
+      .layout:has(#workspaceValueChallenge:not(.hidden)) > .card:last-child > .panel-heading {
+        display: none;
+      }
+
+      .app:has(#workspaceValueChallenge:not(.hidden)) #mobileValueToolbar,
+      .app:has(#workspaceValueChallenge:not(.hidden)) #mobilePickerHint {
+        display: none !important;
+      }
+
+      #workspaceValueChallenge .canvas-wrap {
+        min-height: var(--mobile-canvas-height, clamp(190px, 32vh, 280px));
+        height: var(--mobile-canvas-height, clamp(190px, 32vh, 280px));
+        border-radius: 18px;
+      }
+
+      #analysisValueChallenge {
+        gap: 8px;
+      }
+
+      #analysisValueChallenge .placeholder-panel {
+        display: none;
+      }
+
+      #analysisValueChallenge .challenge-panel {
+        gap: 8px;
+      }
+
+      #workspaceValueChallenge .challenge-controls {
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      #workspaceValueChallenge .challenge-summary {
+        gap: 8px;
+        padding: 10px;
+        border-radius: 16px;
+      }
+
+      #workspaceValueChallenge .challenge-session-meta {
+        gap: 6px;
+        padding: 9px 10px;
+        border-radius: 14px;
+      }
+
+      #workspaceValueChallenge .challenge-session-row {
+        gap: 8px;
+        flex-wrap: nowrap;
+      }
+
+      #workspaceValueChallenge .challenge-session-progress,
+      #workspaceValueChallenge .challenge-session-best {
+        font-size: 0.78rem;
+        line-height: 1.15;
+      }
+
+      #workspaceValueChallenge .challenge-score-meter {
+        height: 6px;
+      }
+
+      #workspaceValueChallenge .challenge-value-row {
+        gap: 10px;
+      }
+
+      #workspaceValueChallenge .challenge-value-label {
+        font-size: 0.88rem;
+      }
+
+      #workspaceValueChallenge .challenge-value-display {
+        min-width: 44px;
+        padding: 6px 10px;
+        font-size: 0.88rem;
+      }
+
+      #workspaceValueChallenge .challenge-guess-preview {
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 8px;
+      }
+
+      #workspaceValueChallenge .challenge-guess-swatch {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+      }
+
+      #workspaceValueChallenge .challenge-guess-scale {
+        gap: 5px;
+      }
+
+      #workspaceValueChallenge .challenge-guess-scale-label {
+        font-size: 0.68rem;
+      }
+
+      #workspaceValueChallenge .challenge-tone-strip {
+        padding: 3px;
+      }
+
+      #workspaceValueChallenge .challenge-tone-step {
+        height: 9px;
+      }
+
+      #workspaceValueChallenge .challenge-slider {
+        margin: 0;
+      }
+
+      #workspaceValueChallenge .challenge-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      #workspaceValueChallenge .challenge-actions .button,
+      #workspaceValueChallenge .challenge-actions .button-secondary {
+        width: 100%;
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 0.82rem;
+      }
+
+      #analysisValueChallenge .challenge-results {
+        gap: 8px;
+      }
+
+      #analysisValueChallenge .challenge-feedback {
+        padding: 10px 12px;
+        border-radius: 14px;
+        font-size: 0.86rem;
+      }
+
       .picker-panel-grid,
       .workspace-card,
       .analysis-grid {
@@ -1799,6 +2111,36 @@
 
       .detail-copy {
         line-height: 1.5;
+      }
+
+      .seven-map-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .seven-map-row {
+        min-height: 0;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 6px;
+        padding: 7px 8px;
+        border-radius: 14px;
+      }
+
+      .seven-map-swatch {
+        width: 24px;
+        height: 14px;
+      }
+
+      .seven-map-label {
+        font-size: 0.82rem;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .seven-map-percent {
+        font-size: 0.76rem;
       }
 
       .status-toast {
@@ -1860,9 +2202,9 @@
         <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
 
         <div id="compareControls" class="controls header-controls hidden">
-          <label class="button" for="referenceInput">Reference Image</label>
+          <label class="button" for="referenceInput"><span class="desktop-compare-label">Reference</span><span class="mobile-compare-label">Ref</span></label>
           <input id="referenceInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
-          <label class="button-secondary" for="paintingInput">Painting Image</label>
+          <label class="button-secondary" for="paintingInput"><span class="desktop-compare-label">Painting</span><span class="mobile-compare-label">Paint</span></label>
           <input id="paintingInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
         </div>
 
@@ -1929,6 +2271,12 @@
             </div>
             <p id="mobileValueStatus" class="mobile-value-status">Tap the image to read its value.</p>
             <div id="mobileValueScale" class="mobile-value-scale" aria-label="Compact value scale"></div>
+            <div class="mobile-reference-scale">
+              <div class="mobile-reference-scale-frame">
+                <img class="mobile-reference-scale-image" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale reference">
+              </div>
+              <a class="button-secondary mobile-reference-scale-download" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Scale</a>
+            </div>
           </div>
         </div>
 
@@ -1968,6 +2316,43 @@
               </div>
             </div>
           </div>
+          <div class="challenge-controls">
+            <div class="challenge-summary">
+              <div class="challenge-session-meta">
+                <div class="challenge-session-row">
+                  <span class="challenge-session-progress" id="challengeSessionProgress">Attempt 1 / 5</span>
+                  <span class="challenge-session-best" id="challengeBestScore">Best Score: --</span>
+                </div>
+                <div class="challenge-session-row challenge-session-row-secondary">
+                  <span class="challenge-session-best" id="challengeCurrentAccuracy">Accuracy: 0%</span>
+                  <span class="challenge-session-best" id="challengeSessionsPlayed">Sessions: 0</span>
+                </div>
+                <div class="challenge-score-meter" aria-hidden="true">
+                  <span id="challengeScoreFill" class="challenge-score-fill"></span>
+                </div>
+              </div>
+              <div class="challenge-value-row">
+                <span class="challenge-value-label">Guess Value</span>
+                <span id="challengeGuessValue" class="challenge-value-display">10</span>
+              </div>
+              <div class="challenge-guess-preview">
+                <div id="challengeGuessSwatch" class="challenge-guess-swatch" aria-hidden="true"></div>
+                <div class="challenge-guess-scale">
+                  <span class="challenge-guess-scale-label">Tone Preview</span>
+                  <div id="challengeToneStrip" class="challenge-tone-strip" aria-hidden="true"></div>
+                </div>
+              </div>
+              <input id="challengeSlider" class="challenge-slider" type="range" min="1" max="20" value="10">
+            </div>
+
+            <div class="challenge-actions">
+              <button id="submitGuessButton" class="button" type="button" disabled>Submit Guess</button>
+              <button id="nextChallengeButton" class="button-secondary" type="button" disabled>Next Challenge</button>
+              <button id="resetChallengeSessionButton" class="button-secondary" type="button">Reset Session</button>
+              <button id="challengeSoundToggleButton" class="button-secondary challenge-sound-toggle" type="button">Sound On</button>
+              <button id="startNewSessionButton" class="button hidden" type="button">Start New Session</button>
+            </div>
+          </div>
         </div>
 
         <div id="workspaceCompareValues" class="mode-panel hidden">
@@ -1975,20 +2360,36 @@
             <div class="compare-preview-grid">
               <div class="compare-preview-card">
                 <p class="section-label">Reference</p>
-                <div class="compare-preview-wrap">
+                <div class="compare-preview-wrap upload-enabled" id="compareReferenceWrap" tabindex="0" role="button" aria-label="Click to upload your reference image">
                   <canvas id="compareReferenceCanvas" class="compare-preview-canvas"></canvas>
-                  <div id="compareReferenceEmpty" class="compare-preview-empty">
-                    <p>Upload a reference image.</p>
+                  <div id="compareReferenceEmpty" class="compare-preview-empty upload-empty-state">
+                    <div class="upload-empty-state-inner">
+                      <div class="upload-empty-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M12 6v12"></path>
+                          <path d="M6 12h12"></path>
+                        </svg>
+                      </div>
+                      <p class="upload-empty-label">Click to upload your image</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div class="compare-preview-card">
                 <p class="section-label">Painting</p>
-                <div class="compare-preview-wrap">
+                <div class="compare-preview-wrap upload-enabled" id="comparePaintingWrap" tabindex="0" role="button" aria-label="Click to upload your painting image">
                   <canvas id="comparePaintingCanvas" class="compare-preview-canvas"></canvas>
-                  <div id="comparePaintingEmpty" class="compare-preview-empty">
-                    <p>Upload a painting image.</p>
+                  <div id="comparePaintingEmpty" class="compare-preview-empty upload-empty-state">
+                    <div class="upload-empty-state-inner">
+                      <div class="upload-empty-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M12 6v12"></path>
+                          <path d="M6 12h12"></path>
+                        </svg>
+                      </div>
+                      <p class="upload-empty-label">Click to upload your image</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2056,7 +2457,7 @@
               <p id="statusNote" class="status-note">No point selected yet.</p>
 
               <div class="value-picker-actions">
-                <button id="downloadValueAnalysisButton" class="button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Analysis</button>
+                <button id="downloadValueAnalysisButton" class="button-secondary" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Analysis</button>
               </div>
             </div>
 
@@ -2100,7 +2501,7 @@
               <p id="sevenValueStatus" class="status-note">Upload an image to build the seven-value map.</p>
 
               <div class="value-picker-actions seven-value-download-actions">
-                <button id="downloadSevenValueAnalysisButton" class="button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download 7-Value Analysis</button>
+                <button id="downloadSevenValueAnalysisButton" class="button-secondary" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download 7-Value Analysis</button>
               </div>
             </div>
 
@@ -2135,42 +2536,6 @@
                 Upload your image, click the area you want to judge, then guess its value before the answer is revealed.
                 </div>
               </div>
-
-            <div class="challenge-summary">
-              <div class="challenge-session-meta">
-                <div class="challenge-session-row">
-                  <span class="challenge-session-progress" id="challengeSessionProgress">Attempt 1 / 5</span>
-                  <span class="challenge-session-best" id="challengeBestScore">Best Score: --</span>
-                </div>
-                <div class="challenge-session-row challenge-session-row-secondary">
-                  <span class="challenge-session-best" id="challengeCurrentAccuracy">Accuracy: 0%</span>
-                  <span class="challenge-session-best" id="challengeSessionsPlayed">Sessions: 0</span>
-                </div>
-                <div class="challenge-score-meter" aria-hidden="true">
-                  <span id="challengeScoreFill" class="challenge-score-fill"></span>
-                </div>
-              </div>
-              <div class="challenge-value-row">
-                <span class="challenge-value-label">Guess Value</span>
-                <span id="challengeGuessValue" class="challenge-value-display">10</span>
-              </div>
-              <div class="challenge-guess-preview">
-                <div id="challengeGuessSwatch" class="challenge-guess-swatch" aria-hidden="true"></div>
-                <div class="challenge-guess-scale">
-                  <span class="challenge-guess-scale-label">Tone Preview</span>
-                  <div id="challengeToneStrip" class="challenge-tone-strip" aria-hidden="true"></div>
-                </div>
-              </div>
-              <input id="challengeSlider" class="challenge-slider" type="range" min="1" max="20" value="10">
-            </div>
-
-            <div class="challenge-actions">
-              <button id="submitGuessButton" class="button" type="button" disabled>Submit Guess</button>
-              <button id="nextChallengeButton" class="button-secondary" type="button" disabled>Next Challenge</button>
-              <button id="resetChallengeSessionButton" class="button-secondary" type="button">Reset Session</button>
-              <button id="challengeSoundToggleButton" class="button-secondary challenge-sound-toggle" type="button">Sound On</button>
-              <button id="startNewSessionButton" class="button hidden" type="button">Start New Session</button>
-            </div>
 
             <div class="challenge-results">
               <div class="challenge-feedback" id="challengeFeedback">
@@ -2322,7 +2687,7 @@
     const compareControls = document.getElementById("compareControls");
     const resetViewButton = document.getElementById("resetViewButton");
     const resetButton = document.getElementById("resetButton");
-    const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
+    const tabButtons = Array.from(document.querySelectorAll(".tab-button[data-mode]"));
     const workspaceSectionLabel = document.getElementById("workspaceSectionLabel");
     const workspaceTitle = document.getElementById("workspaceTitle");
     const workspaceHint = document.getElementById("workspaceHint");
@@ -2387,6 +2752,8 @@
     const compareReferenceCanvas = document.getElementById("compareReferenceCanvas");
     const comparePaintingCanvas = document.getElementById("comparePaintingCanvas");
     const compareOverlayCanvas = document.getElementById("compareOverlayCanvas");
+    const compareReferenceWrap = document.getElementById("compareReferenceWrap");
+    const comparePaintingWrap = document.getElementById("comparePaintingWrap");
     const compareCanvasWrap = document.getElementById("compareCanvasWrap");
     const compareReferenceEmpty = document.getElementById("compareReferenceEmpty");
     const comparePaintingEmpty = document.getElementById("comparePaintingEmpty");
@@ -2447,6 +2814,10 @@
       }
     };
     const singleImageUploadZones = [canvasWrap, sevenValueCanvasWrap, challengeCanvasWrap];
+    const compareUploadZones = [
+      { zone: compareReferenceWrap, input: referenceInput },
+      { zone: comparePaintingWrap, input: paintingInput }
+    ].filter(({ zone, input }) => zone && input);
     const CHALLENGE_SESSION_ATTEMPTS = 5;
     const CHALLENGE_SESSION_MAX_SCORE = CHALLENGE_SESSION_ATTEMPTS * 10;
     const CHALLENGE_BEST_ACCURACY_KEY = "m8-value-studio-best-accuracy";
@@ -2505,6 +2876,7 @@
       touchAnchorX: 0,
       touchAnchorY: 0,
       lastTapTime: 0,
+      lastTouchSelectionTime: 0,
       sevenValueStats: Array.from({ length: 7 }, (_, index) => ({
         value: index + 1,
         brightness: Math.round(((7 - (index + 1)) / 6) * 255),
@@ -2605,8 +2977,8 @@
       if (challengeEmptyStateLabel) {
         challengeEmptyStateLabel.textContent = "Click to upload your image";
       }
-      compareReferenceEmpty.querySelector("p").textContent = "Upload a reference image.";
-      comparePaintingEmpty.querySelector("p").textContent = "Upload a painting image.";
+      compareReferenceEmpty.querySelector(".upload-empty-label").textContent = "Click to upload your image";
+      comparePaintingEmpty.querySelector(".upload-empty-label").textContent = "Click to upload your image";
     }
 
     function setSingleImageLoadingState(isLoading, target = state.mode) {
@@ -2645,14 +3017,14 @@
     function showCompareLoadError(message, type) {
       setCompareLoadingState(type, false);
       if (type === "reference") {
-        compareReferenceEmpty.querySelector("p").textContent = message;
+        compareReferenceEmpty.querySelector(".upload-empty-label").textContent = message;
         state.referenceImage = null;
       } else if (type === "painting") {
-        comparePaintingEmpty.querySelector("p").textContent = message;
+        comparePaintingEmpty.querySelector(".upload-empty-label").textContent = message;
         state.paintingImage = null;
       } else {
-        compareReferenceEmpty.querySelector("p").textContent = message;
-        comparePaintingEmpty.querySelector("p").textContent = message;
+        compareReferenceEmpty.querySelector(".upload-empty-label").textContent = message;
+        comparePaintingEmpty.querySelector(".upload-empty-label").textContent = message;
         state.referenceImage = null;
         state.paintingImage = null;
       }
@@ -2807,6 +3179,15 @@
     fileInput.addEventListener("change", handleUpload);
     referenceInput.addEventListener("change", (event) => handleCompareUpload(event, "reference"));
     paintingInput.addEventListener("change", (event) => handleCompareUpload(event, "painting"));
+    compareUploadZones.forEach(({ zone, input }) => {
+      zone.addEventListener("click", () => input.click());
+      zone.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          input.click();
+        }
+      });
+    });
     singleImageUploadZones.forEach((zone) => {
       zone.addEventListener("click", handleSingleUploadZoneClick);
       zone.addEventListener("keydown", handleSingleUploadZoneKeydown);
@@ -2942,6 +3323,7 @@
 
     function setMode(mode) {
       state.mode = mode;
+      document.body.dataset.mode = mode;
       const config = MODE_CONFIG[mode];
       const showMobilePickerTools = mode === "value-picker";
       const isCompactMobile = window.matchMedia("(max-width: 720px)").matches;
@@ -3305,6 +3687,10 @@
         return;
       }
 
+      if (Date.now() - state.lastTouchSelectionTime < 450) {
+        return;
+      }
+
       if (state.suppressClick) {
         state.suppressClick = false;
         return;
@@ -3334,6 +3720,10 @@
 
     function handleChallengeCanvasClick(event) {
       if (state.mode !== "value-challenge" || !state.imageLoaded || !state.imageData) {
+        return;
+      }
+
+      if (Date.now() - state.lastTouchSelectionTime < 450) {
         return;
       }
 
@@ -3384,13 +3774,10 @@
       ctx.translate(placement.x + state.offsetX, placement.y + state.offsetY);
       ctx.scale(state.viewScale, state.viewScale);
       ctx.drawImage(imageBuffer, 0, 0);
-      ctx.restore();
-
       state.savedSamples.forEach((sample) => {
-        const markerX = sample.x * state.viewScale + placement.x + state.offsetX;
-        const markerY = sample.y * state.viewScale + placement.y + state.offsetY;
-        drawNumberedMarker(sample, markerX, markerY);
+        drawNumberedMarker(sample, sample.x, sample.y);
       });
+      ctx.restore();
     }
 
     function drawChallengeView() {
@@ -3410,13 +3797,10 @@
       challengeCtx.translate(placement.x + state.offsetX, placement.y + state.offsetY);
       challengeCtx.scale(state.viewScale, state.viewScale);
       challengeCtx.drawImage(imageBuffer, 0, 0);
-      challengeCtx.restore();
-
       if (state.challenge.marker) {
-        const markerX = state.challenge.marker.x * state.viewScale + placement.x + state.offsetX;
-        const markerY = state.challenge.marker.y * state.viewScale + placement.y + state.offsetY;
-        drawChallengeMarker(markerX, markerY);
+        drawChallengeMarker(state.challenge.marker.x, state.challenge.marker.y);
       }
+      challengeCtx.restore();
     }
 
     function drawChallengeMarker(x, y) {
@@ -3707,6 +4091,10 @@
       challengeFeedbackMessage.textContent = state.challenge.feedback;
       challengeFeedbackNote.textContent = state.challenge.feedbackNote;
       challengeFeedbackNote.classList.toggle("hidden", !state.challenge.feedbackNote);
+      challengeFeedback.classList.toggle(
+        "hidden",
+        !state.imageLoaded && state.challenge.revealState === "idle" && !state.challenge.sessionComplete
+      );
       challengeRevealLabel.textContent = state.challenge.revealLabel || "Checking";
       challengeRevealLabel.className = `challenge-reveal-label${state.challenge.roundCategory ? ` ${revealTone}` : ""}${state.challenge.revealState === "idle" ? " hidden" : ""}`;
       challengeFeedback.classList.toggle("is-revealing", state.challenge.revealState === "checking");
@@ -4200,8 +4588,8 @@
     }
 
     function drawCompareCanvases() {
-      drawComparePreview(compareReferenceCanvas, compareReferenceCtx, compareReferenceBuffer, compareReferenceEmpty, "Upload a reference image.");
-      drawComparePreview(comparePaintingCanvas, comparePaintingCtx, comparePaintingBuffer, comparePaintingEmpty, "Upload a painting image.");
+      drawComparePreview(compareReferenceCanvas, compareReferenceCtx, compareReferenceBuffer, compareReferenceEmpty, "Click to upload your image");
+      drawComparePreview(comparePaintingCanvas, comparePaintingCtx, comparePaintingBuffer, comparePaintingEmpty, "Click to upload your image");
 
       if (!state.compareReady || !compareOverlayBuffer.width || !compareOverlayBuffer.height) {
         compareOverlayCanvas.style.display = "none";
@@ -4235,7 +4623,7 @@
         canvasEl.style.display = "none";
         canvasEl.classList.remove("is-visible");
         emptyEl.classList.remove("hidden");
-        emptyEl.querySelector("p").textContent = emptyText;
+        emptyEl.querySelector(".upload-empty-label").textContent = emptyText;
         return;
       }
 
@@ -5100,6 +5488,9 @@
         } else {
           state.lastTapTime = now;
           if (Date.now() - state.touchStartTime < 260) {
+            event.preventDefault();
+            state.lastTouchSelectionTime = Date.now();
+            state.suppressClick = true;
             selectCanvasPointFromTouch(targetCanvas, touch.clientX, touch.clientY);
           }
         }
