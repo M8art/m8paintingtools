@@ -1666,6 +1666,20 @@ a {
   text-transform: uppercase;
 }
 
+.ai-studio-feedback {
+  gap: 10px;
+}
+
+.ai-studio-feedback-content {
+  display: grid;
+  gap: 10px;
+}
+
+.ai-feedback-section {
+  display: grid;
+  gap: 5px;
+}
+
 .result-suggestion {
   display: grid;
   gap: 8px;
@@ -2545,5 +2559,60 @@ a {
     margin-top: 16px;
     padding: 16px;
     border-radius: 18px;
+  }
+}
+
+.social-link,
+.button-secondary,
+.tab-button:not(.active):not(.home-tab-button),
+.overlay-color-button,
+.breakdown-toggle,
+.mobile-workspace-toolbar .button-secondary {
+  background: #fffaf4;
+  background-image: none;
+}
+
+.social-link:hover,
+.button-secondary:hover,
+.tab-button:not(.active):not(.home-tab-button):hover,
+.overlay-color-button:hover,
+.breakdown-toggle:hover,
+.mobile-workspace-toolbar .button-secondary:hover {
+  background: #ffffff;
+  background-image: none;
+}
+
+.tab-button.active {
+  background:
+    linear-gradient(135deg, #e08952, #b9522b),
+    #c96a3d;
+}
+
+.button[disabled],
+.button-secondary[disabled],
+.mobile-workspace-toolbar .button-secondary[disabled] {
+  opacity: 1;
+  box-shadow: none;
+}
+
+.button[disabled] {
+  background: #9d9992;
+  color: #fffaf4;
+  border-color: rgba(50, 44, 38, 0.12);
+}
+
+.button-secondary[disabled],
+.mobile-workspace-toolbar .button-secondary[disabled] {
+  background: #f0ebe2;
+  color: rgba(105, 99, 93, 0.68);
+  border-color: rgba(50, 44, 38, 0.1);
+}
+
+@media (max-width: 768px) {
+  .top-nav-link,
+  .top-nav-link:first-child,
+  .top-nav-link:last-child {
+    background: #fffaf4;
+    background-image: none;
   }
 }

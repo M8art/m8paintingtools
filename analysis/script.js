@@ -83,6 +83,14 @@ const notanFixPanel = document.getElementById("notanFixPanel");
 const notanFixList = document.getElementById("notanFixList");
 const notanFixLock = document.getElementById("notanFixLock");
 const notanUnlockButton = document.getElementById("notanUnlockButton");
+const aiStudioFeedback = document.getElementById("aiStudioFeedback");
+const aiStudioFeedbackStatus = document.getElementById("aiStudioFeedbackStatus");
+const aiStudioFeedbackContent = document.getElementById("aiStudioFeedbackContent");
+const aiStudioSummary = document.getElementById("aiStudioSummary");
+const aiStudioStrengths = document.getElementById("aiStudioStrengths");
+const aiStudioWeaknesses = document.getElementById("aiStudioWeaknesses");
+const aiStudioPriority = document.getElementById("aiStudioPriority");
+const aiStudioNextSteps = document.getElementById("aiStudioNextSteps");
 
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
@@ -94,6 +102,13 @@ const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
+const AI_ANALYSIS_ENDPOINT = window.M8_AI_ANALYSIS_ENDPOINT || (
+  window.location.protocol === "file:"
+    ? "http://localhost:8888/.netlify/functions/analyze-painting"
+    : "/.netlify/functions/analyze-painting"
+);
+const AI_IMAGE_MAX_DIMENSION = 1024;
+const AI_IMAGE_QUALITY = 0.82;
 const NOTAN_SAMPLE_SIZE = 68;
 const NOTAN_SIGNIFICANT_REGION_RATIO = 0.014;
 const NOTAN_SMALL_REGION_RATIO = 0.004;
@@ -186,6 +201,7 @@ let feedbackToastTimeoutId = null;
 let scoreAnimationFrameId = null;
 let currentAnalysisUsesFreeSlot = false;
 let currentNotanReading = null;
+let aiFeedbackRequestId = 0;
 let workspaceZoom = 1;
 let workspacePanX = 0;
 let workspacePanY = 0;
@@ -585,6 +601,7 @@ function runQuickCheck() {
   analysisSurface.classList.add("is-analysis-running");
   statusHelper.classList.add("is-analysis-running");
   resetResultRevealState();
+  resetAiStudioFeedback();
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
@@ -683,6 +700,7 @@ function completeQuickCheck() {
     score: result.score,
     metrics: { ...result.metrics }
   };
+  requestAiStudioFeedback(result);
 
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
@@ -2130,6 +2148,7 @@ function resetAnalysisSequence() {
   clearGuidanceOverlay();
   setAnalysisStage("");
   resetResultRevealState();
+  resetAiStudioFeedback();
   updateAnalysisAccessUI();
 }
 
@@ -2168,6 +2187,7 @@ function resetUploadedImage() {
   imageStage.classList.add("hidden");
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
+  resetAiStudioFeedback();
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
@@ -2289,6 +2309,194 @@ function renderPaintersFix(lines) {
     item.textContent = line;
     paintersFixList.appendChild(item);
   });
+}
+
+function requestAiStudioFeedback(result) {
+  const requestId = aiFeedbackRequestId + 1;
+  aiFeedbackRequestId = requestId;
+
+  if (!shouldRequestAiStudioFeedback()) {
+    resetAiStudioFeedback();
+    return;
+  }
+
+  setAiStudioFeedbackLoading();
+
+  const imageDataUrl = createAiAnalysisImageDataUrl();
+  if (!imageDataUrl) {
+    setAiStudioFeedbackError("AI Studio Feedback could not read this image. The normal Quick Check result is still available.");
+    return;
+  }
+
+  fetch(AI_ANALYSIS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      imageDataUrl,
+      computedAnalysis: buildAiComputedAnalysis(result)
+    })
+  })
+    .then(async (response) => {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "AI Studio Feedback is temporarily unavailable.");
+      }
+      return data;
+    })
+    .then((data) => {
+      if (requestId !== aiFeedbackRequestId) {
+        return;
+      }
+      renderAiStudioFeedback(data.analysis);
+    })
+    .catch((error) => {
+      if (requestId !== aiFeedbackRequestId) {
+        return;
+      }
+      setAiStudioFeedbackError(error.message || "AI Studio Feedback is temporarily unavailable.");
+    });
+}
+
+function shouldRequestAiStudioFeedback() {
+  return hasUploadedImage && (hasUnlockedAccess() || DEV_MODE);
+}
+
+function resetAiStudioFeedback() {
+  aiFeedbackRequestId += 1;
+  aiStudioFeedback?.classList.add("hidden");
+  aiStudioFeedbackContent?.classList.add("hidden");
+  if (aiStudioFeedbackStatus) {
+    aiStudioFeedbackStatus.textContent = "";
+  }
+  if (aiStudioSummary) {
+    aiStudioSummary.textContent = "";
+  }
+  renderAiList(aiStudioStrengths, []);
+  renderAiList(aiStudioWeaknesses, []);
+  renderAiList(aiStudioNextSteps, []);
+  if (aiStudioPriority) {
+    aiStudioPriority.textContent = "";
+  }
+}
+
+function setAiStudioFeedbackLoading() {
+  aiStudioFeedback?.classList.remove("hidden");
+  aiStudioFeedbackContent?.classList.add("hidden");
+  if (aiStudioFeedbackStatus) {
+    aiStudioFeedbackStatus.textContent = "Analyzing your painting like a studio mentor...";
+  }
+}
+
+function setAiStudioFeedbackError(message) {
+  aiStudioFeedback?.classList.remove("hidden");
+  aiStudioFeedbackContent?.classList.add("hidden");
+  if (aiStudioFeedbackStatus) {
+    aiStudioFeedbackStatus.textContent = message;
+  }
+}
+
+function renderAiStudioFeedback(analysis) {
+  if (!analysis) {
+    setAiStudioFeedbackError("AI Studio Feedback is temporarily unavailable.");
+    return;
+  }
+
+  aiStudioFeedback?.classList.remove("hidden");
+  aiStudioFeedbackContent?.classList.remove("hidden");
+  if (aiStudioFeedbackStatus) {
+    aiStudioFeedbackStatus.textContent = "";
+  }
+  if (aiStudioSummary) {
+    aiStudioSummary.textContent = analysis.summary || "";
+  }
+  renderAiList(aiStudioStrengths, analysis.strengths || []);
+  renderAiList(aiStudioWeaknesses, analysis.weaknesses || []);
+  renderAiList(aiStudioNextSteps, analysis.nextSteps || []);
+  if (aiStudioPriority) {
+    aiStudioPriority.textContent = analysis.mainPriority || "";
+  }
+}
+
+function renderAiList(listElement, lines) {
+  if (!listElement) {
+    return;
+  }
+
+  listElement.innerHTML = "";
+  lines.filter(Boolean).forEach((line) => {
+    const item = document.createElement("li");
+    item.textContent = line;
+    listElement.appendChild(item);
+  });
+}
+
+function createAiAnalysisImageDataUrl() {
+  if (!analysisPreview.naturalWidth || !analysisPreview.naturalHeight) {
+    return "";
+  }
+
+  const scale = Math.min(1, AI_IMAGE_MAX_DIMENSION / Math.max(analysisPreview.naturalWidth, analysisPreview.naturalHeight));
+  const width = Math.max(1, Math.round(analysisPreview.naturalWidth * scale));
+  const height = Math.max(1, Math.round(analysisPreview.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return "";
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  context.drawImage(analysisPreview, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", AI_IMAGE_QUALITY);
+}
+
+function buildAiComputedAnalysis(result) {
+  const metrics = result.metrics || {};
+
+  return {
+    score: result.score,
+    verdict: result.verdict,
+    whyThisScore: result.whyThisScore,
+    keyInsight: result.keyInsight,
+    strength: result.strength,
+    weakness: result.weakness,
+    fastestFix: result.fastestFix,
+    suggestion: result.suggestion,
+    tags: result.tags,
+    scoreBreakdown: result.scoreBreakdown,
+    blocks: result.blocks,
+    metrics: roundMetricValues(metrics),
+    notan: summarizeNotanReading(currentNotanReading),
+    image: {
+      width: analysisPreview.naturalWidth,
+      height: analysisPreview.naturalHeight
+    }
+  };
+}
+
+function roundMetricValues(metrics) {
+  return Object.fromEntries(Object.entries(metrics).map(([key, value]) => [
+    key,
+    typeof value === "number" ? Math.round(value * 1000) / 1000 : value
+  ]));
+}
+
+function summarizeNotanReading(reading) {
+  if (!reading) {
+    return null;
+  }
+
+  return {
+    score: reading.score,
+    dominantShape: reading.dominantShape,
+    shapeCountEstimate: reading.shapeCountEstimate,
+    fragmentation: reading.fragmentation,
+    readability: reading.readability,
+    problems: reading.problems
+  };
 }
 
 function buildBreakdownContext(result) {
