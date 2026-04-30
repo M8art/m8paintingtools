@@ -33,6 +33,8 @@
       margin: 0;
       min-height: 100vh;
       background:
+        repeating-linear-gradient(90deg, rgba(68, 54, 39, 0.018) 0 1px, transparent 1px 9px),
+        repeating-linear-gradient(0deg, rgba(68, 54, 39, 0.014) 0 1px, transparent 1px 11px),
         radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
         linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
       color: var(--ink);
@@ -220,6 +222,10 @@
       display: block;
     }
 
+    .topbar .social-links {
+      display: none;
+    }
+
     #fileInput,
     #referenceInput,
     #paintingInput {
@@ -241,8 +247,9 @@
     }
 
     .button {
-      background: var(--ink);
+      background: linear-gradient(135deg, #25211c 0%, #15120f 100%);
       color: #f7f4ee;
+      box-shadow: 0 10px 22px rgba(31, 28, 24, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .button-secondary {
@@ -443,10 +450,12 @@
     }
 
     .tab-button.active {
-      background: #c96a3d;
+      background:
+        linear-gradient(135deg, rgba(224, 137, 82, 0.96), rgba(185, 82, 43, 0.98)),
+        #c96a3d;
       color: #ffffff;
       border-color: rgba(201, 106, 61, 0.26);
-      box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18);
+      box-shadow: 0 10px 24px rgba(201, 106, 61, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
 
     .home-tab-button {
@@ -493,7 +502,9 @@
     }
 
     .card {
-      background: var(--panel);
+      background:
+        repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.018) 0 1px, transparent 1px 10px),
+        linear-gradient(180deg, rgba(255, 253, 248, 0.94), rgba(248, 244, 237, 0.91));
       border: 1px solid rgba(61, 51, 40, 0.1);
       border-radius: 26px;
       box-shadow: var(--shadow);
@@ -514,6 +525,12 @@
     }
 
     .section-label {
+      display: inline-flex;
+      width: fit-content;
+      padding: 4px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(86, 70, 52, 0.08);
+      background: rgba(235, 222, 205, 0.58);
       text-transform: uppercase;
       letter-spacing: 0.14em;
       font-size: 0.74rem;
@@ -786,6 +803,41 @@
       color: var(--muted);
       font-weight: 700;
       font-size: 0.92rem;
+    }
+
+    .value-map-selector {
+      display: none;
+    }
+
+    body[data-mode="seven-value-map"] .value-map-selector {
+      display: grid;
+      width: min(420px, 100%);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .value-map-option {
+      appearance: none;
+      border: 1px solid rgba(59, 52, 45, 0.1);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--muted);
+      box-shadow: var(--soft-shadow);
+      font: inherit;
+      font-weight: 700;
+      line-height: 1;
+      padding: 10px 8px;
+      min-height: 40px;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .value-map-option.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: rgba(176, 85, 39, 0.22);
+      box-shadow: 0 14px 24px rgba(191, 91, 43, 0.2);
     }
 
     .compare-workspace {
@@ -1641,6 +1693,10 @@
       align-items: center;
     }
 
+    .footer-social-links {
+      justify-content: center;
+    }
+
     .footer-link {
       color: var(--ink);
       font-size: 0.94rem;
@@ -1674,6 +1730,317 @@
       }
     }
 
+
+    
+    @media (min-width: 721px) {
+      body {
+        background:
+          repeating-linear-gradient(90deg, rgba(68, 54, 39, 0.018) 0 1px, transparent 1px 9px),
+          repeating-linear-gradient(0deg, rgba(68, 54, 39, 0.014) 0 1px, transparent 1px 11px),
+          radial-gradient(circle at 8% 10%, rgba(255, 255, 255, 0.56), transparent 25%),
+          radial-gradient(circle at 88% 18%, rgba(201, 106, 61, 0.1), transparent 24%),
+          linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
+      }
+
+      .app {
+        position: relative;
+        isolation: isolate;
+      }
+
+      .app::before,
+      .app::after {
+        content: "";
+        position: fixed;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .app::before {
+        left: -90px;
+        top: 210px;
+        width: 340px;
+        height: 86px;
+        border-radius: 999px 52px 999px 44px;
+        background: linear-gradient(90deg, rgba(191, 87, 48, 0.16), rgba(217, 157, 83, 0.06), transparent 82%);
+        transform: rotate(-13deg);
+      }
+
+      .app::after {
+        right: -76px;
+        top: 300px;
+        width: 240px;
+        height: 164px;
+        border-radius: 46% 54% 60% 40%;
+        background:
+          radial-gradient(circle at 28% 38%, rgba(198, 92, 53, 0.27) 0 13px, transparent 14px),
+          radial-gradient(circle at 53% 24%, rgba(63, 79, 75, 0.2) 0 11px, transparent 12px),
+          radial-gradient(circle at 68% 58%, rgba(217, 173, 92, 0.26) 0 14px, transparent 15px),
+          radial-gradient(circle at 38% 66%, rgba(93, 69, 58, 0.12) 0 17px, transparent 18px);
+        opacity: 0.72;
+      }
+
+      .topbar {
+        position: relative;
+        padding-bottom: 8px;
+      }
+
+      .title-row h1 {
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.52);
+      }
+
+      .intro {
+        position: relative;
+        padding-left: 18px;
+      }
+
+      .intro::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 3px;
+        bottom: 4px;
+        width: 5px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #c96a3d, #d9ad5c 48%, #516b66);
+      }
+
+      .tool-tabs {
+        padding: 5px;
+        border: 1px solid rgba(61, 51, 40, 0.1);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(245, 240, 231, 0.72));
+        box-shadow: 0 12px 28px rgba(50, 39, 28, 0.08);
+      }
+
+      .tool-tab {
+        position: relative;
+      }
+
+      .tool-tab.is-active::after {
+        content: "";
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 4px;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(217, 173, 92, 0.82);
+      }
+
+      .card {
+        position: relative;
+        overflow: hidden;
+        border-color: rgba(86, 64, 45, 0.12);
+        background:
+          radial-gradient(circle at 88% 12%, rgba(198, 92, 53, 0.08), transparent 24%),
+          repeating-linear-gradient(115deg, rgba(88, 72, 56, 0.025) 0 1px, transparent 1px 12px),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.92));
+      }
+
+      .layout > .card:first-child::before,
+      .layout > .card:last-child::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 0;
+        height: 5px;
+        border-radius: 0 0 999px 999px;
+        background: linear-gradient(90deg, rgba(201, 106, 61, 0.62), rgba(217, 173, 92, 0.62), rgba(81, 107, 102, 0.5));
+        pointer-events: none;
+      }
+
+      .panel-heading .eyebrow,
+      .tool-heading .eyebrow {
+        color: #6f6257;
+      }
+
+      .canvas-wrap,
+      .compare-preview-wrap {
+        border-color: rgba(111, 85, 62, 0.16);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(249, 244, 236, 0.72)),
+          repeating-linear-gradient(45deg, rgba(201, 106, 61, 0.045) 0 8px, transparent 8px 16px);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.62),
+          0 18px 38px rgba(50, 39, 28, 0.08);
+      }
+
+      .canvas-wrap::before,
+      .compare-preview-wrap::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        width: 70px;
+        height: 18px;
+        border-radius: 999px;
+        background:
+          radial-gradient(circle at 9px 9px, #2f2d29 0 5px, transparent 6px),
+          radial-gradient(circle at 27px 9px, #c96a3d 0 5px, transparent 6px),
+          radial-gradient(circle at 45px 9px, #d9ad5c 0 5px, transparent 6px),
+          radial-gradient(circle at 63px 9px, #516b66 0 5px, transparent 6px);
+        opacity: 0.38;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .upload-empty-icon {
+        position: relative;
+        font-size: 0;
+        color: #c96a3d;
+      }
+
+      .upload-empty-icon::before,
+      .upload-empty-icon::after {
+        content: "";
+        position: absolute;
+        background: currentColor;
+      }
+
+      .upload-empty-icon::before {
+        width: 18px;
+        height: 3px;
+        border-radius: 999px;
+      }
+
+      .upload-empty-icon::after {
+        width: 3px;
+        height: 18px;
+        border-radius: 999px;
+      }
+
+      .value-scale,
+      .challenge-tone-strip {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(241, 235, 225, 0.78));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+      }
+
+      .side-card,
+      .feature,
+      .challenge-summary,
+      .challenge-session-meta,
+      .challenge-result-item,
+      .compare-legend-row {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(244, 239, 230, 0.84));
+        border-color: rgba(86, 64, 45, 0.1);
+      }
+
+      .side-card,
+      .feature {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .side-card::before,
+      .feature::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        top: 0;
+        height: 4px;
+        border-radius: 0 0 999px 999px;
+        background: rgba(201, 106, 61, 0.42);
+      }
+
+      .side-card:nth-of-type(2)::before,
+      .feature:nth-of-type(2)::before {
+        background: rgba(81, 107, 102, 0.42);
+      }
+
+      .side-card:nth-of-type(3)::before,
+      .feature:nth-of-type(3)::before {
+        background: rgba(217, 173, 92, 0.52);
+      }
+
+      .button {
+        background: linear-gradient(135deg, #cf7444 0%, #b5522f 100%);
+        box-shadow: 0 12px 24px rgba(181, 82, 47, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      }
+
+      .button-secondary {
+        background: rgba(255, 252, 246, 0.74);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+      }
+
+      .challenge-guess-swatch {
+        border-radius: 18px 18px 24px 14px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 12px 22px rgba(50, 39, 28, 0.1);
+      }
+
+      .footer {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(248, 244, 237, 0.82));
+      }
+    }
+@media (min-width: 721px) and (max-width: 1060px) {
+      .layout {
+        grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.85fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .layout > .card:first-child,
+      .layout > .card:last-child {
+        min-width: 0;
+      }
+
+      .canvas-wrap {
+        min-height: 430px;
+      }
+    }
+
+    @media (min-width: 721px) {
+      #workspaceValueChallenge {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(250px, 0.46fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      #workspaceValueChallenge.hidden {
+        display: none;
+      }
+
+      #workspaceValueChallenge .challenge-controls {
+        margin-top: 0;
+        align-self: start;
+      }
+
+      #workspaceValueChallenge .challenge-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      #workspaceValueChallenge .challenge-actions .button,
+      #workspaceValueChallenge .challenge-actions .button-secondary {
+        width: 100%;
+        min-height: 38px;
+        padding: 9px 12px;
+        font-size: 0.82rem;
+      }
+
+      #workspaceValueChallenge .challenge-summary {
+        padding: 14px;
+      }
+
+      #workspaceValueChallenge .challenge-session-meta {
+        padding: 12px;
+      }
+
+      #workspaceValueChallenge .challenge-guess-preview {
+        grid-template-columns: 1fr;
+      }
+
+      #workspaceValueChallenge .challenge-guess-swatch {
+        width: 44px;
+        height: 44px;
+      }
+    }
     @media (max-width: 720px) {
       html,
       body,
@@ -1713,19 +2080,39 @@
       }
 
       .header-actions {
-        grid-template-columns: max-content minmax(0, 1fr);
+        grid-template-columns: 1fr;
         align-items: center;
         justify-content: start;
-        justify-items: start;
+        justify-items: stretch;
         column-gap: 9px;
         row-gap: 8px;
       }
 
       .header-actions .top-nav {
         grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
         min-width: 0;
         max-width: 100%;
-        overflow: hidden;
+        overflow: visible;
+      }
+
+      .top-nav-link,
+      .top-nav-link:first-child,
+      .top-nav-link:last-child {
+        min-height: 38px;
+        padding: 8px 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        border: 1px solid rgba(59, 52, 45, 0.1);
+        background: rgba(255, 255, 255, 0.58);
+        text-align: center;
+        font-size: 0.8rem;
+        line-height: 1.05;
+        text-decoration: none;
       }
 
       .social-links {
@@ -1843,6 +2230,19 @@
 
       .panel-heading h2 {
         font-size: 1.12rem;
+      }
+
+      body[data-mode="seven-value-map"] .value-map-selector {
+        width: 100%;
+        gap: 7px;
+        margin-top: 8px;
+      }
+
+      .value-map-option {
+        min-height: 36px;
+        padding: 8px 5px;
+        font-size: 0.78rem;
+        letter-spacing: 0;
       }
 
       .header-controls:not(#compareControls) {
@@ -2153,6 +2553,10 @@
         align-items: flex-start;
       }
 
+      .footer-social-links {
+        justify-content: flex-start;
+      }
+
       .footer-links {
         grid-auto-flow: row;
         gap: 8px;
@@ -2218,7 +2622,7 @@
     <div class="mode-switcher" role="tablist" aria-label="Analysis modes">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-mode="value-picker" aria-selected="true"><span class="desktop-tab-label">Value Picker</span><span class="mobile-tab-label">Pick</span></button>
-      <button class="tab-button" type="button" data-mode="seven-value-map" aria-selected="false"><span class="desktop-tab-label">7-Value Map</span><span class="mobile-tab-label">Map</span></button>
+      <button class="tab-button" type="button" data-mode="seven-value-map" aria-selected="false"><span class="desktop-tab-label">Value Map</span><span class="mobile-tab-label">Map</span></button>
       <button class="tab-button" type="button" data-mode="value-challenge" aria-selected="false"><span class="desktop-tab-label">Value Challenge</span><span class="mobile-tab-label">Challenge</span></button>
       <button class="tab-button" type="button" data-mode="compare-values" aria-selected="false"><span class="desktop-tab-label">Compare Values</span><span class="mobile-tab-label">Compare</span></button>
     </div>
@@ -2229,6 +2633,11 @@
           <div>
             <p id="workspaceSectionLabel" class="section-label">Reference</p>
             <h2 id="workspaceTitle">Grayscale Image</h2>
+            <div id="valueMapSelector" class="value-map-selector" aria-label="Value map detail">
+              <button class="value-map-option active" type="button" data-map-values="7">7 Value Map</button>
+              <button class="value-map-option" type="button" data-map-values="5">5 Value Map</button>
+              <button class="value-map-option" type="button" data-map-values="3">3 Value Map</button>
+            </div>
           </div>
           <p id="workspaceHint" class="hint">Click the image to sample a value.</p>
         </div>
@@ -2489,12 +2898,12 @@
               <div class="placeholder-panel">
                 <p class="section-label">How It Works</p>
                 <div class="placeholder-card">
-                  Simplify the image into 7 broad tonal groups to make the big value structure easier to read.
+                  Simplify the image into broad tonal groups to make the big value structure easier to read.
                 </div>
               </div>
 
               <div>
-                <p class="section-label">7-Value Legend</p>
+                <p id="sevenValueLegendLabel" class="section-label">7-Value Legend</p>
                 <div id="sevenValueLegend" class="seven-map-grid"></div>
               </div>
 
@@ -2641,6 +3050,23 @@
 
     <footer class="footer" aria-label="Site footer">
       <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <div class="social-links footer-social-links" aria-label="Social links">
+        <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"/>
+          </svg>
+        </a>
+        <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"/>
+          </svg>
+        </a>
+        <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"/>
+          </svg>
+        </a>
+      </div>
       <div class="footer-links">
         <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
         <a class="footer-link" href="../terms/index.html">Terms of Use</a>
@@ -2699,7 +3125,10 @@
     const sevenValueCanvas = document.getElementById("sevenValueCanvas");
     const sevenValueCanvasWrap = document.getElementById("sevenValueCanvasWrap");
     const sevenValueEmptyState = document.getElementById("sevenValueEmptyState");
+    const valueMapSelector = document.getElementById("valueMapSelector");
+    const valueMapOptions = Array.from(document.querySelectorAll("[data-map-values]"));
     const sevenValueLegend = document.getElementById("sevenValueLegend");
+    const sevenValueLegendLabel = document.getElementById("sevenValueLegendLabel");
     const sevenValueStatus = document.getElementById("sevenValueStatus");
     const downloadSevenValueAnalysisButton = document.getElementById("downloadSevenValueAnalysisButton");
     const challengeCanvas = document.getElementById("challengeCanvas");
@@ -2877,11 +3306,8 @@
       touchAnchorY: 0,
       lastTapTime: 0,
       lastTouchSelectionTime: 0,
-      sevenValueStats: Array.from({ length: 7 }, (_, index) => ({
-        value: index + 1,
-        brightness: Math.round(((7 - (index + 1)) / 6) * 255),
-        coverage: 0
-      })),
+      valueMapCount: 7,
+      sevenValueStats: createValueMapStats(7),
       groupedSamples: {
         highlights: [],
         lights: [],
@@ -3249,6 +3675,20 @@
     downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
     mobileDownloadButton?.addEventListener("click", downloadValueAnalysis);
     downloadSevenValueAnalysisButton.addEventListener("click", downloadSevenValueAnalysis);
+    valueMapOptions.forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextCount = Number(button.dataset.mapValues);
+        if (![3, 5, 7].includes(nextCount) || state.valueMapCount === nextCount) {
+          return;
+        }
+
+        state.valueMapCount = nextCount;
+        updateValueMapInterface();
+        buildSevenValueMap();
+        drawSevenValueMap();
+        updateActionButtonStates();
+      });
+    });
     challengeSlider.addEventListener("input", handleChallengeSliderInput);
     submitGuessButton.addEventListener("click", submitChallengeGuess);
     nextChallengeButton.addEventListener("click", prepareNextChallenge);
@@ -3333,6 +3773,7 @@
       workspaceHint.textContent = config.workspaceHint;
       analysisSectionLabel.textContent = config.analysisSectionLabel;
       analysisTitle.textContent = config.analysisTitle;
+      updateValueMapInterface();
 
       tabButtons.forEach((button) => {
         const isActive = button.dataset.mode === mode;
@@ -3537,7 +3978,7 @@
         sevenValueCanvas.classList.add("is-visible");
         challengeCanvas.classList.add("is-visible");
       });
-      workspaceHint.textContent = MODE_CONFIG[state.mode].workspaceHint;
+      updateValueMapInterface();
       showStatusToast("Image loaded");
       updateActionButtonStates();
     }
@@ -3838,13 +4279,60 @@
       challengeCtx.restore();
     }
 
+    function createValueMapStats(mapCount) {
+      return Array.from({ length: mapCount }, (_, index) => ({
+        value: index + 1,
+        brightness: getValueMapBrightness(index + 1, mapCount),
+        coverage: 0
+      }));
+    }
+
+    function getValueMapBrightness(value, mapCount) {
+      if (mapCount <= 1) {
+        return 0;
+      }
+
+      return Math.round(((mapCount - value) / (mapCount - 1)) * 255);
+    }
+
+    function getValueMapTitle() {
+      return `${state.valueMapCount || 7}-Value Map`;
+    }
+
+    function updateValueMapInterface() {
+      const isMapMode = state.mode === "seven-value-map";
+      const title = getValueMapTitle();
+
+      valueMapOptions.forEach((button) => {
+        const isActive = Number(button.dataset.mapValues) === state.valueMapCount;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
+      });
+
+      if (valueMapSelector) {
+        valueMapSelector.setAttribute("aria-hidden", String(!isMapMode));
+      }
+
+      if (isMapMode) {
+        workspaceTitle.textContent = title;
+        workspaceHint.textContent = `See the whole image as ${state.valueMapCount} broad tonal groups.`;
+        analysisTitle.textContent = title;
+      }
+
+      if (sevenValueLegendLabel) {
+        sevenValueLegendLabel.textContent = `${state.valueMapCount}-Value Legend`;
+      }
+
+      if (downloadSevenValueAnalysisButton) {
+        downloadSevenValueAnalysisButton.textContent = `Download ${state.valueMapCount}-Value Analysis`;
+      }
+    }
+
     function buildSevenValueMap() {
+      const mapCount = state.valueMapCount || 7;
+
       if (!state.imageData) {
-        state.sevenValueStats = Array.from({ length: 7 }, (_, index) => ({
-          value: index + 1,
-          brightness: Math.round(((7 - (index + 1)) / 6) * 255),
-          coverage: 0
-        }));
+        state.sevenValueStats = createValueMapStats(mapCount);
         renderSevenValueLegend();
         return;
       }
@@ -3854,13 +4342,13 @@
 
       const mappedImage = sevenValueBufferCtx.createImageData(imageBuffer.width, imageBuffer.height);
       const pixels = state.imageData.data;
-      const counts = Array(7).fill(0);
+      const counts = Array(mapCount).fill(0);
       const totalPixels = pixels.length / 4;
 
       for (let i = 0; i < pixels.length; i += 4) {
         const brightness = pixels[i];
-        const value = Math.min(7, Math.floor(((255 - brightness) / 256) * 7) + 1);
-        const mappedBrightness = Math.round(((7 - value) / 6) * 255);
+        const value = Math.min(mapCount, Math.floor(((255 - brightness) / 256) * mapCount) + 1);
+        const mappedBrightness = getValueMapBrightness(value, mapCount);
 
         mappedImage.data[i] = mappedBrightness;
         mappedImage.data[i + 1] = mappedBrightness;
@@ -3873,7 +4361,7 @@
 
       state.sevenValueStats = counts.map((count, index) => ({
         value: index + 1,
-        brightness: Math.round(((7 - (index + 1)) / 6) * 255),
+        brightness: getValueMapBrightness(index + 1, mapCount),
         coverage: totalPixels ? Math.round((count / totalPixels) * 100) : 0
       }));
 
@@ -4434,14 +4922,14 @@
       if (!state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height) {
         sevenValueCanvas.style.display = "none";
         sevenValueEmptyState.classList.remove("hidden");
-        sevenValueStatus.textContent = "Upload an image to build the seven-value map.";
+        sevenValueStatus.textContent = `Upload an image to build the ${state.valueMapCount}-value map.`;
         return;
       }
 
       syncPrimaryCanvasViewport(sevenValueCanvas);
       sevenValueCanvas.style.display = "block";
       sevenValueEmptyState.classList.add("hidden");
-      sevenValueStatus.textContent = "Approximate coverage shows how much of the image falls into each tonal band.";
+      sevenValueStatus.textContent = `Approximate coverage shows how much of the image falls into each of the ${state.valueMapCount} tonal bands.`;
 
       const placement = getCanvasImagePlacement(sevenValueCanvas);
       sevenValueCtx.clearRect(0, 0, sevenValueCanvas.width, sevenValueCanvas.height);
@@ -4867,7 +5355,7 @@
 
       const link = document.createElement("a");
       link.href = exportCanvas.toDataURL("image/png");
-      link.download = "m8-7-value-analysis.png";
+      link.download = `m8-${state.valueMapCount}-value-analysis.png`;
       link.click();
       showStatusToast("Analysis downloaded");
     }
@@ -4904,7 +5392,7 @@
       targetCtx.textAlign = "left";
       targetCtx.textBaseline = "alphabetic";
       targetCtx.font = `700 ${Math.max(13, Math.round(width * 0.016))}px Segoe UI`;
-      targetCtx.fillText("7-Value Legend", originX + contentPaddingX, titleY + 8);
+      targetCtx.fillText(`${state.valueMapCount}-Value Legend`, originX + contentPaddingX, titleY + 8);
 
       items.forEach((item, index) => {
         const centerY = startY + topPadding + titleHeight + 22 + index * rowHeight;
@@ -5212,6 +5700,7 @@
     }
 
     function getSevenValueLegendLabel(value) {
+      const mapCount = state.valueMapCount || 7;
       const sevenValueScaleRanges = {
         1: "V1-3",
         2: "V4-6",
@@ -5222,7 +5711,15 @@
         7: "V18-20"
       };
 
-      return `${value} - ${sevenValueScaleRanges[value] || `V${value}`}`;
+      if (mapCount === 7) {
+        return `${value} - ${sevenValueScaleRanges[value] || `V${value}`}`;
+      }
+
+      const rangeStart = Math.floor(((value - 1) * 20) / mapCount) + 1;
+      const rangeEnd = Math.floor((value * 20) / mapCount);
+      const rangeLabel = rangeStart === rangeEnd ? `V${rangeStart}` : `V${rangeStart}-${rangeEnd}`;
+
+      return `${value} - ${rangeLabel}`;
     }
 
     function scaleValueToGray(value) {
@@ -5706,18 +6203,15 @@
       };
       clearChallengeRevealTimer();
       challengeSlider.value = "10";
-      state.sevenValueStats = Array.from({ length: 7 }, (_, index) => ({
-        value: index + 1,
-        brightness: Math.round(((7 - (index + 1)) / 6) * 255),
-        coverage: 0
-      }));
+      state.sevenValueStats = createValueMapStats(state.valueMapCount || 7);
       resetViewState();
       updateSingleUploadZones();
       updateCanvasCursor();
       resetReadout();
       renderSevenValueLegend();
       renderChallengePanel();
-      sevenValueStatus.textContent = "Upload an image to build the seven-value map.";
+      updateValueMapInterface();
+      sevenValueStatus.textContent = `Upload an image to build the ${state.valueMapCount}-value map.`;
       compareStatus.textContent = "Upload both images to begin the comparison.";
       downloadValueAnalysisButton.disabled = true;
       downloadSevenValueAnalysisButton.disabled = true;
@@ -5737,6 +6231,10 @@
   </script>
 </body>
 </html>
+
+
+
+
 
 
 

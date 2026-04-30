@@ -16,7 +16,7 @@ const checkpointTitle = document.getElementById("checkpointTitle");
 const checkpointCopy = document.getElementById("checkpointCopy");
 
 const BEST_KEY = "m8-flying-brush-best-score";
-const PLAYER_X = 220;
+const PLAYER_X = canvas.width * 0.42;
 const PLAYER_RADIUS = 18;
 const BRUSH_RENDER_WIDTH = 108;
 const BRUSH_RENDER_HEIGHT = 34;
@@ -113,7 +113,7 @@ const state = {
 scoreValue.textContent = "0";
 bestValue.textContent = String(state.best);
 speedValue.textContent = "1.0x";
-powerValue.textContent = "—";
+powerValue.textContent = "-";
 overlayScore.textContent = "0";
 overlayBest.textContent = String(state.best);
 
@@ -179,7 +179,7 @@ function startFlight() {
 
   scoreValue.textContent = "0";
   speedValue.textContent = "1.0x";
-  powerValue.textContent = "—";
+  powerValue.textContent = "-";
   overlayScore.textContent = "0";
   overlayBest.textContent = String(state.best);
   overlay.classList.add("hidden");
@@ -952,25 +952,23 @@ function renderRunAchievements() {
 }
 
 function getPowerStatusText() {
-  const parts = [];
-
-  if (state.comboMultiplier > 1) {
-    parts.push(`Combo x${state.comboMultiplier.toFixed(1)}`);
+  if (state.invincibleTimer > 0 && state.doubleScoreTimer > 0) {
+    return "Boost";
   }
 
   if (state.invincibleTimer > 0) {
-    parts.push(`Star ${state.invincibleTimer.toFixed(1)}s`);
+    return "Star";
   }
 
   if (state.doubleScoreTimer > 0) {
-    parts.push(`2x ${state.doubleScoreTimer.toFixed(1)}s`);
+    return "2x";
   }
 
-  if (parts.length) {
-    return parts.join(" | ");
+  if (state.comboMultiplier > 1) {
+    return `x${state.comboMultiplier.toFixed(1)}`;
   }
 
-  return "—";
+  return "-";
 }
 
 function getCycleBlend() {

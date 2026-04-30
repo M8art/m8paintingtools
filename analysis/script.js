@@ -810,6 +810,11 @@ function analyzeUploadedImage() {
   let edgePixels = 0;
   let axisEdgePixels = 0;
   let diagonalEdgePixels = 0;
+  let borderWeight = 0;
+  let cornerWeight = 0;
+  let borderPixels = 0;
+  let borderEdgePixels = 0;
+  let strongBorderEdgePixels = 0;
 
   for (let y = 1; y < height - 1; y += 1) {
     for (let x = 1; x < width - 1; x += 1) {
@@ -837,6 +842,24 @@ function analyzeUploadedImage() {
       }
       if (strongestDiagonalEdge > 0.16) {
         diagonalEdgePixels += 1;
+      }
+
+      const distanceToFrame = Math.min(normalizedX, 1 - normalizedX, normalizedY, 1 - normalizedY);
+      const isBorderBand = distanceToFrame <= 0.085;
+      const isCornerBand = (normalizedX <= 0.18 || normalizedX >= 0.82) && (normalizedY <= 0.18 || normalizedY >= 0.82);
+
+      if (isBorderBand) {
+        borderPixels += 1;
+        borderWeight += localWeight;
+        if (gradientStrength > 0.09) {
+          borderEdgePixels += 1;
+        }
+        if (Math.max(strongestAxisEdge, strongestDiagonalEdge) > 0.18) {
+          strongBorderEdgePixels += 1;
+        }
+      }
+      if (isCornerBand) {
+        cornerWeight += localWeight;
       }
 
       totalWeight += localWeight;
@@ -907,6 +930,24 @@ function analyzeUploadedImage() {
   const verticalImbalance = Math.abs(topWeight - bottomWeight) / Math.max(topWeight + bottomWeight, 0.0001);
   const flowStrength = clamp((centerDistance * 1.25) + (balanceImbalance * 0.45) + (verticalImbalance * 0.3), 0, 1);
   const depthStrength = clamp((valueSpread * 0.62) + (valueStd * 0.75) + (verticalImbalance * 0.18), 0, 1);
+  const edgeDensity = edgePixels / Math.max(innerPixelCount, 1);
+  const axisEdgeBias = axisEdgePixels / Math.max(axisEdgePixels + diagonalEdgePixels, 1);
+  const borderWeightShare = borderWeight / safeTotalWeight;
+  const cornerWeightShare = cornerWeight / safeTotalWeight;
+  const borderEdgeDensity = borderEdgePixels / Math.max(borderPixels, 1);
+  const strongBorderEdgeDensity = strongBorderEdgePixels / Math.max(borderPixels, 1);
+  const borderEdgeLift = borderEdgeDensity - (edgeDensity * 0.92);
+  const cropRisk = clamp(
+    (clamp((borderWeightShare - 0.24) / 0.28, 0, 1) * 0.4)
+      + (clamp(borderEdgeLift / 0.16, 0, 1) * 0.28)
+      + (clamp((strongBorderEdgeDensity - 0.05) / 0.18, 0, 1) * 0.18)
+      + (clamp((cornerWeightShare - 0.09) / 0.18, 0, 1) * 0.14),
+    0,
+    1
+  );
+  const centralLockRisk = clamp((centerDominance - 0.52) / 0.34, 0, 1)
+    * (1 - (clamp(flowStrength / 0.72, 0, 1) * 0.45));
+  const frameCompletenessQuality = 1 - cropRisk;
 
   const centerQuality = clamp((centerDistance - 0.06) / 0.24, 0, 1) * 0.76
     + (1 - clamp((centerWeightShare - 0.14) / 0.36, 0, 1)) * 0.24;
@@ -916,23 +957,27 @@ function analyzeUploadedImage() {
   const clarityQuality = focalClarity;
   const flowQuality = flowStrength;
   const depthQuality = depthStrength;
-  const edgeDensity = edgePixels / Math.max(innerPixelCount, 1);
-  const axisEdgeBias = axisEdgePixels / Math.max(axisEdgePixels + diagonalEdgePixels, 1);
   const referenceAssessment = assessReferenceQuality({
     ...sample,
     edgeDensity,
     axisEdgeBias
   });
-  const weightedQuality = (centerQuality * 0.22)
-    + (balanceQuality * 0.18)
-    + (valueQuality * 0.18)
-    + (clarityQuality * 0.16)
+  const weightedQuality = (centerQuality * 0.16)
+    + (balanceQuality * 0.14)
+    + (valueQuality * 0.17)
+    + (clarityQuality * 0.13)
     + (flowQuality * 0.14)
-    + (depthQuality * 0.12);
-  const rawScore = clamp(Math.round(28 + (weightedQuality * 64)), 8, 94);
+    + (depthQuality * 0.1)
+    + (frameCompletenessQuality * 0.16);
+  const objectivityPenalty = (cropRisk * 0.18) + (centralLockRisk * 0.1);
+  const adjustedQuality = clamp(weightedQuality - objectivityPenalty, 0, 1);
+  const rawScore = clamp(Math.round(24 + (adjustedQuality * 68)), 6, 94);
+  const contextScoreCap = cropRisk > 0.62 ? Math.round(68 - (cropRisk * 20)) : 94;
+  const centerScoreCap = centralLockRisk > 0.68 ? 76 : 94;
+  const contextAdjustedScore = Math.min(rawScore, contextScoreCap, centerScoreCap);
   const score = referenceAssessment.referenceIssue
     ? clamp(Math.round(rawScore * (0.28 + (referenceAssessment.referenceConfidence * 0.18))), 6, 38)
-    : rawScore;
+    : contextAdjustedScore;
 
   return {
     score,
@@ -956,6 +1001,12 @@ function analyzeUploadedImage() {
     depthQuality,
     edgeDensity,
     axisEdgeBias,
+    borderWeightShare,
+    borderEdgeDensity,
+    cornerWeightShare,
+    cropRisk,
+    centralLockRisk,
+    frameCompletenessQuality,
     ...referenceAssessment
   };
 }
@@ -1351,6 +1402,26 @@ function applyResultComposition(composition) {
 function getSuggestionLine(metrics) {
   const suggestions = [
     {
+      score: metrics.cropRisk || 0,
+      variants: [
+        "Use the whole painting in the frame, because this read looks too much like a cropped detail.",
+        "Rerun the check with the full artwork visible so the app can judge the real composition.",
+        "Give the image more outside context; cropped edges make the composition score less reliable.",
+        "Upload the full painting rather than a detail crop so the balance can be judged fairly.",
+        "Include the whole frame before trusting the score, because the current read is edge-cropped."
+      ]
+    },
+    {
+      score: metrics.centralLockRisk || 0,
+      variants: [
+        "Break the centered lock by moving or supporting the focal weight with a stronger secondary shape.",
+        "The focal point needs an off-center counterweight so the image does not read like a target.",
+        "Add a clearer side pull or diagonal path so the centered focus feels intentional instead of static.",
+        "Support the center with a stronger visual route through the frame.",
+        "Create more directional movement around the focal point so the center does not carry everything."
+      ]
+    },
+    {
       score: 1 - clamp(metrics.centerDistance / 0.28, 0, 1),
       variants: [
         "Try shifting the main emphasis farther from the center so the composition feels less fixed.",
@@ -1440,6 +1511,26 @@ function getSuggestionLine(metrics) {
 
 function getKeyInsightLine(metrics) {
   const issueCandidates = [
+    {
+      score: metrics.cropRisk || 0,
+      variants: [
+        "The upload reads like a cropped detail, so the checker cannot judge the full composition fairly.",
+        "Important visual weight appears too close to the image edges, which makes this feel like a partial crop.",
+        "The frame context is weak; the app is reading a piece of the painting more than the whole composition.",
+        "The score is limited because too much structure is pressed against the outer frame.",
+        "This looks more like a close-up than a complete compositional read."
+      ]
+    },
+    {
+      score: metrics.centralLockRisk || 0,
+      variants: [
+        "The focal point is readable, but it is locked too strongly into the middle.",
+        "The center holds attention without enough supporting movement around it.",
+        "The image has a clear focal area, but the composition still reads too target-like.",
+        "Attention lands in the center before the rest of the frame has a chance to work.",
+        "The focal point is clear, but the eye path around it is not doing enough work."
+      ]
+    },
     {
       score: metrics.centerDominance,
       variants: [
@@ -1652,6 +1743,26 @@ function getStrengthLine(metrics) {
 function getWeaknessLine(metrics) {
   const candidates = [
     {
+      score: metrics.cropRisk || 0,
+      variants: [
+        "The outer frame feels cropped, so the app cannot see enough context to judge the whole composition.",
+        "Too much visual information presses against the edges, which makes the read feel like a detail crop.",
+        "The composition loses reliability because the scan is missing the full painting context.",
+        "The image feels cut off at the edges, so balance and flow are harder to judge objectively.",
+        "This upload behaves more like a close-up than a complete artwork."
+      ]
+    },
+    {
+      score: metrics.centralLockRisk || 0,
+      variants: [
+        "The central focal pull is clear, but the surrounding structure does not support it enough.",
+        "The image reads too much like a centered target because the eye path around the focus is weak.",
+        "The focal point lands in the middle without enough secondary movement to make it feel designed.",
+        "The center carries too much responsibility, which makes the composition feel less intentional.",
+        "The focus is easy to find, but the rest of the frame is not doing enough compositional work."
+      ]
+    },
+    {
       score: metrics.centerDominance,
       variants: [
         "The main emphasis stays too close to center, which makes the structure feel more fixed.",
@@ -1767,6 +1878,14 @@ function getReadConfidenceLine(metrics) {
     ]);
   }
 
+  if ((metrics.cropRisk || 0) > 0.58) {
+    return pickVariant([
+      "The artwork is readable, but the result is less objective because the upload behaves like a cropped detail.",
+      "The checker can read the values, but missing frame context makes the composition score stricter.",
+      "This is usable as a detail read, but a full-frame upload would give a fairer composition score."
+    ]);
+  }
+
   if (metrics.referenceConfidence < 0.72) {
     return pickVariant([
       "The checker has a usable read, but a cleaner crop would make the result more reliable.",
@@ -1788,6 +1907,22 @@ function buildOneSentenceVerdict(metrics) {
       "This is not a clean artwork reference, so the score should stay low.",
       "The upload looks like a screenshot, not a painting to critique.",
       "Use the actual artwork before trusting the composition score."
+    ]);
+  }
+
+  if ((metrics.cropRisk || 0) > 0.62) {
+    return pickVariant([
+      "This reads like a cropped detail, so the composition score is intentionally stricter.",
+      "The image has readable values, but missing full-frame context is holding the score down.",
+      "Upload the whole painting for a fairer read; this crop is being judged as incomplete."
+    ]);
+  }
+
+  if ((metrics.centralLockRisk || 0) > 0.62) {
+    return pickVariant([
+      "The focal point is clear, but the composition is too center-locked to score higher.",
+      "The center reads well, but the surrounding frame needs more movement.",
+      "The image needs a stronger path around the focal point before the score can climb."
     ]);
   }
 
@@ -1851,6 +1986,10 @@ function getConfidenceBadge(metrics) {
     return { label: "Bad Upload", className: "confidence-bad" };
   }
 
+  if ((metrics.cropRisk || 0) > 0.62) {
+    return { label: "Cropped Detail", className: "confidence-low" };
+  }
+
   if (metrics.referenceConfidence < 0.46) {
     return { label: "Low Confidence", className: "confidence-low" };
   }
@@ -1867,6 +2006,16 @@ function buildTags(metrics) {
 
   if (metrics.referenceIssue) {
     return ["Not Artwork", "Screenshot / UI", "Low Confidence", "Re-upload"];
+  }
+
+  if ((metrics.cropRisk || 0) > 0.62) {
+    tags.push("Cropped Detail");
+  } else if ((metrics.frameCompletenessQuality || 0) > 0.68) {
+    tags.push("Fuller Frame");
+  }
+
+  if ((metrics.centralLockRisk || 0) > 0.62) {
+    tags.push("Center Locked");
   }
 
   if (metrics.centerDominance > 0.68) {
@@ -1935,6 +2084,12 @@ function getFallbackMetrics() {
     depthQuality: 0.35,
     edgeDensity: 0,
     axisEdgeBias: 0,
+    borderWeightShare: 0.34,
+    borderEdgeDensity: 0.18,
+    cornerWeightShare: 0.12,
+    cropRisk: 0.74,
+    centralLockRisk: 0.46,
+    frameCompletenessQuality: 0.26,
     referenceConfidence: 0.18,
     referenceIssue: true,
     screenLikeScore: 0.82,
@@ -2515,6 +2670,7 @@ function buildScoreBreakdown(metrics) {
     { label: "Focal Placement", score: normalizeQualityScore(metrics.centerQuality), quality: getQualityLabel(metrics.centerQuality) },
     { label: "Balance", score: normalizeQualityScore(metrics.balanceQuality), quality: getQualityLabel(metrics.balanceQuality) },
     { label: "Value Structure", score: normalizeQualityScore(metrics.valueQuality), quality: getQualityLabel(metrics.valueQuality) },
+    { label: "Frame Context", score: normalizeQualityScore(metrics.frameCompletenessQuality), quality: getQualityLabel(metrics.frameCompletenessQuality) },
     { label: "Visual Flow", score: normalizeQualityScore(metrics.flowQuality), quality: getQualityLabel(metrics.flowQuality) },
     { label: "Depth Read", score: normalizeQualityScore(metrics.depthQuality), quality: getQualityLabel(metrics.depthQuality) }
   ];
@@ -2555,6 +2711,14 @@ function buildWhyThisScore(metrics) {
       ]
     },
     {
+      score: metrics.frameCompletenessQuality || 0,
+      variants: [
+        "The score is helped when the whole frame reads with enough surrounding context.",
+        "The image gains points where the outer frame gives the checker enough composition context.",
+        "A fuller frame helps the score because balance and flow can be judged more fairly."
+      ]
+    },
+    {
       score: metrics.clarityQuality,
       variants: [
         "The score is helped by a focal area that lands with reasonable clarity.",
@@ -2564,6 +2728,22 @@ function buildWhyThisScore(metrics) {
     }
   ];
   const limits = [
+    {
+      score: metrics.cropRisk || 0,
+      variants: [
+        "The score drops because this looks too much like a cropped detail rather than the full painting.",
+        "The image loses points where important visual weight is pressed against the outer frame.",
+        "The composition score is capped because the checker needs more full-frame context."
+      ]
+    },
+    {
+      score: metrics.centralLockRisk || 0,
+      variants: [
+        "The score drops because the focal point is clear but too center-locked.",
+        "The center carries too much of the read without enough supporting movement.",
+        "The frame loses points where the eye lands in the middle and stops too quickly."
+      ]
+    },
     {
       score: metrics.centerDominance,
       variants: [
@@ -2614,6 +2794,8 @@ function buildWhyThisScore(metrics) {
 
 function buildFastestFix(metrics) {
   const options = [
+    { score: metrics.cropRisk || 0, text: "Upload the whole painting, not just a cropped detail." },
+    { score: metrics.centralLockRisk || 0, text: "Add a stronger eye path around the centered focal point." },
     { score: metrics.centerDominance, text: "Push the focal contrast farther away from the center." },
     {
       score: metrics.balanceImbalance,
@@ -2639,6 +2821,7 @@ function buildComparison(previousResult, currentResult) {
     { delta: currentResult.metrics.clarityQuality - previousResult.metrics.clarityQuality, positive: "Focal clarity improved.", negative: "Focal clarity softened." },
     { delta: currentResult.metrics.balanceQuality - previousResult.metrics.balanceQuality, positive: "Balance became more stable.", negative: "Balance became less stable." },
     { delta: currentResult.metrics.valueQuality - previousResult.metrics.valueQuality, positive: "Value structure is stronger now.", negative: "Value structure is weaker now." },
+    { delta: (currentResult.metrics.frameCompletenessQuality || 0) - (previousResult.metrics.frameCompletenessQuality || 0), positive: "The frame context is more complete now.", negative: "The frame reads more cropped now." },
     { delta: currentResult.metrics.flowQuality - previousResult.metrics.flowQuality, positive: "The eye path reads more clearly now.", negative: "The eye path reads less clearly now." },
     { delta: currentResult.metrics.depthQuality - previousResult.metrics.depthQuality, positive: "Depth separation reads more clearly now.", negative: "Depth separation reads less clearly now." }
   ];
@@ -2819,6 +3002,38 @@ function buildPaintoverIssues(metrics, hotspotX, hotspotY) {
   const valueTargetY = clamp(hotspotY < 50 ? hotspotY + 26 : hotspotY - 26, 14, 86);
 
   return [
+    {
+      key: "use-full-frame",
+      score: clamp(((metrics.cropRisk || 0) - 0.36) / 0.42, 0, 1),
+      labels: ["Use full frame", "Detail crop", "Need whole painting"],
+      targetX: hotspotX,
+      targetY: hotspotY,
+      flowStartX: 16,
+      flowStartY: 18,
+      flowEndX: 84,
+      flowEndY: 82,
+      cropX: 3,
+      cropY: 3,
+      cropWidth: 94,
+      cropHeight: 94,
+      badgeX: 8,
+      badgeY: 8,
+      hotspotRadius: 8,
+      guidanceClasses: []
+    },
+    {
+      key: "unlock-center",
+      score: clamp(((metrics.centralLockRisk || 0) - 0.34) / 0.42, 0, 1),
+      labels: ["Unlock center", "Add counterweight", "Support the focus"],
+      targetX,
+      targetY,
+      flowStartX: clamp(hotspotX - 30, 12, 88),
+      flowStartY: clamp(hotspotY + 30, 12, 88),
+      flowEndX: clamp(hotspotX + 30, 12, 88),
+      flowEndY: clamp(hotspotY - 26, 12, 88),
+      hotspotRadius: 9.2,
+      guidanceClasses: ["guidance-centered"]
+    },
     {
       key: "move-focus",
       score: clamp((metrics.centerDominance - 0.38) / 0.34, 0, 1),
