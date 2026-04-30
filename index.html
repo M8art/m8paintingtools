@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -41,6 +41,8 @@
       margin: 0;
       min-height: 100vh;
       background:
+        repeating-linear-gradient(90deg, rgba(68, 54, 39, 0.018) 0 1px, transparent 1px 9px),
+        repeating-linear-gradient(0deg, rgba(68, 54, 39, 0.014) 0 1px, transparent 1px 11px),
         radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
         linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%);
       color: var(--ink);
@@ -111,14 +113,20 @@
 
     .support-links {
       display: flex;
-      gap: 14px;
+      gap: 8px;
       justify-content: flex-end;
       width: 100%;
     }
 
     .support-link {
       color: var(--muted);
-      font-size: 0.94rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      background: rgba(255, 255, 255, 0.48);
       transition: color 180ms ease, opacity 180ms ease;
     }
 
@@ -127,9 +135,6 @@
     }
 
     .support-link-button {
-      border: 0;
-      background: transparent;
-      padding: 0;
       font: inherit;
       cursor: pointer;
     }
@@ -211,7 +216,9 @@
     }
 
     .card {
-      background: var(--panel);
+      background:
+        repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.018) 0 1px, transparent 1px 10px),
+        linear-gradient(180deg, rgba(255, 253, 248, 0.94), rgba(248, 244, 237, 0.91));
       border: 1px solid rgba(61, 51, 40, 0.1);
       border-radius: 26px;
       box-shadow: var(--shadow);
@@ -369,7 +376,7 @@
     }
 
     .onboarding-swipe-arrow::before {
-      content: "→";
+      content: ">";
       font-size: 1rem;
       font-weight: 700;
       line-height: 1;
@@ -1381,9 +1388,12 @@
     }
 
     .button {
-      background: #c96a3d;
+      background:
+        linear-gradient(135deg, rgba(224, 137, 82, 0.96), rgba(185, 82, 43, 0.98)),
+        #c96a3d;
       color: #ffffff;
       border-color: rgba(201, 106, 61, 0.28);
+      box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
 
     .button-secondary {
@@ -1690,6 +1700,476 @@
       line-height: 1.5;
     }
 
+    .app-home {
+      margin-bottom: 18px;
+      padding: 16px;
+      border-radius: 30px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background:
+        repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.018) 0 1px, transparent 1px 10px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 241, 233, 0.94));
+      box-shadow: 0 24px 54px rgba(50, 39, 28, 0.12);
+    }
+
+    .app-home-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .app-home-title {
+      font-size: clamp(1.9rem, 4.8vw, 3rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+      max-width: 11ch;
+    }
+
+    .app-home-subtitle {
+      max-width: 31rem;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .app-status-pill {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(50, 44, 38, 0.1);
+      background: rgba(255, 255, 255, 0.64);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .app-status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #c96a3d;
+      box-shadow: 0 0 0 5px rgba(201, 106, 61, 0.14);
+    }
+
+    .app-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(260px, 0.98fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .app-upload-action {
+      position: relative;
+      width: 100%;
+      min-height: 236px;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px dashed rgba(201, 106, 61, 0.42);
+      background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.62) 0, rgba(255, 255, 255, 0.62) 14px, rgba(244, 240, 232, 0.68) 14px, rgba(244, 240, 232, 0.68) 28px),
+        rgba(255, 255, 255, 0.58);
+      color: var(--ink);
+      cursor: pointer;
+      text-align: center;
+      overflow: hidden;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .app-upload-action:hover,
+    .app-upload-action:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(201, 106, 61, 0.66);
+      box-shadow: 0 18px 36px rgba(50, 39, 28, 0.1);
+      outline: none;
+    }
+
+    .app-upload-inner {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      max-width: 25rem;
+    }
+
+    .app-upload-icon {
+      width: 54px;
+      height: 54px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(50, 44, 38, 0.1);
+      background: rgba(255, 255, 255, 0.86);
+      color: #c96a3d;
+      font-size: 1.7rem;
+      line-height: 1;
+      box-shadow: 0 12px 26px rgba(50, 39, 28, 0.08);
+    }
+
+    .app-upload-title {
+      font-size: 1.16rem;
+      font-weight: 800;
+    }
+
+    .app-upload-copy {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+
+    .app-tool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .app-tool-tile {
+      min-width: 0;
+      min-height: 112px;
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background:
+        repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.014) 0 1px, transparent 1px 9px),
+        rgba(255, 255, 255, 0.66);
+      box-shadow: 0 14px 28px rgba(50, 39, 28, 0.07);
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .app-tool-tile:hover,
+    .app-tool-tile:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(201, 106, 61, 0.28);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 18px 32px rgba(50, 39, 28, 0.1);
+      outline: none;
+    }
+
+    .app-tool-tile.is-primary {
+      background: linear-gradient(135deg, #29251f 0%, #15120f 100%);
+      color: #ffffff;
+      border-color: rgba(31, 28, 24, 0.2);
+      box-shadow: 0 16px 30px rgba(31, 28, 24, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .app-tool-kicker {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .app-tool-tile.is-primary .app-tool-kicker,
+    .app-tool-tile.is-primary .app-tool-copy {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .app-tool-arrow {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      color: var(--ink);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .app-tool-tile.is-primary .app-tool-arrow {
+      background: #c96a3d;
+      color: #ffffff;
+    }
+
+    .app-tool-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .app-tool-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(250, 246, 238, 0.78);
+      color: #c96a3d;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .app-tool-icon svg {
+      width: 21px;
+      height: 21px;
+      display: block;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .app-tool-tile.is-primary .app-tool-icon {
+      border-color: rgba(255, 255, 255, 0.13);
+      background: rgba(255, 255, 255, 0.08);
+      color: #f1a16b;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .app-tool-name {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.32rem;
+      line-height: 1;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .app-tool-copy {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .app-home-bottom {
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .app-signal {
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(61, 51, 40, 0.08);
+      background: rgba(255, 255, 255, 0.48);
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .app-signal strong {
+      display: block;
+      color: var(--ink);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .studio-brief {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 14px;
+      border-radius: 24px;
+    }
+
+    .studio-brief-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .studio-brief-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
+    .studio-brief-head h2 {
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .studio-brief-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .studio-brief-item {
+      display: grid;
+      gap: 6px;
+      min-height: 82px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(255, 255, 255, 0.56);
+    }
+
+    .studio-brief-item strong {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.02rem;
+      line-height: 1;
+    }
+
+    .studio-brief-item span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.28;
+    }
+
+    .landing-long-form {
+      display: none !important;
+    }
+
+    .desktop-landing-only {
+      display: none;
+    }
+
+    .mobile-app-actions,
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    .mobile-bottom-nav {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      z-index: 50;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 7px;
+      border-radius: 24px;
+      border: 1px solid rgba(49, 42, 35, 0.12);
+      background: rgba(250, 247, 240, 0.9);
+      box-shadow: 0 18px 44px rgba(34, 29, 23, 0.18);
+      backdrop-filter: blur(18px);
+    }
+
+    .mobile-bottom-link {
+      min-width: 0;
+      min-height: 46px;
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      border-radius: 18px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .mobile-bottom-link svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .mobile-bottom-link.is-active {
+      background: linear-gradient(135deg, #29251f 0%, #15120f 100%);
+      color: #ffffff;
+      box-shadow: 0 9px 18px rgba(31, 28, 24, 0.16);
+    }
+
+    .landing-share-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .landing-share-button {
+      gap: 8px;
+    }
+
+    .landing-share-button svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    @media (min-width: 721px) {
+      .desktop-landing-only {
+        display: block;
+      }
+
+      .app-home,
+      .studio-brief {
+        display: none;
+      }
+
+      .landing-long-form {
+        display: grid !important;
+      }
+    }
+
+
+    @media (min-width: 721px) {
+      .desktop-support-stack {
+        display: grid;
+        gap: 10px;
+        justify-items: end;
+      }
+
+      .desktop-support-stack .support-links {
+        display: flex;
+      }
+
+      .desktop-landing-upload {
+        min-height: 132px;
+      }
+
+      .desktop-landing-preview .hero-preview-card {
+        grid-template-rows: auto minmax(6.7em, auto) auto 1fr;
+        min-height: 308px;
+        align-content: start;
+      }
+
+      .desktop-landing-preview .hero-preview-kicker {
+        min-height: 2.1em;
+      }
+
+      .desktop-landing-preview .hero-preview-title {
+        min-height: 6.7em;
+        font-size: 1rem;
+        line-height: 1.08;
+      }
+
+      .desktop-landing-preview .hero-preview-image {
+        aspect-ratio: 0.72;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+    }
     .visually-hidden {
       position: absolute;
       width: 1px;
@@ -1968,6 +2448,10 @@
       align-items: center;
     }
 
+    .footer-social-links {
+      justify-content: center;
+    }
+
     .footer-link {
       color: var(--ink);
       font-size: 0.94rem;
@@ -2041,7 +2525,96 @@
     }
 
 
+
+    @media (min-width: 721px) {
+      .page {
+        width: min(1080px, calc(100% - 56px));
+      }
+
+      .landing-hero-grid {
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      }
+    }
+
+    @media (min-width: 721px) {
+      .desktop-support-stack .top-nav-link {
+        padding: 0 10px;
+        font-size: 0.78rem;
+      }
+
+      .desktop-support-stack .support-link {
+        font-size: 0.72rem;
+        padding: 6px 8px;
+      }
+
+      .landing-hero-title {
+        max-width: 13ch;
+      }
+
+      .desktop-landing-preview {
+        padding: 12px;
+      }
+
+      .desktop-landing-preview .hero-preview-grid {
+        gap: 8px;
+      }
+
+      .desktop-landing-preview .hero-preview-card {
+        padding: 10px;
+        gap: 7px;
+      }
+
+      .desktop-landing-preview .hero-preview-kicker {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+      }
+
+      .desktop-landing-preview .hero-preview-title {
+        font-size: 0.86rem;
+        line-height: 1.04;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        font-size: 0.72rem;
+        line-height: 1.35;
+      }
+    }
+
+    @media (min-width: 721px) {
+      .desktop-support-stack .top-nav {
+        flex-wrap: nowrap;
+        white-space: nowrap;
+      }
+
+      .desktop-landing-only .landing-hero-title {
+        max-width: 13ch;
+        font-size: clamp(2.7rem, 4.6vw, 3.7rem);
+      }
+    }
+
+    @media (min-width: 721px) {
+      .brand-title {
+        font-size: 2.55rem;
+      }
+
+      .brand-logo {
+        height: 38px;
+      }
+
+      .desktop-support-stack .top-nav-link {
+        padding: 0 8px;
+        font-size: 0.68rem;
+      }
+
+      .desktop-support-stack .support-link {
+        font-size: 0.68rem;
+      }
+    }
     @media (max-width: 1120px) {
+      .app-workspace {
+        grid-template-columns: 1fr;
+      }
+
       .landing-hero-grid {
         grid-template-columns: 1fr;
       }
@@ -2078,50 +2651,509 @@
       }
     }
 
-    @media (max-width: 720px) {
-      html,
+
+    @media (min-width: 721px) and (max-width: 1120px) {
+      .landing-hero-grid {
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      }
+
+      .hero-preview-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .product-story {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      }
+
+      .hero {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .steps-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 721px) and (max-width: 900px) {
+      .page {
+        width: min(775px, calc(100% - 24px));
+      }
+
+      .landing-hero {
+        padding: 24px;
+      }
+
+      .landing-hero-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(258px, 0.74fr);
+        gap: 22px;
+      }
+
+      .desktop-landing-only .landing-hero-title {
+        max-width: 13.5ch;
+        font-size: clamp(2.65rem, 5.8vw, 3.25rem);
+        line-height: 0.95;
+      }
+
+      .landing-hero-copy {
+        gap: 14px;
+      }
+
+      .landing-hero-subheadline {
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+
+      .landing-hero-explainer {
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .desktop-landing-upload {
+        min-height: 112px;
+        padding: 14px 12px;
+      }
+
+      .desktop-landing-preview {
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .desktop-landing-preview .hero-preview-grid {
+        gap: 7px;
+      }
+
+      .desktop-landing-preview .hero-preview-card {
+        min-height: 260px;
+        padding: 9px;
+      }
+
+      .desktop-landing-preview .hero-preview-title {
+        font-size: 0.8rem;
+      }
+
+      .desktop-landing-preview .hero-preview-image {
+        aspect-ratio: 0.66;
+        border-radius: 12px;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        font-size: 0.66rem;
+        line-height: 1.28;
+      }
+
+      .hero-microcopy {
+        font-size: 0.82rem;
+      }
+    }
+
+    @media (min-width: 721px) and (max-width: 900px) {
+      .topbar {
+        gap: 12px;
+      }
+
+      .brand-title {
+        font-size: 2.05rem;
+      }
+
+      .brand-logo {
+        height: 30px;
+      }
+
+      .desktop-support-stack {
+        gap: 7px;
+      }
+
+      .desktop-support-stack .top-nav-link {
+        padding: 0 5px;
+        font-size: 0.58rem;
+      }
+
+      .social-link {
+        width: 28px;
+        height: 28px;
+      }
+
+      .social-link svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .desktop-support-stack .support-link {
+        font-size: 0.6rem;
+        padding: 5px 7px;
+      }
+
+      .desktop-landing-preview .hero-preview-card {
+        min-height: 212px;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        display: none;
+      }
+
+      .desktop-landing-preview .hero-preview-image {
+        aspect-ratio: 0.74;
+      }
+    }
+
+    @media (min-width: 901px) {
+      .brand-title {
+        font-size: clamp(3.1rem, 4.6vw, 4.15rem);
+      }
+
+      .brand-logo {
+        height: clamp(42px, 5vw, 54px);
+      }
+
+      .landing-hero {
+        padding: clamp(30px, 3.7vw, 38px);
+      }
+
+      .landing-hero-grid {
+        grid-template-columns: minmax(0, 1.06fr) minmax(430px, 0.94fr);
+        gap: 42px;
+      }
+
+      .desktop-landing-preview {
+        padding: 16px;
+      }
+
+      .desktop-landing-preview .hero-preview-grid {
+        gap: 12px;
+      }
+
+      .desktop-landing-preview .hero-preview-card {
+        min-height: 390px;
+        padding: 14px;
+      }
+
+      .desktop-landing-preview .hero-preview-title {
+        font-size: 1rem;
+        line-height: 1.08;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        display: block;
+        font-size: 0.85rem;
+        line-height: 1.45;
+      }
+    }
+
+    @media (min-width: 721px) {
+      .page {
+        padding-top: 14px;
+      }
+
+      .topbar {
+        margin-bottom: 14px;
+      }
+    }
+    
+    @media (min-width: 721px) {
+      .desktop-landing-preview .hero-preview-card {
+        grid-template-rows: auto minmax(6.7em, auto) auto 1fr;
+        min-height: 308px;
+        align-content: start;
+      }
+
+      .desktop-landing-preview .hero-preview-kicker {
+        min-height: 2.1em;
+      }
+
+      .desktop-landing-preview .hero-preview-title {
+        min-height: 6.7em;
+      }
+
+      .desktop-landing-preview .hero-preview-image {
+        aspect-ratio: 0.72;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        display: block;
+        margin-top: 2px;
+      }
+    }
+
+    @media (min-width: 721px) {
+      .landing-hero.desktop-landing-only {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border-color: rgba(86, 64, 45, 0.11);
+        background:
+          radial-gradient(circle at 88% 12%, rgba(198, 92, 53, 0.15), transparent 24%),
+          radial-gradient(circle at 10% 88%, rgba(95, 116, 95, 0.12), transparent 26%),
+          repeating-linear-gradient(115deg, rgba(88, 72, 56, 0.025) 0 1px, transparent 1px 12px),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(243, 239, 230, 0.94));
+      }
+
+      .landing-hero.desktop-landing-only::before,
+      .landing-hero.desktop-landing-only::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .landing-hero.desktop-landing-only::before {
+        left: -92px;
+        top: 78px;
+        width: 320px;
+        height: 82px;
+        border-radius: 999px 48px 999px 54px;
+        background: linear-gradient(90deg, rgba(191, 87, 48, 0.18), rgba(217, 157, 83, 0.07), transparent 82%);
+        transform: rotate(-12deg);
+        filter: blur(0.3px);
+      }
+
+      .landing-hero.desktop-landing-only::after {
+        right: -74px;
+        bottom: 70px;
+        width: 238px;
+        height: 150px;
+        border-radius: 46% 54% 60% 40%;
+        background:
+          radial-gradient(circle at 28% 38%, rgba(198, 92, 53, 0.34) 0 12px, transparent 13px),
+          radial-gradient(circle at 53% 24%, rgba(63, 79, 75, 0.24) 0 10px, transparent 11px),
+          radial-gradient(circle at 67% 56%, rgba(217, 173, 92, 0.3) 0 13px, transparent 14px),
+          radial-gradient(circle at 39% 65%, rgba(93, 69, 58, 0.14) 0 16px, transparent 17px);
+        opacity: 0.72;
+      }
+
+      .landing-hero-copy {
+        position: relative;
+      }
+
+      .landing-hero-copy::before {
+        content: "";
+        position: absolute;
+        left: -28px;
+        top: 76px;
+        width: 7px;
+        height: 172px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #c96a3d, #d9ad5c 48%, #516b66);
+        box-shadow: 0 12px 26px rgba(76, 56, 42, 0.14);
+      }
+
+      .landing-hero-title {
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+      }
+
+      .landing-hero-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 252, 246, 0.7);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      }
+
+      .landing-hero-note::before {
+        content: "";
+        width: 13px;
+        height: 13px;
+        flex: 0 0 auto;
+        border-radius: 999px 999px 999px 4px;
+        background: #c96a3d;
+        transform: rotate(-35deg);
+        box-shadow: 0 0 0 3px rgba(201, 106, 61, 0.12);
+      }
+
+      .landing-hero-note:nth-child(2)::before {
+        background: #516b66;
+        box-shadow: 0 0 0 3px rgba(81, 107, 102, 0.12);
+      }
+
+      .landing-hero-note:nth-child(3)::before {
+        background: #d9ad5c;
+        box-shadow: 0 0 0 3px rgba(217, 173, 92, 0.14);
+      }
+
+      .desktop-landing-preview {
+        border-color: rgba(93, 72, 52, 0.13);
+        background:
+          radial-gradient(circle at 88% 14%, rgba(207, 100, 55, 0.12), transparent 24%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(244, 239, 230, 0.94));
+      }
+
+      .desktop-landing-preview .hero-upload-mock {
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(249, 244, 236, 0.7)),
+          repeating-linear-gradient(45deg, rgba(201, 106, 61, 0.05) 0 7px, transparent 7px 14px);
+      }
+
+      .desktop-landing-preview .hero-upload-icon {
+        position: relative;
+        font-size: 0;
+      }
+
+      .desktop-landing-preview .hero-upload-icon::before,
+      .desktop-landing-preview .hero-upload-icon::after {
+        content: "";
+        position: absolute;
+        background: #c96a3d;
+      }
+
+      .desktop-landing-preview .hero-upload-icon::before {
+        width: 18px;
+        height: 3px;
+        border-radius: 999px;
+      }
+
+      .desktop-landing-preview .hero-upload-icon::after {
+        width: 3px;
+        height: 18px;
+        border-radius: 999px;
+      }
+
+      .desktop-landing-preview .hero-preview-card {
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(251, 247, 240, 0.88));
+      }
+
+      .desktop-landing-preview .hero-preview-card::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        top: 0;
+        height: 4px;
+        border-radius: 0 0 999px 999px;
+        background: rgba(201, 106, 61, 0.48);
+      }
+
+      .desktop-landing-preview .hero-preview-card:nth-child(2)::before {
+        background: rgba(81, 107, 102, 0.45);
+      }
+
+      .desktop-landing-preview .hero-preview-card:nth-child(3)::before {
+        background: rgba(217, 173, 92, 0.58);
+      }
+
+      .desktop-landing-preview .hero-preview-image {
+        border-radius: 16px 16px 22px 14px;
+        box-shadow: 0 14px 25px rgba(47, 37, 28, 0.13);
+      }
+
+      .quick-check-banner.landing-long-form {
+        background:
+          radial-gradient(circle at 16% 28%, rgba(201, 106, 61, 0.11), transparent 22%),
+          radial-gradient(circle at 86% 68%, rgba(81, 107, 102, 0.1), transparent 24%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 241, 232, 0.94));
+      }
+
+      .quick-check-banner.landing-long-form h2::after {
+        content: "";
+        display: block;
+        width: 76px;
+        height: 8px;
+        margin: 12px auto 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #c96a3d, #d9ad5c, #516b66);
+        opacity: 0.72;
+      }
+
+      .product-story.landing-long-form .section-card,
+      #tool-system.landing-long-form .tool-card {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.9)),
+          repeating-linear-gradient(110deg, rgba(70, 55, 42, 0.025) 0 1px, transparent 1px 10px);
+      }
+    }
+@media (max-width: 720px) {
+      
+      .desktop-landing-only {
+        display: none !important;
+      }
+html,
       body {
         max-width: 100%;
         overflow-x: hidden;
+        padding-bottom: 82px;
       }
 
       .page {
-        width: min(100% - 14px, 1240px);
-        padding-top: 14px;
+        width: min(100% - 10px, 1240px);
+        padding-top: 8px;
         gap: 14px;
       }
 
       .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 14px 16px;
-        border-radius: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        border-radius: 22px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(245, 240, 231, 0.74)),
+          rgba(255, 255, 255, 0.58);
+        border: 1px solid rgba(61, 51, 40, 0.1);
+        box-shadow: 0 14px 32px rgba(50, 39, 28, 0.1);
       }
 
-      .brand-lockup {
-        gap: 10px;
+      .topbar .eyebrow {
+        display: none;
       }
 
-      .brand-mark {
-        width: 42px;
-        height: 42px;
-        padding: 9px;
+      .brand-title {
+        gap: 7px;
+        font-size: clamp(1.28rem, 5.9vw, 1.68rem);
+        line-height: 0.96;
+        max-width: 100%;
+        white-space: normal;
+      }
+
+      .brand-logo {
+        height: 25px;
+      }
+
+      .mobile-app-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 0 0 auto;
+      }
+
+      .mobile-app-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        border: 1px solid rgba(61, 51, 40, 0.1);
+        background: rgba(255, 255, 255, 0.62);
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+      }
+
+      .mobile-app-action svg {
+        width: 17px;
+        height: 17px;
+        display: block;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       .header-actions,
       .top-nav,
-      .support-links,
-      .social-links {
+      .support-links {
         width: 100%;
       }
 
       .header-actions {
-        display: grid;
-        gap: 10px;
+        display: none;
       }
 
       .top-nav {
+        grid-column: 1 / -1;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
@@ -2129,34 +3161,248 @@
 
       .top-nav-link {
         min-width: 0;
-        padding: 10px 12px;
+        padding: 8px 9px;
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         border-radius: 999px;
         border: 1px solid rgba(59, 52, 45, 0.1);
         background: rgba(255, 255, 255, 0.58);
         text-align: center;
-        font-size: 0.88rem;
+        font-size: 0.8rem;
       }
 
-      .social-links,
       .support-links,
       .button-row {
-        justify-content: flex-start;
         flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .social-links {
+        width: auto;
+        justify-content: flex-start;
+      }
+
+      .support-links {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
       }
 
       .social-link,
       .support-link,
       .support-link-button {
-        min-height: 40px;
+        min-height: 30px;
       }
 
       .support-link,
       .support-link-button {
-        padding: 10px 12px;
+        padding: 6px 8px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.58);
         border: 1px solid rgba(59, 52, 45, 0.08);
+        font-size: 0.74rem;
+        white-space: nowrap;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .social-link {
+        width: 34px;
+        height: 34px;
+      }
+
+      .app-home {
+        position: relative;
+        margin-bottom: 0;
+        padding: 12px;
+        border-radius: 26px;
+        background:
+          radial-gradient(circle at 12% 0%, rgba(201, 106, 61, 0.1), transparent 25%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(245, 241, 233, 0.96));
+      }
+
+      .app-home-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .app-home .eyebrow {
+        display: none;
+      }
+
+      .app-home-title {
+        max-width: none;
+        padding-right: 0;
+        font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+        font-size: 0.92rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .app-home-subtitle {
+        display: none;
+      }
+
+      .app-status-pill {
+        position: static;
+        width: fit-content;
+        margin-top: 0;
+        padding: 6px 8px;
+        font-size: 0.62rem;
+        white-space: nowrap;
+      }
+
+      .app-workspace {
+        gap: 8px;
+      }
+
+      .app-upload-action {
+        min-height: 62px;
+        padding: 9px 10px;
+        border-radius: 18px;
+        place-items: stretch;
+        border-style: solid;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(248, 243, 235, 0.74)),
+          rgba(255, 255, 255, 0.58);
+      }
+
+      .app-upload-inner {
+        width: 100%;
+        max-width: none;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        justify-items: start;
+        gap: 10px;
+        text-align: left;
+      }
+
+      .app-upload-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1.28rem;
+      }
+
+      .app-upload-title {
+        font-size: 0.96rem;
+      }
+
+      .app-upload-copy {
+        display: none;
+      }
+
+      .app-tool-grid {
+        gap: 9px;
+      }
+
+      .app-tool-tile {
+        min-height: 112px;
+        padding: 12px;
+        border-radius: 22px;
+        align-content: start;
+        gap: 8px;
+        box-shadow: 0 10px 24px rgba(50, 39, 28, 0.08);
+      }
+
+      .app-tool-kicker {
+        font-size: 0.56rem;
+        letter-spacing: 0.12em;
+      }
+
+      .app-tool-name {
+        font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+        font-size: 1.05rem;
+        font-weight: 900;
+        overflow-wrap: normal;
+        white-space: nowrap;
+      }
+
+      .app-tool-main {
+        display: grid;
+        gap: 7px;
+      }
+
+      .app-tool-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 13px;
+      }
+
+      .app-tool-icon svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .app-tool-copy {
+        font-size: 0.72rem;
+        line-height: 1.25;
+      }
+
+      .app-tool-arrow {
+        width: 26px;
+        height: 26px;
+      }
+
+      .app-home-bottom {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .app-signal {
+        padding: 8px 10px;
+        border-radius: 14px;
+        font-size: 0.76rem;
+      }
+
+      .studio-brief {
+        display: none;
+      }
+
+      .mini-game-callout,
+      .footer {
+        display: none;
+      }
+
+      .mobile-bottom-nav {
+        display: grid;
+      }
+
+      .studio-brief-head {
+        align-items: flex-start;
+      }
+
+      .studio-brief-head h2 {
+        font-size: 1.12rem;
+      }
+
+      .studio-brief-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .studio-brief-item {
+        min-height: 0;
+        padding: 9px 10px;
+        border-radius: 14px;
+      }
+
+      .studio-brief-item strong {
+        font-size: 0.96rem;
+      }
+
+      .studio-brief-item span {
+        font-size: 0.76rem;
       }
 
       .landing-hero {
@@ -2208,13 +3454,17 @@
         align-items: flex-start;
       }
 
+      .footer-social-links {
+        justify-content: flex-start;
+      }
+
       .footer-links {
         grid-auto-flow: row;
         gap: 8px;
       }
 
       .top-nav-link:first-child {
-        padding-left: 0;
+        padding-left: 9px;
       }
 
       .button,
@@ -2520,6 +3770,16 @@
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 360px) {
+      .app-tool-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .app-tool-name {
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2753,40 +4013,50 @@
         </h1>
       </div>
 
-      <div class="header-actions">
+      <div class="header-actions desktop-support-stack">
         <nav class="top-nav" aria-label="Tool navigation">
           <a class="top-nav-link" href="./analysis/index.html">Quick Check</a>
           <a class="top-nav-link" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Value Checker</a>
           <a class="top-nav-link" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Composition Checker</a>
           <a class="top-nav-link" href="./color-studio/index.html">Color Checker</a>
         </nav>
-
-        <div class="social-links" aria-label="Social links">
+        <div class="social-links desktop-landing-only" aria-label="Social links">
           <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"></path></svg>
           </a>
-          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"/>
-            </svg>
+          <a class="social-link" href="https://www.instagram.com/matejart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.7 2h8.6A5.7 5.7 0 0 1 22 7.7v8.6a5.7 5.7 0 0 1-5.7 5.7H7.7A5.7 5.7 0 0 1 2 16.3V7.7A5.7 5.7 0 0 1 7.7 2zm0 2A3.7 3.7 0 0 0 4 7.7v8.6A3.7 3.7 0 0 0 7.7 20h8.6a3.7 3.7 0 0 0 3.7-3.7V7.7A3.7 3.7 0 0 0 16.3 4H7.7zm8.9 2.1a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6zM12 7.4a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2zm0 2a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2z"></path></svg>
           </a>
-          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"/>
-            </svg>
+          <a class="social-link" href="https://www.facebook.com/matejart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.2V6.7c0-.7.5-.9 1-.9h2.4V2.1L14 2c-3.4 0-5.1 2-5.1 5.1v1.1H6v4h2.9V22H13v-9.8h3.1l.5-4H13z"></path></svg>
           </a>
         </div>
-
-        <div class="support-links">
+        <div class="support-links desktop-landing-only">
           <a class="support-link" href="./access/index.html">Patreon Access</a>
-          <button id="replayOnboardingButton" class="support-link support-link-button" type="button">How it works</button>
+          <button id="replayOnboardingButtonDesktop" class="support-link support-link-button" type="button">How it works</button>
+          <button id="shareLandingButton" class="support-link support-link-button" type="button" aria-label="Share M8 Painting Tools">Share</button>
         </div>
+      </div>
+
+      <div class="mobile-app-actions" aria-label="App actions">
+        <button id="replayOnboardingButtonMobile" class="mobile-app-action" type="button" aria-label="How it works">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 17v-5"></path>
+            <path d="M12 8h.01"></path>
+            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+          </svg>
+        </button>
+        <a class="mobile-app-action" href="./access/index.html" aria-label="Patreon Access">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 11V8a5 5 0 0 1 10 0v3"></path>
+            <path d="M6 11h12v10H6z"></path>
+          </svg>
+        </a>
       </div>
     </header>
 
-    <section class="card landing-hero" aria-label="Painting tools overview">
+    
+    <section class="card landing-hero desktop-landing-only" aria-label="Painting tools landing page">
       <div class="landing-hero-grid">
         <div class="landing-hero-copy">
           <p class="eyebrow">Painting Tools System</p>
@@ -2797,7 +4067,7 @@
             <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start With Value</a>
             <a class="button-secondary" href="#tool-system">Explore All Tools</a>
           </div>
-          <div class="landing-hero-meta" aria-label="Hero details">
+          <div class="landing-hero-meta" aria-label="Tool highlights">
             <span class="landing-hero-note">Built from real studio practice - not theory</span>
             <span class="landing-hero-note">Find problems before paint touches canvas</span>
             <span class="landing-hero-note">Fast visual checks. Better decisions.</span>
@@ -2805,39 +4075,133 @@
         </div>
 
         <div class="landing-hero-visual">
-          <div class="hero-preview-frame">
-            <button id="heroUploadTrigger" class="hero-upload-mock" type="button">
+          <div class="hero-preview-frame desktop-landing-preview">
+            <button id="desktopUploadTrigger" class="hero-upload-mock desktop-landing-upload" type="button">
               <span class="hero-upload-icon" aria-hidden="true">+</span>
               <span class="hero-upload-title">Upload your painting</span>
-              <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, and color - before you touch the canvas.</span>
+              <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, and color before you touch the canvas.</span>
             </button>
-
-            <div class="hero-preview-grid">
+            <div class="hero-preview-grid" aria-label="Tool previews">
               <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
-                <span class="hero-preview-kicker">Value analysis</span>
+                <span class="hero-preview-kicker">Value Analysis</span>
                 <h3 class="hero-preview-title">Fix flat paintings caused by bad values</h3>
-                <img class="hero-preview-image" src="./assets/images/value%20check.png" alt="Value Checker preview">
+                <img class="hero-preview-image" src="./assets/images/value check.png" alt="Value checker preview">
                 <p class="hero-preview-copy">Check whether your lights, shadows, and midtones are actually working before details take over.</p>
               </a>
-
               <a class="hero-preview-card" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">
-                <span class="hero-preview-kicker">Composition preview</span>
+                <span class="hero-preview-kicker">Composition Preview</span>
                 <h3 class="hero-preview-title">Fix your composition before it ruins the painting</h3>
-                <img class="hero-preview-image" src="./assets/images/composition%20check.png" alt="Composition Checker preview">
+                <img class="hero-preview-image" src="./assets/images/composition check.png" alt="Composition checker preview">
                 <p class="hero-preview-copy">See focal placement, movement, and balance before they become hard to fix.</p>
               </a>
-
-              <a class="hero-preview-card" href="./color-studio/index.html">
-                <span class="hero-preview-kicker">Color preview</span>
+              <a class="hero-preview-card" href="./color-studio/index.html" onclick="gtag('event', 'open_color_tool', { page_location: window.location.href })">
+                <span class="hero-preview-kicker">Color Preview</span>
                 <h3 class="hero-preview-title">Stop guessing colors. Know what to mix.</h3>
-                <img class="hero-preview-image" src="./assets/images/Color%20check.png" alt="Color Checker preview">
+                <img class="hero-preview-image" src="./assets/images/Color check.png" alt="Color checker preview">
                 <p class="hero-preview-copy">Extract palettes and understand how colors work together before you start mixing paint.</p>
               </a>
             </div>
-
             <p class="hero-microcopy">No guesswork. Clear visual feedback instantly.</p>
           </div>
         </div>
+      </div>
+    </section>
+    <section class="app-home" aria-label="Painting Studio app home">
+      <div class="app-home-top">
+        <div>
+          <p class="eyebrow">Studio Home</p>
+          <h2 class="app-home-title">Tools</h2>
+          <p class="app-home-subtitle">Upload or open a checker.</p>
+        </div>
+        <div class="app-status-pill" aria-label="Studio status">
+          <span class="app-status-dot" aria-hidden="true"></span>
+          Ready to analyze
+        </div>
+      </div>
+
+      <div class="app-workspace">
+        <button id="heroUploadTrigger" class="app-upload-action" type="button">
+          <span class="app-upload-inner">
+            <span class="app-upload-icon" aria-hidden="true">+</span>
+            <span class="app-upload-title">Upload painting</span>
+            <span class="app-upload-copy">Pick an image and send it straight into Value, Composition, or Color analysis.</span>
+          </span>
+        </button>
+
+        <div class="app-tool-grid" aria-label="Main tools">
+          <a class="app-tool-tile is-primary" href="./analysis/index.html">
+            <span class="app-tool-kicker">Scan <span class="app-tool-arrow" aria-hidden="true">&gt;</span></span>
+            <span class="app-tool-main">
+              <span class="app-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M10.5 18a7.5 7.5 0 1 1 5.3-2.2L21 21"></path>
+                  <path d="M7.7 10.5c1.2-2 4.4-2 5.6 0"></path>
+                  <path d="M9 13h3"></path>
+                </svg>
+              </span>
+              <span class="app-tool-name">Quick</span>
+            </span>
+            <span class="app-tool-copy">Full read</span>
+          </a>
+
+          <a class="app-tool-tile" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
+            <span class="app-tool-kicker">Tone <span class="app-tool-arrow" aria-hidden="true">&gt;</span></span>
+            <span class="app-tool-main">
+              <span class="app-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 19h16"></path>
+                  <path d="M6 15h2"></path>
+                  <path d="M10 13h2"></path>
+                  <path d="M14 10h2"></path>
+                  <path d="M18 7h2"></path>
+                  <path d="M5 5h14"></path>
+                </svg>
+              </span>
+              <span class="app-tool-name">Value</span>
+            </span>
+            <span class="app-tool-copy">7-value map</span>
+          </a>
+
+          <a class="app-tool-tile" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">
+            <span class="app-tool-kicker">Comp <span class="app-tool-arrow" aria-hidden="true">&gt;</span></span>
+            <span class="app-tool-main">
+              <span class="app-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 4h16v16H4z"></path>
+                  <path d="M9.3 4v16"></path>
+                  <path d="M14.7 4v16"></path>
+                  <path d="M4 9.3h16"></path>
+                  <path d="M4 14.7h16"></path>
+                </svg>
+              </span>
+              <span class="app-tool-name">Comp</span>
+            </span>
+            <span class="app-tool-copy">Layout check</span>
+          </a>
+
+          <a class="app-tool-tile" href="./color-studio/index.html" onclick="gtag('event', 'open_color_tool', { page_location: window.location.href })">
+            <span class="app-tool-kicker">Color <span class="app-tool-arrow" aria-hidden="true">&gt;</span></span>
+            <span class="app-tool-main">
+              <span class="app-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 4a8 8 0 0 0-2.2 15.7c1 .3 1.8-.5 1.8-1.5 0-.9.7-1.6 1.6-1.6h1.3A5.5 5.5 0 0 0 20 11.1C20 7.2 16.4 4 12 4z"></path>
+                  <path d="M7.8 11.2h.1"></path>
+                  <path d="M10.2 8.1h.1"></path>
+                  <path d="M14.1 8.4h.1"></path>
+                  <path d="M16.4 11.4h.1"></path>
+                </svg>
+              </span>
+              <span class="app-tool-name">Color</span>
+            </span>
+            <span class="app-tool-copy">Palette read</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="app-home-bottom" aria-label="Analysis signals">
+        <p class="app-signal"><strong>Value</strong>Find flat reads before detail work.</p>
+        <p class="app-signal"><strong>Composition</strong>See where the eye gets stuck.</p>
+        <p class="app-signal"><strong>Color</strong>Check relationships before mixing.</p>
       </div>
     </section>
 
@@ -2870,19 +4234,45 @@
 
     <input id="landingUploadInput" class="visually-hidden" type="file" accept="image/*">
 
-    <section class="card quick-check-banner" aria-label="Quick Check call to action">
-      <h2>See What&rsquo;s Wrong With Your Painting in Seconds</h2>
-      <p class="quick-check-banner-copy">Upload your image and instantly reveal its value, composition, and color structure before you commit to the canvas.</p>
-      <div class="button-row">
-        <a class="button" href="./analysis/index.html">Start Quick Check</a>
+    <section class="card studio-brief" aria-label="Studio workflow">
+      <div class="studio-brief-head">
+        <div>
+          <p class="eyebrow">Studio Flow</p>
+          <h2>Scan. Decide. Paint.</h2>
+        </div>
+        <div class="studio-brief-actions">
+          <a class="support-link" href="./access/index.html">Patreon</a>
+          <button id="replayOnboardingButtonBrief" class="support-link support-link-button" type="button">How it works</button>
+        </div>
       </div>
-      <div class="quick-check-banner-meta">
-        <p>No guesswork. Clear visual feedback instantly.</p>
-        <p>Use your own image or try a demo.</p>
+      <div class="studio-brief-grid">
+        <div class="studio-brief-item">
+          <strong>Quick read</strong>
+          <span>Get the biggest visual problem first.</span>
+        </div>
+        <div class="studio-brief-item">
+          <strong>Deep check</strong>
+          <span>Open value, composition, or color tools.</span>
+        </div>
+        <div class="studio-brief-item">
+          <strong>Paint fix</strong>
+          <span>Use one clear next move on canvas.</span>
+        </div>
       </div>
     </section>
 
-    <section class="product-story" aria-label="Product overview">
+    <section class="card quick-check-banner landing-long-form" aria-label="Quick Check">
+      <h2>Quick Check</h2>
+      <p class="quick-check-banner-copy">Upload or open a checker. Get a full read before you choose Value, Comp, or Color.</p>
+      <div class="button-row">
+        <a class="button" href="./analysis/index.html">Open Quick Check</a>
+      </div>
+      <div class="quick-check-banner-meta">
+        <span>Quick gives you the full read.</span>
+        <span>Then go deeper with 7-value map, layout check, or palette read.</span>
+      </div>
+    </section>
+    <section class="product-story landing-long-form" aria-label="Product overview">
       <div class="card section-card">
         <div class="section-intro">
           <p class="eyebrow">How It Works</p>
@@ -2922,7 +4312,7 @@
       </div>
     </section>
 
-    <section id="tool-system" class="hero">
+    <section id="tool-system" class="hero landing-long-form">
       <div class="card tool-card tool-card-primary">
         <div class="tool-heading">
           <p class="eyebrow">Tool One</p>
@@ -3039,7 +4429,7 @@
     </section>
 
     <section class="mini-game-callout" aria-label="Mini game">
-      <h2>🎨 Need a break?</h2>
+      <h2>Need a break?</h2>
       <p>Play a mini game</p>
       <div class="button-row">
         <a class="button mini-game-button" href="./brush-runner/index.html">Play</a>
@@ -3048,12 +4438,61 @@
 
     <footer class="footer" aria-label="Site footer">
       <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <div class="social-links footer-social-links" aria-label="Social links">
+        <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"/>
+          </svg>
+        </a>
+        <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"/>
+          </svg>
+        </a>
+        <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13.4 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.5 1.6-1.5h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.3v2.4H7.4v3.2h2.7V22h3.3Z"/>
+          </svg>
+        </a>
+      </div>
       <div class="footer-links">
         <a class="footer-link" href="./privacy.html">Privacy Policy</a>
         <a class="footer-link" href="./terms.html">Terms of Use</a>
         <a class="footer-link" href="./contact.html">Contact</a>
       </div>
     </footer>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile app navigation">
+      <a class="mobile-bottom-link is-active" href="./index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 11.5 12 4l8 7.5"></path>
+          <path d="M6.5 10.5V20h11v-9.5"></path>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a class="mobile-bottom-link" href="./analysis/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10.5 18a7.5 7.5 0 1 1 5.3-2.2L21 21"></path>
+          <path d="M7.8 10.5c1.2-2 4.2-2 5.4 0"></path>
+        </svg>
+        <span>Analyze</span>
+      </a>
+      <a class="mobile-bottom-link" href="./brush-runner/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 17c4-5 8-7 16-8"></path>
+          <path d="M6 15l3 3"></path>
+          <path d="M17 7l2 4"></path>
+        </svg>
+        <span>Game</span>
+      </a>
+      <a class="mobile-bottom-link" href="./access/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 11V8a5 5 0 0 1 10 0v3"></path>
+          <path d="M6 11h12v10H6z"></path>
+        </svg>
+        <span>Access</span>
+      </a>
+    </nav>
   </div>
 
   <script>
@@ -3083,6 +4522,10 @@
     const onboardingNextHint = document.getElementById("onboardingNextHint");
     const onboardingSwipeArrow = document.querySelector(".onboarding-swipe-arrow");
     const replayOnboardingButton = document.getElementById("replayOnboardingButton");
+    const replayOnboardingButtonBrief = document.getElementById("replayOnboardingButtonBrief");
+    const replayOnboardingButtonDesktop = document.getElementById("replayOnboardingButtonDesktop");
+    const replayOnboardingButtonMobile = document.getElementById("replayOnboardingButtonMobile");
+    const shareLandingButton = document.getElementById("shareLandingButton");
     const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
     const heroUploadTrigger = document.getElementById("heroUploadTrigger");
     const uploadToolModal = document.getElementById("uploadToolModal");
@@ -3236,6 +4679,37 @@
       pendingUploadTarget = target;
       landingUploadInput?.click();
     }
+    function getLandingShareUrl() {
+      const canonicalLink = document.querySelector('link[rel="canonical"]');
+      return canonicalLink?.href || window.location.href.split("#")[0];
+    }
+
+    async function shareLandingPage() {
+      const shareUrl = getLandingShareUrl();
+      const shareTitle = "M8 Painting Tools";
+      const shareText = "Simple tools for checking value, composition, and color in a painting.";
+
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+          return;
+        }
+
+        await navigator.clipboard.writeText(shareUrl);
+        if (shareLandingButton) {
+          const label = shareLandingButton.querySelector("span") || shareLandingButton;
+          const originalText = label.textContent;
+          label.textContent = "Link copied";
+          window.setTimeout(() => {
+            label.textContent = originalText;
+          }, 1800);
+        }
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          window.location.href = `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+        }
+      }
+    }
 
     function openLandingHandoffDb() {
       return new Promise((resolve, reject) => {
@@ -3314,9 +4788,15 @@
     }
 
     handleLandingUnlockReturn();
-    openOnboarding();
+    if (window.matchMedia("(max-width: 720px)").matches) {
+      openOnboarding();
+    }
 
     replayOnboardingButton?.addEventListener("click", () => openOnboarding(true));
+    replayOnboardingButtonBrief?.addEventListener("click", () => openOnboarding(true));
+    replayOnboardingButtonDesktop?.addEventListener("click", () => openOnboarding(true));
+    replayOnboardingButtonMobile?.addEventListener("click", () => openOnboarding(true));
+    shareLandingButton?.addEventListener("click", shareLandingPage);
     onboardingSkipButton?.addEventListener("click", closeOnboarding);
     onboardingStartButton?.addEventListener("click", closeOnboarding);
     onboardingStage?.addEventListener("click", (event) => {
@@ -3367,6 +4847,7 @@
       }
     });
     heroUploadTrigger?.addEventListener("click", openUploadToolModal);
+    desktopUploadTrigger?.addEventListener("click", openUploadToolModal);
     uploadToolModalClose?.addEventListener("click", closeUploadToolModal);
     uploadToolModal?.addEventListener("click", (event) => {
       if (event.target === uploadToolModal) {
@@ -3383,4 +4864,38 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
