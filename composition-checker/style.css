@@ -1715,5 +1715,62 @@ a {
   }
 }
 
+.social-link,
+.button-secondary,
+.tab-button:not(.active):not(.home-tab-button),
+.overlay-color-button,
+.spiral-control-button,
+.spiral-display-button,
+.analysis-download-button,
+.feedback-cta-button {
+  background: #fffaf4;
+  background-image: none;
+}
+
+.social-link:hover,
+.button-secondary:hover,
+.tab-button:not(.active):not(.home-tab-button):hover,
+.overlay-color-button:hover,
+.spiral-control-button:hover,
+.spiral-display-button:hover,
+.analysis-download-button:hover,
+.feedback-cta-button:hover {
+  background: #ffffff;
+  background-image: none;
+}
+
+.tab-button.active {
+  background:
+    linear-gradient(135deg, #e08952, #b9522b),
+    #c96a3d;
+}
+
+.button[disabled],
+.button-secondary[disabled] {
+  opacity: 1;
+  box-shadow: none;
+}
+
+.button[disabled] {
+  background: #9d9992;
+  color: #fffaf4;
+  border-color: rgba(50, 44, 38, 0.12);
+}
+
+.button-secondary[disabled] {
+  background: #f0ebe2;
+  color: rgba(105, 99, 93, 0.68);
+  border-color: rgba(50, 44, 38, 0.1);
+}
+
+@media (max-width: 768px) {
+  .top-nav-link,
+  .top-nav-link:first-child,
+  .top-nav-link:last-child {
+    background: #fffaf4;
+    background-image: none;
+  }
+}
+
 
 
