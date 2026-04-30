@@ -676,3 +676,40 @@ strong {
     gap: 8px;
   }
 }
+
+.social-link,
+.back-button,
+.game-tab:not(.is-active) {
+  background: #fffaf4;
+  background-image: none;
+}
+
+.social-link:hover,
+.back-button:hover,
+.game-tab:not(.is-active):hover {
+  background: #ffffff;
+  background-image: none;
+}
+
+.game-tab.is-active {
+  background:
+    linear-gradient(135deg, #e08952, #b9522b),
+    #c96a3d;
+}
+
+.button:disabled {
+  opacity: 1;
+  background: #9d9992;
+  color: #fffaf4;
+  border-color: rgba(50, 44, 38, 0.12);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .top-nav-link,
+  .top-nav-link:first-child,
+  .top-nav-link:last-child {
+    background: #fffaf4;
+    background-image: none;
+  }
+}
