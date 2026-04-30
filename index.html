@@ -1830,8 +1830,11 @@
     }
 
     .app-tool-tile {
+      --tile-accent: #c96a3d;
+      --tile-accent-rgb: 201, 106, 61;
       min-width: 0;
       min-height: 112px;
+      position: relative;
       display: grid;
       align-content: space-between;
       gap: 12px;
@@ -1839,30 +1842,74 @@
       border-radius: 22px;
       border: 1px solid rgba(61, 51, 40, 0.1);
       background:
-        repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.014) 0 1px, transparent 1px 9px),
-        rgba(255, 255, 255, 0.66);
-      box-shadow: 0 14px 28px rgba(50, 39, 28, 0.07);
+        radial-gradient(circle at 18% 20%, rgba(var(--tile-accent-rgb), 0.16), transparent 31%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(249, 244, 236, 0.9));
+      box-shadow: 0 16px 30px rgba(50, 39, 28, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      overflow: hidden;
       transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .app-tool-tile::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.52), rgba(var(--tile-accent-rgb), 0.08) 58%, transparent 76%) left top / 100% 4px no-repeat,
+        linear-gradient(135deg, rgba(255, 255, 255, 0.34), transparent 42%);
+      pointer-events: none;
+    }
+
+    .app-tool-tile::after {
+      content: "";
+      position: absolute;
+      right: -24px;
+      bottom: -26px;
+      width: 86px;
+      height: 86px;
+      border-radius: 999px;
+      background: rgba(var(--tile-accent-rgb), 0.1);
+      pointer-events: none;
     }
 
     .app-tool-tile:hover,
     .app-tool-tile:focus-visible {
       transform: translateY(-2px);
-      border-color: rgba(201, 106, 61, 0.28);
-      background: rgba(255, 255, 255, 0.82);
-      box-shadow: 0 18px 32px rgba(50, 39, 28, 0.1);
+      border-color: rgba(var(--tile-accent-rgb), 0.28);
+      box-shadow: 0 20px 36px rgba(50, 39, 28, 0.12), 0 0 0 3px rgba(var(--tile-accent-rgb), 0.07);
       outline: none;
     }
 
     .app-tool-tile.is-primary {
-      background: linear-gradient(135deg, #29251f 0%, #15120f 100%);
+      --tile-accent: #c96a3d;
+      --tile-accent-rgb: 201, 106, 61;
+      background:
+        radial-gradient(circle at 22% 18%, rgba(201, 106, 61, 0.22), transparent 32%),
+        linear-gradient(135deg, #29251f 0%, #15120f 100%);
       color: #ffffff;
       border-color: rgba(31, 28, 24, 0.2);
       box-shadow: 0 16px 30px rgba(31, 28, 24, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
+    .app-tool-tile:nth-child(2) {
+      --tile-accent: #516b66;
+      --tile-accent-rgb: 81, 107, 102;
+    }
+
+    .app-tool-tile:nth-child(3) {
+      --tile-accent: #d7894c;
+      --tile-accent-rgb: 215, 137, 76;
+    }
+
+    .app-tool-tile:nth-child(4) {
+      --tile-accent: #d9ad5c;
+      --tile-accent-rgb: 217, 173, 92;
+    }
+
     .app-tool-kicker {
       min-width: 0;
+      position: relative;
+      z-index: 1;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1887,10 +1934,11 @@
       align-items: center;
       justify-content: center;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.68);
-      color: var(--ink);
+      background: var(--tile-accent);
+      color: #ffffff;
       font-size: 1rem;
       line-height: 1;
+      box-shadow: 0 8px 16px rgba(var(--tile-accent-rgb), 0.22);
     }
 
     .app-tool-tile.is-primary .app-tool-arrow {
@@ -1899,6 +1947,8 @@
     }
 
     .app-tool-main {
+      position: relative;
+      z-index: 1;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1913,10 +1963,10 @@
       align-items: center;
       justify-content: center;
       border-radius: 14px;
-      border: 1px solid rgba(61, 51, 40, 0.1);
-      background: rgba(250, 246, 238, 0.78);
-      color: #c96a3d;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(var(--tile-accent-rgb), 0.18);
+      background: rgba(var(--tile-accent-rgb), 0.1);
+      color: var(--tile-accent);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 8px 16px rgba(var(--tile-accent-rgb), 0.08);
     }
 
     .app-tool-icon svg {
@@ -1946,6 +1996,8 @@
     }
 
     .app-tool-copy {
+      position: relative;
+      z-index: 1;
       color: var(--muted);
       font-size: 0.86rem;
       line-height: 1.35;
@@ -1964,18 +2016,43 @@
       padding: 10px 12px;
       border-radius: 18px;
       border: 1px solid rgba(61, 51, 40, 0.08);
-      background: rgba(255, 255, 255, 0.48);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 243, 235, 0.82)),
+        #fffaf4;
       color: var(--muted);
       font-size: 0.8rem;
       line-height: 1.35;
+      box-shadow: 0 10px 20px rgba(50, 39, 28, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
     }
 
     .app-signal strong {
-      display: block;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       color: var(--ink);
       font-size: 0.82rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+    }
+
+    .app-signal strong::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #c96a3d;
+      box-shadow: 0 0 0 3px rgba(201, 106, 61, 0.1);
+      flex: 0 0 auto;
+    }
+
+    .app-signal:nth-child(2) strong::before {
+      background: #516b66;
+      box-shadow: 0 0 0 3px rgba(81, 107, 102, 0.1);
+    }
+
+    .app-signal:nth-child(3) strong::before {
+      background: #d9ad5c;
+      box-shadow: 0 0 0 3px rgba(217, 173, 92, 0.12);
     }
 
     .studio-brief {
@@ -3218,7 +3295,7 @@ html,
 
       .app-home {
         position: relative;
-        margin-bottom: 0;
+        margin-bottom: 10px;
         padding: 12px;
         border-radius: 26px;
         background:
@@ -3354,15 +3431,33 @@ html,
       }
 
       .app-home-bottom {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 6px;
-        margin-top: 10px;
+        width: 100%;
+        margin: 0 0 18px;
+        padding: 8px;
+        border-radius: 24px;
+        border: 1px solid rgba(61, 51, 40, 0.11);
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(245, 240, 231, 0.96)),
+          #fffaf4;
+        box-shadow: 0 16px 34px rgba(50, 39, 28, 0.1);
       }
 
       .app-signal {
-        padding: 8px 10px;
+        padding: 8px;
         border-radius: 14px;
-        font-size: 0.76rem;
+        font-size: 0.68rem;
+        line-height: 1.25;
+      }
+
+      .app-signal strong {
+        display: flex;
+        margin-bottom: 3px;
+        font-size: 0.66rem;
+        letter-spacing: 0.09em;
+        white-space: nowrap;
       }
 
       .studio-brief {
@@ -3773,12 +3868,84 @@ html,
 
     @media (max-width: 360px) {
       .app-tool-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .app-tool-tile {
+        min-height: 120px;
+        aspect-ratio: 1 / 1;
+        padding: 11px;
+        border-radius: 20px;
       }
 
       .app-tool-name {
-        font-size: 1rem;
+        font-size: 0.98rem;
       }
+
+      .app-tool-copy {
+        font-size: 0.68rem;
+      }
+
+      .app-tool-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .app-tool-arrow {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .social-link,
+    .button-secondary,
+    .support-link-button,
+    .top-nav-link,
+    .upload-tool-option,
+    .landing-share-button,
+    .mini-game-button,
+    .onboarding-skip {
+      background: #fffaf4;
+      background-image: none;
+    }
+
+    .social-link:hover,
+    .button-secondary:hover,
+    .support-link-button:hover,
+    .top-nav-link:hover,
+    .upload-tool-option:hover,
+    .landing-share-button:hover,
+    .mini-game-button:hover,
+    .onboarding-skip:hover {
+      background: #ffffff;
+      background-image: none;
+    }
+
+    .button,
+    .upload-tool-option.is-selected,
+    .onboarding-start {
+      background:
+        linear-gradient(135deg, #e08952, #b9522b),
+        #c96a3d;
+    }
+
+    .button:disabled,
+    .button-secondary:disabled {
+      opacity: 1;
+      box-shadow: none;
+    }
+
+    .button:disabled {
+      background: #9d9992;
+      color: #fffaf4;
+      border-color: rgba(50, 44, 38, 0.12);
+    }
+
+    .button-secondary:disabled {
+      background: #f0ebe2;
+      color: rgba(105, 99, 93, 0.68);
+      border-color: rgba(50, 44, 38, 0.1);
     }
   </style>
 </head>
@@ -4159,7 +4326,7 @@ html,
               </span>
               <span class="app-tool-name">Value</span>
             </span>
-            <span class="app-tool-copy">7-value map</span>
+            <span class="app-tool-copy">Tone tools</span>
           </a>
 
           <a class="app-tool-tile" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">
@@ -4174,9 +4341,9 @@ html,
                   <path d="M4 14.7h16"></path>
                 </svg>
               </span>
-              <span class="app-tool-name">Comp</span>
+              <span class="app-tool-name">Composition</span>
             </span>
-            <span class="app-tool-copy">Layout check</span>
+            <span class="app-tool-copy">Check your design</span>
           </a>
 
           <a class="app-tool-tile" href="./color-studio/index.html" onclick="gtag('event', 'open_color_tool', { page_location: window.location.href })">
@@ -4198,12 +4365,13 @@ html,
         </div>
       </div>
 
-      <div class="app-home-bottom" aria-label="Analysis signals">
-        <p class="app-signal"><strong>Value</strong>Find flat reads before detail work.</p>
-        <p class="app-signal"><strong>Composition</strong>See where the eye gets stuck.</p>
-        <p class="app-signal"><strong>Color</strong>Check relationships before mixing.</p>
-      </div>
     </section>
+
+    <div class="app-home-bottom" aria-label="Analysis signals">
+      <p class="app-signal"><strong>Scan</strong>Find the biggest issue.</p>
+      <p class="app-signal"><strong>Decide</strong>Choose the next fix.</p>
+      <p class="app-signal"><strong>Paint</strong>Work with more clarity.</p>
+    </div>
 
     <div id="uploadToolModal" class="upload-tool-modal hidden" role="dialog" aria-modal="true" aria-labelledby="uploadToolModalTitle">
       <div class="upload-tool-card card">
