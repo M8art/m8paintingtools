@@ -1894,16 +1894,22 @@
     .app-tool-tile:nth-child(2) {
       --tile-accent: #516b66;
       --tile-accent-rgb: 81, 107, 102;
+      --tool-image: url("./assets/images/landing-value.jpg");
+      --tool-image-position: center;
     }
 
     .app-tool-tile:nth-child(3) {
       --tile-accent: #d7894c;
       --tile-accent-rgb: 215, 137, 76;
+      --tool-image: url("./assets/images/landing-composition.jpg");
+      --tool-image-position: center 42%;
     }
 
     .app-tool-tile:nth-child(4) {
       --tile-accent: #d9ad5c;
       --tile-accent-rgb: 217, 173, 92;
+      --tool-image: url("./assets/images/landing-color.jpg");
+      --tool-image-position: center;
     }
 
     .app-tool-kicker {
@@ -3389,6 +3395,41 @@ html,
         align-content: start;
         gap: 8px;
         box-shadow: 0 10px 24px rgba(50, 39, 28, 0.08);
+      }
+
+      .app-tool-tile:not(.is-primary)::after {
+        inset: 0;
+        width: auto;
+        height: auto;
+        border-radius: inherit;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.42) 46%, rgba(255, 250, 244, 0.88)),
+          radial-gradient(circle at 92% 92%, rgba(var(--tile-accent-rgb), 0.26), transparent 33%),
+          var(--tool-image);
+        background-position: center, center, var(--tool-image-position);
+        background-size: auto, auto, cover;
+        opacity: 0.72;
+        transform: scale(1.01);
+        z-index: 0;
+      }
+
+      .app-tool-tile:not(.is-primary)::before {
+        z-index: 1;
+        background:
+          linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.68), rgba(var(--tile-accent-rgb), 0.08) 58%, transparent 76%) left top / 100% 4px no-repeat,
+          linear-gradient(135deg, rgba(255, 255, 255, 0.48), transparent 38%);
+      }
+
+      .app-tool-tile:not(.is-primary) .app-tool-kicker,
+      .app-tool-tile:not(.is-primary) .app-tool-main,
+      .app-tool-tile:not(.is-primary) .app-tool-copy {
+        z-index: 2;
+      }
+
+      .app-tool-tile:not(.is-primary) .app-tool-icon,
+      .app-tool-tile:not(.is-primary) .app-tool-arrow {
+        background: rgba(255, 250, 244, 0.88);
+        backdrop-filter: blur(8px);
       }
 
       .app-tool-kicker {
