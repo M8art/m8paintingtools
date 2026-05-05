@@ -3759,7 +3759,7 @@
     buildChallengeToneStrip();
     renderSevenValueLegend();
     renderChallengePanel();
-    setMode("value-picker");
+    setMode(getInitialValueMode());
 
     function buildScale() {
       if (valueScale) {
@@ -3813,6 +3813,12 @@
         toneStep.style.background = `rgb(${gray}, ${gray}, ${gray})`;
         challengeToneStrip.appendChild(toneStep);
       }
+    }
+
+    function getInitialValueMode() {
+      const params = new URLSearchParams(window.location.search);
+      const requestedMode = params.get("mode") || window.location.hash.replace("#", "");
+      return MODE_CONFIG[requestedMode] ? requestedMode : "value-picker";
     }
 
     function setMode(mode) {
