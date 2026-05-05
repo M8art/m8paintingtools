@@ -314,7 +314,7 @@ window.addEventListener("resize", () => {
 });
 
 unlockFullAccessButton.addEventListener("click", () => {
-  window.location.href = STRIPE_PAYMENT_LINK;
+  window.location.href = unlockFullAccessButton.dataset.unlockLink || STRIPE_PAYMENT_LINK;
 });
 
 breakdownToggleButton.addEventListener("click", () => {
@@ -323,7 +323,7 @@ breakdownToggleButton.addEventListener("click", () => {
 });
 
 notanUnlockButton?.addEventListener("click", () => {
-  window.location.href = STRIPE_PAYMENT_LINK;
+  window.location.href = notanUnlockButton.dataset.unlockLink || STRIPE_PAYMENT_LINK;
 });
 
 ["dragenter", "dragover"].forEach((eventName) => {
