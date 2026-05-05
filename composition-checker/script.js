@@ -325,7 +325,7 @@ overlayColorSwatches.forEach((button) => {
 });
 document.addEventListener("click", handleDocumentClick);
 advancedUnlockButton?.addEventListener("click", () => {
-  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+  window.location.href = advancedUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
 
 updateModeUI();
