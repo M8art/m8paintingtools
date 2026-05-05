@@ -174,9 +174,7 @@ const PALETTE_SIZE = 8;
 const HARMONY_SAMPLE_SIZE = 84;
 const HARMONY_CLUSTER_COUNT = 8;
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
-const COLOR_MIXER_USES_STORAGE_KEY = "m8_color_mixer_uses";
-const FREE_COLOR_MIXER_LIMIT = 3;
-const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
+const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
 const M8_PALETTE = {
   whites: ["Titanium White", "Lead White"],
@@ -332,26 +330,8 @@ function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
 }
 
-function getColorMixerUses() {
-  return Number(localStorage.getItem(COLOR_MIXER_USES_STORAGE_KEY) || "0");
-}
-
-function incrementColorMixerUses() {
-  if (isUnlocked()) {
-    return getColorMixerUses();
-  }
-
-  const nextValue = getColorMixerUses() + 1;
-  localStorage.setItem(COLOR_MIXER_USES_STORAGE_KEY, String(nextValue));
-  return nextValue;
-}
-
-function getRemainingColorMixerUses() {
-  return Math.max(0, FREE_COLOR_MIXER_LIMIT - getColorMixerUses());
-}
-
 function canUseColorMixer() {
-  return isUnlocked() || getColorMixerUses() < FREE_COLOR_MIXER_LIMIT;
+  return isUnlocked();
 }
 
 function hidePremiumUnlockCard() {
@@ -368,13 +348,13 @@ function showUnlockPaywall(context = {}) {
     premiumUnlockText.textContent = GLOBAL_UNLOCK_BODY;
   }
   if (premiumUnlockNote) {
-    premiumUnlockNote.textContent = context.note || "One-time unlock — $10";
+    premiumUnlockNote.textContent = context.note || "One-time unlock — $5";
   }
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
     statusNote.textContent = context.status;
   }
-  showPremiumLimitToast(context.toast || "You’ve reached your free analysis limit.");
+  showPremiumLimitToast(context.toast || "Paid unlock required.");
 }
 
 function showPremiumLimitToast(message) {
@@ -463,6 +443,11 @@ function loadPaletteFromDataUrl(dataUrl) {
     return;
   }
 
+  if (!isUnlocked()) {
+    showUnlockPaywall(getUploadLockContext());
+    return;
+  }
+
   if (state.objectUrl) {
     URL.revokeObjectURL(state.objectUrl);
     state.objectUrl = null;
@@ -548,12 +533,22 @@ async function consumeIndexedLandingHandoff() {
   });
 
   db.close();
+  if (!isUnlocked()) {
+    showUnlockPaywall(getUploadLockContext());
+    return true;
+  }
+
   loadPaletteFromObjectFile(record.file);
   return true;
 }
 
 function loadPaletteFromObjectFile(file) {
   if (!file) {
+    return;
+  }
+
+  if (!isUnlocked()) {
+    showUnlockPaywall(getUploadLockContext());
     return;
   }
 
@@ -620,6 +615,11 @@ async function consumeLandingHandoff() {
 
     window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
     window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+    if (!isUnlocked()) {
+      showUnlockPaywall(getUploadLockContext());
+      return;
+    }
+
     loadPaletteFromDataUrl(imageData);
   } catch (error) {
     // Ignore session storage failures and keep the normal upload flow.
@@ -650,21 +650,30 @@ function handleImageWrapClick(event) {
 }
 
 function getUploadLockContext() {
+  if (!isUnlocked()) {
+    return {
+      title: "Unlock Color Checker",
+      note: "One-time unlock — $5",
+      status: "Color Checker is a paid tool. Unlock all premium tools to analyze palette, mixer, and training modes.",
+      toast: "Color Checker needs paid unlock."
+    };
+  }
+
   if (state.activeTab === "trainer" && !isUnlocked()) {
     return {
       title: "Unlock All Tools",
-      note: "One-time unlock — $10",
+      note: "One-time unlock — $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "You’ve reached your free analysis limit."
+      toast: "Paid unlock required."
     };
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     return {
-      title: "Free Color Mixer limit reached",
-      note: "One-time unlock — $10",
+      title: "Unlock Color Checker",
+      note: "One-time unlock — $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "You’ve reached your free analysis limit."
+      toast: "Paid unlock required."
     };
   }
 
@@ -691,7 +700,7 @@ function setTab(tab) {
     panelDescription.textContent = "Sample the main color families in your image and see which hues dominate the overall painting.";
     statusNote.textContent = state.imageLoading
       ? "Preparing analysis..."
-      : state.loadErrorMessage || (state.palette.length ? "Palette analysis ready." : "Upload an image to start.");
+      : state.loadErrorMessage || (state.palette.length ? "Palette analysis ready." : (isUnlocked() ? "Upload an image to start." : "Unlock Color Checker to upload and analyze color."));
     if (colorHarmonyCard) {
       colorHarmonyCard.classList.remove("hidden");
     }
@@ -752,7 +761,7 @@ function setTab(tab) {
         ? "Mixer suggestion ready."
         : (isUnlocked()
           ? "Click a point in the image to build a mix."
-          : `Click a point in the image to build a mix. ${getRemainingColorMixerUses()} free uses remaining.`));
+          : "Unlock Color Checker to sample and mix colors."));
     return;
   }
 
@@ -1089,22 +1098,27 @@ function sampleMixerPoint(event) {
     return;
   }
 
+  if (!isUnlocked()) {
+    showUnlockPaywall(getUploadLockContext());
+    return;
+  }
+
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
       title: "Unlock All Tools",
-      note: "One-time unlock — $10",
+      note: "One-time unlock — $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "You’ve reached your free analysis limit."
+      toast: "Paid unlock required."
     });
     return;
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     showUnlockPaywall({
-      title: "Free Color Mixer limit reached",
-      note: "One-time unlock — $10",
+      title: "Unlock Color Checker",
+      note: "One-time unlock — $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "You’ve reached your free analysis limit."
+      toast: "Paid unlock required."
     });
     return;
   }
@@ -1121,9 +1135,6 @@ function sampleMixerPoint(event) {
   state.trainerSelection = [];
   state.trainerEvaluation = null;
   hidePremiumUnlockCard();
-  if (state.activeTab === "mixer") {
-    incrementColorMixerUses();
-  }
   if (state.activeTab === "trainer") {
     renderMixTrainer();
     renderTrainerSupportPanel();
@@ -1133,10 +1144,7 @@ function sampleMixerPoint(event) {
     if (isUnlocked()) {
       statusNote.textContent = "Mixer suggestion ready.";
     } else {
-      const remainingUses = getRemainingColorMixerUses();
-      statusNote.textContent = remainingUses > 0
-        ? `Mixer suggestion ready. ${remainingUses} free ${remainingUses === 1 ? "use" : "uses"} remaining.`
-        : "Mixer suggestion ready. Your free Color Mixer uses are finished after this result.";
+      statusNote.textContent = "Unlock Color Checker to continue using the mixer.";
     }
   }
 }
@@ -1690,10 +1698,7 @@ function renderM8ColorMixer(result) {
 
   if (!result) {
     if (state.activeTab === "mixer" && !isUnlocked()) {
-      const remainingUses = getRemainingColorMixerUses();
-      mixerIntro.textContent = remainingUses > 0
-        ? `Upload an image, then click the exact passage you want to mix. ${remainingUses} free ${remainingUses === 1 ? "use" : "uses"} remaining.`
-        : "You’ve reached your free analysis limit.";
+      mixerIntro.textContent = "Unlock Color Checker to sample and mix colors from your painting.";
     } else {
       mixerIntro.textContent = state.activeTab === "mixer"
         ? "Upload an image, then click the exact passage you want to mix."
@@ -1890,9 +1895,9 @@ function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
       title: "Unlock All Tools",
-      note: "One-time unlock — $10",
+      note: "One-time unlock — $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "You’ve reached your free analysis limit."
+      toast: "Paid unlock required."
     });
     return;
   }
