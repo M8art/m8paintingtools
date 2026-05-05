@@ -101,7 +101,7 @@ const RECENT_BREAKDOWN_LINES_STORAGE_KEY = "m8_recent_lines";
 const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi14n0Nhfj5deH2u8gw001";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const AI_ANALYSIS_ENDPOINT = window.M8_AI_ANALYSIS_ENDPOINT || (
   window.location.protocol === "file:"
     ? "http://localhost:8888/.netlify/functions/analyze-painting"
@@ -455,8 +455,7 @@ function hasUsedFullAnalysis() {
     return false;
   }
 
-  const lastFreeCheck = getLastFreeCheckTimestamp();
-  return Boolean(lastFreeCheck) && Date.now() - lastFreeCheck < FREE_FULL_ANALYSIS_WINDOW_MS;
+  return getLastFreeCheckDay() === getTodayAnalysisStamp();
 }
 
 function hasUnlockedAccess() {
@@ -472,7 +471,7 @@ function getTodayAnalysisStamp() {
 }
 
 function markFreeAnalysisUsedToday() {
-  localStorage.setItem(LAST_FREE_CHECK_STORAGE_KEY, String(Date.now()));
+  localStorage.setItem(LAST_FREE_CHECK_STORAGE_KEY, getTodayAnalysisStamp());
 }
 
 function markStreakForCompletedFreeAnalysis() {
@@ -482,6 +481,28 @@ function markStreakForCompletedFreeAnalysis() {
 function getLastFreeCheckTimestamp() {
   const storedValue = Number(localStorage.getItem(LAST_FREE_CHECK_STORAGE_KEY));
   return Number.isFinite(storedValue) && storedValue > 0 ? storedValue : 0;
+}
+
+function getLastFreeCheckDay() {
+  const storedValue = localStorage.getItem(LAST_FREE_CHECK_STORAGE_KEY) || "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(storedValue)) {
+    return storedValue;
+  }
+
+  const timestamp = Number(storedValue);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return "";
+  }
+
+  const previousDate = new Date(timestamp);
+  if (Number.isNaN(previousDate.getTime())) {
+    return "";
+  }
+
+  const year = previousDate.getFullYear();
+  const month = String(previousDate.getMonth() + 1).padStart(2, "0");
+  const day = String(previousDate.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function updateStreakForToday() {
