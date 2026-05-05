@@ -318,7 +318,7 @@ if (trainerCheckButton) {
 }
 
 premiumUnlockButton?.addEventListener("click", () => {
-  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+  window.location.href = premiumUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
 
 setBreakdownExpanded(false);
