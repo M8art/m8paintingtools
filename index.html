@@ -4518,6 +4518,64 @@ html,
       color: rgba(105, 99, 93, 0.68);
       border-color: rgba(50, 44, 38, 0.1);
     }
+    /* Landing desktop scale parity with checker pages. */
+    @media (min-width: 721px) {
+      .page {
+        width: min(1360px, calc(100% - 36px));
+        padding-top: 28px;
+      }
+
+      .topbar {
+        gap: 24px;
+        margin-bottom: 22px;
+      }
+
+      .header-actions {
+        gap: 12px;
+      }
+
+      .desktop-support-stack .top-nav,
+      .top-nav {
+        flex-wrap: nowrap;
+        white-space: nowrap;
+      }
+
+      .desktop-support-stack .top-nav-link,
+      .top-nav-link {
+        padding: 0 12px;
+        font-size: 0.91rem;
+        line-height: 1;
+        background: transparent;
+        background-image: none;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .desktop-support-stack .top-nav-link:first-child,
+      .top-nav-link:first-child {
+        padding-left: 0;
+      }
+
+      .desktop-support-stack .top-nav-link:last-child,
+      .top-nav-link:last-child {
+        padding-right: 0;
+      }
+
+      .desktop-support-stack .top-nav-link:hover,
+      .top-nav-link:hover {
+        background: transparent;
+        background-image: none;
+        color: #c96a3d;
+      }
+
+      .brand-title {
+        font-size: clamp(3.1rem, 4.6vw, 4.15rem);
+      }
+
+      .brand-logo {
+        height: clamp(42px, 5vw, 54px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -5727,6 +5785,8 @@ html,
   </script>
 </body>
 </html>
+
+
 
 
 
