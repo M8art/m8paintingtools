@@ -565,6 +565,32 @@
       animation: onboardingImageToGrayscale 3.6s ease-in-out infinite;
     }
 
+    .onboarding-slide[data-onboarding-slide="1"] .onboarding-sample-art {
+      animation: onboardingCompositionArtworkSettle 12s ease-in-out infinite;
+    }
+
+    .onboarding-slide[data-onboarding-slide="1"] .onboarding-sample-image {
+      animation: onboardingCompositionImagePan 12s ease-in-out infinite;
+    }
+
+    .onboarding-workflow-visual {
+      width: 100%;
+      height: 126px;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: #1d1c1a;
+      box-shadow: 0 16px 30px rgba(50, 39, 28, 0.12);
+    }
+
+    .onboarding-workflow-visual img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      animation: onboardingWorkflowImageFocus 4.6s ease-in-out infinite;
+    }
+
     .onboarding-value-overlay {
       position: absolute;
       inset: 0;
@@ -1093,8 +1119,10 @@
       animation: onboardingWorkflowIn 3.4s ease-in-out infinite;
     }
 
-    .onboarding-workflow-row:nth-child(2) { animation-delay: 0.22s; }
-    .onboarding-workflow-row:nth-child(3) { animation-delay: 0.44s; }
+    .onboarding-workflow-visual { animation-delay: 0s; }
+    .onboarding-workflow-row:nth-child(2) { animation-delay: 0.12s; }
+    .onboarding-workflow-row:nth-child(3) { animation-delay: 0.28s; }
+    .onboarding-workflow-row:nth-child(4) { animation-delay: 0.44s; }
 
     .onboarding-workflow-chip {
       display: inline-flex;
@@ -1146,6 +1174,19 @@
       0% { opacity: 1; transform: translate(24px, -30px) rotate(-7deg) scale(0.9); }
       10%, 40% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
       54%, 100% { opacity: 1; transform: translate(0, 0) rotate(-3deg) scale(1); }
+    }
+
+    @keyframes onboardingCompositionArtworkSettle {
+      0%, 6% { opacity: 1; transform: translateX(-10px) rotate(0deg) scale(1.03); }
+      12%, 20% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+      22%, 34% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+      38%, 100% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+    }
+
+    @keyframes onboardingCompositionImagePan {
+      0%, 18% { transform: scale(1.08) translateX(-4px); }
+      30%, 54% { transform: scale(1.12) translateX(3px); }
+      70%, 100% { transform: scale(1.08) translateX(0); }
     }
 
     @keyframes onboardingScanLine {
@@ -1292,6 +1333,11 @@
       0%, 14% { opacity: 0; transform: translateY(12px); }
       24%, 86% { opacity: 1; transform: translateY(0); }
       100% { opacity: 0.24; transform: translateY(-6px); }
+    }
+
+    @keyframes onboardingWorkflowImageFocus {
+      0%, 100% { transform: scale(1.02); filter: saturate(0.95) contrast(1); }
+      50% { transform: scale(1.08); filter: saturate(1.08) contrast(1.04); }
     }
 
     .unlock-success-banner {
@@ -3815,12 +3861,35 @@ html,
       }
 
       .onboarding-color-thumb {
-        width: 94px;
-        height: 94px;
+        left: 20px;
+        top: 24px;
+        width: 78px;
+        height: 78px;
+        border-radius: 18px;
       }
 
       .onboarding-swatches {
-        width: calc(100% - 152px);
+        right: 16px;
+        top: 28px;
+        width: calc(100% - 124px);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .onboarding-swatch {
+        gap: 3px;
+      }
+
+      .onboarding-swatch-chip {
+        height: 30px;
+        border-radius: 12px;
+      }
+
+      .onboarding-swatch-label {
+        font-size: 0.48rem;
+        letter-spacing: 0.03em;
+        line-height: 1;
+        white-space: nowrap;
       }
 
       .onboarding-sample-art {
@@ -3869,14 +3938,37 @@ html,
       }
 
       .onboarding-color-labels {
-        left: 22px;
-        right: 22px;
-        bottom: 16px;
+        left: 18px;
+        right: 18px;
+        bottom: 14px;
+        height: 64px;
+      }
+
+      .onboarding-color-labels .onboarding-demo-label {
+        padding: 5px 7px;
+        max-width: 116px;
+        font-size: 0.54rem;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .onboarding-color-label-dominant,
+      .onboarding-color-label-shadow {
+        left: 0;
       }
 
       .onboarding-color-label-accent,
       .onboarding-color-label-harmony {
-        left: 96px;
+        left: min(112px, 48%);
+      }
+
+      .onboarding-color-label-shadow {
+        top: 30px;
+      }
+
+      .onboarding-color-label-harmony {
+        top: 30px;
       }
 
       .onboarding-composition-label-focus {
@@ -3897,9 +3989,10 @@ html,
       }
 
       .onboarding-harmony-wheel {
-        width: 84px;
-        height: 84px;
-        bottom: 94px;
+        left: 28px;
+        width: 74px;
+        height: 74px;
+        bottom: 86px;
       }
 
       .onboarding-workflow-row {
@@ -4017,7 +4110,7 @@ html,
                   <div class="onboarding-dropzone"><span>Drop painting here</span></div>
                   <span class="onboarding-floating-label onboarding-value-picker-label" aria-hidden="true">Value Picker</span>
                   <div class="onboarding-sample-art">
-                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for onboarding demo" class="onboarding-demo-image onboarding-sample-image">
+                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for value onboarding" class="onboarding-demo-image onboarding-sample-image">
                     <div class="onboarding-value-overlay"></div>
                   </div>
                   <div class="onboarding-scan-line"></div>
@@ -4061,7 +4154,7 @@ html,
                 </div>
                 <div class="onboarding-canvas">
                   <div class="onboarding-sample-art">
-                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for onboarding demo" class="onboarding-demo-image onboarding-sample-image">
+                    <img src="./assets/images/landing-composition.jpg" alt="Demo painting for composition onboarding" class="onboarding-demo-image onboarding-sample-image">
                     <div class="onboarding-composition-overlay">
                       <div class="onboarding-guide-layer"></div>
                       <div class="onboarding-diagonal-layer"></div>
@@ -4103,7 +4196,7 @@ html,
                 <div class="onboarding-canvas">
                   <div class="onboarding-color-brush"></div>
                   <div class="onboarding-color-thumb">
-                    <img src="./sunbeam-kiss.jpg" alt="Demo painting for onboarding demo" class="onboarding-demo-image">
+                    <img src="./assets/images/landing-color.jpg" alt="Demo painting for color onboarding" class="onboarding-demo-image">
                   </div>
                   <div class="onboarding-swatches" aria-hidden="true">
                     <div class="onboarding-swatch">
@@ -4152,6 +4245,9 @@ html,
           <div class="onboarding-visual">
             <div class="onboarding-workflow-shell">
               <div class="onboarding-workflow">
+                <div class="onboarding-workflow-visual" aria-hidden="true">
+                  <img src="./assets/images/landing-value.jpg" alt="">
+                </div>
                 <div class="onboarding-workflow-row">
                   <span class="onboarding-workflow-chip">Value</span>
                   <div class="onboarding-workflow-copy">
