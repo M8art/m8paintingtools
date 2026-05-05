@@ -2006,6 +2006,7 @@ a {
 .feedback-cta-button {
   background: #fffaf4;
   background-image: none;
+  color: var(--ink);
 }
 
 .social-link:hover,
@@ -2015,6 +2016,19 @@ a {
 .feedback-cta-button:hover {
   background: #ffffff;
   background-image: none;
+}
+
+.feedback-cta-button {
+  background: #c96a3d;
+  color: #ffffff;
+  border-color: rgba(201, 106, 61, 0.26);
+  box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18);
+}
+
+.feedback-cta-button:hover {
+  background: #cf7348;
+  color: #ffffff;
+  border-color: rgba(201, 106, 61, 0.36);
 }
 
 .tab-button.active,
