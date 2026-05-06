@@ -2352,6 +2352,161 @@ function renderPaintersFix(lines) {
   });
 }
 
+function renderPremiumFixPreview(result) {
+  if (!quickCheckPremiumFix || !premiumFixList) {
+    return;
+  }
+
+  const plan = buildPremiumFixPlan(result);
+  const isUnlocked = hasUnlockedAccess() || DEV_MODE;
+  const isReferenceIssue = Boolean(result?.metrics?.referenceIssue);
+
+  quickCheckPremiumFix.classList.remove("hidden", "is-locked", "is-unlocked", "is-reference-warning");
+  quickCheckPremiumFix.classList.add(isUnlocked ? "is-unlocked" : "is-locked");
+  quickCheckPremiumFix.classList.toggle("is-reference-warning", isReferenceIssue);
+
+  if (premiumFixCount) {
+    premiumFixCount.textContent = isReferenceIssue ? "Bad reference detected" : `${plan.fixes.length} fixes detected`;
+  }
+  if (premiumFixTitle) {
+    premiumFixTitle.textContent = isUnlocked ? plan.unlockedTitle : plan.lockedTitle;
+  }
+  if (premiumFixSummary) {
+    premiumFixSummary.textContent = isUnlocked ? plan.unlockedSummary : plan.lockedSummary;
+  }
+  if (premiumFixUnlockButton) {
+    premiumFixUnlockButton.classList.toggle("hidden", isUnlocked || isReferenceIssue);
+  }
+  if (premiumFixNote) {
+    premiumFixNote.textContent = isUnlocked
+      ? "Use this as your first painting pass before details."
+      : "Unlock to see the exact painting moves behind the detected fixes.";
+    premiumFixNote.classList.toggle("hidden", isReferenceIssue);
+  }
+
+  premiumFixList.innerHTML = "";
+  plan.fixes.forEach((fix, index) => {
+    const item = document.createElement("div");
+    item.className = "premium-fix-item";
+    item.classList.toggle("is-locked", !isUnlocked && !isReferenceIssue);
+
+    const label = document.createElement("span");
+    label.className = "premium-fix-label";
+    label.textContent = isReferenceIssue ? "Source" : `Fix ${index + 1}`;
+
+    const title = document.createElement("strong");
+    title.textContent = fix.title;
+
+    const text = document.createElement("p");
+    text.textContent = isUnlocked || isReferenceIssue ? fix.advice : fix.preview;
+
+    item.append(label, title, text);
+    premiumFixList.appendChild(item);
+  });
+}
+
+function buildPremiumFixPlan(result) {
+  const metrics = result?.metrics || {};
+
+  if (metrics.referenceIssue) {
+    return {
+      lockedTitle: "Upload quality is the main problem",
+      unlockedTitle: "Upload quality is the main problem",
+      lockedSummary: "This scan is low-confidence because the source does not behave like a clean painting reference.",
+      unlockedSummary: "This scan is low-confidence because the source does not behave like a clean painting reference.",
+      fixes: [
+        {
+          title: "Use artwork only",
+          preview: "The checker is reading screen-like shapes.",
+          advice: "Crop away app screens, menus, payment panels, borders, and overlays. Upload only the painting, sketch, or reference image."
+        },
+        {
+          title: "Avoid screenshot structure",
+          preview: "Flat UI panels can fake composition signals.",
+          advice: "Use a direct photo, scan, or export. Screenshots with buttons and panels create false contrast, false balance, and false focal points."
+        },
+        {
+          title: "Rerun with full frame",
+          preview: "A clean full-frame upload gives a fairer score.",
+          advice: "Include the complete artwork edge-to-edge. Do not crop into one detail unless you want feedback only on that detail."
+        }
+      ]
+    };
+  }
+
+  const candidates = [
+    {
+      weight: metrics.centralLockRisk || 0,
+      title: "Break the center lock",
+      preview: "The scan found a focal point that may stop too hard in the middle.",
+      advice: "Keep the main contrast, but add a quieter supporting shape toward a third. Then soften one competing center edge so the eye can move instead of stopping."
+    },
+    {
+      weight: 1 - (metrics.clarityQuality || metrics.focalClarity || 0),
+      title: "Clarify the focal stop",
+      preview: "The focal area needs a cleaner hierarchy.",
+      advice: "Make only one area carry the sharpest edge and strongest dark-light jump. Reduce nearby detail and merge surrounding values into larger families."
+    },
+    {
+      weight: 1 - (metrics.valueQuality || 0),
+      title: "Separate the value groups",
+      preview: "The value structure is too compressed.",
+      advice: "Choose three big families first: light, middle, dark. Push the dark family darker or simplify midtones before adding small accents."
+    },
+    {
+      weight: metrics.balanceImbalance || 0,
+      title: `Quiet the ${metrics.balanceDirection === "left" ? "left" : "right"} side`,
+      preview: "One side is pulling more visual weight.",
+      advice: `Reduce contrast and hard edges on the ${metrics.balanceDirection === "left" ? "left" : "right"} side. Keep the strongest accents closer to the intended focal path.`
+    },
+    {
+      weight: 1 - (metrics.flowQuality || metrics.flowStrength || 0),
+      title: "Build a stronger eye path",
+      preview: "The scan found limited movement through the frame.",
+      advice: "Link the focal point to a secondary shape with a clear value step. Avoid equal accents scattered across the image."
+    },
+    {
+      weight: metrics.cropRisk || 0,
+      title: "Give the painting more context",
+      preview: "The frame may be too cropped for a fair read.",
+      advice: "Run the check on the whole painting before judging composition. Cropped details often score like separate designs."
+    }
+  ];
+
+  const fixes = candidates
+    .filter((candidate) => candidate.weight > 0.18)
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 3);
+
+  if (fixes.length < 3) {
+    fixes.push(
+      {
+        title: "Protect the strongest read",
+        preview: "The scan found one useful structure to keep.",
+        advice: "Do not improve every area equally. Protect the clearest focal contrast and make secondary areas simpler."
+      },
+      {
+        title: "Simplify before detail",
+        preview: "The next pass should start with big shapes.",
+        advice: "Squint at the image and merge any small value jumps that do not support the focal point."
+      },
+      {
+        title: "Test one change first",
+        preview: "A small adjustment can prove the direction.",
+        advice: "Make a quick duplicate or thumbnail and test only the highest-priority fix before repainting the whole piece."
+      }
+    );
+  }
+
+  return {
+    lockedTitle: "Unlock the full painter fix",
+    unlockedTitle: "Your Studio Fix Plan",
+    lockedSummary: "Quick Check found the weak spots. Unlock shows exactly what to change first, in painting terms.",
+    unlockedSummary: "Start with these fixes in order. They are based on the measured value, balance, focal, and frame signals.",
+    fixes: fixes.slice(0, 3)
+  };
+}
+
 function requestAiStudioFeedback(result) {
   const requestId = aiFeedbackRequestId + 1;
   aiFeedbackRequestId = requestId;
