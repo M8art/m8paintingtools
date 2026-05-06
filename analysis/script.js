@@ -1,4 +1,4 @@
-const analysisFileInput = document.getElementById("analysisFileInput");
+﻿const analysisFileInput = document.getElementById("analysisFileInput");
 const uploadZone = document.getElementById("uploadZone");
 const imageStage = document.getElementById("imageStage");
 const analysisSurface = document.getElementById("analysisSurface");
@@ -35,6 +35,13 @@ const quickCheckSuggestion = document.getElementById("quickCheckSuggestion");
 const quickCheckSuggestionText = document.getElementById("quickCheckSuggestionText");
 const quickCheckFastestFix = document.getElementById("quickCheckFastestFix");
 const quickCheckFastestFixText = document.getElementById("quickCheckFastestFixText");
+const quickCheckPremiumFix = document.getElementById("quickCheckPremiumFix");
+const premiumFixCount = document.getElementById("premiumFixCount");
+const premiumFixTitle = document.getElementById("premiumFixTitle");
+const premiumFixSummary = document.getElementById("premiumFixSummary");
+const premiumFixList = document.getElementById("premiumFixList");
+const premiumFixUnlockButton = document.getElementById("premiumFixUnlockButton");
+const premiumFixNote = document.getElementById("premiumFixNote");
 const quickCheckScoreBreakdown = document.getElementById("quickCheckScoreBreakdown");
 const quickCheckBreakdownRows = document.getElementById("quickCheckBreakdownRows");
 const quickCheckComparison = document.getElementById("quickCheckComparison");
@@ -137,11 +144,11 @@ const TEST_POOL = [
   "Reduce edge noise in less important areas."
 ];
 const ANALYSIS_SEQUENCE = [
-  { className: "stage-grid", helper: "Preparing your quick check", message: "Reading structure...", delay: 980 },
-  { className: "stage-grayscale", helper: "Preparing your quick check", message: "Mapping value groups...", delay: 1180 },
-  { className: "stage-contrast", helper: "Preparing your quick check", message: "Balancing visual weight...", delay: 1120 },
-  { className: "stage-posterize", helper: "Preparing your quick check", message: "Mapping value groups...", delay: 1040 },
-  { className: "stage-center", helper: "Preparing your quick check", message: "Estimating focal pull...", delay: 1180 }
+  { className: "stage-grid", helper: "Studio scan active", message: "Locking the frame...", delay: 780 },
+  { className: "stage-grayscale", helper: "Studio scan active", message: "Sampling value structure...", delay: 920 },
+  { className: "stage-contrast", helper: "Studio scan active", message: "Testing contrast hierarchy...", delay: 880 },
+  { className: "stage-posterize", helper: "Studio scan active", message: "Grouping the big shapes...", delay: 900 },
+  { className: "stage-center", helper: "Studio scan active", message: "Finding focal pull...", delay: 920 }
 ];
 const ANALYSIS_STAGE_CLASSES = ["stage-grid", "stage-grayscale", "stage-contrast", "stage-posterize", "stage-center", "stage-focus-lock", "stage-final"];
 const MESSAGE_FADE_DURATION = 220;
@@ -325,6 +332,8 @@ breakdownToggleButton.addEventListener("click", () => {
 notanUnlockButton?.addEventListener("click", () => {
   window.location.href = notanUnlockButton.dataset.unlockLink || STRIPE_PAYMENT_LINK;
 });
+
+premiumFixUnlockButton?.addEventListener("click", openFullUnlock);
 
 ["dragenter", "dragover"].forEach((eventName) => {
   uploadZone.addEventListener(eventName, (event) => {
@@ -541,10 +550,10 @@ function isYesterday(previousDay, today) {
 function getStreakMessage() {
   const streakCount = getCurrentStreakCount();
   if (streakCount >= 3) {
-    return `Day ${streakCount} 🔥 You're training your eye`;
+    return `Day ${streakCount} đź”Ą You're training your eye`;
   }
 
-  return `Day ${Math.max(1, streakCount)} ✅`;
+  return `Day ${Math.max(1, streakCount)} âś…`;
 }
 
 function handleUnlockReturn() {
@@ -575,7 +584,6 @@ function updateAnalysisAccessUI() {
   }
 
   if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
-    runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
     runAnalysisButton.textContent = "Unlock All Tools";
     runAnalysisButton.disabled = false;
     runAnalysisButton.classList.add("is-unlock-cta");
@@ -638,8 +646,8 @@ function runQuickCheck() {
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
   statusHelper.classList.remove("hidden");
-  updateStatusMessage("Reading structure...");
-  workspaceHint.textContent = "Quick check in progress. Reviewing structure and balance.";
+  updateStatusMessage("Analyzing your painting like a studio mentor...");
+  workspaceHint.textContent = "Quick check in progress. Scanning value, focal pull, balance, and reference quality.";
   latestQuickCheckResult = buildQuickCheckResult();
   applyFocalPosition(latestQuickCheckResult.metrics);
   updateAnalysisAccessUI();
@@ -657,7 +665,7 @@ function runQuickCheck() {
 
   const focalLockTimeoutId = window.setTimeout(() => {
     setAnalysisStage("stage-focus-lock");
-    updateStatusMessage("Settling final overlay...");
+    updateStatusMessage("Building the fix plan...");
   }, Math.max(elapsed - 260, 0));
   analysisTimeoutIds.push(focalLockTimeoutId);
 
@@ -691,6 +699,7 @@ function completeQuickCheck() {
   renderDynamicBreakdown(result);
   quickCheckSuggestionText.textContent = result.suggestion;
   quickCheckFastestFixText.textContent = result.fastestFix;
+  renderPremiumFixPreview(result);
   renderScoreBreakdown(result.scoreBreakdown);
   renderComparison(comparison, result.score);
   applyResultComposition(result.composition);
@@ -2740,6 +2749,7 @@ function resetResultRevealState() {
     quickCheckWhyScore,
     quickCheckTopSections,
     quickCheckFastestFix,
+    quickCheckPremiumFix,
     quickCheckScoreBreakdown,
     quickCheckComparison,
     quickCheckSuggestion,
@@ -2758,6 +2768,7 @@ function resetResultRevealState() {
     quickCheckStrengthBlock,
     quickCheckWeaknessBlock,
     quickCheckFastestFix,
+    quickCheckPremiumFix,
     quickCheckScoreBreakdown,
     quickCheckComparison
   ].forEach((element) => {
@@ -2765,6 +2776,7 @@ function resetResultRevealState() {
   });
 
   quickCheckComparison?.classList.add("hidden");
+  quickCheckPremiumFix?.classList.add("hidden");
   quickCheckScore.textContent = "72 / 100";
   quickCheckVerdict.textContent = "Your composition is readable, but the focal point needs a clearer job.";
   if (quickCheckConfidenceBadge) {
@@ -2780,12 +2792,13 @@ function revealResultPanel() {
     { element: quickCheckWhyScore, delay: 230 },
     { element: quickCheckTopSections, delay: 340 },
     { element: quickCheckFastestFix, delay: 460 },
-    { element: quickCheckScoreBreakdown, delay: 580 },
-    { element: quickCheckComparison, delay: 680, skip: quickCheckComparison.classList.contains("hidden") },
-    { element: quickCheckTags, delay: 780 },
-    { element: freeCheckNote, delay: 860, skip: freeCheckNote.classList.contains("hidden") },
-    { element: freeDailyNote, delay: 860, skip: freeDailyNote.classList.contains("hidden") },
-    { element: streakNote, delay: 940, skip: streakNote.classList.contains("hidden") }
+    { element: quickCheckPremiumFix, delay: 560, skip: quickCheckPremiumFix?.classList.contains("hidden") },
+    { element: quickCheckScoreBreakdown, delay: 660 },
+    { element: quickCheckComparison, delay: 760, skip: quickCheckComparison.classList.contains("hidden") },
+    { element: quickCheckTags, delay: 860 },
+    { element: freeCheckNote, delay: 940, skip: freeCheckNote.classList.contains("hidden") },
+    { element: freeDailyNote, delay: 940, skip: freeDailyNote.classList.contains("hidden") },
+    { element: streakNote, delay: 1020, skip: streakNote.classList.contains("hidden") }
   ];
 
   revealSteps.forEach(({ element, delay, skip }) => {
@@ -2807,9 +2820,9 @@ function showLockedAnalysisState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  updateStatusMessage("You’ve reached your free analysis limit.");
+  updateStatusMessage("Youâ€™ve reached your free analysis limit.");
   workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
-  showPremiumLimitToast("You’ve reached your free analysis limit.");
+  showPremiumLimitToast("Youâ€™ve reached your free analysis limit.");
 }
 
 function showFreeLimitReachedState() {
@@ -2817,12 +2830,11 @@ function showFreeLimitReachedState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
   runAnalysisButton.textContent = "Unlock All Tools";
   runAnalysisButton.disabled = false;
   runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
-  updateStatusMessage("You’ve reached your free analysis limit.");
+  updateStatusMessage("Youâ€™ve reached your free analysis limit.");
   workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
   syncMobileRunAnalysisButton();
 }
@@ -4101,3 +4113,4 @@ function hexToRgbTriplet(hexColor) {
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
+

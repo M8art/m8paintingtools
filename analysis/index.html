@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M8 Analysis Studio</title>
-  <link rel="stylesheet" href="./style.css?v=20260506unlock">
+  <link rel="stylesheet" href="./style.css?v=20260506wowfix">
 </head>
 <body>
   <div class="app">
@@ -112,6 +112,12 @@
                 <div id="thirdsOverlay" class="analysis-overlay thirds-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay center-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay scanning-overlay" aria-hidden="true"></div>
+                <div class="analysis-overlay analyzer-grid-overlay" aria-hidden="true">
+                  <span>VALUE</span>
+                  <span>FOCUS</span>
+                  <span>BALANCE</span>
+                </div>
+                <div class="analysis-overlay analyzer-target-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay focal-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay guidance-overlay" aria-hidden="true"></div>
                 <div class="analysis-overlay pull-overlay" aria-hidden="true"></div>
@@ -284,6 +290,17 @@
                 <p class="section-label result-label">Fix This First</p>
                 <p id="quickCheckFastestFixText" class="detail-copy">Push the focal contrast farther away from the center.</p>
               </div>
+              <div id="quickCheckPremiumFix" class="premium-fix-preview result-reveal hidden">
+                <div class="premium-fix-head">
+                  <p class="section-label result-label">Studio Diagnosis</p>
+                  <span id="premiumFixCount" class="premium-fix-count">3 fixes detected</span>
+                </div>
+                <h3 id="premiumFixTitle">Unlock the full painter fix</h3>
+                <p id="premiumFixSummary" class="detail-copy">The scan found practical fixes for this painting.</p>
+                <div id="premiumFixList" class="premium-fix-list"></div>
+                <button id="premiumFixUnlockButton" class="button premium-fix-button" type="button">Unlock Full Fix Plan</button>
+                <p id="premiumFixNote" class="premium-fix-note">One-time unlock. Includes unlimited Quick Checks, Advanced Composition, and Color Checker.</p>
+              </div>
               <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
                 <p class="result-block-title">Score Breakdown</p>
                 <div id="quickCheckBreakdownRows" class="score-breakdown-list"></div>
@@ -410,6 +427,6 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=20260506unlock"></script>
+  <script src="./script.js?v=20260506wowfix"></script>
 </body>
 </html>
