@@ -282,12 +282,12 @@ analysisSurface.addEventListener("touchend", handleWorkspaceTouchEnd, { passive:
 analysisSurface.addEventListener("touchcancel", handleWorkspaceTouchCancel, { passive: false });
 
 runAnalysisButton.addEventListener("click", () => {
-  if (!hasUploadedImage || isAnalysisRunning) {
+  if (isQuickCheckLockedByLimit()) {
+    openFullUnlock();
     return;
   }
 
-  if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
-    showFreeLimitReachedState();
+  if (!hasUploadedImage || isAnalysisRunning) {
     return;
   }
 
@@ -564,6 +564,7 @@ function handleUnlockReturn() {
 function updateAnalysisAccessUI() {
   syncNotanAccessState();
   freeLimitHelper.classList.add("hidden");
+  runAnalysisButton.classList.remove("is-unlock-cta");
 
   if (isAnalysisRunning) {
     runAnalysisButton.textContent = "Analyzing...";
@@ -575,7 +576,9 @@ function updateAnalysisAccessUI() {
 
   if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
     runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
-    runAnalysisButton.disabled = true;
+    runAnalysisButton.textContent = "Unlock All Tools";
+    runAnalysisButton.disabled = false;
+    runAnalysisButton.classList.add("is-unlock-cta");
     freeLimitHelper.classList.remove("hidden");
     syncMobileRunAnalysisButton();
     syncMobileResetWorkspaceButton();
@@ -586,6 +589,14 @@ function updateAnalysisAccessUI() {
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
   syncMobileRunAnalysisButton();
   syncMobileResetWorkspaceButton();
+}
+
+function isQuickCheckLockedByLimit() {
+  return !DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis();
+}
+
+function openFullUnlock() {
+  window.location.href = STRIPE_PAYMENT_LINK;
 }
 
 function shouldBlockAnalysisUpload() {
@@ -2807,10 +2818,13 @@ function showFreeLimitReachedState() {
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
   runAnalysisButton.textContent = "You’ve reached your free analysis limit.";
-  runAnalysisButton.disabled = true;
+  runAnalysisButton.textContent = "Unlock All Tools";
+  runAnalysisButton.disabled = false;
+  runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
   updateStatusMessage("You’ve reached your free analysis limit.");
   workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
+  syncMobileRunAnalysisButton();
 }
 
 function renderScoreBreakdown(items) {
@@ -3543,9 +3557,10 @@ function syncMobileRunAnalysisButton() {
   }
 
   const desktopLabel = runAnalysisButton.textContent.trim();
-  const isLimitState = /free analysis limit/i.test(desktopLabel);
-  mobileRunAnalysisButton.textContent = isLimitState ? "Locked" : desktopLabel;
-  mobileRunAnalysisButton.disabled = runAnalysisButton.disabled;
+  const isLimitState = isQuickCheckLockedByLimit() || runAnalysisButton.classList.contains("is-unlock-cta");
+  mobileRunAnalysisButton.textContent = isLimitState ? "Unlock" : desktopLabel;
+  mobileRunAnalysisButton.disabled = isLimitState ? false : runAnalysisButton.disabled;
+  mobileRunAnalysisButton.classList.toggle("is-unlock-cta", isLimitState);
 }
 
 function syncMobileResetWorkspaceButton() {
