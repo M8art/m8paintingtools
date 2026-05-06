@@ -2585,11 +2585,22 @@ function setAiStudioFeedbackLoading() {
   }
 }
 
+function getSafeAiFeedbackError(message) {
+  const rawMessage = String(message || "");
+  const technicalErrorPattern = /OPENAI_API_KEY|environment variable|api key|netlify|function/i;
+
+  if (technicalErrorPattern.test(rawMessage)) {
+    return "AI Studio Feedback is not active yet. The normal Quick Check and Studio Diagnosis are still available.";
+  }
+
+  return rawMessage || "AI Studio Feedback is temporarily unavailable. The normal Quick Check result is still available.";
+}
+
 function setAiStudioFeedbackError(message) {
   aiStudioFeedback?.classList.remove("hidden");
   aiStudioFeedbackContent?.classList.add("hidden");
   if (aiStudioFeedbackStatus) {
-    aiStudioFeedbackStatus.textContent = message;
+    aiStudioFeedbackStatus.textContent = getSafeAiFeedbackError(message);
   }
 }
 
