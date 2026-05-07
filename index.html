@@ -5118,6 +5118,113 @@ html,
         height: clamp(42px, 5vw, 54px);
       }
     }
+    /* Desktop mini placement for the animated hidden-structure preview. */
+    @media (min-width: 721px) {
+      .desktop-demo-check-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+        gap: 18px;
+        align-items: stretch;
+        margin: 18px 0 22px;
+      }
+
+      .desktop-demo-check-row .quick-check-banner {
+        order: 1;
+        margin: 0;
+        min-height: 100%;
+      }
+
+      .hidden-structure-demo {
+        order: 2;
+        width: 100%;
+        margin: 0;
+        padding: 8px;
+        gap: 7px;
+        border-radius: 18px;
+        box-shadow:
+          0 14px 30px rgba(50, 39, 28, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      }
+
+      .hidden-structure-demo-frame {
+        border-radius: 14px;
+        box-shadow:
+          0 10px 22px rgba(36, 27, 21, 0.16),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+
+      .hidden-sample-point {
+        grid-template-columns: 7px max-content;
+        gap: 4px;
+        font-size: 0.42rem;
+        letter-spacing: 0.06em;
+      }
+
+      .hidden-sample-point::before {
+        width: 7px;
+        height: 7px;
+        border-width: 1px;
+        box-shadow: 0 0 0 3px rgba(201, 106, 61, 0.16), 0 0 10px rgba(255, 250, 244, 0.45);
+      }
+
+      .hidden-value-bar {
+        gap: 1px;
+        bottom: 7%;
+      }
+
+      .hidden-value-step {
+        min-height: 7px;
+        border-radius: 2px;
+      }
+
+      .hidden-color-swatches {
+        gap: 3px;
+      }
+
+      .hidden-color-swatch {
+        width: 11px;
+        height: 11px;
+      }
+
+      .hidden-demo-copy {
+        gap: 3px;
+        bottom: 15%;
+      }
+
+      .hidden-demo-title {
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      .hidden-demo-subtitle {
+        max-width: 12rem;
+        font-size: 0.52rem;
+        line-height: 1.22;
+      }
+
+      .hidden-demo-cta {
+        right: 6%;
+        bottom: 6%;
+      }
+
+      .hidden-demo-cta.button,
+      .hidden-demo-cta .button {
+        min-height: 26px;
+        padding: 6px 9px;
+        font-size: 0.56rem;
+      }
+
+      .hidden-structure-demo-caption {
+        gap: 8px;
+        font-size: 0.58rem;
+        line-height: 1.25;
+      }
+
+      .hidden-structure-demo-caption strong {
+        font-size: 0.52rem;
+        letter-spacing: 0.1em;
+      }
+    }
   </style>
 </head>
 <body>
@@ -5600,6 +5707,7 @@ html,
       <p class="app-signal"><strong>Paint</strong>Work with more clarity.</p>
     </div>
 
+    <div class="desktop-demo-check-row">
     <section class="hidden-structure-demo" aria-label="The hidden structure of a painting">
       <div class="hidden-structure-demo-frame">
         <img class="hidden-structure-img" src="./assets/images/hidden-structure-demo.jpg" alt="Still life painting demo">
@@ -5855,6 +5963,7 @@ html,
         <span>Then go deeper with 7-value map, layout check, or palette read.</span>
       </div>
     </section>
+    </div>
     <section class="product-story landing-long-form" aria-label="Product overview">
       <div class="card section-card">
         <div class="section-intro">
@@ -6484,6 +6593,11 @@ html,
   </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
