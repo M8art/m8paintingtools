@@ -56,7 +56,7 @@ const TUBE_ASSETS = [
 const brushImage = new Image();
 brushImage.src = "../assets/images/game brush.png";
 const logoImage = new Image();
-logoImage.src = "../assets/images/M8 Logo (2).png";
+logoImage.src = "../assets/images/m8-painting-tools-logo.png";
 const tubeImages = TUBE_ASSETS.map((asset) => {
   const image = new Image();
   image.src = asset.src;
