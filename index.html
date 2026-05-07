@@ -2131,11 +2131,16 @@
       gap: 12px;
       padding: 14px;
       border-radius: 22px;
-      border: 1px solid rgba(61, 51, 40, 0.1);
+      border: 1px solid rgba(61, 51, 40, 0.18);
       background:
         radial-gradient(circle at 18% 20%, rgba(var(--tile-accent-rgb), 0.16), transparent 31%),
         linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(249, 244, 236, 0.9));
-      box-shadow: 0 16px 30px rgba(50, 39, 28, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      box-shadow:
+        0 22px 34px rgba(50, 39, 28, 0.16),
+        0 7px 0 rgba(61, 51, 40, 0.09),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+        inset 0 -20px 30px rgba(61, 51, 40, 0.055);
       overflow: hidden;
       transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
@@ -2146,8 +2151,9 @@
       inset: 0;
       border-radius: inherit;
       background:
-        linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.52), rgba(var(--tile-accent-rgb), 0.08) 58%, transparent 76%) left top / 100% 4px no-repeat,
-        linear-gradient(135deg, rgba(255, 255, 255, 0.34), transparent 42%);
+        linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.76), rgba(var(--tile-accent-rgb), 0.16) 58%, transparent 76%) left top / 100% 5px no-repeat,
+        linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0) 58%, rgba(61, 51, 40, 0.09));
       pointer-events: none;
     }
 
@@ -2165,10 +2171,24 @@
 
     .app-tool-tile:hover,
     .app-tool-tile:focus-visible {
-      transform: translateY(-2px);
-      border-color: rgba(var(--tile-accent-rgb), 0.28);
-      box-shadow: 0 20px 36px rgba(50, 39, 28, 0.12), 0 0 0 3px rgba(var(--tile-accent-rgb), 0.07);
+      transform: translateY(-3px);
+      border-color: rgba(var(--tile-accent-rgb), 0.36);
+      box-shadow:
+        0 24px 40px rgba(50, 39, 28, 0.18),
+        0 8px 0 rgba(var(--tile-accent-rgb), 0.16),
+        0 0 0 3px rgba(var(--tile-accent-rgb), 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.58),
+        inset 0 -20px 30px rgba(61, 51, 40, 0.06);
       outline: none;
+    }
+
+    .app-tool-tile:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 9px 18px rgba(50, 39, 28, 0.12),
+        0 2px 0 rgba(61, 51, 40, 0.08),
+        inset 0 2px 8px rgba(61, 51, 40, 0.08);
     }
 
     .app-tool-tile.is-primary {
@@ -2179,7 +2199,10 @@
         linear-gradient(135deg, #29251f 0%, #15120f 100%);
       color: #ffffff;
       border-color: rgba(31, 28, 24, 0.2);
-      box-shadow: 0 16px 30px rgba(31, 28, 24, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 22px 34px rgba(31, 28, 24, 0.28),
+        0 7px 0 rgba(31, 28, 24, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .app-tool-tile:nth-child(2) {
@@ -2395,6 +2418,36 @@
       gap: 7px;
     }
 
+    .free-tools-card .favorite-tool-grid,
+    .premium-tools-card .favorite-tool-grid {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(78px, 88px);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding: 1px 1px 3px;
+    }
+
+    .free-tools-card .favorite-tool-grid::-webkit-scrollbar,
+    .premium-tools-card .favorite-tool-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .premium-tools-card {
+      border-color: rgba(217, 173, 92, 0.2);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(217, 173, 92, 0.18), transparent 30%),
+        linear-gradient(145deg, rgba(255, 252, 246, 0.94), rgba(243, 236, 224, 0.98)),
+        #fffaf4;
+      box-shadow: 0 18px 38px rgba(50, 39, 28, 0.13);
+    }
+
+    .premium-tools-card .favorite-tools-title {
+      color: #6b4a19;
+    }
+
     .favorite-tool-button {
       --favorite-accent: #c96a3d;
       --favorite-accent-rgb: 201, 106, 61;
@@ -2430,6 +2483,44 @@
     .favorite-tool-button:nth-child(4) {
       --favorite-accent: #d9ad5c;
       --favorite-accent-rgb: 217, 173, 92;
+    }
+
+    .favorite-tool-button:nth-child(5) {
+      --favorite-accent: #6f7f78;
+      --favorite-accent-rgb: 111, 127, 120;
+    }
+
+    .favorite-tool-button:nth-child(6) {
+      --favorite-accent: #c96a3d;
+      --favorite-accent-rgb: 201, 106, 61;
+    }
+
+    .favorite-tool-button:nth-child(7) {
+      --favorite-accent: #516b66;
+      --favorite-accent-rgb: 81, 107, 102;
+    }
+
+    .favorite-tool-button:nth-child(8) {
+      --favorite-accent: #d17b45;
+      --favorite-accent-rgb: 209, 123, 69;
+    }
+
+    .free-tools-card .favorite-tool-button,
+    .premium-tools-card .favorite-tool-button {
+      min-width: 82px;
+      scroll-snap-align: start;
+    }
+
+    .premium-tools-card .favorite-tool-button {
+      border-color: rgba(var(--favorite-accent-rgb), 0.24);
+      background:
+        radial-gradient(circle at 86% 18%, rgba(var(--favorite-accent-rgb), 0.2), transparent 36%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 241, 230, 0.9)),
+        #fffaf4;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        inset 0 -10px 18px rgba(var(--favorite-accent-rgb), 0.08),
+        0 10px 20px rgba(50, 39, 28, 0.09);
     }
 
     .favorite-tool-button:hover {
@@ -3804,7 +3895,13 @@ html,
         border-radius: 22px;
         align-content: start;
         gap: 8px;
-        box-shadow: 0 10px 24px rgba(50, 39, 28, 0.08);
+        border-color: rgba(61, 51, 40, 0.24);
+        box-shadow:
+          0 22px 30px rgba(50, 39, 28, 0.2),
+          0 8px 0 rgba(61, 51, 40, 0.12),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.58),
+          inset 0 -18px 26px rgba(61, 51, 40, 0.075);
       }
 
       .app-tool-tile:not(.is-primary)::after {
@@ -3813,12 +3910,13 @@ html,
         height: auto;
         border-radius: inherit;
         background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.42) 46%, rgba(255, 250, 244, 0.88)),
-          radial-gradient(circle at 92% 92%, rgba(var(--tile-accent-rgb), 0.26), transparent 33%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.14) 45%, rgba(255, 250, 244, 0.66)),
+          radial-gradient(circle at 92% 92%, rgba(var(--tile-accent-rgb), 0.34), transparent 34%),
+          linear-gradient(180deg, transparent 56%, rgba(31, 28, 24, 0.1)),
           var(--tool-image);
-        background-position: center, center, var(--tool-image-position);
-        background-size: auto, auto, cover;
-        opacity: 0.72;
+        background-position: center, center, center, var(--tool-image-position);
+        background-size: auto, auto, auto, cover;
+        opacity: 0.92;
         transform: scale(1.01);
         z-index: 0;
       }
@@ -3826,8 +3924,9 @@ html,
       .app-tool-tile:not(.is-primary)::before {
         z-index: 1;
         background:
-          linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.68), rgba(var(--tile-accent-rgb), 0.08) 58%, transparent 76%) left top / 100% 4px no-repeat,
-          linear-gradient(135deg, rgba(255, 255, 255, 0.48), transparent 38%);
+          linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.95), rgba(var(--tile-accent-rgb), 0.22) 58%, transparent 76%) left top / 100% 6px no-repeat,
+          linear-gradient(135deg, rgba(255, 255, 255, 0.62), transparent 38%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0) 58%, rgba(61, 51, 40, 0.14));
       }
 
       .app-tool-tile:not(.is-primary) .app-tool-kicker,
@@ -3838,8 +3937,12 @@ html,
 
       .app-tool-tile:not(.is-primary) .app-tool-icon,
       .app-tool-tile:not(.is-primary) .app-tool-arrow {
-        background: rgba(255, 250, 244, 0.88);
+        background: rgba(255, 250, 244, 0.97);
         backdrop-filter: blur(8px);
+        box-shadow:
+          0 10px 18px rgba(50, 39, 28, 0.18),
+          0 3px 0 rgba(61, 51, 40, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.96);
       }
 
       .app-tool-kicker {
@@ -5058,10 +5161,10 @@ html,
       <p class="app-signal"><strong>Paint</strong>Work with more clarity.</p>
     </div>
 
-    <section class="favorite-tools-card" aria-label="Favorite tools">
+    <section class="favorite-tools-card free-tools-card" aria-label="Free tools">
       <div class="favorite-tools-head">
-        <h3 class="favorite-tools-title">Favorites</h3>
-        <span class="favorite-tools-note">Quick studio shortcuts</span>
+        <h3 class="favorite-tools-title">Free</h3>
+        <span class="favorite-tools-note">Swipe free tools</span>
       </div>
       <div class="favorite-tool-grid">
         <a class="favorite-tool-button" href="./value-checker/index.html?mode=value-picker" aria-label="Open Value Picker">
@@ -5070,11 +5173,23 @@ html,
           </span>
           <span class="favorite-tool-label">Picker</span>
         </a>
-        <a class="favorite-tool-button" href="./value-checker/index.html?mode=seven-value-map" aria-label="Open Value Map">
+        <a class="favorite-tool-button" href="./value-checker/index.html?mode=seven-value-map&values=7" aria-label="Open 7 Value Map">
           <span class="favorite-tool-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M4 18h16"></path><path d="M6 14h2"></path><path d="M10 12h2"></path><path d="M14 9h2"></path><path d="M18 6h2"></path></svg>
           </span>
-          <span class="favorite-tool-label">Map</span>
+          <span class="favorite-tool-label">7 Map</span>
+        </a>
+        <a class="favorite-tool-button" href="./value-checker/index.html?mode=seven-value-map&values=5" aria-label="Open 5 Value Map">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 17h14"></path><path d="M7 14h2"></path><path d="M11 11h2"></path><path d="M15 8h2"></path></svg>
+          </span>
+          <span class="favorite-tool-label">5 Map</span>
+        </a>
+        <a class="favorite-tool-button" href="./value-checker/index.html?mode=seven-value-map&values=3" aria-label="Open 3 Value Map">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 17h14"></path><path d="M8 13h2"></path><path d="M14 8h2"></path></svg>
+          </span>
+          <span class="favorite-tool-label">3 Map</span>
         </a>
         <a class="favorite-tool-button" href="./composition-checker/index.html?mode=thirds" aria-label="Open Rule of Thirds">
           <span class="favorite-tool-icon" aria-hidden="true">
@@ -5082,11 +5197,86 @@ html,
           </span>
           <span class="favorite-tool-label">Thirds</span>
         </a>
-        <a class="favorite-tool-button" href="./color-studio/index.html?tab=palette" aria-label="Open Color Palette">
+        <a class="favorite-tool-button" href="./composition-checker/index.html?mode=grid" aria-label="Open Composition Grid">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"></path><path d="M9 4v16"></path><path d="M15 4v16"></path><path d="M4 9h16"></path><path d="M4 15h16"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Grid</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?mode=center" aria-label="Open Center Lines">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 4v16"></path><path d="M4 12h16"></path><path d="M8 8l8 8"></path><path d="M16 8l-8 8"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Center</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?mode=diagonal" aria-label="Open Diagonal Flow">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 20 20 4"></path><path d="M4 4l16 16"></path><path d="M8 20h8"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Flow</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="favorite-tools-card premium-tools-card" aria-label="Premium tools">
+      <div class="favorite-tools-head">
+        <h3 class="favorite-tools-title">Premium</h3>
+        <span class="favorite-tools-note">Advanced shortcuts</span>
+      </div>
+      <div class="favorite-tool-grid">
+        <a class="favorite-tool-button" href="./analysis/index.html" aria-label="Open Quick Check Pro">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 12h5l2-6 4 12 2-6h3"></path><path d="M5 20h14"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Quick Pro</span>
+        </a>
+        <a class="favorite-tool-button" href="./color-studio/index.html?tab=palette" aria-label="Open Premium Color Palette">
           <span class="favorite-tool-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 0-2.2 15.7c1 .3 1.8-.5 1.8-1.5 0-.9.7-1.6 1.6-1.6h1.3A5.5 5.5 0 0 0 20 11.1C20 7.2 16.4 4 12 4z"></path><path d="M8 11.2h.1"></path><path d="M10.3 8.2h.1"></path><path d="M14.2 8.5h.1"></path><path d="M16.4 11.4h.1"></path></svg>
           </span>
-          <span class="favorite-tool-label">Palette</span>
+          <span class="favorite-tool-label">Color</span>
+        </a>
+        <a class="favorite-tool-button" href="./color-studio/index.html?tab=mixer" aria-label="Open Color Mixer">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 16 17 6"></path><path d="M9 6h8v8"></path><path d="M5 18h14"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Mixer</span>
+        </a>
+        <a class="favorite-tool-button" href="./color-studio/index.html?tab=trainer" aria-label="Open Mix Trainer">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path><path d="M7 7l10 10"></path><path d="M17 7 7 17"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Trainer</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?analysis=advanced&advanced=golden-ratio" aria-label="Open Golden Ratio">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"></path><path d="M11.6 4v16"></path><path d="M4 11.6h16"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Ratio</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?analysis=advanced&advanced=golden-spiral" aria-label="Open Golden Spiral">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M18 12a6 6 0 1 1-6-6"></path><path d="M18 12a4 4 0 0 0-4-4"></path><path d="M14 8a2 2 0 0 0-2 2"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Spiral</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?analysis=advanced&advanced=dynamic-symmetry" aria-label="Open Dynamic Symmetry">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 20 20 4"></path><path d="M4 4h16v16H4z"></path><path d="M4 4l16 16"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Dynamic</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?analysis=advanced&advanced=notan" aria-label="Open Notan">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16z"></path><path d="M12 4a8 8 0 0 1 0 16"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Notan</span>
+        </a>
+        <a class="favorite-tool-button" href="./composition-checker/index.html?analysis=advanced&advanced=focal-balance" aria-label="Open Focal Balance">
+          <span class="favorite-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path><path d="M12 2v3"></path><path d="M12 19v3"></path><path d="M2 12h3"></path><path d="M19 12h3"></path></svg>
+          </span>
+          <span class="favorite-tool-label">Balance</span>
         </a>
       </div>
     </section>

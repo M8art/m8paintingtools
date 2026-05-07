@@ -328,7 +328,28 @@ advancedUnlockButton?.addEventListener("click", () => {
   window.location.href = advancedUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
 
+applyInitialRoute();
 updateModeUI();
+
+function applyInitialRoute() {
+  const params = new URLSearchParams(window.location.search);
+  const requestedMode = params.get("mode") || window.location.hash.replace("#", "");
+  const requestedAnalysis = params.get("analysis") || params.get("analysisMode");
+  const requestedAdvancedMode = params.get("advanced") || params.get("advancedMode");
+
+  if (requestedAnalysis === "advanced" || ADVANCED_MODES[requestedAdvancedMode]) {
+    state.analysisMode = "advanced";
+    if (ADVANCED_MODES[requestedAdvancedMode]) {
+      state.advancedMode = requestedAdvancedMode;
+    }
+    return;
+  }
+
+  if (MODES[requestedMode]) {
+    state.analysisMode = "basic";
+    state.mode = requestedMode;
+  }
+}
 
 function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";

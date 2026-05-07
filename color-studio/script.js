@@ -324,10 +324,16 @@ premiumUnlockButton?.addEventListener("click", () => {
 setBreakdownExpanded(false);
 setMixerLogicExpanded(false);
 renderMixerLogicReference();
-setTab("palette");
+setTab(getInitialColorTab());
 
 function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
+}
+
+function getInitialColorTab() {
+  const params = new URLSearchParams(window.location.search);
+  const requestedTab = params.get("tab") || window.location.hash.replace("#", "");
+  return tabButtons.some((button) => button.dataset.tab === requestedTab) ? requestedTab : "palette";
 }
 
 function canUseColorMixer() {
