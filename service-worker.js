@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v7";
+const CACHE_NAME = "m8-painting-tools-shell-v8";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -97,6 +97,28 @@ self.addEventListener("fetch", (event) => {
           }
 
           return cachedResponse;
+        })
+    );
+    return;
+  }
+
+  if (
+    request.destination === "script" ||
+    request.destination === "style" ||
+    requestUrl.pathname.endsWith(".js") ||
+    requestUrl.pathname.endsWith(".css")
+  ) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type === "basic") {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          return (await caches.match(request)) || Response.error();
         })
     );
     return;

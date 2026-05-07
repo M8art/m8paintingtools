@@ -2138,12 +2138,15 @@ function drawOverlay() {
     return;
   }
 
-  const width = Math.max(1, Math.round(compositionImage.clientWidth));
-  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const imageRect = compositionImage.getBoundingClientRect();
+  const width = Math.max(1, Math.round(imageRect.width || compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(imageRect.height || compositionImage.clientHeight));
   const dpr = window.devicePixelRatio || 1;
 
   overlayCanvas.width = width * dpr;
   overlayCanvas.height = height * dpr;
+  overlayCanvas.style.width = `${width}px`;
+  overlayCanvas.style.height = `${height}px`;
   overlayCanvas.style.display = "block";
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
