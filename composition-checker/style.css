@@ -533,6 +533,10 @@ a {
   display: none;
 }
 
+.mobile-grid-controls {
+  display: none;
+}
+
 .workspace-image.is-loaded {
   opacity: 1;
 }
@@ -1615,8 +1619,59 @@ a {
     box-shadow: 0 14px 28px rgba(50, 39, 28, 0.12);
   }
 
-  .composition-stage,
-  .workspace-image,
+  .mobile-grid-controls {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 80;
+    display: grid;
+    gap: 7px;
+    padding: 10px 12px 11px;
+    border-radius: 16px;
+    border: 1px solid rgba(61, 51, 40, 0.13);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(246, 240, 231, 0.94)),
+      #fffaf4;
+    box-shadow:
+      0 16px 28px rgba(50, 39, 28, 0.16),
+      0 4px 0 rgba(61, 51, 40, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    pointer-events: auto;
+  }
+
+  .mobile-grid-controls.hidden {
+    display: none;
+  }
+
+  .mobile-grid-control-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .mobile-grid-slider {
+    min-height: 24px;
+  }
+
+  #gridControlsCard {
+    display: none !important;
+  }
+
+  .composition-stage {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+  }
+
+  .workspace-image {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(clamp(300px, 46vh, 420px) - 2px);
+  }
+
   .overlay-canvas {
     max-height: none;
     height: 100%;

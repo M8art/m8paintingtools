@@ -120,6 +120,9 @@ const gridControlsCard = document.getElementById("gridControlsCard");
 const gridTransferCard = document.getElementById("gridTransferCard");
 const gridSize = document.getElementById("gridSize");
 const gridSizeValue = document.getElementById("gridSizeValue");
+const mobileGridControlsCard = document.getElementById("mobileGridControlsCard");
+const mobileGridSize = document.getElementById("mobileGridSize");
+const mobileGridSizeValue = document.getElementById("mobileGridSizeValue");
 const gridCanvasWidth = document.getElementById("gridCanvasWidth");
 const gridCanvasHeight = document.getElementById("gridCanvasHeight");
 const gridTransferResult = document.getElementById("gridTransferResult");
@@ -313,6 +316,9 @@ notanLevels.addEventListener("input", handleNotanLevelsInput);
 focalSuggestButton.addEventListener("click", suggestFocalPointsFromContrast);
 dynamicAlignmentOnlyToggle.addEventListener("change", handleDynamicAlignmentToggle);
 gridSize.addEventListener("input", handleGridSizeInput);
+mobileGridSize?.addEventListener("input", handleGridSizeInput);
+mobileGridControlsCard?.addEventListener("click", stopMobileGridControlEvent);
+mobileGridControlsCard?.addEventListener("pointerdown", stopMobileGridControlEvent);
 gridCanvasWidth.addEventListener("input", handleGridCanvasInput);
 gridCanvasHeight.addEventListener("input", handleGridCanvasInput);
 overlayCanvas.addEventListener("pointerdown", handleOverlayPointerDown);
@@ -1643,6 +1649,10 @@ function handleGridSizeInput(event) {
   requestOverlayDraw();
 }
 
+function stopMobileGridControlEvent(event) {
+  event.stopPropagation();
+}
+
 function handleGridCanvasInput() {
   state.gridCanvasWidth = gridCanvasWidth.value;
   state.gridCanvasHeight = gridCanvasHeight.value;
@@ -1779,11 +1789,20 @@ function updateModeUI() {
   notanLevels.disabled = !isNotan;
   gridSize.value = String(state.gridDivisionIndex);
   gridSize.disabled = !isGridMode;
+  if (mobileGridSize) {
+    mobileGridSize.value = String(state.gridDivisionIndex);
+    mobileGridSize.disabled = !isGridMode;
+  }
   gridCanvasWidth.disabled = !isGridMode;
   gridCanvasHeight.disabled = !isGridMode;
   gridCanvasWidth.value = state.gridCanvasWidth;
   gridCanvasHeight.value = state.gridCanvasHeight;
-  gridSizeValue.textContent = `Grid: ${getGridDivisions()} x ${getGridDivisions()}`;
+  const gridSizeLabel = `Grid: ${getGridDivisions()} x ${getGridDivisions()}`;
+  gridSizeValue.textContent = gridSizeLabel;
+  if (mobileGridSizeValue) {
+    mobileGridSizeValue.textContent = gridSizeLabel;
+  }
+  mobileGridControlsCard?.classList.toggle("hidden", !isGridMode || !state.imageLoaded || advancedLocked);
   updateGridTransferUI();
   updateOverlayColorUI();
 
@@ -1808,7 +1827,7 @@ function updateWorkspaceStageVisibility(advancedLocked) {
   const shouldHideImage = advancedLocked && !state.imageLoading;
   const shouldShowImage = state.imageLoaded && !shouldHideImage;
 
-  compositionStage.style.display = shouldShowImage ? "block" : "none";
+  compositionStage.style.display = shouldShowImage ? "inline-block" : "none";
   compositionImage.style.display = shouldShowImage ? "block" : "none";
   overlayCanvas.style.display = shouldShowImage ? "block" : "none";
 
