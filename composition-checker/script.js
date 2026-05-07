@@ -333,21 +333,22 @@ updateModeUI();
 
 function applyInitialRoute() {
   const params = new URLSearchParams(window.location.search);
-  const requestedMode = params.get("mode") || window.location.hash.replace("#", "");
-  const requestedAnalysis = params.get("analysis") || params.get("analysisMode");
-  const requestedAdvancedMode = params.get("advanced") || params.get("advancedMode");
+  const requestedTool = params.get("tool") || params.get("mode") || window.location.hash.replace("#", "");
+  const requestedAnalysis = params.get("level") || params.get("analysis") || params.get("analysisMode");
+  const requestedAdvancedMode = params.get("advanced") || params.get("advancedMode") || requestedTool;
 
   if (requestedAnalysis === "advanced" || ADVANCED_MODES[requestedAdvancedMode]) {
     state.analysisMode = "advanced";
     if (ADVANCED_MODES[requestedAdvancedMode]) {
       state.advancedMode = requestedAdvancedMode;
     }
+    state.advancedUnlockVisible = !isUnlocked();
     return;
   }
 
-  if (MODES[requestedMode]) {
+  if (MODES[requestedTool]) {
     state.analysisMode = "basic";
-    state.mode = requestedMode;
+    state.mode = requestedTool;
   }
 }
 

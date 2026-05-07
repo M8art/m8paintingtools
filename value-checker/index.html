@@ -3902,7 +3902,19 @@
 
     function getInitialValueMode() {
       const params = new URLSearchParams(window.location.search);
-      const requestedMode = params.get("mode") || window.location.hash.replace("#", "");
+      const requestedTool = params.get("tool") || params.get("mode") || window.location.hash.replace("#", "");
+      const toolAliases = {
+        picker: "value-picker",
+        "value-picker": "value-picker",
+        map: "seven-value-map",
+        "value-map": "seven-value-map",
+        "seven-value-map": "seven-value-map",
+        challenge: "value-challenge",
+        "value-challenge": "value-challenge",
+        compare: "compare-values",
+        "compare-values": "compare-values"
+      };
+      const requestedMode = toolAliases[requestedTool] || requestedTool;
       return MODE_CONFIG[requestedMode] ? requestedMode : "value-picker";
     }
 

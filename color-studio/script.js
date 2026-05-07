@@ -324,7 +324,9 @@ premiumUnlockButton?.addEventListener("click", () => {
 setBreakdownExpanded(false);
 setMixerLogicExpanded(false);
 renderMixerLogicReference();
-setTab(getInitialColorTab());
+const initialColorTab = getInitialColorTab();
+setTab(initialColorTab);
+showInitialColorPaywall(initialColorTab);
 
 function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
@@ -332,8 +334,25 @@ function isUnlocked() {
 
 function getInitialColorTab() {
   const params = new URLSearchParams(window.location.search);
-  const requestedTab = params.get("tab") || window.location.hash.replace("#", "");
+  const requestedTab = params.get("tool") || params.get("tab") || window.location.hash.replace("#", "");
   return tabButtons.some((button) => button.dataset.tab === requestedTab) ? requestedTab : "palette";
+}
+
+function showInitialColorPaywall(tab) {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has("tool") && !params.has("tab") && !window.location.hash) {
+    return;
+  }
+  if (isUnlocked()) {
+    return;
+  }
+  showUnlockPaywall(getUploadLockContext() || {
+    title: "Unlock Color Checker",
+    note: "One-time unlock — $5",
+    status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
+    toast: "Paid unlock required."
+  });
+  setTab(tab);
 }
 
 function canUseColorMixer() {
