@@ -58,6 +58,9 @@ const fileInput = document.getElementById("fileInput");
 const uploadLabels = Array.from(document.querySelectorAll('label[for="fileInput"]'));
 const clearNotesButton = document.getElementById("clearNotesButton");
 const mobileClearNotesButton = document.getElementById("mobileClearNotesButton");
+const clearCompositionButton = document.getElementById("clearCompositionButton");
+const resetCompositionButton = document.getElementById("resetCompositionButton");
+const exportCompositionButton = document.getElementById("exportCompositionButton");
 const canvasWrap = document.getElementById("canvasWrap");
 const compositionStage = document.getElementById("compositionStage");
 const compositionImage = document.getElementById("compositionImage");
@@ -123,6 +126,13 @@ const gridSizeValue = document.getElementById("gridSizeValue");
 const mobileGridControlsCard = document.getElementById("mobileGridControlsCard");
 const mobileGridSize = document.getElementById("mobileGridSize");
 const mobileGridSizeValue = document.getElementById("mobileGridSizeValue");
+const mobileSpiralControlsCard = document.getElementById("mobileSpiralControlsCard");
+const mobileSpiralScale = document.getElementById("mobileSpiralScale");
+const mobileSpiralScaleValue = document.getElementById("mobileSpiralScaleValue");
+const mobileSpiralResetButton = document.getElementById("mobileSpiralResetButton");
+const mobileSpiralRotateButton = document.getElementById("mobileSpiralRotateButton");
+const mobileSpiralFlipHorizontalButton = document.getElementById("mobileSpiralFlipHorizontalButton");
+const mobileSpiralFlipVerticalButton = document.getElementById("mobileSpiralFlipVerticalButton");
 const gridCanvasWidth = document.getElementById("gridCanvasWidth");
 const gridCanvasHeight = document.getElementById("gridCanvasHeight");
 const gridTransferResult = document.getElementById("gridTransferResult");
@@ -285,6 +295,9 @@ uploadLabels.forEach((label) => {
 });
 clearNotesButton.addEventListener("click", clearNoteMarkers);
 mobileClearNotesButton?.addEventListener("click", clearNoteMarkers);
+clearCompositionButton?.addEventListener("click", clearCompositionMarks);
+resetCompositionButton?.addEventListener("click", resetCompositionWorkspace);
+exportCompositionButton?.addEventListener("click", downloadCompositionAnalysis);
 canvasWrap.addEventListener("click", handleWorkspaceClick);
 canvasWrap.addEventListener("keydown", handleWorkspaceKeydown);
 overlayCanvas.addEventListener("click", handleOverlayClick);
@@ -304,10 +317,15 @@ advancedModeButtons.forEach((button) => {
 });
 
 spiralScale.addEventListener("input", handleSpiralScaleInput);
+mobileSpiralScale?.addEventListener("input", handleSpiralScaleInput);
 spiralResetButton.addEventListener("click", resetGoldenSpiral);
+mobileSpiralResetButton?.addEventListener("click", resetGoldenSpiral);
 spiralRotateButton.addEventListener("click", rotateGoldenSpiral);
+mobileSpiralRotateButton?.addEventListener("click", rotateGoldenSpiral);
 spiralFlipHorizontalButton.addEventListener("click", toggleSpiralFlipX);
+mobileSpiralFlipHorizontalButton?.addEventListener("click", toggleSpiralFlipX);
 spiralFlipVerticalButton.addEventListener("click", toggleSpiralFlipY);
+mobileSpiralFlipVerticalButton?.addEventListener("click", toggleSpiralFlipY);
 downloadCompositionAnalysisButton.addEventListener("click", downloadCompositionAnalysis);
 spiralDisplayButtons.forEach((button) => {
   button.addEventListener("click", () => setSpiralDisplayMode(button.dataset.spiralDisplay));
@@ -900,6 +918,64 @@ function clearNoteMarkers() {
     state.noteMarkers = [];
   }
   clearNotesButton.disabled = true;
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+function clearCompositionMarks() {
+  state.noteMarkers = [];
+  state.focalPoints = [];
+  state.focalPointSource = "manual";
+  state.thirdsSelection = null;
+  state.centerSelection = null;
+  state.dynamicSymmetry.tooltip = null;
+  dynamicSymmetryTooltip?.classList.add("hidden");
+  clearNotesButton.disabled = true;
+  showStatusToast("Composition marks cleared");
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+function resetCompositionWorkspace() {
+  if (state.objectUrl) {
+    URL.revokeObjectURL(state.objectUrl);
+    state.objectUrl = null;
+  }
+
+  imageLoadRequestId += 1;
+  state.imageLoaded = false;
+  state.imageLoading = false;
+  state.loadErrorMessage = "";
+  state.noteMarkers = [];
+  state.focalPoints = [];
+  state.focalPointSource = "manual";
+  state.thirdsSelection = null;
+  state.centerSelection = null;
+  state.userSelectedOverlayColor = null;
+  state.autoDetectedOverlayColor = "#1f1c18";
+  state.dynamicSymmetry.analysisKey = null;
+  state.dynamicSymmetry.points = [];
+  state.dynamicSymmetry.alignedPoints = [];
+  state.dynamicSymmetry.score = null;
+  state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
+  state.dynamicSymmetry.tooltip = null;
+  Object.assign(state.spiral, SPIRAL_DEFAULTS);
+  invalidateNotanCache();
+  closeOverlayColorMenu();
+
+  fileInput.value = "";
+  compositionImage.onload = null;
+  compositionImage.onerror = null;
+  compositionImage.removeAttribute("src");
+  compositionImage.classList.remove("is-loaded");
+  compositionImage.style.display = "none";
+  overlayCanvas.style.display = "none";
+  overlayCanvas.style.removeProperty("width");
+  overlayCanvas.style.removeProperty("height");
+  compositionStage.style.display = "none";
+  setWorkspaceLoadingState(false);
+  resetWorkspaceEmptyState();
+  showStatusToast("Workspace reset");
   updateModeUI();
   requestOverlayDraw();
 }
@@ -1761,29 +1837,67 @@ function updateModeUI() {
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
   overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry, isCenterMode);
   downloadCompositionAnalysisButton.disabled = !state.imageLoaded;
+  if (clearCompositionButton) {
+    clearCompositionButton.disabled = !state.imageLoaded;
+  }
+  if (resetCompositionButton) {
+    resetCompositionButton.disabled = !state.imageLoaded && !state.imageLoading && !state.loadErrorMessage;
+  }
+  if (exportCompositionButton) {
+    exportCompositionButton.disabled = !state.imageLoaded;
+  }
 
   spiralScale.value = String(Math.round(state.spiral.scale * 100));
   spiralScaleValue.textContent = `${Math.round(state.spiral.scale * 100)}%`;
   spiralScale.disabled = !isGoldenSpiral;
+  if (mobileSpiralScale) {
+    mobileSpiralScale.value = String(Math.round(state.spiral.scale * 100));
+    mobileSpiralScale.disabled = !isGoldenSpiral;
+  }
+  if (mobileSpiralScaleValue) {
+    mobileSpiralScaleValue.textContent = `${Math.round(state.spiral.scale * 100)}%`;
+  }
   spiralResetButton.disabled = !isGoldenSpiral;
+  if (mobileSpiralResetButton) {
+    mobileSpiralResetButton.disabled = !isGoldenSpiral;
+  }
   spiralRotateButton.classList.toggle("active", isGoldenSpiral && state.spiral.rotation !== 0);
   spiralRotateButton.setAttribute("aria-pressed", String(isGoldenSpiral && state.spiral.rotation !== 0));
   spiralRotateButton.textContent = isGoldenSpiral
     ? `Rotate ${state.spiral.rotation}\u00b0`
     : "Rotate 90\u00b0";
   spiralRotateButton.disabled = !isGoldenSpiral;
+  if (mobileSpiralRotateButton) {
+    mobileSpiralRotateButton.classList.toggle("active", isGoldenSpiral && state.spiral.rotation !== 0);
+    mobileSpiralRotateButton.setAttribute("aria-pressed", String(isGoldenSpiral && state.spiral.rotation !== 0));
+    mobileSpiralRotateButton.textContent = isGoldenSpiral
+      ? `${state.spiral.rotation}\u00b0`
+      : "Rotate";
+    mobileSpiralRotateButton.disabled = !isGoldenSpiral;
+  }
   spiralFlipHorizontalButton.classList.toggle("active", isGoldenSpiral && state.spiral.flipX);
   spiralFlipVerticalButton.classList.toggle("active", isGoldenSpiral && state.spiral.flipY);
   spiralFlipHorizontalButton.setAttribute("aria-pressed", String(isGoldenSpiral && state.spiral.flipX));
   spiralFlipVerticalButton.setAttribute("aria-pressed", String(isGoldenSpiral && state.spiral.flipY));
   spiralFlipHorizontalButton.disabled = !isGoldenSpiral;
   spiralFlipVerticalButton.disabled = !isGoldenSpiral;
+  if (mobileSpiralFlipHorizontalButton) {
+    mobileSpiralFlipHorizontalButton.classList.toggle("active", isGoldenSpiral && state.spiral.flipX);
+    mobileSpiralFlipHorizontalButton.setAttribute("aria-pressed", String(isGoldenSpiral && state.spiral.flipX));
+    mobileSpiralFlipHorizontalButton.disabled = !isGoldenSpiral;
+  }
+  if (mobileSpiralFlipVerticalButton) {
+    mobileSpiralFlipVerticalButton.classList.toggle("active", isGoldenSpiral && state.spiral.flipY);
+    mobileSpiralFlipVerticalButton.setAttribute("aria-pressed", String(isGoldenSpiral && state.spiral.flipY));
+    mobileSpiralFlipVerticalButton.disabled = !isGoldenSpiral;
+  }
   spiralDisplayButtons.forEach((button) => {
     const isActiveDisplay = isGoldenSpiral && button.dataset.spiralDisplay === state.spiral.displayMode;
     button.classList.toggle("active", isActiveDisplay);
     button.setAttribute("aria-pressed", String(isActiveDisplay));
     button.disabled = !isGoldenSpiral;
   });
+  mobileSpiralControlsCard?.classList.toggle("hidden", !isGoldenSpiral || !state.imageLoaded || advancedLocked);
   notanLevels.value = String(state.notanLevels);
   notanLevelsValue.textContent = `${state.notanLevels} values`;
   notanLevels.disabled = !isNotan;

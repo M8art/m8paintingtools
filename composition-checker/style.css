@@ -533,7 +533,34 @@ a {
   display: none;
 }
 
+.composition-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: -2px;
+  margin-bottom: 10px;
+}
+
+.composition-action-row .button,
+.composition-action-row .button-secondary,
+.composition-upload-button {
+  min-height: 44px;
+  padding: 11px 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.composition-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .mobile-grid-controls {
+  display: none;
+}
+
+.mobile-spiral-controls {
   display: none;
 }
 
@@ -1592,6 +1619,23 @@ a {
     justify-content: start;
   }
 
+  .composition-action-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  .composition-action-row .button,
+  .composition-action-row .button-secondary,
+  .composition-upload-button {
+    min-width: 0;
+    min-height: 38px;
+    padding: 9px 7px;
+    font-size: 0.76rem;
+    text-align: center;
+  }
+
   .mobile-toolbar-button {
     width: 100%;
     min-width: 0;
@@ -1657,6 +1701,79 @@ a {
 
   #gridControlsCard {
     display: none !important;
+  }
+
+  #spiralControlsCard {
+    display: none !important;
+  }
+
+  .mobile-spiral-controls {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 11px;
+    border-radius: 18px;
+    border: 1px solid rgba(61, 51, 40, 0.12);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(246, 240, 231, 0.94)),
+      #fffaf4;
+    box-shadow:
+      0 16px 30px rgba(50, 39, 28, 0.13),
+      0 4px 0 rgba(61, 51, 40, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  }
+
+  .mobile-spiral-controls.hidden {
+    display: none;
+  }
+
+  .mobile-spiral-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .mobile-spiral-header .section-label {
+    margin-bottom: 2px;
+  }
+
+  .mobile-spiral-hint {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.32;
+  }
+
+  .mobile-spiral-slider {
+    min-height: 24px;
+  }
+
+  .mobile-spiral-button-grid,
+  .mobile-spiral-display-grid {
+    display: grid;
+    gap: 7px;
+  }
+
+  .mobile-spiral-button-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .mobile-spiral-display-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mobile-spiral-controls .tab-button,
+  .mobile-spiral-controls .button-secondary {
+    min-width: 0;
+    min-height: 34px;
+    padding: 7px 6px;
+    border-radius: 13px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    box-shadow:
+      0 8px 16px rgba(50, 39, 28, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.72);
   }
 
   .composition-stage {

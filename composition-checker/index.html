@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260505buttons">
+  <link rel="stylesheet" href="./style.css?v=20260507composition-tools">
 </head>
 <body>
   <div class="app">
@@ -111,6 +111,13 @@
           <button id="mobileClearNotesButton" class="button-secondary mobile-toolbar-button hidden" type="button" disabled>Clear</button>
         </div>
 
+        <div class="composition-action-row" aria-label="Composition workspace actions">
+          <label class="button composition-upload-button" for="fileInput">Upload</label>
+          <button id="clearCompositionButton" class="button-secondary" type="button" disabled>Clear</button>
+          <button id="resetCompositionButton" class="button-secondary" type="button" disabled>Reset</button>
+          <button id="exportCompositionButton" class="button-secondary" type="button" disabled>Export</button>
+        </div>
+
         <div class="canvas-wrap upload-enabled" id="canvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
           <div id="compositionStage" class="composition-stage">
             <img id="compositionImage" class="workspace-image" alt="Uploaded composition reference">
@@ -134,6 +141,31 @@
               <span id="mobileGridSizeValue" class="control-value">Grid: 6 x 6</span>
             </div>
             <input id="mobileGridSize" class="control-slider mobile-grid-slider" type="range" min="0" max="5" step="1" value="2" aria-label="Set grid size">
+          </div>
+        </div>
+
+        <div id="mobileSpiralControlsCard" class="mobile-spiral-controls hidden" aria-label="Mobile golden spiral controls">
+          <div class="mobile-spiral-header">
+            <div>
+              <p class="section-label">Spiral Controls</p>
+              <p class="mobile-spiral-hint">Drag the spiral on the image. Use scale for fine placement.</p>
+            </div>
+            <span id="mobileSpiralScaleValue" class="control-value">100%</span>
+          </div>
+
+          <input id="mobileSpiralScale" class="control-slider mobile-spiral-slider" type="range" min="55" max="175" step="1" value="100" aria-label="Scale golden spiral">
+
+          <div class="mobile-spiral-button-grid" role="group" aria-label="Golden spiral orientation">
+            <button id="mobileSpiralRotateButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Rotate</button>
+            <button id="mobileSpiralFlipHorizontalButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Flip H</button>
+            <button id="mobileSpiralFlipVerticalButton" class="tab-button spiral-control-button" type="button" aria-pressed="false">Flip V</button>
+            <button id="mobileSpiralResetButton" class="button-secondary spiral-control-button" type="button">Reset</button>
+          </div>
+
+          <div class="mobile-spiral-display-grid" role="group" aria-label="Golden spiral display mode">
+            <button class="tab-button spiral-display-button active" type="button" data-spiral-display="full">Both</button>
+            <button class="tab-button spiral-display-button" type="button" data-spiral-display="spiral">Spiral</button>
+            <button class="tab-button spiral-display-button" type="button" data-spiral-display="rectangles">Boxes</button>
           </div>
         </div>
         <p class="feedback-helper">Want a full personal critique by Mate Art? You will find the personal feedback option below after analysis.</p>
@@ -402,7 +434,7 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=paywall-20260505"></script>
+  <script src="./script.js?v=composition-tools-20260507"></script>
 </body>
 </html>
 
