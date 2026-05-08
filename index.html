@@ -1307,6 +1307,29 @@
       color: #fff8ef;
     }
 
+    .onboarding-paid-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .onboarding-price-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffbd67, #e47a32);
+      color: #20150e;
+      font-size: 1.08rem;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      box-shadow: 0 10px 22px rgba(226, 117, 45, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+    }
+
     .onboarding-plan-head span {
       color: rgba(248, 239, 229, 0.68);
       font-size: 0.88rem;
@@ -4962,6 +4985,13 @@ html,
         font-size: 1.18rem;
       }
 
+      .onboarding-price-pill {
+        min-width: 54px;
+        min-height: 30px;
+        padding: 5px 10px;
+        font-size: 0.96rem;
+      }
+
       .onboarding-plan-head span,
       .onboarding-plan-list,
       .onboarding-access-note {
@@ -5449,8 +5479,11 @@ html,
               <section class="onboarding-plan-card is-paid" aria-label="Full unlock">
                 <span class="onboarding-best-value">Full Unlock</span>
                 <div class="onboarding-plan-head">
-                  <strong>Unlock All</strong>
-                  <span>One-time payment. Yours forever.</span>
+                  <div class="onboarding-paid-title-row">
+                    <strong>Unlock All</strong>
+                    <span class="onboarding-price-pill">$5</span>
+                  </div>
+                  <span>$5 one-time payment. Yours forever.</span>
                 </div>
                 <ul class="onboarding-plan-list">
                   <li>Unlimited Quick Checks</li>
@@ -5462,7 +5495,7 @@ html,
             </div>
 
             <div class="onboarding-access-actions">
-              <button id="onboardingUnlockButton" class="onboarding-unlock-button" type="button">Unlock All Tools</button>
+              <button id="onboardingUnlockButton" class="onboarding-unlock-button" type="button">Unlock All Tools for $5</button>
               <button id="onboardingFreeButton" class="onboarding-free-button" type="button">Continue with Free</button>
             </div>
 
@@ -6593,45 +6626,3 @@ html,
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
