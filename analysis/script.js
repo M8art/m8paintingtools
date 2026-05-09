@@ -236,7 +236,7 @@ uploadZone.addEventListener("click", () => {
     showLockedAnalysisState();
     return;
   }
-  analysisFileInput.click();
+  openAnalysisFilePicker();
 }, true);
 
 uploadZone.addEventListener("keydown", (event) => {
@@ -246,7 +246,7 @@ uploadZone.addEventListener("keydown", (event) => {
       showLockedAnalysisState();
       return;
     }
-    analysisFileInput.click();
+    openAnalysisFilePicker();
   }
 });
 
@@ -260,12 +260,14 @@ analysisFileInput.addEventListener("change", (event) => {
   const [file] = event.target.files || [];
   if (file) {
     showPreview(file);
+    event.target.value = "";
   }
 });
 
 analysisUploadLabels.forEach((label) => {
   label.addEventListener("click", (event) => {
     if (!shouldBlockAnalysisUpload()) {
+      clearAnalysisFileInput();
       return;
     }
 
@@ -2205,7 +2207,20 @@ function resetEmptyState() {
   uploadZone.classList.remove("has-load-error");
 }
 
+function clearAnalysisFileInput() {
+  if (analysisFileInput) {
+    analysisFileInput.value = "";
+  }
+}
+
+function openAnalysisFilePicker() {
+  clearAnalysisFileInput();
+  analysisFileInput.click();
+}
+
 function resetUploadedImage() {
+  clearAnalysisFileInput();
+
   if (!hasUploadedImage && !currentObjectUrl && !analysisPreview.getAttribute("src")) {
     return;
   }
