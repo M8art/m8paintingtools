@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=20260508-mobile-app">
 </head>
 <body>
   <div class="page">
@@ -21,6 +21,10 @@
       <div class="title-block">
         <p class="eyebrow">Mini Game</p>
         <h1>Flying Brush</h1>
+        <div class="mobile-tool-status-row" aria-label="Game status">
+          <span class="mobile-tool-chip">Game</span>
+          <span class="mobile-tool-status-pill"><span aria-hidden="true"></span> Ready</span>
+        </div>
         <p class="intro">Flap a brush through shifting paint tubes, hold your rhythm, and keep the line alive as the studio pace picks up.</p>
       </div>
 
@@ -146,6 +150,25 @@
         </div>
       </aside>
     </main>
+
+    <nav class="mobile-app-dock" aria-label="App navigation">
+      <a class="mobile-app-dock-link" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg>
+        <span>Home</span>
+      </a>
+      <a class="mobile-app-dock-link" href="../analysis/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 18a7.5 7.5 0 1 1 5.3-2.2L21 21"></path><path d="M8 11h4"></path></svg>
+        <span>Analyze</span>
+      </a>
+      <a class="mobile-app-dock-link is-active" href="./index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17c4-5 8-7 16-8"></path><path d="M14 5l6 4-6 4"></path></svg>
+        <span>Game</span>
+      </a>
+      <a class="mobile-app-dock-link" href="../access/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3"></path><path d="M5 11h14v10H5z"></path></svg>
+        <span>Access</span>
+      </a>
+    </nav>
 
     <footer class="footer" aria-label="Site footer">
       <p class="footer-copy">Simple tools for better painting decisions.</p>
