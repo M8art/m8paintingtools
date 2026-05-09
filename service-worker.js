@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v9";
+const CACHE_NAME = "m8-painting-tools-shell-v10";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -13,9 +13,10 @@ const SHELL_URLS = [
   "/brush-runner/",
   "/brush-runner/index.html",
   "/manifest.webmanifest",
-  "/assets/pwa/icon-192-v2.png",
-  "/assets/pwa/icon-512-v2.png",
-  "/assets/pwa/apple-touch-icon-v2.png"
+  "/assets/pwa/icon-192-v3.png",
+  "/assets/pwa/icon-512-v3.png",
+  "/assets/pwa/apple-touch-icon-v3.png",
+  "/assets/pwa/launch-logo-v3.png"
 ];
 
 self.addEventListener("install", (event) => {
