@@ -3,6 +3,7 @@
   "short_name": "M8 Tools",
   "description": "Painter-focused studio tools for checking values, composition, and color before you paint.",
   "start_url": "/",
+  "id": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0d0b08",
