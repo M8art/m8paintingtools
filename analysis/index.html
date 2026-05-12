@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M8 Analysis Studio</title>
-  <link rel="stylesheet" href="./style.css?v=20260508-mobile-app">
+  <link rel="stylesheet" href="./style.css?v=20260512-quick-layout">
+  <script src="../assets/mobile-theme.js"></script>
+  <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
 <body>
   <div class="app">
@@ -91,7 +93,7 @@
           <div class="mobile-workspace-toolbar" aria-label="Quick Check mobile controls">
             <button id="mobileRunAnalysisButton" class="button mobile-toolbar-button" type="button" disabled>Analyze</button>
             <button id="mobileResetWorkspaceButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Reset</button>
-            <a class="button-secondary mobile-toolbar-button" href="#quickCheckResultPanel">Results</a>
+            <a id="mobileResultsButton" class="button-secondary mobile-toolbar-button" href="#quickCheckResultPanel">Results</a>
           </div>
 
           <div id="uploadZone" class="canvas-wrap upload-enabled" tabindex="0" role="button" aria-label="Click to upload your painting">
@@ -218,6 +220,16 @@
           </div>
         </section>
 
+        <section id="quickCheckDeepReport" class="card quick-check-deep-report hidden" aria-label="Quick Check detailed report">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Studio Report</p>
+              <h2>Breakdown &amp; Advanced Read</h2>
+            </div>
+          </div>
+          <div id="quickCheckDeepReportContent" class="quick-check-deep-report-content"></div>
+        </section>
+
         <section class="card studio-note-card">
           <div class="studio-note-copy">
             <p class="detail-copy">This quick check is based on measurable visual factors such as value distribution, contrast, and compositional balance. It estimates how the eye moves through the image, where visual weight sits, and how clearly the focal area stands out. It’s designed as a fast studio tool to help you see structure more clearly — not as a final artistic judgment.</p>
@@ -323,26 +335,41 @@
                 <span class="result-tag">Left Heavy</span>
                 <span class="result-tag">Compressed Values</span>
               </div>
-              <div id="aiStudioFeedback" class="result-block ai-studio-feedback hidden">
-                <p class="result-block-title">AI Studio Feedback</p>
-                <p id="aiStudioFeedbackStatus" class="detail-copy">Analyzing your painting like a studio mentor...</p>
-                <div id="aiStudioFeedbackContent" class="ai-studio-feedback-content hidden">
-                  <p id="aiStudioSummary" class="detail-copy"></p>
-                  <div class="ai-feedback-section">
-                    <p class="breakdown-section-title">Strengths</p>
-                    <ul id="aiStudioStrengths" class="breakdown-list"></ul>
+              <div id="paintingBreakdownResult" class="result-block painting-breakdown-result hidden" aria-live="polite">
+                <p class="result-block-title">Advanced Painting Breakdown</p>
+                <p id="paintingBreakdownStatus" class="detail-copy">Upload an image first to create the breakdown.</p>
+                <div id="paintingBreakdownContent" class="painting-breakdown-content hidden">
+                  <div class="breakdown-section painting-breakdown-verdict">
+                    <p class="breakdown-section-title">Studio Verdict</p>
+                    <p id="paintingBreakdownVerdict" class="detail-copy"></p>
                   </div>
-                  <div class="ai-feedback-section">
-                    <p class="breakdown-section-title">Weaknesses</p>
-                    <ul id="aiStudioWeaknesses" class="breakdown-list"></ul>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">Value Structure</p>
+                    <p id="paintingBreakdownValue" class="detail-copy"></p>
                   </div>
-                  <div class="ai-feedback-section">
-                    <p class="breakdown-section-title">Main Priority</p>
-                    <p id="aiStudioPriority" class="detail-copy"></p>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">Composition</p>
+                    <p id="paintingBreakdownComposition" class="detail-copy"></p>
                   </div>
-                  <div class="ai-feedback-section">
-                    <p class="breakdown-section-title">Next Steps</p>
-                    <ol id="aiStudioNextSteps" class="breakdown-list"></ol>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">Color &amp; Temperature</p>
+                    <p id="paintingBreakdownColor" class="detail-copy"></p>
+                  </div>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">Edges &amp; Depth</p>
+                    <p id="paintingBreakdownEdges" class="detail-copy"></p>
+                  </div>
+                  <div class="breakdown-section">
+                    <p class="breakdown-section-title">Fix First</p>
+                    <p id="paintingBreakdownFix" class="detail-copy"></p>
+                  </div>
+                  <div class="breakdown-section painting-breakdown-plan">
+                    <p class="breakdown-section-title">3-Step Paint Plan</p>
+                    <ol id="paintingBreakdownPlan" class="breakdown-list"></ol>
+                  </div>
+                  <div class="breakdown-section painting-breakdown-warning">
+                    <p class="breakdown-section-title">Before You Continue</p>
+                    <p id="paintingBreakdownBefore" class="detail-copy"></p>
                   </div>
                 </div>
               </div>
@@ -377,7 +404,8 @@
                 <p id="freeDailyNote" class="result-note hidden">You&rsquo;ve used your free daily analysis.<br>Come back tomorrow to train your eye again.</p>
                 <p id="streakNote" class="result-note streak-note hidden">Day 1 ✅</p>
               </div>
-              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full breakdown</button>
+              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show free breakdown</button>
+              <button id="paintingBreakdownButton" class="button-secondary painting-breakdown-button" type="button">Unlock Advanced Breakdown</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
               <p class="section-label result-label">Unlock</p>
@@ -396,10 +424,11 @@
             </div>
           </div>
 
-          <button id="runAnalysisButton" class="button-secondary analysis-button" type="button" disabled>Run Analysis</button>
+          <button id="runAnalysisButton" class="button-secondary analysis-button mobile-duplicate-action" type="button" disabled>Run Analysis</button>
           <p id="freeLimitHelper" class="result-note free-limit-helper hidden">You&rsquo;ve reached your free analysis limit.</p>
         </div>
       </aside>
+
     </main>
 
     <nav class="mobile-app-dock" aria-label="App navigation">
@@ -450,6 +479,6 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=20260509reset-upload"></script>
+  <script src="./script.js?v=20260512-quick-layout"></script>
 </body>
 </html>

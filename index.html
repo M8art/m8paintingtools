@@ -1,13 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#e8e3d8">
-  <meta name="background-color" content="#e8e3d8">
+  <meta name="theme-color" content="#0d0b08">
+  <meta name="background-color" content="#0d0b08">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="M8 Painting Tools">
   <link rel="manifest" href="./manifest.webmanifest?v=20260509launch">
   <link rel="apple-touch-icon" href="./assets/pwa/apple-touch-icon-v3.png">
@@ -20,6 +20,17 @@
     gtag('js', new Date());
 
     gtag('config', 'G-6ZYJSDPH5X');
+  </script>
+  <script>
+    (() => {
+      try {
+        if (localStorage.getItem("m8MobileLandingTheme") === "light") {
+          document.documentElement.classList.add("mobile-light-mode");
+        }
+      } catch (error) {
+        document.documentElement.classList.remove("mobile-light-mode");
+      }
+    })();
   </script>
   <style>
     :root {
@@ -1355,7 +1366,7 @@
     }
 
     .onboarding-plan-list li::before {
-      content: "✓";
+      content: "?";
       display: inline-grid;
       place-items: center;
       width: 20px;
@@ -5265,14 +5276,36 @@ html,
       padding: 32px;
       overflow: hidden;
       background:
-        linear-gradient(90deg, rgba(20, 18, 15, 0.035) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(20, 18, 15, 0.025) 1px, transparent 1px),
-        #e8e3d8;
-      background-size: 24px 24px, 24px 24px, auto;
-      color: #181612;
+        radial-gradient(circle at 72% 8%, rgba(185, 141, 66, 0.18), transparent 32%),
+        radial-gradient(circle at 24% 18%, rgba(101, 63, 27, 0.22), transparent 30%),
+        repeating-linear-gradient(92deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+        linear-gradient(180deg, #0d0b08 0%, #17120d 50%, #21170f 100%);
+      color: #f2e7cf;
       opacity: 0;
       transition: opacity 420ms ease;
       pointer-events: none;
+    }
+
+    .startup-splash::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      pointer-events: none;
+      border: 1px solid rgba(185, 141, 66, 0.34);
+      background:
+        linear-gradient(90deg, rgba(185, 141, 66, 0.52), transparent 28%, transparent 72%, rgba(185, 141, 66, 0.52)) left top / 100% 1px no-repeat,
+        linear-gradient(90deg, rgba(185, 141, 66, 0.52), transparent 28%, transparent 72%, rgba(185, 141, 66, 0.52)) left bottom / 100% 1px no-repeat;
+      box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.03);
+    }
+
+    .startup-splash::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 42%, transparent 0 26%, rgba(0, 0, 0, 0.18) 62%, rgba(0, 0, 0, 0.52) 100%),
+        linear-gradient(180deg, rgba(13, 11, 8, 0.1), rgba(13, 11, 8, 0.64));
     }
 
     .startup-splash.is-visible {
@@ -5286,9 +5319,19 @@ html,
     }
 
     .startup-splash-inner {
+      position: relative;
+      z-index: 1;
       display: grid;
       justify-items: center;
-      gap: 18px;
+      gap: 19px;
+      padding: 28px;
+      border: 1px solid rgba(185, 141, 66, 0.24);
+      background:
+        repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+        linear-gradient(180deg, rgba(29, 24, 18, 0.72), rgba(12, 10, 8, 0.62));
+      box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.38),
+        inset 0 0 0 1px rgba(242, 231, 207, 0.04);
       transform: translateY(-8px);
     }
 
@@ -5296,7 +5339,10 @@ html,
       width: min(48vw, 184px);
       height: auto;
       border-radius: 34px;
-      box-shadow: 0 24px 70px rgba(28, 23, 16, 0.18);
+      box-shadow:
+        0 0 0 1px rgba(185, 141, 66, 0.48),
+        0 24px 70px rgba(0, 0, 0, 0.42),
+        0 0 48px rgba(185, 141, 66, 0.14);
       opacity: 1;
       transform: scale(1);
       animation: startupLogoBreathe 1150ms cubic-bezier(0.2, 0.9, 0.22, 1) both;
@@ -5309,20 +5355,23 @@ html,
       gap: 4px;
       width: min(42vw, 154px);
       height: 10px;
+      padding: 1px;
       overflow: hidden;
+      border: 1px solid rgba(185, 141, 66, 0.24);
+      background: rgba(13, 11, 8, 0.52);
     }
 
     .startup-splash-meter::after {
       content: "";
       position: absolute;
       inset: -2px;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.84) 48%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(242, 231, 207, 0.72) 48%, transparent 100%);
       transform: translateX(-120%);
       animation: startupScan 980ms 260ms ease-out both;
     }
 
     .startup-splash-meter span {
-      border: 1px solid rgba(24, 22, 18, 0.12);
+      border: 1px solid rgba(13, 11, 8, 0.46);
       border-radius: 2px;
       opacity: 0;
       transform: translateY(5px);
@@ -5347,6 +5396,8 @@ html,
       letter-spacing: 0.42em;
       line-height: 1;
       text-transform: uppercase;
+      color: #b98d42;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.54);
       opacity: 0;
       transform: translateY(6px);
       animation: startupTextIn 620ms 420ms ease-out both;
@@ -5393,6 +5444,594 @@ html,
         opacity: 1;
         transform: none;
         filter: none;
+      }
+    }
+    @media (max-width: 720px) {
+      /* Trial mobile old-master reskin: visual only, no content or behavior changes. */
+      :root {
+        --mobile-atelier-black: #0d0b08;
+        --mobile-atelier-ink: #17120c;
+        --mobile-atelier-umber: #2d2115;
+        --mobile-atelier-panel: #18140f;
+        --mobile-atelier-panel-soft: rgba(24, 20, 15, 0.94);
+        --mobile-atelier-gold: #b98d42;
+        --mobile-atelier-gold-soft: rgba(185, 141, 66, 0.46);
+        --mobile-atelier-paper: #e7d8bd;
+        --mobile-atelier-paper-strong: #f2e7cf;
+        --mobile-atelier-muted: rgba(242, 231, 207, 0.7);
+        --mobile-atelier-line: rgba(185, 141, 66, 0.42);
+      }
+
+      html:not(.mobile-light-mode) body {
+        background:
+          radial-gradient(circle at 74% 2%, rgba(139, 91, 42, 0.26), transparent 29%),
+          radial-gradient(circle at 15% 12%, rgba(185, 141, 66, 0.16), transparent 30%),
+          repeating-linear-gradient(92deg, rgba(255, 239, 205, 0.028) 0 1px, transparent 1px 6px),
+          linear-gradient(180deg, #0e0b08 0%, #17120d 46%, #21170f 100%);
+        color: var(--mobile-atelier-paper-strong);
+      }
+
+      html:not(.mobile-light-mode) body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+          linear-gradient(180deg, rgba(13, 11, 8, 0.22), rgba(13, 11, 8, 0.78)),
+          url("./assets/images/hidden-structure-demo.jpg") center top / 150% auto no-repeat;
+        filter: sepia(0.54) saturate(0.7) brightness(0.42) contrast(1.16);
+        opacity: 0.42;
+      }
+
+      html:not(.mobile-light-mode) .page {
+        width: 100%;
+        padding-inline: 10px;
+      }
+
+      html:not(.mobile-light-mode) .topbar {
+        border: 0;
+        border-bottom: 1px solid rgba(185, 141, 66, 0.24);
+        border-radius: 0;
+        background: rgba(13, 11, 8, 0.72);
+        box-shadow: none;
+        backdrop-filter: blur(8px);
+      }
+
+      html:not(.mobile-light-mode) .brand-title {
+        color: var(--mobile-atelier-paper-strong);
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+      }
+
+      html:not(.mobile-light-mode) .brand-logo {
+        height: 30px;
+        border-radius: 7px;
+        box-shadow: 0 0 0 1px rgba(185, 141, 66, 0.42), 0 10px 18px rgba(0, 0, 0, 0.36);
+      }
+
+      html:not(.mobile-light-mode) .mobile-app-action {
+        border-color: rgba(185, 141, 66, 0.42);
+        background: rgba(13, 11, 8, 0.62);
+        color: var(--mobile-atelier-paper);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+      }
+
+      html:not(.mobile-light-mode) .app-home {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        padding: 16px 14px 15px;
+        border: 1px solid rgba(185, 141, 66, 0.44);
+        border-radius: 0;
+        background:
+          linear-gradient(180deg, rgba(10, 8, 6, 0.56), rgba(10, 8, 6, 0.78)),
+          radial-gradient(circle at 86% 7%, rgba(177, 120, 57, 0.22), transparent 30%),
+          linear-gradient(145deg, rgba(32, 25, 18, 0.94), rgba(13, 11, 8, 0.97));
+        box-shadow: 0 24px 42px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+      }
+
+      html:not(.mobile-light-mode) .app-home::before,
+      html:not(.mobile-light-mode) .favorite-tools-card::before,
+      html:not(.mobile-light-mode) .hidden-structure-demo::before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        z-index: 0;
+        pointer-events: none;
+        border: 1px solid rgba(185, 141, 66, 0.28);
+        background:
+          linear-gradient(90deg, rgba(185, 141, 66, 0.42), transparent 26%, transparent 74%, rgba(185, 141, 66, 0.42)) left top / 100% 1px no-repeat,
+          linear-gradient(90deg, rgba(185, 141, 66, 0.42), transparent 26%, transparent 74%, rgba(185, 141, 66, 0.42)) left bottom / 100% 1px no-repeat;
+      }
+
+      html:not(.mobile-light-mode) .app-home > *,
+      html:not(.mobile-light-mode) .favorite-tools-card > *,
+      html:not(.mobile-light-mode) .hidden-structure-demo > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      html:not(.mobile-light-mode) .app-home::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(100deg, rgba(13, 11, 8, 0.92) 0 48%, rgba(13, 11, 8, 0.5) 78%),
+          url("./assets/images/hidden-structure-demo.jpg") 58% 0 / cover no-repeat;
+        filter: sepia(0.62) saturate(0.74) brightness(0.72) contrast(1.14);
+        opacity: 0.58;
+      }
+
+      html:not(.mobile-light-mode) .app-home-top {
+        position: relative;
+        margin-bottom: 16px;
+        padding: 4px 2px 12px;
+        border: 0;
+      }
+
+      html:not(.mobile-light-mode) .app-home-top::after,
+      html:not(.mobile-light-mode) .favorite-tools-head::after {
+        content: "";
+        display: block;
+        height: 1px;
+        margin-top: 10px;
+        background: linear-gradient(90deg, var(--mobile-atelier-gold-soft), transparent);
+      }
+
+      html:not(.mobile-light-mode) .app-home-title,
+      html:not(.mobile-light-mode) .favorite-tools-title,
+      html:not(.mobile-light-mode) .hidden-structure-demo-caption strong,
+      html:not(.mobile-light-mode) .eyebrow {
+        color: var(--mobile-atelier-gold);
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      html:not(.mobile-light-mode) .app-home-title {
+        font-size: 0.96rem;
+      }
+
+      html:not(.mobile-light-mode) .app-status-pill {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(13, 11, 8, 0.56);
+        color: rgba(242, 231, 207, 0.84);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+      }
+
+      html:not(.mobile-light-mode) .app-status-dot {
+        background: var(--mobile-atelier-gold);
+        box-shadow: 0 0 0 4px rgba(185, 141, 66, 0.16);
+      }
+
+      html:not(.mobile-light-mode) .app-upload-action {
+        min-height: 72px;
+        border: 1px solid rgba(185, 141, 66, 0.62);
+        border-radius: 3px;
+        background:
+          linear-gradient(90deg, rgba(103, 70, 34, 0.28), rgba(231, 216, 189, 0.9)),
+          repeating-linear-gradient(0deg, rgba(43, 31, 18, 0.055) 0 1px, transparent 1px 7px),
+          var(--mobile-atelier-paper);
+        color: var(--mobile-atelier-ink);
+        box-shadow:
+          0 16px 24px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(255, 247, 226, 0.58),
+          inset 0 0 24px rgba(107, 67, 28, 0.18);
+      }
+
+      html:not(.mobile-light-mode) .app-upload-title,
+      html:not(.mobile-light-mode) .app-tool-name,
+      html:not(.mobile-light-mode) .favorite-tool-name,
+      html:not(.mobile-light-mode) .hidden-demo-title {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      html:not(.mobile-light-mode) .app-upload-copy {
+        color: rgba(31, 22, 13, 0.72);
+      }
+
+      html:not(.mobile-light-mode) .app-upload-icon {
+        border-color: rgba(45, 33, 21, 0.28);
+        background: rgba(23, 18, 12, 0.82);
+        color: var(--mobile-atelier-gold);
+        box-shadow: 0 0 0 1px rgba(185, 141, 66, 0.34), 0 10px 16px rgba(0, 0, 0, 0.22);
+      }
+
+      html:not(.mobile-light-mode) .app-tool-grid {
+        gap: 11px;
+      }
+
+      html:not(.mobile-light-mode) .app-tool-tile {
+        min-height: 118px;
+        border: 1px solid rgba(185, 141, 66, 0.42);
+        border-radius: 4px;
+        background:
+          linear-gradient(180deg, rgba(35, 30, 23, 0.94), rgba(17, 14, 10, 0.96));
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow:
+          inset 0 0 0 1px rgba(242, 231, 207, 0.04),
+          inset 0 -24px 46px rgba(0, 0, 0, 0.16),
+          0 14px 24px rgba(0, 0, 0, 0.28);
+      }
+
+      html:not(.mobile-light-mode) .app-tool-tile::before {
+        border-radius: inherit;
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.34)),
+          linear-gradient(90deg, rgba(185, 141, 66, 0.44), transparent 36%, transparent 64%, rgba(185, 141, 66, 0.44)) left top / 100% 1px no-repeat,
+          linear-gradient(90deg, rgba(185, 141, 66, 0.44), transparent 36%, transparent 64%, rgba(185, 141, 66, 0.44)) left bottom / 100% 1px no-repeat;
+      }
+
+      html:not(.mobile-light-mode) .app-tool-tile::after {
+        filter: sepia(0.36) saturate(1.08) brightness(0.78) contrast(1.12);
+        opacity: 0.64;
+      }
+
+      html:not(.mobile-light-mode) .app-tool-tile.is-primary {
+        color: var(--mobile-atelier-paper-strong);
+        background:
+          linear-gradient(145deg, rgba(22, 17, 12, 0.82), rgba(9, 8, 6, 0.96)),
+          var(--tool-image);
+      }
+
+      html:not(.mobile-light-mode) .app-tool-tile.is-primary::after {
+        filter: sepia(0.38) saturate(1.05) brightness(0.72) contrast(1.14);
+        opacity: 0.72;
+      }
+
+      html:not(.mobile-light-mode) .app-tool-kicker {
+        color: var(--mobile-atelier-gold);
+        letter-spacing: 0.15em;
+      }
+
+      html:not(.mobile-light-mode) .app-tool-copy,
+      html:not(.mobile-light-mode) .favorite-tool-copy,
+      html:not(.mobile-light-mode) .hidden-structure-demo-caption span {
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      html:not(.mobile-light-mode) .app-tool-icon,
+      html:not(.mobile-light-mode) .app-tool-arrow,
+      html:not(.mobile-light-mode) .favorite-tool-icon {
+        border-color: rgba(185, 141, 66, 0.48);
+        border-radius: 3px;
+        background: rgba(13, 11, 8, 0.56);
+        color: var(--mobile-atelier-gold);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .app-home-bottom {
+        border: 1px solid rgba(185, 141, 66, 0.35);
+        border-radius: 3px;
+        background: rgba(13, 11, 8, 0.52);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .app-signal {
+        border: 1px solid rgba(185, 141, 66, 0.24);
+        border-radius: 3px;
+        background: rgba(13, 11, 8, 0.34);
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      html:not(.mobile-light-mode) .app-signal strong {
+        color: var(--mobile-atelier-paper-strong);
+      }
+
+      html:not(.mobile-light-mode) .hidden-structure-demo,
+      html:not(.mobile-light-mode) .favorite-tools-card,
+      html:not(.mobile-light-mode) .studio-brief,
+      html:not(.mobile-light-mode) .quick-check-banner,
+      html:not(.mobile-light-mode) .section-card,
+      html:not(.mobile-light-mode) .tool-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border: 1px solid rgba(185, 141, 66, 0.38);
+        border-radius: 3px;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.028) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(27, 23, 18, 0.96), rgba(13, 11, 8, 0.96));
+        box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .hidden-structure-demo {
+        padding: 10px;
+      }
+
+      html:not(.mobile-light-mode) .hidden-structure-demo-frame {
+        border-radius: 3px;
+        border: 1px solid rgba(185, 141, 66, 0.32);
+      }
+
+      html:not(.mobile-light-mode) .hidden-structure-demo-caption {
+        border-radius: 0;
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      html:not(.mobile-light-mode) .favorite-tools-card {
+        padding: 12px;
+      }
+
+      html:not(.mobile-light-mode) .favorite-tools-note,
+      html:not(.mobile-light-mode) .favorite-tools-meta {
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      html:not(.mobile-light-mode) .favorite-tool-chip,
+      html:not(.mobile-light-mode) .favorite-tool-button {
+        border: 1px solid rgba(185, 141, 66, 0.34);
+        border-radius: 3px;
+        background:
+          linear-gradient(180deg, rgba(39, 32, 24, 0.94), rgba(15, 13, 10, 0.94));
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .favorite-tool-label {
+        color: var(--mobile-atelier-paper-strong);
+        text-shadow: 0 1px 10px rgba(0, 0, 0, 0.34);
+      }
+
+      html:not(.mobile-light-mode) .favorite-tool-icon {
+        border-color: rgba(185, 141, 66, 0.44);
+        background: rgba(185, 141, 66, 0.1);
+        color: var(--mobile-atelier-gold);
+      }
+
+      html:not(.mobile-light-mode) .premium-tools-card .favorite-tool-button {
+        border-color: rgba(185, 141, 66, 0.46);
+        background:
+          radial-gradient(circle at 82% 14%, rgba(185, 141, 66, 0.18), transparent 36%),
+          linear-gradient(180deg, rgba(42, 34, 24, 0.96), rgba(15, 13, 10, 0.96));
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow:
+          inset 0 0 0 1px rgba(242, 231, 207, 0.05),
+          inset 0 -18px 32px rgba(0, 0, 0, 0.18);
+      }
+
+      html:not(.mobile-light-mode) .premium-tools-card .favorite-tool-icon {
+        border-color: rgba(185, 141, 66, 0.48);
+        background: rgba(185, 141, 66, 0.12);
+        color: var(--mobile-atelier-gold);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-modal {
+        padding: 18px;
+        background:
+          radial-gradient(circle at 76% 8%, rgba(185, 141, 66, 0.16), transparent 34%),
+          rgba(9, 8, 6, 0.76);
+        backdrop-filter: blur(10px);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        gap: 15px;
+        padding: 24px;
+        border: 1px solid rgba(185, 141, 66, 0.46);
+        border-radius: 3px;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.028) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.98), rgba(12, 10, 8, 0.98));
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow:
+          0 28px 64px rgba(0, 0, 0, 0.46),
+          inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-card::before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        z-index: -1;
+        pointer-events: none;
+        border: 1px solid rgba(185, 141, 66, 0.25);
+        background:
+          linear-gradient(90deg, rgba(185, 141, 66, 0.42), transparent 28%, transparent 72%, rgba(185, 141, 66, 0.42)) left top / 100% 1px no-repeat,
+          linear-gradient(90deg, rgba(185, 141, 66, 0.42), transparent 28%, transparent 72%, rgba(185, 141, 66, 0.42)) left bottom / 100% 1px no-repeat;
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-card .eyebrow {
+        color: var(--mobile-atelier-gold);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-card h2 {
+        color: var(--mobile-atelier-paper-strong);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.72rem, 8vw, 2.42rem);
+        line-height: 1.04;
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.52);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-card .subheadline {
+        color: rgba(242, 231, 207, 0.76);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-option {
+        border: 1px solid rgba(185, 141, 66, 0.36);
+        border-radius: 3px;
+        background:
+          radial-gradient(circle at 86% 14%, rgba(185, 141, 66, 0.14), transparent 34%),
+          linear-gradient(180deg, rgba(42, 34, 24, 0.96), rgba(16, 13, 10, 0.96));
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-option:hover,
+      html:not(.mobile-light-mode) .upload-tool-option:focus-visible {
+        border-color: rgba(185, 141, 66, 0.62);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-option-title {
+        color: var(--mobile-atelier-paper-strong);
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-option-copy {
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      html:not(.mobile-light-mode) .upload-tool-card .button-secondary {
+        border: 1px solid rgba(185, 141, 66, 0.42);
+        border-radius: 3px;
+        background: rgba(13, 11, 8, 0.54);
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-overlay {
+        background:
+          radial-gradient(circle at 72% 8%, rgba(185, 141, 66, 0.16), transparent 34%),
+          rgba(8, 7, 5, 0.82);
+        backdrop-filter: blur(12px);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border: 1px solid rgba(185, 141, 66, 0.42);
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.98), rgba(12, 10, 8, 0.98));
+        color: var(--mobile-atelier-paper-strong);
+        box-shadow:
+          0 28px 64px rgba(0, 0, 0, 0.46),
+          inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-card::before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        z-index: -1;
+        pointer-events: none;
+        border: 1px solid rgba(185, 141, 66, 0.24);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-title {
+        color: var(--mobile-atelier-paper-strong);
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.58);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-text,
+      html:not(.mobile-light-mode) .micro-trust,
+      html:not(.mobile-light-mode) .onboarding-next {
+        color: rgba(242, 231, 207, 0.76);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-head .eyebrow {
+        color: var(--mobile-atelier-gold);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-skip {
+        padding: 7px 10px;
+        border: 1px solid rgba(185, 141, 66, 0.38);
+        border-radius: 3px;
+        background: rgba(13, 11, 8, 0.54);
+        color: rgba(242, 231, 207, 0.68);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-skip:hover {
+        background: rgba(185, 141, 66, 0.12);
+        color: var(--mobile-atelier-paper-strong);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-dot {
+        background: rgba(242, 231, 207, 0.18);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-dot.is-active {
+        background: var(--mobile-atelier-gold);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-demo-shell,
+      html:not(.mobile-light-mode) .onboarding-workflow-shell {
+        border: 1px solid rgba(185, 141, 66, 0.34);
+        background:
+          linear-gradient(180deg, rgba(37, 31, 23, 0.94), rgba(14, 12, 9, 0.96));
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-demo-shell::before,
+      html:not(.mobile-light-mode) .onboarding-workflow-shell::before {
+        background: none;
+        border: 1px solid rgba(185, 141, 66, 0.18);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-workflow-shell::after {
+        background:
+          radial-gradient(circle at top right, rgba(185, 141, 66, 0.12), transparent 24%),
+          radial-gradient(circle at bottom left, rgba(77, 47, 22, 0.18), transparent 28%);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-workflow-row {
+        border: 1px solid rgba(185, 141, 66, 0.3);
+        border-radius: 4px;
+        background:
+          radial-gradient(circle at 88% 14%, rgba(185, 141, 66, 0.1), transparent 34%),
+          linear-gradient(180deg, rgba(36, 29, 21, 0.92), rgba(15, 13, 10, 0.94));
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.035);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-workflow-chip {
+        border: 1px solid rgba(185, 141, 66, 0.36);
+        border-radius: 3px;
+        background: rgba(185, 141, 66, 0.1);
+        color: var(--mobile-atelier-gold);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-workflow-copy strong {
+        color: var(--mobile-atelier-paper-strong);
+      }
+
+      html:not(.mobile-light-mode) .onboarding-workflow-copy span {
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      .mobile-theme-toggle .theme-icon-dark {
+        display: none;
+      }
+
+      html.mobile-light-mode .mobile-theme-toggle .theme-icon-light {
+        display: none;
+      }
+
+      html.mobile-light-mode .mobile-theme-toggle .theme-icon-dark {
+        display: block;
+      }
+
+      html:not(.mobile-light-mode) .mobile-bottom-nav {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border: 1px solid rgba(185, 141, 66, 0.44);
+        border-radius: 0;
+        background:
+          repeating-linear-gradient(90deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 8px),
+          linear-gradient(180deg, rgba(26, 22, 17, 0.98), rgba(11, 10, 8, 0.98));
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(242, 231, 207, 0.06);
+      }
+
+      html:not(.mobile-light-mode) .mobile-bottom-link {
+        border-radius: 0;
+        color: rgba(242, 231, 207, 0.68);
+      }
+
+      html:not(.mobile-light-mode) .mobile-bottom-link.is-active {
+        background: rgba(185, 141, 66, 0.12);
+        color: var(--mobile-atelier-gold);
+        box-shadow: inset 0 0 0 1px rgba(185, 141, 66, 0.24);
       }
     }
   </style>
@@ -5769,6 +6408,22 @@ html,
             <path d="M12 17v-5"></path>
             <path d="M12 8h.01"></path>
             <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+          </svg>
+        </button>
+        <button id="mobileThemeToggle" class="mobile-app-action mobile-theme-toggle" type="button" aria-label="Switch to light mobile mode" aria-pressed="true">
+          <svg class="theme-icon-light" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+          <svg class="theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"></path>
           </svg>
         </button>
         <a class="mobile-app-action" href="./access/index.html" aria-label="Patreon Access">
@@ -6444,6 +7099,7 @@ html,
     const replayOnboardingButtonBrief = document.getElementById("replayOnboardingButtonBrief");
     const replayOnboardingButtonDesktop = document.getElementById("replayOnboardingButtonDesktop");
     const replayOnboardingButtonMobile = document.getElementById("replayOnboardingButtonMobile");
+    const mobileThemeToggle = document.getElementById("mobileThemeToggle");
     const shareLandingButton = document.getElementById("shareLandingButton");
     const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
     const heroUploadTrigger = document.getElementById("heroUploadTrigger");
@@ -6457,6 +7113,7 @@ html,
       composition: "./composition-checker/index.html",
       color: "./color-studio/index.html"
     };
+    const MOBILE_LANDING_THEME_KEY = "m8MobileLandingTheme";
     let activeOnboardingSlide = 0;
     let pendingUploadTarget = "";
     let onboardingAutoAdvanceTimer = null;
@@ -6510,6 +7167,35 @@ html,
 
     function isMobileViewport() {
       return window.matchMedia("(max-width: 768px)").matches;
+    }
+
+    function updateMobileThemeToggle() {
+      if (!mobileThemeToggle) {
+        return;
+      }
+      const isLightMode = document.documentElement.classList.contains("mobile-light-mode");
+      mobileThemeToggle.setAttribute("aria-pressed", String(!isLightMode));
+      mobileThemeToggle.setAttribute(
+        "aria-label",
+        isLightMode ? "Switch to dark mobile mode" : "Switch to light mobile mode"
+      );
+      mobileThemeToggle.title = isLightMode ? "Dark mode" : "Light mode";
+    }
+
+    function setMobileLandingTheme(theme) {
+      const isLightMode = theme === "light";
+      document.documentElement.classList.toggle("mobile-light-mode", isLightMode);
+      try {
+        window.localStorage.setItem(MOBILE_LANDING_THEME_KEY, isLightMode ? "light" : "dark");
+      } catch (error) {
+        // Visual preference only; ignore storage failures.
+      }
+      updateMobileThemeToggle();
+    }
+
+    function toggleMobileLandingTheme() {
+      const isLightMode = document.documentElement.classList.contains("mobile-light-mode");
+      setMobileLandingTheme(isLightMode ? "dark" : "light");
     }
 
     function onboardingSlideHasAccessChoice(index = activeOnboardingSlide) {
@@ -6739,6 +7425,8 @@ html,
     replayOnboardingButtonBrief?.addEventListener("click", () => openOnboarding({ forceReplay: true, allowSkip: true }));
     replayOnboardingButtonDesktop?.addEventListener("click", () => openOnboarding({ forceReplay: true, allowSkip: true }));
     replayOnboardingButtonMobile?.addEventListener("click", () => openOnboarding({ forceReplay: true, allowSkip: true }));
+    updateMobileThemeToggle();
+    mobileThemeToggle?.addEventListener("click", toggleMobileLandingTheme);
     shareLandingButton?.addEventListener("click", shareLandingPage);
     onboardingSkipButton?.addEventListener("click", () => {
       if (onboardingCanSkip) {

@@ -15,6 +15,9 @@ const overlayColorSwatches = Array.from(document.querySelectorAll("[data-overlay
 const runAnalysisButton = document.getElementById("runAnalysisButton");
 const mobileRunAnalysisButton = document.getElementById("mobileRunAnalysisButton");
 const mobileResetWorkspaceButton = document.getElementById("mobileResetWorkspaceButton");
+const mobileResultsButton = document.getElementById("mobileResultsButton");
+const quickCheckDeepReport = document.getElementById("quickCheckDeepReport");
+const quickCheckDeepReportContent = document.getElementById("quickCheckDeepReportContent");
 const quickCheckResult = document.getElementById("quickCheckResult");
 const quickCheckTopSections = document.getElementById("quickCheckTopSections");
 const quickCheckKeyInsightBlock = document.getElementById("quickCheckKeyInsightBlock");
@@ -90,14 +93,18 @@ const notanFixPanel = document.getElementById("notanFixPanel");
 const notanFixList = document.getElementById("notanFixList");
 const notanFixLock = document.getElementById("notanFixLock");
 const notanUnlockButton = document.getElementById("notanUnlockButton");
-const aiStudioFeedback = document.getElementById("aiStudioFeedback");
-const aiStudioFeedbackStatus = document.getElementById("aiStudioFeedbackStatus");
-const aiStudioFeedbackContent = document.getElementById("aiStudioFeedbackContent");
-const aiStudioSummary = document.getElementById("aiStudioSummary");
-const aiStudioStrengths = document.getElementById("aiStudioStrengths");
-const aiStudioWeaknesses = document.getElementById("aiStudioWeaknesses");
-const aiStudioPriority = document.getElementById("aiStudioPriority");
-const aiStudioNextSteps = document.getElementById("aiStudioNextSteps");
+const paintingBreakdownButton = document.getElementById("paintingBreakdownButton");
+const paintingBreakdownResult = document.getElementById("paintingBreakdownResult");
+const paintingBreakdownStatus = document.getElementById("paintingBreakdownStatus");
+const paintingBreakdownContent = document.getElementById("paintingBreakdownContent");
+const paintingBreakdownVerdict = document.getElementById("paintingBreakdownVerdict");
+const paintingBreakdownValue = document.getElementById("paintingBreakdownValue");
+const paintingBreakdownComposition = document.getElementById("paintingBreakdownComposition");
+const paintingBreakdownColor = document.getElementById("paintingBreakdownColor");
+const paintingBreakdownEdges = document.getElementById("paintingBreakdownEdges");
+const paintingBreakdownFix = document.getElementById("paintingBreakdownFix");
+const paintingBreakdownPlan = document.getElementById("paintingBreakdownPlan");
+const paintingBreakdownBefore = document.getElementById("paintingBreakdownBefore");
 
 const params = new URLSearchParams(window.location.search);
 const DEV_MODE = params.get("dev") === "true";
@@ -109,10 +116,10 @@ const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
-const AI_ANALYSIS_ENDPOINT = window.M8_AI_ANALYSIS_ENDPOINT || (
+const PAINTING_BREAKDOWN_ENDPOINT = window.M8_PAINTING_BREAKDOWN_ENDPOINT || (
   window.location.protocol === "file:"
-    ? "http://localhost:8888/.netlify/functions/analyze-painting"
-    : "/.netlify/functions/analyze-painting"
+    ? "http://localhost:8888/.netlify/functions/painting-breakdown"
+    : "/.netlify/functions/painting-breakdown"
 );
 const AI_IMAGE_MAX_DIMENSION = 1024;
 const AI_IMAGE_QUALITY = 0.82;
@@ -208,7 +215,8 @@ let feedbackToastTimeoutId = null;
 let scoreAnimationFrameId = null;
 let currentAnalysisUsesFreeSlot = false;
 let currentNotanReading = null;
-let aiFeedbackRequestId = 0;
+let paintingBreakdownRequestId = 0;
+let isPaintingBreakdownLoading = false;
 let workspaceZoom = 1;
 let workspacePanX = 0;
 let workspacePanY = 0;
@@ -219,6 +227,7 @@ let lastTapTimestamp = 0;
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
 
+setupQuickCheckDeepReport();
 resetEmptyState();
 
 handleUnlockReturn();
@@ -313,6 +322,9 @@ mobileRunAnalysisButton?.addEventListener("click", () => {
 });
 
 mobileResetWorkspaceButton?.addEventListener("click", resetUploadedImage);
+mobileResultsButton?.addEventListener("click", clearMobileResultsReady);
+
+paintingBreakdownButton?.addEventListener("click", requestFullPaintingBreakdown);
 
 window.addEventListener("resize", () => {
   if (!hasUploadedImage) {
@@ -376,8 +388,10 @@ function showPreview(file) {
   }
 
   hasUploadedImage = false;
+  uploadZone.classList.remove("has-image");
   imageStage.classList.add("hidden");
   quickCheckResult.classList.add("hidden");
+  quickCheckDeepReport?.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
@@ -398,11 +412,13 @@ function showPreview(file) {
     }
 
     hasUploadedImage = true;
+    uploadZone.classList.add("has-image");
     imageStage.classList.remove("hidden");
     emptyState.classList.add("hidden");
     workspaceHint.textContent = "Image is ready. Tap the image to replace it or run the analysis.";
     statusHelper.classList.add("hidden");
     quickCheckResult.classList.add("hidden");
+    quickCheckDeepReport?.classList.add("hidden");
     lockedAnalysisState.classList.add("hidden");
     isBreakdownExpanded = false;
     updateBreakdownUI();
@@ -424,8 +440,10 @@ function showPreview(file) {
     hasUploadedImage = false;
     analysisPreview.removeAttribute("src");
     analysisPreview.classList.remove("is-loaded");
+    uploadZone.classList.remove("has-image");
     imageStage.classList.add("hidden");
     quickCheckResult.classList.add("hidden");
+    quickCheckDeepReport?.classList.add("hidden");
     lockedAnalysisState.classList.add("hidden");
     resetNotanReading();
     showUploadError("Couldn't load image. Please try another file.");
@@ -576,6 +594,7 @@ function updateAnalysisAccessUI() {
   syncNotanAccessState();
   freeLimitHelper.classList.add("hidden");
   runAnalysisButton.classList.remove("is-unlock-cta");
+  syncPaintingBreakdownAccessUI();
 
   if (isAnalysisRunning) {
     runAnalysisButton.textContent = "Analyzing...";
@@ -639,12 +658,14 @@ function applyOverlayColor() {
 
 function runQuickCheck() {
   isAnalysisRunning = true;
+  clearMobileResultsReady();
   uploadZone.classList.add("is-analysis-running");
   analysisSurface.classList.add("is-analysis-running");
   statusHelper.classList.add("is-analysis-running");
   resetResultRevealState();
-  resetAiStudioFeedback();
+  resetPaintingBreakdown();
   quickCheckResult.classList.add("hidden");
+  quickCheckDeepReport?.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
   statusHelper.classList.remove("hidden");
@@ -734,6 +755,7 @@ function completeQuickCheck() {
     streakNote.classList.remove("hidden");
   }
   quickCheckResult.classList.remove("hidden");
+  quickCheckDeepReport?.classList.remove("hidden");
   window.requestAnimationFrame(() => {
     quickCheckResult.classList.add("is-visible");
   });
@@ -743,7 +765,7 @@ function completeQuickCheck() {
     score: result.score,
     metrics: { ...result.metrics }
   };
-  requestAiStudioFeedback(result);
+  markMobileResultsReady();
 
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
@@ -2185,13 +2207,14 @@ function resetAnalysisSequence() {
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
   latestQuickCheckResult = null;
+  clearMobileResultsReady();
   uploadZone.classList.remove("is-analysis-running");
   analysisSurface.classList.remove("is-analysis-running");
   statusHelper.classList.remove("is-analysis-running");
   clearGuidanceOverlay();
   setAnalysisStage("");
   resetResultRevealState();
-  resetAiStudioFeedback();
+  resetPaintingBreakdown();
   updateAnalysisAccessUI();
 }
 
@@ -2220,6 +2243,7 @@ function openAnalysisFilePicker() {
 
 function resetUploadedImage() {
   clearAnalysisFileInput();
+  clearMobileResultsReady();
 
   if (!hasUploadedImage && !currentObjectUrl && !analysisPreview.getAttribute("src")) {
     return;
@@ -2240,10 +2264,12 @@ function resetUploadedImage() {
   analysisPreview.onerror = null;
   analysisPreview.removeAttribute("src");
   analysisPreview.classList.remove("is-loaded");
+  uploadZone.classList.remove("has-image");
   imageStage.classList.add("hidden");
   quickCheckResult.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
-  resetAiStudioFeedback();
+  quickCheckDeepReport?.classList.add("hidden");
+  resetPaintingBreakdown();
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
@@ -2270,6 +2296,7 @@ function showUploadError(message) {
     emptyStateSubcopy.classList.remove("hidden");
   }
   imageStage.classList.add("hidden");
+  uploadZone.classList.remove("has-image");
   emptyState.classList.remove("hidden");
   workspaceHint.textContent = "Please try another image.";
   updateStatusMessage(message, true);
@@ -2522,142 +2549,186 @@ function buildPremiumFixPlan(result) {
   };
 }
 
-function requestAiStudioFeedback(result) {
-  const requestId = aiFeedbackRequestId + 1;
-  aiFeedbackRequestId = requestId;
-
-  if (!shouldRequestAiStudioFeedback()) {
-    resetAiStudioFeedback();
+async function requestFullPaintingBreakdown() {
+  if (isPaintingBreakdownLoading) {
     return;
   }
 
-  setAiStudioFeedbackLoading();
-
-  const imageDataUrl = createAiAnalysisImageDataUrl();
-  if (!imageDataUrl) {
-    setAiStudioFeedbackError("AI Studio Feedback could not read this image. The normal Quick Check result is still available.");
+  if (!hasUnlockedAccess() && !DEV_MODE) {
+    openFullUnlock();
     return;
   }
 
-  fetch(AI_ANALYSIS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      imageDataUrl,
-      computedAnalysis: buildAiComputedAnalysis(result)
-    })
-  })
-    .then(async (response) => {
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.error || "AI Studio Feedback is temporarily unavailable.");
-      }
-      return data;
-    })
-    .then((data) => {
-      if (requestId !== aiFeedbackRequestId) {
-        return;
-      }
-      renderAiStudioFeedback(data.analysis);
-    })
-    .catch((error) => {
-      if (requestId !== aiFeedbackRequestId) {
-        return;
-      }
-      setAiStudioFeedbackError(error.message || "AI Studio Feedback is temporarily unavailable.");
+  if (!hasUploadedImage) {
+    showPaintingBreakdownMessage("Upload an image first to create the advanced breakdown.");
+    showStatusToast("Upload an image first to create the advanced breakdown.");
+    return;
+  }
+
+  const image = createAiAnalysisImageDataUrl();
+  if (!image) {
+    showPaintingBreakdownMessage("The uploaded image could not be read. Try uploading it again.");
+    return;
+  }
+
+  const requestId = paintingBreakdownRequestId + 1;
+  paintingBreakdownRequestId = requestId;
+  isPaintingBreakdownLoading = true;
+  setPaintingBreakdownButtonLoading(true);
+  showPaintingBreakdownMessage("Creating painting breakdown...");
+
+  try {
+    const response = await fetch(PAINTING_BREAKDOWN_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ image })
     });
-}
+    const data = await response.json().catch(() => ({}));
 
-function shouldRequestAiStudioFeedback() {
-  return hasUploadedImage && (hasUnlockedAccess() || DEV_MODE);
-}
+    if (!response.ok) {
+      throw new Error(data.error || "The painting breakdown could not be created right now. Try again in a moment.");
+    }
 
-function resetAiStudioFeedback() {
-  aiFeedbackRequestId += 1;
-  aiStudioFeedback?.classList.add("hidden");
-  aiStudioFeedbackContent?.classList.add("hidden");
-  if (aiStudioFeedbackStatus) {
-    aiStudioFeedbackStatus.textContent = "";
-  }
-  if (aiStudioSummary) {
-    aiStudioSummary.textContent = "";
-  }
-  renderAiList(aiStudioStrengths, []);
-  renderAiList(aiStudioWeaknesses, []);
-  renderAiList(aiStudioNextSteps, []);
-  if (aiStudioPriority) {
-    aiStudioPriority.textContent = "";
-  }
-}
+    if (requestId !== paintingBreakdownRequestId) {
+      return;
+    }
 
-function setAiStudioFeedbackLoading() {
-  aiStudioFeedback?.classList.remove("hidden");
-  aiStudioFeedbackContent?.classList.add("hidden");
-  if (aiStudioFeedbackStatus) {
-    aiStudioFeedbackStatus.textContent = "Analyzing your painting like a studio mentor...";
+    renderPaintingBreakdown(data.breakdown);
+  } catch (error) {
+    if (requestId !== paintingBreakdownRequestId) {
+      return;
+    }
+    showPaintingBreakdownMessage(error.message || "The painting breakdown could not be created right now. Try again in a moment.");
+  } finally {
+    if (requestId === paintingBreakdownRequestId) {
+      isPaintingBreakdownLoading = false;
+      setPaintingBreakdownButtonLoading(false);
+    }
   }
 }
 
-function getSafeAiFeedbackError(message) {
-  const rawMessage = String(message || "");
-  const technicalErrorPattern = /OPENAI_API_KEY|environment variable|api key|netlify|function/i;
-
-  if (technicalErrorPattern.test(rawMessage)) {
-    return "";
+function setPaintingBreakdownButtonLoading(isLoading) {
+  if (!paintingBreakdownButton) {
+    return;
   }
-
-  return rawMessage || "AI Studio Feedback is temporarily unavailable. The normal Quick Check result is still available.";
+  paintingBreakdownButton.disabled = isLoading;
+  paintingBreakdownButton.textContent = isLoading ? "Creating advanced breakdown..." : getPaintingBreakdownButtonLabel();
+  paintingBreakdownButton.classList.toggle("is-unlock-cta", !isLoading && !hasUnlockedAccess() && !DEV_MODE);
 }
 
-function setAiStudioFeedbackError(message) {
-  const safeMessage = getSafeAiFeedbackError(message);
-
-  if (!safeMessage) {
-    resetAiStudioFeedback();
+function syncPaintingBreakdownAccessUI() {
+  if (!paintingBreakdownButton || isPaintingBreakdownLoading) {
     return;
   }
 
-  aiStudioFeedback?.classList.remove("hidden");
-  aiStudioFeedbackContent?.classList.add("hidden");
-  if (aiStudioFeedbackStatus) {
-    aiStudioFeedbackStatus.textContent = safeMessage;
+  paintingBreakdownButton.textContent = getPaintingBreakdownButtonLabel();
+  paintingBreakdownButton.classList.toggle("is-unlock-cta", !hasUnlockedAccess() && !DEV_MODE);
+}
+
+function getPaintingBreakdownButtonLabel() {
+  return hasUnlockedAccess() || DEV_MODE ? "Advanced Painting Breakdown" : "Unlock Advanced Breakdown";
+}
+
+function showPaintingBreakdownMessage(message) {
+  paintingBreakdownResult?.classList.remove("hidden");
+  paintingBreakdownContent?.classList.add("hidden");
+  if (paintingBreakdownStatus) {
+    paintingBreakdownStatus.textContent = message;
   }
 }
 
-function renderAiStudioFeedback(analysis) {
-  if (!analysis) {
-    setAiStudioFeedbackError("AI Studio Feedback is temporarily unavailable.");
-    return;
+function resetPaintingBreakdown() {
+  paintingBreakdownRequestId += 1;
+  isPaintingBreakdownLoading = false;
+  setPaintingBreakdownButtonLoading(false);
+  paintingBreakdownResult?.classList.add("hidden");
+  paintingBreakdownContent?.classList.add("hidden");
+  if (paintingBreakdownStatus) {
+    paintingBreakdownStatus.textContent = "";
   }
-
-  aiStudioFeedback?.classList.remove("hidden");
-  aiStudioFeedbackContent?.classList.remove("hidden");
-  if (aiStudioFeedbackStatus) {
-    aiStudioFeedbackStatus.textContent = "";
-  }
-  if (aiStudioSummary) {
-    aiStudioSummary.textContent = analysis.summary || "";
-  }
-  renderAiList(aiStudioStrengths, analysis.strengths || []);
-  renderAiList(aiStudioWeaknesses, analysis.weaknesses || []);
-  renderAiList(aiStudioNextSteps, analysis.nextSteps || []);
-  if (aiStudioPriority) {
-    aiStudioPriority.textContent = analysis.mainPriority || "";
+  [
+    paintingBreakdownVerdict,
+    paintingBreakdownValue,
+    paintingBreakdownComposition,
+    paintingBreakdownColor,
+    paintingBreakdownEdges,
+    paintingBreakdownFix,
+    paintingBreakdownBefore
+  ].forEach((element) => {
+    if (element) {
+      element.textContent = "";
+    }
+  });
+  if (paintingBreakdownPlan) {
+    paintingBreakdownPlan.innerHTML = "";
   }
 }
 
-function renderAiList(listElement, lines) {
-  if (!listElement) {
+function setupQuickCheckDeepReport() {
+  if (!quickCheckDeepReportContent) {
     return;
   }
 
-  listElement.innerHTML = "";
-  lines.filter(Boolean).forEach((line) => {
+  [
+    quickCheckPremiumFix,
+    quickCheckScoreBreakdown,
+    quickCheckComparison,
+    quickCheckDetails,
+    breakdownToggleButton,
+    paintingBreakdownButton,
+    paintingBreakdownResult
+  ].filter(Boolean).forEach((element) => {
+    quickCheckDeepReportContent.appendChild(element);
+  });
+}
+
+function renderPaintingBreakdown(breakdown) {
+  if (!breakdown) {
+    showPaintingBreakdownMessage("The painting breakdown could not be created right now. Try again in a moment.");
+    return;
+  }
+
+  paintingBreakdownResult?.classList.remove("hidden");
+  paintingBreakdownContent?.classList.remove("hidden");
+  if (paintingBreakdownStatus) {
+    paintingBreakdownStatus.textContent = "";
+  }
+  if (paintingBreakdownVerdict) {
+    paintingBreakdownVerdict.textContent = breakdown.studioVerdict || "";
+  }
+  if (paintingBreakdownValue) {
+    paintingBreakdownValue.textContent = breakdown.valueStructure || "";
+  }
+  if (paintingBreakdownComposition) {
+    paintingBreakdownComposition.textContent = breakdown.composition || "";
+  }
+  if (paintingBreakdownColor) {
+    paintingBreakdownColor.textContent = breakdown.colorTemperature || "";
+  }
+  if (paintingBreakdownEdges) {
+    paintingBreakdownEdges.textContent = breakdown.edgesDepth || "";
+  }
+  if (paintingBreakdownFix) {
+    paintingBreakdownFix.textContent = breakdown.fixFirst || "";
+  }
+  renderPaintingBreakdownPlan(breakdown.paintPlan || []);
+  if (paintingBreakdownBefore) {
+    paintingBreakdownBefore.textContent = breakdown.beforeYouContinue || "";
+  }
+}
+
+function renderPaintingBreakdownPlan(lines) {
+  if (!paintingBreakdownPlan) {
+    return;
+  }
+
+  paintingBreakdownPlan.innerHTML = "";
+  lines.filter(Boolean).slice(0, 3).forEach((line) => {
     const item = document.createElement("li");
     item.textContent = line;
-    listElement.appendChild(item);
+    paintingBreakdownPlan.appendChild(item);
   });
 }
 
@@ -2680,52 +2751,6 @@ function createAiAnalysisImageDataUrl() {
   canvas.height = height;
   context.drawImage(analysisPreview, 0, 0, width, height);
   return canvas.toDataURL("image/jpeg", AI_IMAGE_QUALITY);
-}
-
-function buildAiComputedAnalysis(result) {
-  const metrics = result.metrics || {};
-
-  return {
-    score: result.score,
-    verdict: result.verdict,
-    whyThisScore: result.whyThisScore,
-    keyInsight: result.keyInsight,
-    strength: result.strength,
-    weakness: result.weakness,
-    fastestFix: result.fastestFix,
-    suggestion: result.suggestion,
-    tags: result.tags,
-    scoreBreakdown: result.scoreBreakdown,
-    blocks: result.blocks,
-    metrics: roundMetricValues(metrics),
-    notan: summarizeNotanReading(currentNotanReading),
-    image: {
-      width: analysisPreview.naturalWidth,
-      height: analysisPreview.naturalHeight
-    }
-  };
-}
-
-function roundMetricValues(metrics) {
-  return Object.fromEntries(Object.entries(metrics).map(([key, value]) => [
-    key,
-    typeof value === "number" ? Math.round(value * 1000) / 1000 : value
-  ]));
-}
-
-function summarizeNotanReading(reading) {
-  if (!reading) {
-    return null;
-  }
-
-  return {
-    score: reading.score,
-    dominantShape: reading.dominantShape,
-    shapeCountEstimate: reading.shapeCountEstimate,
-    fragmentation: reading.fragmentation,
-    readability: reading.readability,
-    problems: reading.problems
-  };
 }
 
 function buildBreakdownContext(result) {
@@ -3004,6 +3029,7 @@ function revealResultPanel() {
 function showLockedAnalysisState() {
   statusHelper.classList.add("hidden");
   quickCheckResult.classList.add("hidden");
+  quickCheckDeepReport?.classList.add("hidden");
   lockedAnalysisState.classList.remove("hidden");
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
@@ -3771,6 +3797,24 @@ function syncMobileResetWorkspaceButton() {
   mobileResetWorkspaceButton.disabled = isAnalysisRunning || !hasUploadedImage;
 }
 
+function markMobileResultsReady() {
+  if (!mobileResultsButton) {
+    return;
+  }
+
+  mobileResultsButton.classList.add("is-result-ready");
+  mobileResultsButton.setAttribute("aria-label", "Results ready");
+}
+
+function clearMobileResultsReady() {
+  if (!mobileResultsButton) {
+    return;
+  }
+
+  mobileResultsButton.classList.remove("is-result-ready");
+  mobileResultsButton.removeAttribute("aria-label");
+}
+
 function isMobileLayout() {
   return window.innerWidth <= MOBILE_LAYOUT_BREAKPOINT;
 }
@@ -4166,7 +4210,7 @@ function capitalizeFirstLetter(text) {
 }
 
 function updateBreakdownUI() {
-  breakdownToggleButton.textContent = isBreakdownExpanded ? "Hide full breakdown" : "Show full breakdown";
+  breakdownToggleButton.textContent = isBreakdownExpanded ? "Hide free breakdown" : "Show free breakdown";
   breakdownToggleButton.setAttribute("aria-expanded", String(isBreakdownExpanded));
   quickCheckDetails.classList.toggle("expanded", isBreakdownExpanded);
   quickCheckDetails.setAttribute("aria-hidden", String(!isBreakdownExpanded));

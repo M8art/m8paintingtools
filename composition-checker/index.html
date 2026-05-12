@@ -13,7 +13,9 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260508-mobile-app">
+  <link rel="stylesheet" href="./style.css?v=20260512-dark-controls">
+  <script src="../assets/mobile-theme.js"></script>
+  <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
 <body>
   <div class="app">
@@ -224,6 +226,10 @@
               <div class="thirds-reading-grid">
                 <p class="detail-copy"><strong>Visual weight:</strong> <span id="centerWeightHorizontal">Left: -- / Right: --</span></p>
                 <p class="detail-copy"><strong>Vertical weight:</strong> <span id="centerWeightVertical">Top: -- / Bottom: --</span></p>
+                <p class="detail-copy"><strong>Center pull:</strong> <span id="centerPull">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Dominant quadrant:</strong> <span id="centerDominantQuadrant">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Edge pressure:</strong> <span id="centerEdgePressure">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>First read:</strong> <span id="centerFirstRead">Waiting for image.</span></p>
                 <p class="detail-copy"><strong>Symmetry:</strong> <span id="centerSymmetry">Waiting for image.</span></p>
                 <p class="detail-copy"><strong>Offset suggestion:</strong> <span id="centerOffsetSuggestion">Waiting for image.</span></p>
               </div>
@@ -233,6 +239,26 @@
                 <p class="result-block-title">How to fix center composition</p>
                 <div id="centerFixList" class="center-fix-list"></div>
                 <p id="centerFixLock" class="center-fix-lock hidden">Unlock to see the painter fix.</p>
+              </div>
+            </div>
+          </div>
+          <div id="diagonalReadingCard" class="detail-card hidden">
+            <p class="section-label">Diagonal Flow Reading</p>
+            <div class="control-stack diagonal-reading-stack">
+              <p id="diagonalFlowScore" class="dynamic-score">Diagonal Flow: --</p>
+              <div class="thirds-reading-grid">
+                <p class="detail-copy"><strong>Main diagonal:</strong> <span id="diagonalMainAxis">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Counter diagonal:</strong> <span id="diagonalCounterAxis">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Eye path:</strong> <span id="diagonalEyePath">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Weight pull:</strong> <span id="diagonalWeightPull">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Rhythm:</strong> <span id="diagonalRhythm">Waiting for image.</span></p>
+                <p class="detail-copy"><strong>Tension:</strong> <span id="diagonalTension">Waiting for image.</span></p>
+              </div>
+              <p id="diagonalWarning" class="dynamic-tooltip">Upload an image to read directional flow.</p>
+              <div id="diagonalFixCard" class="center-fix-card">
+                <p class="result-block-title">How to strengthen diagonal flow</p>
+                <div id="diagonalFixList" class="center-fix-list"></div>
+                <p id="diagonalFixLock" class="center-fix-lock hidden">Unlock to see the painter fix.</p>
               </div>
             </div>
           </div>
@@ -457,7 +483,7 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=composition-tools-20260507"></script>
+  <script src="./script.js?v=composition-diagonal-depth-20260512"></script>
 </body>
 </html>
 

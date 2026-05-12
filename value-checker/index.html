@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,6 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
+    <script src="../assets/mobile-theme.js"></script>
   <style>
     :root {
       --bg: #e8e3d8;
@@ -2345,7 +2346,7 @@
       }
 
       .mobile-scale-details[open] > summary::after {
-        content: "−";
+        content: "-";
       }
 
       .mobile-scale-details .value-scale-card {
@@ -2988,7 +2989,441 @@
         box-shadow: 0 14px 24px rgba(31, 28, 24, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       }
     }
+    @media (max-width: 720px) {
+      :root {
+        --bg: #0d0b08;
+        --panel: rgba(24, 20, 15, 0.96);
+        --panel-soft: rgba(34, 27, 19, 0.94);
+        --ink: #f2e7cf;
+        --muted: rgba(242, 231, 207, 0.7);
+        --line: rgba(185, 141, 66, 0.36);
+        --shadow: 0 24px 48px rgba(0, 0, 0, 0.34);
+        --accent: #b98d42;
+        --app-button-shadow: 0 14px 26px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 244, 223, 0.16);
+        --app-panel-shadow: 0 24px 48px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      body {
+        background:
+          radial-gradient(circle at 78% 0%, rgba(185, 141, 66, 0.18), transparent 32%),
+          radial-gradient(circle at 16% 18%, rgba(101, 63, 27, 0.2), transparent 34%),
+          repeating-linear-gradient(92deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, #0d0b08 0%, #17120d 52%, #21170f 100%);
+        color: var(--ink);
+      }
+
+      .topbar,
+      .card,
+      .workspace-card,
+      .analysis-grid,
+      .detail-card,
+      .placeholder-card,
+      .feedback-cta,
+      .mobile-value-result-card,
+      .mobile-scale-details,
+      .value-scale-card,
+      .compare-preview-card,
+      .compare-overlay-card,
+      .challenge-summary {
+        border: 1px solid rgba(185, 141, 66, 0.38);
+        border-radius: 4px;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96));
+        color: var(--ink);
+        box-shadow: var(--app-panel-shadow);
+      }
+
+      .eyebrow,
+      .section-label,
+      .panel-heading .eyebrow {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(185, 141, 66, 0.1);
+        color: #b98d42;
+      }
+
+      h1,
+      h2,
+      h3,
+      .panel-heading h2,
+      .feedback-title {
+        color: #f2e7cf;
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42);
+      }
+
+      .intro,
+      .hint,
+      .status,
+      .summary,
+      .detail-copy,
+      .feedback-description,
+      .panel-copy,
+      .result-copy,
+      .workspace-meta,
+      .panel-heading p {
+        color: rgba(242, 231, 207, 0.7);
+      }
+
+      .button,
+      .feedback-cta-button,
+      .cta-button {
+        border-color: rgba(185, 141, 66, 0.48);
+        background: linear-gradient(135deg, #c9763d, #9f4f28);
+        color: #fff4df;
+        box-shadow: var(--app-button-shadow);
+      }
+
+      .button-secondary,
+      .tab-button:not(.active):not(.home-tab-button),
+      .value-map-option:not(.active),
+      .sample-chip {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(13, 11, 8, 0.58);
+        color: rgba(242, 231, 207, 0.84);
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      .tab-button.active,
+      .value-map-option.active {
+        border-color: rgba(185, 141, 66, 0.58);
+        background: linear-gradient(135deg, #c9763d, #9f4f28);
+        color: #fff4df;
+      }
+
+      .home-tab-button,
+      .mobile-app-dock-link {
+        border-color: rgba(185, 141, 66, 0.42);
+        background: rgba(13, 11, 8, 0.72);
+        color: #b98d42;
+      }
+
+      .mobile-app-dock {
+        border-color: rgba(185, 141, 66, 0.44);
+        border-radius: 0;
+        background:
+          repeating-linear-gradient(90deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 8px),
+          linear-gradient(180deg, rgba(26, 22, 17, 0.98), rgba(11, 10, 8, 0.98));
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(242, 231, 207, 0.06);
+      }
+
+      .mobile-app-dock-link.is-active {
+        background: rgba(185, 141, 66, 0.12);
+        color: #b98d42;
+        box-shadow: inset 0 0 0 1px rgba(185, 141, 66, 0.24);
+      }
+
+      .canvas-wrap,
+      .image-stage,
+      .upload-empty-state,
+      .compare-preview-wrap,
+      .compare-overlay-card {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: #17120d;
+      }
+
+      input,
+      select,
+      textarea {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(13, 11, 8, 0.58);
+        color: #f2e7cf;
+      }
+
+      input[type="range"] {
+        accent-color: #b98d42;
+      }
+
+      .top-nav-link,
+      .support-link,
+      .mobile-toolbar-button,
+      .value-picker-actions .button,
+      .value-picker-actions .button-secondary,
+      .value-scale-media .button-secondary,
+      #compareControls .button,
+      #compareControls .button-secondary,
+      #workspaceValueChallenge .challenge-actions .button,
+      #workspaceValueChallenge .challenge-actions .button-secondary,
+      #resetViewButton,
+      #resetButton,
+      #downloadValueAnalysisButton,
+      #downloadSevenValueAnalysisButton,
+      #submitGuessButton,
+      #nextChallengeButton,
+      #resetChallengeSessionButton,
+      #challengeSoundToggleButton,
+      #startNewSessionButton {
+        border-color: rgba(185, 141, 66, 0.38) !important;
+        background:
+          linear-gradient(180deg, rgba(42, 34, 24, 0.96), rgba(15, 13, 10, 0.96)) !important;
+        color: rgba(242, 231, 207, 0.86) !important;
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+      }
+
+      .top-nav-link.is-current,
+      .tab-button.active,
+      .value-map-option.active,
+      .button:not([disabled]),
+      .feedback-cta-button,
+      .cta-button,
+      .mobile-toolbar-button:not(:disabled):first-child {
+        border-color: rgba(185, 141, 66, 0.58) !important;
+        background: linear-gradient(135deg, #c9763d, #9f4f28) !important;
+        color: #fff4df !important;
+        box-shadow: 0 14px 26px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 244, 223, 0.18) !important;
+      }
+
+      .button[disabled],
+      .button-secondary[disabled],
+      .mobile-toolbar-button:disabled,
+      .tab-button[disabled],
+      .value-map-option[disabled] {
+        border-color: rgba(185, 141, 66, 0.24) !important;
+        background: rgba(42, 34, 24, 0.62) !important;
+        color: rgba(242, 231, 207, 0.42) !important;
+        opacity: 1 !important;
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.025) !important;
+      }
+
+      .layout > .card:first-child,
+      .layout > .card:last-child,
+      .detail-card,
+      .placeholder-card,
+      .feedback-cta,
+      .mobile-value-result-card,
+      .mobile-scale-details,
+      .value-scale-card,
+      .compare-preview-card,
+      .compare-overlay-card,
+      .challenge-summary {
+        border-color: rgba(185, 141, 66, 0.38) !important;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+        color: #f2e7cf !important;
+      }
+
+      .primary-switcher,
+      .secondary-switcher,
+      .value-map-selector {
+        border-color: rgba(185, 141, 66, 0.38) !important;
+        background:
+          repeating-linear-gradient(90deg, rgba(242, 231, 207, 0.02) 0 1px, transparent 1px 8px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.88), rgba(12, 10, 8, 0.88)) !important;
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+      }
+
+      .tab-button:not(.active):not(.home-tab-button),
+      .value-map-option:not(.active) {
+        border-color: rgba(185, 141, 66, 0.34) !important;
+        background:
+          linear-gradient(180deg, rgba(42, 34, 24, 0.96), rgba(15, 13, 10, 0.96)) !important;
+        color: rgba(242, 231, 207, 0.82) !important;
+      }
+
+      .home-tab-button {
+        border-color: rgba(185, 141, 66, 0.42) !important;
+        background: rgba(13, 11, 8, 0.72) !important;
+        color: #b98d42 !important;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .top-nav-link,
+      .mode-switcher,
+      .primary-switcher,
+      .secondary-switcher,
+      .mobile-workspace-toolbar,
+      .mobile-tool-chip,
+      .mobile-tool-status-pill {
+        border-color: rgba(185, 141, 66, 0.38) !important;
+        background:
+          repeating-linear-gradient(90deg, rgba(242, 231, 207, 0.022) 0 1px, transparent 1px 8px),
+          linear-gradient(180deg, rgba(31, 25, 18, 0.94), rgba(12, 10, 8, 0.94)) !important;
+        color: rgba(242, 231, 207, 0.86) !important;
+        box-shadow: inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+      }
+
+      .top-nav-link.is-current,
+      .mode-switcher .tab-button.active,
+      .primary-switcher .tab-button.active,
+      .secondary-switcher .tab-button.active,
+      .mobile-tool-chip {
+        border-color: rgba(185, 141, 66, 0.58) !important;
+        background: linear-gradient(135deg, #c9763d, #9f4f28) !important;
+        color: #fff4df !important;
+        box-shadow: 0 14px 24px rgba(128, 61, 30, 0.28), inset 0 1px 0 rgba(255, 244, 223, 0.16) !important;
+      }
+
+      .mode-switcher .tab-button:not(.active),
+      .primary-switcher .tab-button:not(.active),
+      .secondary-switcher .tab-button:not(.active),
+      .mobile-workspace-toolbar .button,
+      .mobile-workspace-toolbar .button-secondary,
+      .value-map-option:not(.active) {
+        border-color: rgba(185, 141, 66, 0.34) !important;
+        background:
+          linear-gradient(180deg, rgba(38, 31, 23, 0.96), rgba(14, 12, 9, 0.96)) !important;
+        color: rgba(242, 231, 207, 0.84) !important;
+      }
+
+      .home-tab-button {
+        border-color: rgba(185, 141, 66, 0.42) !important;
+        background: rgba(13, 11, 8, 0.82) !important;
+        color: #b98d42 !important;
+      }
+
+      .button-secondary,
+      .mobile-workspace-toolbar .button-secondary,
+      .button[disabled],
+      .button-secondary[disabled] {
+        border-color: rgba(185, 141, 66, 0.26) !important;
+        background: rgba(42, 34, 24, 0.62) !important;
+        color: rgba(242, 231, 207, 0.48) !important;
+        opacity: 1 !important;
+      }
+    }
+  
+    @media (max-width: 720px) {
+      body[data-mode="compare-values"] .compare-workspace {
+        gap: 10px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-card {
+        gap: 6px;
+        min-width: 0;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-card .section-label {
+        margin-bottom: 0;
+        font-size: 0.58rem;
+        letter-spacing: 0.14em;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap {
+        min-height: clamp(112px, 29vw, 142px);
+        border-radius: 15px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap .upload-empty-state-inner {
+        gap: 6px;
+        padding: 8px 6px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap .upload-empty-icon {
+        width: 46px;
+        height: 46px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap .upload-empty-label {
+        max-width: 8rem;
+        font-size: 0.7rem;
+        line-height: 1.18;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-canvas {
+        max-height: 142px;
+      }
+
+      body[data-mode="compare-values"] .compare-overlay-card {
+        gap: 8px;
+      }
+
+      body[data-mode="compare-values"] .compare-overlay-card .canvas-wrap {
+        min-height: clamp(270px, 48vh, 390px);
+        height: clamp(270px, 48vh, 390px);
+        border-radius: 18px;
+      }
+
+      body[data-mode="compare-values"] .compare-overlay-card .compare-slider-block {
+        position: sticky;
+        bottom: calc(86px + env(safe-area-inset-bottom));
+        z-index: 60;
+        display: grid;
+        gap: 7px;
+        margin-top: 0;
+        padding: 10px 12px 11px;
+        border: 1px solid rgba(185, 141, 66, 0.44);
+        border-radius: 4px;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.98), rgba(12, 10, 8, 0.98));
+        box-shadow: 0 18px 34px rgba(0, 0, 0, 0.36), inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      body[data-mode="compare-values"] .compare-overlay-card .compare-slider-head {
+        align-items: center;
+      }
+
+      body[data-mode="compare-values"] .compare-overlay-card .compare-slider-value {
+        color: #f2e7cf;
+      }
+
+      body[data-mode="compare-values"] .compare-overlay-card .compare-note {
+        display: none;
+      }
+    }
+  
+    .compare-preview-empty.hidden,
+    .compare-overlay-card .empty-state.hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 720px) {
+      body[data-mode="compare-values"] .compare-preview-card .section-label {
+        position: relative;
+        z-index: 2;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-empty.hidden {
+        display: none !important;
+      }
+    }
+  
+    @media (max-width: 720px) {
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .compare-preview-empty {
+        display: grid !important;
+        visibility: visible;
+        opacity: 1;
+        z-index: 3;
+        color: #f2e7cf;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap.has-image .compare-preview-empty {
+        display: none !important;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-state-inner {
+        gap: 5px;
+        padding: 7px 5px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-icon {
+        width: clamp(36px, 21vw, 54px);
+        height: clamp(36px, 21vw, 54px);
+        transform: none;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-label {
+        display: block;
+        max-width: 7.2rem;
+        font-size: clamp(0.58rem, 2.6vw, 0.72rem);
+        line-height: 1.12;
+        color: rgba(242, 231, 207, 0.88);
+        text-align: center;
+      }
+    }
   </style>
+  <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
 <body>
   <div class="app">
@@ -3003,7 +3438,7 @@
           <span class="mobile-tool-status-pill"><span aria-hidden="true"></span> Ready</span>
         </div>
         <p class="intro">
-          Value analysis is completely free — use it as much as you want.
+          Value analysis is completely free � use it as much as you want.
           Want deeper insight into your painting? Try <a href="../analysis/index.html">Quick Check</a> for full analysis, or explore <a href="../composition-checker/index.html">Composition Checker</a> and <a href="../color-studio/index.html">Color Checker</a>.
           Quick Check combines value, composition, and color into one analysis.
         </p>
@@ -3114,7 +3549,7 @@
               <div class="mobile-reference-scale-frame">
                 <img class="mobile-reference-scale-image" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale reference">
               </div>
-              <a class="button-secondary mobile-reference-scale-download" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Scale</a>
+              <a class="button-secondary mobile-reference-scale-download value-scale-download-link" href="../assets/images/M8 gray scale.png" download="m8-value-scale.png" onclick="window.gtag && window.gtag('event', 'download_image', { page_location: window.location.href })">Download Scale</a>
             </div>
           </div>
         </div>
@@ -3309,7 +3744,7 @@
                   </div>
                   <div class="value-scale-media">
                     <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
-                    <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
+                    <a class="button-secondary value-scale-download-link" href="../assets/images/M8 gray scale.png" download="m8-value-scale.png" onclick="window.gtag && window.gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
                   </div>
                   <div class="value-scale-steps">
                     <div class="value-scale-step">1. Sample a value in the app</div>
@@ -3353,7 +3788,7 @@
                   </div>
                   <div class="value-scale-media">
                     <img class="value-scale-preview" src="../assets/images/M8 gray scale.png" alt="M8 Value Scale preview">
-                    <a class="button-secondary" href="../assets/images/M8 gray scale.png" download onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
+                    <a class="button-secondary value-scale-download-link" href="../assets/images/M8 gray scale.png" download="m8-value-scale.png" onclick="window.gtag && window.gtag('event', 'download_image', { page_location: window.location.href })">Download Value Scale</a>
                   </div>
                   <div class="value-scale-steps">
                     <div class="value-scale-step">1. See the large value groups</div>
@@ -3596,6 +4031,7 @@
     const mobileValueStatus = document.getElementById("mobileValueStatus");
     const mobileValueScale = document.getElementById("mobileValueScale");
     const mobileScaleDetails = Array.from(document.querySelectorAll(".mobile-scale-details"));
+    const valueScaleDownloadLinks = Array.from(document.querySelectorAll(".value-scale-download-link"));
     const challengeSlider = document.getElementById("challengeSlider");
     const challengeSessionProgress = document.getElementById("challengeSessionProgress");
     const challengeBestScore = document.getElementById("challengeBestScore");
@@ -3638,6 +4074,10 @@
     const compareOverlayEmpty = document.getElementById("compareOverlayEmpty");
     const compareSensitivity = document.getElementById("compareSensitivity");
     const compareSensitivityValue = document.getElementById("compareSensitivityValue");
+    const compareSliderBlock = document.querySelector("#analysisCompareValues .compare-slider-block");
+    const compareSliderHome = document.createComment("compare sensitivity home");
+    compareSliderBlock?.parentNode?.insertBefore(compareSliderHome, compareSliderBlock);
+    const compareOverlayCard = document.querySelector(".compare-overlay-card");
     const compareStatus = document.getElementById("compareStatus");
     const swatch = document.getElementById("swatch");
     const valueNumber = document.getElementById("valueNumber");
@@ -3928,10 +4368,30 @@
       }
 
       if (mobileDownloadButton) {
-        mobileDownloadButton.disabled = downloadValueAnalysisButton.disabled;
+        mobileDownloadButton.disabled = getMobileExportDisabled();
       }
     }
 
+    function getMobileExportDisabled() {
+      if (state.mode === "seven-value-map") {
+        return !state.imageLoaded || !sevenValueBuffer.width || !sevenValueBuffer.height || state.imageLoading;
+      }
+
+      if (state.mode === "value-picker") {
+        return !state.imageLoaded || !state.savedSamples.length || state.imageLoading;
+      }
+
+      return true;
+    }
+
+    function handleMobileExport() {
+      if (state.mode === "seven-value-map") {
+        downloadSevenValueAnalysis();
+        return;
+      }
+
+      downloadValueAnalysis();
+    }
     function getCanvasWrapFor(targetCanvas) {
       if (targetCanvas === sevenValueCanvas) {
         return sevenValueCanvasWrap;
@@ -4122,8 +4582,11 @@
       showStatusToast("Markers cleared");
     });
     downloadValueAnalysisButton.addEventListener("click", downloadValueAnalysis);
-    mobileDownloadButton?.addEventListener("click", downloadValueAnalysis);
+    mobileDownloadButton?.addEventListener("click", handleMobileExport);
     downloadSevenValueAnalysisButton.addEventListener("click", downloadSevenValueAnalysis);
+    valueScaleDownloadLinks.forEach((link) => {
+      link.addEventListener("click", downloadValueScaleReference);
+    });
     valueMapOptions.forEach((button) => {
       button.addEventListener("click", () => {
         const nextCount = Number(button.dataset.mapValues);
@@ -4145,7 +4608,10 @@
     challengeSoundToggleButton.addEventListener("click", toggleChallengeSound);
     startNewSessionButton.addEventListener("click", resetChallengeSession);
     compareSensitivity.addEventListener("input", handleCompareSensitivityChange);
-    window.addEventListener("resize", redrawImage);
+    window.addEventListener("resize", () => {
+      syncCompareMobileLayout();
+      redrawImage();
+    });
     tabButtons.forEach((button) => {
       button.addEventListener("click", () => setMode(button.dataset.mode));
     });
@@ -4286,6 +4752,23 @@
       drawChallengeView();
       drawCompareCanvases();
       updateActionButtonStates();
+      syncCompareMobileLayout();
+    }
+
+    function syncCompareMobileLayout() {
+      if (!compareSliderBlock || !compareOverlayCard || !compareSliderHome.parentNode) {
+        return;
+      }
+
+      const shouldDockNearPreview = window.matchMedia("(max-width: 720px)").matches && state.mode === "compare-values";
+      if (shouldDockNearPreview && compareSliderBlock.parentNode !== compareOverlayCard) {
+        compareOverlayCard.appendChild(compareSliderBlock);
+        return;
+      }
+
+      if (!shouldDockNearPreview && compareSliderBlock.parentNode !== compareSliderHome.parentNode) {
+        compareSliderHome.parentNode.insertBefore(compareSliderBlock, compareSliderHome.nextSibling);
+      }
     }
 
     function handleUpload(event) {
@@ -5582,7 +6065,10 @@
     }
 
     function drawComparePreview(canvasEl, context, buffer, emptyEl, emptyText) {
+      const previewWrap = emptyEl.closest(".compare-preview-wrap");
+
       if (!buffer.width || !buffer.height) {
+        previewWrap?.classList.remove("has-image");
         canvasEl.style.display = "none";
         canvasEl.classList.remove("is-visible");
         emptyEl.classList.remove("hidden");
@@ -5590,6 +6076,7 @@
         return;
       }
 
+      previewWrap?.classList.add("has-image");
       canvasEl.width = buffer.width;
       canvasEl.height = buffer.height;
       canvasEl.style.display = "block";
@@ -5686,6 +6173,33 @@
       highlightScale(value);
     }
 
+    async function downloadValueScaleReference(event) {
+      event.preventDefault();
+      const sourceUrl = event.currentTarget.href;
+      const filename = event.currentTarget.getAttribute("download") || "m8-value-scale.png";
+
+      try {
+        const response = await fetch(sourceUrl);
+        if (!response.ok) {
+          throw new Error("Scale image could not be loaded");
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = filename;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        showStatusToast("Value scale downloaded");
+      } catch (error) {
+        window.open(sourceUrl, "_blank", "noopener");
+        showStatusToast("Opening value scale");
+      }
+    }
     function downloadValueAnalysis() {
       if (!state.imageLoaded || !imageBuffer.width || !imageBuffer.height) {
         return;
@@ -6034,7 +6548,7 @@
       }
 
       if (mobileDownloadButton) {
-        mobileDownloadButton.disabled = downloadValueAnalysisButton.disabled;
+        mobileDownloadButton.disabled = getMobileExportDisabled();
       }
     }
 

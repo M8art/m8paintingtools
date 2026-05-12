@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact Me | M8 Painting Studio</title>
+    <script src="../assets/mobile-theme.js"></script>
   <style>
     :root {
       --bg: #f5efe6;
@@ -321,7 +322,72 @@
         white-space: normal;
       }
     }
+    @media (max-width: 720px) {
+      :root {
+        --bg: #0d0b08;
+        --panel: rgba(24, 20, 15, 0.96);
+        --ink: #f2e7cf;
+        --muted: rgba(242, 231, 207, 0.7);
+        --line: rgba(185, 141, 66, 0.36);
+        --accent: #b98d42;
+      }
+
+      body {
+        background:
+          radial-gradient(circle at 78% 0%, rgba(185, 141, 66, 0.18), transparent 32%),
+          radial-gradient(circle at 16% 18%, rgba(101, 63, 27, 0.2), transparent 34%),
+          repeating-linear-gradient(92deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, #0d0b08 0%, #17120d 52%, #21170f 100%);
+        color: var(--ink);
+      }
+
+      .contact-card,
+      .success-card {
+        border: 1px solid rgba(185, 141, 66, 0.38);
+        border-radius: 4px;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96));
+        color: var(--ink);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(242, 231, 207, 0.04);
+      }
+
+      .eyebrow,
+      label {
+        color: #b98d42;
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #f2e7cf;
+      }
+
+      p,
+      .contact-card p {
+        color: rgba(242, 231, 207, 0.7);
+      }
+
+      input,
+      textarea {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(13, 11, 8, 0.58);
+        color: #f2e7cf;
+      }
+
+      .button {
+        background: linear-gradient(135deg, #c9763d, #9f4f28);
+        color: #fff4df;
+      }
+
+      .button-secondary {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(13, 11, 8, 0.58);
+        color: rgba(242, 231, 207, 0.84);
+      }
+    }
   </style>
+  <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
 <body>
   <div class="page">

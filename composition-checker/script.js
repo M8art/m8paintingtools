@@ -104,6 +104,10 @@ const centerReadingCard = document.getElementById("centerReadingCard");
 const centerLockValue = document.getElementById("centerLockValue");
 const centerWeightHorizontal = document.getElementById("centerWeightHorizontal");
 const centerWeightVertical = document.getElementById("centerWeightVertical");
+const centerPull = document.getElementById("centerPull");
+const centerDominantQuadrant = document.getElementById("centerDominantQuadrant");
+const centerEdgePressure = document.getElementById("centerEdgePressure");
+const centerFirstRead = document.getElementById("centerFirstRead");
 const centerSymmetry = document.getElementById("centerSymmetry");
 const centerOffsetSuggestion = document.getElementById("centerOffsetSuggestion");
 const centerWarning = document.getElementById("centerWarning");
@@ -111,6 +115,18 @@ const centerClickReadout = document.getElementById("centerClickReadout");
 const centerFixCard = document.getElementById("centerFixCard");
 const centerFixList = document.getElementById("centerFixList");
 const centerFixLock = document.getElementById("centerFixLock");
+const diagonalReadingCard = document.getElementById("diagonalReadingCard");
+const diagonalFlowScore = document.getElementById("diagonalFlowScore");
+const diagonalMainAxis = document.getElementById("diagonalMainAxis");
+const diagonalCounterAxis = document.getElementById("diagonalCounterAxis");
+const diagonalEyePath = document.getElementById("diagonalEyePath");
+const diagonalWeightPull = document.getElementById("diagonalWeightPull");
+const diagonalRhythm = document.getElementById("diagonalRhythm");
+const diagonalTension = document.getElementById("diagonalTension");
+const diagonalWarning = document.getElementById("diagonalWarning");
+const diagonalFixCard = document.getElementById("diagonalFixCard");
+const diagonalFixList = document.getElementById("diagonalFixList");
+const diagonalFixLock = document.getElementById("diagonalFixLock");
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
@@ -261,6 +277,10 @@ const state = {
   },
   thirdsSelection: null,
   centerAnalysis: {
+    key: null,
+    reading: null
+  },
+  diagonalAnalysis: {
     key: null,
     reading: null
   },
@@ -951,6 +971,12 @@ function resetCompositionWorkspace() {
   state.focalPointSource = "manual";
   state.thirdsSelection = null;
   state.centerSelection = null;
+  state.diagonalAnalysis.key = null;
+  state.diagonalAnalysis.reading = null;
+  state.thirdsAnalysis.key = null;
+  state.thirdsAnalysis.reading = null;
+  state.centerAnalysis.key = null;
+  state.centerAnalysis.reading = null;
   state.userSelectedOverlayColor = null;
   state.autoDetectedOverlayColor = "#1f1c18";
   state.dynamicSymmetry.analysisKey = null;
@@ -1189,6 +1215,10 @@ function getThirdsClickReadout(point, distance) {
 
 function canAnalyzeCenter() {
   return state.imageLoaded && state.analysisMode === "basic" && state.mode === "center";
+}
+
+function canAnalyzeDiagonal() {
+  return state.imageLoaded && state.analysisMode === "basic" && state.mode === "diagonal";
 }
 
 function updateCenterSelection(point) {
@@ -1472,6 +1502,10 @@ function updateCenterReadingUI() {
   centerWeightVertical.textContent = reading
     ? `Top: ${reading.topPercent}% / Bottom: ${reading.bottomPercent}%`
     : "Top: -- / Bottom: --";
+  centerPull.textContent = reading ? reading.centerPullLine : "Waiting for image.";
+  centerDominantQuadrant.textContent = reading ? reading.dominantQuadrantLine : "Waiting for image.";
+  centerEdgePressure.textContent = reading ? reading.edgePressureLine : "Waiting for image.";
+  centerFirstRead.textContent = reading ? reading.firstReadLine : "Waiting for image.";
   centerSymmetry.textContent = reading ? reading.symmetryLine : "Waiting for image.";
   centerOffsetSuggestion.textContent = reading ? reading.offsetSuggestion : "Waiting for image.";
   centerWarning.textContent = reading ? reading.warning : "Upload an image to diagnose center lock.";
@@ -1515,6 +1549,76 @@ function getCenterStatusCopy() {
   return reading.status;
 }
 
+function getDiagonalReading() {
+  if (!canAnalyzeDiagonal()) {
+    return null;
+  }
+
+  const key = `${compositionImage.currentSrc || compositionImage.src}|${compositionImage.naturalWidth}x${compositionImage.naturalHeight}`;
+  if (state.diagonalAnalysis.key === key && state.diagonalAnalysis.reading) {
+    return state.diagonalAnalysis.reading;
+  }
+
+  const sample = getCompositionSampleData(compositionImage, THIRDS_SAMPLE_SIZE);
+  if (!sample) {
+    return null;
+  }
+
+  const focalArea = detectFocalArea(sample);
+  const reading = generateDiagonalReading(sample, focalArea);
+  state.diagonalAnalysis.key = key;
+  state.diagonalAnalysis.reading = reading;
+  return reading;
+}
+
+function updateDiagonalReadingUI() {
+  if (!diagonalReadingCard) {
+    return;
+  }
+
+  const reading = getDiagonalReading();
+  diagonalFlowScore.textContent = `Diagonal Flow: ${reading ? `${reading.score} / 100` : "--"}`;
+  diagonalMainAxis.textContent = reading ? reading.mainAxisLine : "Waiting for image.";
+  diagonalCounterAxis.textContent = reading ? reading.counterAxisLine : "Waiting for image.";
+  diagonalEyePath.textContent = reading ? reading.eyePathLine : "Waiting for image.";
+  diagonalWeightPull.textContent = reading ? reading.weightPullLine : "Waiting for image.";
+  diagonalRhythm.textContent = reading ? reading.rhythmLine : "Waiting for image.";
+  diagonalTension.textContent = reading ? reading.tensionLine : "Waiting for image.";
+  diagonalWarning.textContent = reading ? reading.warning : "Upload an image to read directional flow.";
+  renderDiagonalFixUI(reading);
+}
+
+function renderDiagonalFixUI(reading) {
+  if (!diagonalFixList) {
+    return;
+  }
+
+  diagonalFixList.innerHTML = "";
+  const lines = reading
+    ? (isUnlocked() ? reading.unlockedFixLines : reading.lockedFixLines)
+    : [];
+
+  lines.forEach((line) => {
+    const item = document.createElement("p");
+    item.className = "center-fix-line";
+    item.textContent = line;
+    diagonalFixList.appendChild(item);
+  });
+
+  diagonalFixCard.classList.toggle("is-locked", !isUnlocked());
+  diagonalFixLock.classList.toggle("hidden", isUnlocked());
+}
+
+function getDiagonalStatusCopy() {
+  const reading = getDiagonalReading();
+
+  if (!reading) {
+    return "Overlay is active. Use the diagonals to test whether the image has a clear directional path.";
+  }
+
+  return reading.status;
+}
+
 function detectApproximateSymmetry(sample) {
   const { width, height, luminance } = sample;
   let verticalDifference = 0;
@@ -1547,22 +1651,17 @@ function detectApproximateSymmetry(sample) {
 }
 
 function generateCenterReading(focalArea, weightDistribution, symmetry) {
+  const metrics = getCenterMetrics(focalArea, weightDistribution, symmetry);
   const centerLock = getCenterLockLabel(focalArea.centerDistance);
-  const leftPercent = Math.round((weightDistribution.left / weightDistribution.total) * 100);
-  const rightPercent = Math.round((weightDistribution.right / weightDistribution.total) * 100);
-  const topPercent = Math.round((weightDistribution.top / weightDistribution.total) * 100);
-  const bottomPercent = Math.round((weightDistribution.bottom / weightDistribution.total) * 100);
-  const warning = getCenterWarning(focalArea.centerDistance);
-  const offsetSuggestion = getCenterOffsetSuggestion(focalArea, weightDistribution);
-  const symmetryLine = (symmetry.vertical >= 0.82 || symmetry.horizontal >= 0.82)
-    ? "The composition relies on central symmetry."
-    : "The image breaks symmetry and creates asymmetry.";
-  const status = focalArea.centerDistance <= 0.08
-    ? "Subject reads locked into the center."
-    : focalArea.centerDistance <= 0.16
-    ? "Composition still reads close to the center."
-    : "Main emphasis sits away from the center axis.";
-  const unlockedFixLines = buildCenterFixLines(focalArea, weightDistribution, symmetry);
+  const leftPercent = Math.round((weightDistribution.left / metrics.total) * 100);
+  const rightPercent = Math.round((weightDistribution.right / metrics.total) * 100);
+  const topPercent = Math.round((weightDistribution.top / metrics.total) * 100);
+  const bottomPercent = Math.round((weightDistribution.bottom / metrics.total) * 100);
+  const warning = getCenterWarning(metrics);
+  const offsetSuggestion = getCenterOffsetSuggestion(metrics);
+  const symmetryLine = getCenterSymmetryLine(metrics);
+  const status = getCenterStatusLine(metrics);
+  const unlockedFixLines = buildCenterFixLines(metrics);
 
   return {
     centerLock,
@@ -1570,15 +1669,68 @@ function generateCenterReading(focalArea, weightDistribution, symmetry) {
     rightPercent,
     topPercent,
     bottomPercent,
+    centerPullLine: getCenterPullLine(metrics),
+    dominantQuadrantLine: getCenterDominantQuadrantLine(metrics),
+    edgePressureLine: getCenterEdgePressureLine(metrics),
+    firstReadLine: getCenterFirstReadLine(metrics),
     warning,
     offsetSuggestion,
     symmetryLine,
     status,
-    lockedFixLines: [
-      "Break the center lock by shifting the main mass off the middle.",
-      "Let one side carry slightly more visual pressure."
-    ],
+    lockedFixLines: buildLockedCenterFixLines(metrics),
     unlockedFixLines
+  };
+}
+
+function getCenterMetrics(focalArea, weightDistribution, symmetry) {
+  const total = Math.max(weightDistribution.total, 1);
+  const horizontalDelta = (weightDistribution.right - weightDistribution.left) / total;
+  const verticalDelta = (weightDistribution.bottom - weightDistribution.top) / total;
+  const balanceTension = Math.hypot(horizontalDelta, verticalDelta);
+  const focalX = focalArea.x || 0.5;
+  const focalY = focalArea.y || 0.5;
+  const centerBand = focalArea.centerDistance <= 0.08
+    ? "locked"
+    : focalArea.centerDistance <= 0.16
+    ? "near"
+    : "clear";
+  const edgeBand = focalArea.edgeDistance <= 0.09
+    ? "edge"
+    : focalArea.edgeDistance <= 0.18
+    ? "near"
+    : "inside";
+  const horizontalSide = focalX < 0.44 ? "left" : focalX > 0.56 ? "right" : "center";
+  const verticalSide = focalY < 0.44 ? "upper" : focalY > 0.56 ? "lower" : "middle";
+  const massAxis = Math.abs(horizontalDelta) >= Math.abs(verticalDelta)
+    ? (horizontalDelta >= 0 ? "right" : "left")
+    : (verticalDelta >= 0 ? "down" : "up");
+  const symmetryType = symmetry.vertical >= 0.84 && symmetry.horizontal >= 0.84
+    ? "both"
+    : symmetry.vertical >= 0.84
+    ? "vertical"
+    : symmetry.horizontal >= 0.84
+    ? "horizontal"
+    : symmetry.vertical >= 0.78 || symmetry.horizontal >= 0.78
+    ? "soft"
+    : "broken";
+
+  return {
+    focalArea,
+    weightDistribution,
+    symmetry,
+    total,
+    horizontalDelta,
+    verticalDelta,
+    balanceTension,
+    focalX,
+    focalY,
+    centerBand,
+    edgeBand,
+    horizontalSide,
+    verticalSide,
+    massAxis,
+    symmetryType,
+    quadrant: getCenterQuadrantLabel(focalX, focalY)
   };
 }
 
@@ -1592,46 +1744,398 @@ function getCenterLockLabel(centerDistance) {
   return "Low";
 }
 
-function getCenterWarning(centerDistance) {
-  if (centerDistance <= 0.08) {
-    return "The subject is locked to the center, reducing visual tension.";
+function getCenterPullLine(metrics) {
+  if (metrics.centerBand === "locked" && metrics.balanceTension < 0.08) {
+    return "The focal pressure sits on the crossing with very little directional pull.";
   }
-  if (centerDistance <= 0.16) {
-    return "The composition still feels too centered.";
+  if (metrics.centerBand === "locked") {
+    return `The focus is centered, but the value mass pulls ${metrics.massAxis}.`;
+  }
+  if (metrics.centerBand === "near") {
+    return `The main read is close to center and starts drifting ${metrics.quadrant}.`;
+  }
+  return `The strongest area sits ${metrics.quadrant}, away from the middle.`;
+}
+
+function getCenterDominantQuadrantLine(metrics) {
+  if (metrics.focalArea.strength < 0.1 && metrics.balanceTension < 0.08) {
+    return "No clear quadrant dominates; the image reads evenly spread.";
+  }
+  if (metrics.focalArea.strength < 0.1) {
+    return `The value mass suggests a ${metrics.massAxis} pull more than a single focal quadrant.`;
+  }
+  return `${capitalizeLabel(metrics.quadrant)} carries the first strong contrast read.`;
+}
+
+function getCenterEdgePressureLine(metrics) {
+  if (metrics.edgeBand === "edge") {
+    return "The strongest read presses close to an edge, so the frame feels tight.";
+  }
+  if (metrics.edgeBand === "near") {
+    return "The focal area is near the frame edge; check if that pressure is intentional.";
+  }
+  return "The focal area has enough breathing room from the frame.";
+}
+
+function getCenterFirstReadLine(metrics) {
+  if (metrics.symmetryType === "both") {
+    return "First read is frontal and iconic because both axes feel mirrored.";
+  }
+  if (metrics.centerBand === "locked") {
+    return "First read lands on the middle before the eye can travel.";
+  }
+  if (metrics.balanceTension >= 0.18) {
+    return `First read moves ${metrics.massAxis} because the value weight is clearly uneven.`;
+  }
+  return `First read starts ${metrics.quadrant}, then returns toward the center axes.`;
+}
+
+function getCenterSymmetryLine(metrics) {
+  if (metrics.symmetryType === "both") {
+    return "Both axes read highly symmetrical.";
+  }
+  if (metrics.symmetryType === "vertical") {
+    return "Vertical symmetry is strong; the image may feel frontal.";
+  }
+  if (metrics.symmetryType === "horizontal") {
+    return "Horizontal symmetry is strong; the image may flatten into bands.";
+  }
+  if (metrics.symmetryType === "soft") {
+    return "There is a soft symmetry echo, but it is not fully locked.";
+  }
+  return "The image breaks symmetry and creates asymmetry.";
+}
+
+function getCenterStatusLine(metrics) {
+  if (metrics.centerBand === "locked") {
+    return metrics.symmetryType === "broken"
+      ? "Subject reads centered, but the surrounding value shape starts to break the lock."
+      : "Subject reads locked into the center.";
+  }
+  if (metrics.centerBand === "near") {
+    return `Composition still reads close to the center, with a ${metrics.quadrant} drift.`;
+  }
+  return `Main emphasis sits ${metrics.quadrant} away from the center axis.`;
+}
+
+function getCenterWarning(metrics) {
+  if (metrics.centerBand === "locked" && metrics.symmetryType !== "broken") {
+    return "The subject locks to the center and the symmetry reduces visual tension.";
+  }
+  if (metrics.centerBand === "locked") {
+    return "The main hit is still centered; use the surrounding shapes to create travel.";
+  }
+  if (metrics.centerBand === "near") {
+    return "The composition almost escapes the center, but the first read still returns to it.";
+  }
+  if (metrics.edgeBand === "edge") {
+    return "The composition escapes center lock, but the focal pressure is close to the frame.";
   }
   return "The composition escapes center lock and gains more tension.";
 }
 
-function getCenterOffsetSuggestion(focalArea, weightDistribution) {
-  if (focalArea.centerDistance > 0.16) {
-    return "Offset already feels intentional.";
+function getCenterOffsetSuggestion(metrics) {
+  if (metrics.centerBand === "clear") {
+    return metrics.edgeBand === "edge"
+      ? "Offset is strong; give the active edge a little more breathing room if it feels cramped."
+      : "Offset already feels intentional.";
   }
 
-  const horizontalDelta = weightDistribution.left - weightDistribution.right;
-  const verticalDelta = weightDistribution.top - weightDistribution.bottom;
-  if (Math.abs(horizontalDelta) >= Math.abs(verticalDelta)) {
-    return horizontalDelta >= 0
-      ? "Try shifting the main subject slightly to the right."
-      : "Try shifting the main subject slightly to the left.";
+  if (metrics.balanceTension < 0.08) {
+    return "Choose one side to carry more value pressure before correcting details.";
   }
 
-  return verticalDelta >= 0
-    ? "Try shifting the main subject slightly downward."
-    : "Try shifting the main subject slightly upward.";
+  if (Math.abs(metrics.horizontalDelta) >= Math.abs(metrics.verticalDelta)) {
+    return metrics.horizontalDelta >= 0
+      ? "Try shifting the main subject slightly left to oppose the right-side weight."
+      : "Try shifting the main subject slightly right to oppose the left-side weight.";
+  }
+
+  return metrics.verticalDelta >= 0
+    ? "Try lifting the main subject slightly upward to oppose the lower weight."
+    : "Try dropping the main subject slightly downward to oppose the upper weight.";
 }
 
-function buildCenterFixLines(focalArea, weightDistribution, symmetry) {
+function buildLockedCenterFixLines(metrics) {
   const lines = [];
-  if (focalArea.centerDistance <= 0.08) {
+  if (metrics.centerBand === "locked") {
+    lines.push("Move the main mass off the crossing point before refining small shapes.");
+  } else {
+    lines.push(`Protect the ${metrics.quadrant} pull and avoid drifting back to the middle.`);
+  }
+  if (metrics.balanceTension < 0.08) {
+    lines.push("Let one side carry slightly more value pressure.");
+  } else {
+    lines.push(`Strengthen the ${metrics.massAxis} movement so the eye has a clear path.`);
+  }
+  return lines;
+}
+
+function buildCenterFixLines(metrics) {
+  const lines = [];
+  if (metrics.centerBand === "locked") {
     lines.push("Move the main mass off the crossing point so the composition stops locking into the middle.");
   }
-  if (Math.abs(weightDistribution.left - weightDistribution.right) / weightDistribution.total < 0.08) {
+  if (metrics.centerBand === "near") {
+    lines.push(`Push the focal mass farther ${metrics.quadrant} or commit it back to a deliberate center statement.`);
+  }
+  if (metrics.balanceTension < 0.08) {
     lines.push("Let one side carry a little more value pressure so the image gains directional pull.");
   }
-  if (symmetry.vertical >= 0.82 || symmetry.horizontal >= 0.82) {
+  if (metrics.edgeBand !== "inside") {
+    lines.push("Check the active edge; add breathing room or crop harder so the edge pressure feels designed.");
+  }
+  if (metrics.symmetryType !== "broken") {
     lines.push("If symmetry is not the goal, break one side with a secondary accent or shift in value weight.");
   }
-  lines.push("Keep the center clear unless the idea depends on a frontal, symmetrical statement.");
+  if (metrics.focalArea.strength < 0.1) {
+    lines.push("Create one sharper value or edge accent so the center reading has a clear first hit.");
+  }
+  lines.push(`Keep the center clear unless the idea depends on a frontal statement; let the ${metrics.quadrant} area lead.`);
+  return [...new Set(lines)].slice(0, 4);
+}
+
+function getCenterQuadrantLabel(x, y) {
+  const horizontal = x < 0.44 ? "left" : x > 0.56 ? "right" : "center";
+  const vertical = y < 0.44 ? "upper" : y > 0.56 ? "lower" : "middle";
+  if (horizontal === "center" && vertical === "middle") {
+    return "center";
+  }
+  if (horizontal === "center") {
+    return vertical;
+  }
+  if (vertical === "middle") {
+    return horizontal;
+  }
+  return `${vertical}-${horizontal}`;
+}
+
+function capitalizeLabel(label) {
+  return label
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("-");
+}
+
+function generateDiagonalReading(sample, focalArea) {
+  const metrics = getDiagonalMetrics(sample, focalArea);
+  const score = Math.round(
+    (metrics.directionStrength * 46)
+    + (metrics.diagonalCoverage * 24)
+    + (metrics.focusSupport * 18)
+    + (Math.min(metrics.balanceTension, 0.24) / 0.24 * 12)
+  );
+  const dominantAxis = metrics.axisBias >= 0 ? "TL-BR" : "TR-BL";
+  const secondaryAxis = dominantAxis === "TL-BR" ? "TR-BL" : "TL-BR";
+  const axisName = dominantAxis === "TL-BR" ? "top-left to bottom-right" : "top-right to bottom-left";
+  const counterName = secondaryAxis === "TL-BR" ? "top-left to bottom-right" : "top-right to bottom-left";
+  const strengthLabel = metrics.directionStrength >= 0.58
+    ? "strong"
+    : metrics.directionStrength >= 0.34
+    ? "moderate"
+    : "soft";
+  const counterLabel = metrics.counterSupport >= 0.42
+    ? "active"
+    : metrics.counterSupport >= 0.22
+    ? "present"
+    : "weak";
+
+  return {
+    score: clamp(score, 0, 100),
+    mainAxisLine: `${capitalizeLabel(strengthLabel)} ${axisName} movement.`,
+    counterAxisLine: `${capitalizeLabel(counterLabel)} counter movement on the ${counterName} diagonal.`,
+    eyePathLine: getDiagonalEyePathLine(metrics, axisName),
+    weightPullLine: getDiagonalWeightPullLine(metrics),
+    rhythmLine: getDiagonalRhythmLine(metrics),
+    tensionLine: getDiagonalTensionLine(metrics),
+    warning: getDiagonalWarning(metrics),
+    status: getDiagonalStatusLine(metrics, axisName),
+    lockedFixLines: buildLockedDiagonalFixLines(metrics, axisName),
+    unlockedFixLines: buildDiagonalFixLines(metrics, axisName, counterName)
+  };
+}
+
+function getDiagonalMetrics(sample, focalArea) {
+  const { width, height, luminance, weightDistribution } = sample;
+  let tlbrEnergy = 0;
+  let trblEnergy = 0;
+  let edgeEnergy = 0;
+  let upperEnergy = 0;
+  let middleEnergy = 0;
+  let lowerEnergy = 0;
+  const bandCounts = { upper: 0, middle: 0, lower: 0 };
+
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      const index = y * width + x;
+      const gx = (luminance[index + 1] - luminance[index - 1]) / 255;
+      const gy = (luminance[index + width] - luminance[index - width]) / 255;
+      const magnitude = Math.hypot(gx, gy);
+      const tlbr = Math.abs((gx + gy) / Math.SQRT2);
+      const trbl = Math.abs((gx - gy) / Math.SQRT2);
+      const normalizedY = y / Math.max(height - 1, 1);
+
+      tlbrEnergy += tlbr;
+      trblEnergy += trbl;
+      edgeEnergy += magnitude;
+      if (normalizedY < 0.34) {
+        upperEnergy += magnitude;
+        bandCounts.upper += 1;
+      } else if (normalizedY > 0.66) {
+        lowerEnergy += magnitude;
+        bandCounts.lower += 1;
+      } else {
+        middleEnergy += magnitude;
+        bandCounts.middle += 1;
+      }
+    }
+  }
+
+  const totalDiagonal = Math.max(tlbrEnergy + trblEnergy, 0.0001);
+  const totalEdge = Math.max(edgeEnergy, 0.0001);
+  const axisBias = (tlbrEnergy - trblEnergy) / totalDiagonal;
+  const directionStrength = Math.abs(axisBias);
+  const dominantEnergy = Math.max(tlbrEnergy, trblEnergy);
+  const counterEnergy = Math.min(tlbrEnergy, trblEnergy);
+  const diagonalCoverage = clamp(dominantEnergy / totalEdge, 0, 1);
+  const counterSupport = clamp(counterEnergy / Math.max(dominantEnergy, 0.0001), 0, 1);
+  const horizontalDelta = (weightDistribution.right - weightDistribution.left) / Math.max(weightDistribution.total, 1);
+  const verticalDelta = (weightDistribution.bottom - weightDistribution.top) / Math.max(weightDistribution.total, 1);
+  const balanceTension = Math.hypot(horizontalDelta, verticalDelta);
+  const axisDirection = axisBias >= 0 ? 1 : -1;
+  const focusSupport = getDiagonalFocusSupport(focalArea, axisDirection);
+  const rhythmSpread = getDiagonalRhythmSpread(upperEnergy, middleEnergy, lowerEnergy, bandCounts);
+  const massAxis = Math.abs(horizontalDelta) >= Math.abs(verticalDelta)
+    ? (horizontalDelta >= 0 ? "right" : "left")
+    : (verticalDelta >= 0 ? "down" : "up");
+
+  return {
+    focalArea,
+    weightDistribution,
+    tlbrEnergy,
+    trblEnergy,
+    axisBias,
+    directionStrength,
+    diagonalCoverage,
+    counterSupport,
+    horizontalDelta,
+    verticalDelta,
+    balanceTension,
+    focusSupport,
+    rhythmSpread,
+    massAxis,
+    quadrant: getCenterQuadrantLabel(focalArea.x || 0.5, focalArea.y || 0.5)
+  };
+}
+
+function getDiagonalFocusSupport(focalArea, axisDirection) {
+  const x = focalArea.x || 0.5;
+  const y = focalArea.y || 0.5;
+  const distanceToTlbr = Math.abs(y - x) / Math.SQRT2;
+  const distanceToTrbl = Math.abs(y - (1 - x)) / Math.SQRT2;
+  const distance = axisDirection >= 0 ? distanceToTlbr : distanceToTrbl;
+  return 1 - clamp(distance / 0.36, 0, 1);
+}
+
+function getDiagonalRhythmSpread(upperEnergy, middleEnergy, lowerEnergy, bandCounts) {
+  const upper = upperEnergy / Math.max(bandCounts.upper, 1);
+  const middle = middleEnergy / Math.max(bandCounts.middle, 1);
+  const lower = lowerEnergy / Math.max(bandCounts.lower, 1);
+  const maxBand = Math.max(upper, middle, lower, 0.0001);
+  const minBand = Math.min(upper, middle, lower);
+  return clamp(minBand / maxBand, 0, 1);
+}
+
+function getDiagonalEyePathLine(metrics, axisName) {
+  if (metrics.focusSupport >= 0.72) {
+    return `The focal area sits on the ${axisName} path.`;
+  }
+  if (metrics.focusSupport >= 0.42) {
+    return `The focal area partly supports the ${axisName} movement.`;
+  }
+  return `The focal area resists the ${axisName} path, so the eye may stall.`;
+}
+
+function getDiagonalWeightPullLine(metrics) {
+  if (metrics.balanceTension < 0.08) {
+    return "Value weight is even, so the diagonal needs clearer accents.";
+  }
+  return `Value mass pulls ${metrics.massAxis}, giving the flow a stronger directional bias.`;
+}
+
+function getDiagonalRhythmLine(metrics) {
+  if (metrics.rhythmSpread >= 0.62) {
+    return "Diagonal energy repeats through upper, middle, and lower zones.";
+  }
+  if (metrics.rhythmSpread >= 0.34) {
+    return "The diagonal rhythm appears in places, but one zone drops out.";
+  }
+  return "The flow reads as a single hit instead of a connected rhythm.";
+}
+
+function getDiagonalTensionLine(metrics) {
+  if (metrics.counterSupport >= 0.5) {
+    return "Counter diagonal is strong enough to create useful opposition.";
+  }
+  if (metrics.directionStrength >= 0.5) {
+    return "Main diagonal is clear, but it needs a smaller counter accent.";
+  }
+  return "Diagonal tension is soft; the image reads more static than directional.";
+}
+
+function getDiagonalWarning(metrics) {
+  if (metrics.directionStrength < 0.24 && metrics.counterSupport > 0.72) {
+    return "Both diagonals compete, so the flow becomes indecisive.";
+  }
+  if (metrics.focusSupport < 0.34) {
+    return "The main diagonal and the focal area do not agree yet.";
+  }
+  if (metrics.rhythmSpread < 0.28) {
+    return "The diagonal starts, but it does not carry through the whole image.";
+  }
+  return "The diagonal structure has a readable path.";
+}
+
+function getDiagonalStatusLine(metrics, axisName) {
+  if (metrics.directionStrength >= 0.5 && metrics.focusSupport >= 0.55) {
+    return `The composition has a clear ${axisName} flow.`;
+  }
+  if (metrics.counterSupport >= 0.52) {
+    return "The image has cross-flow; decide which diagonal should lead.";
+  }
+  return "Diagonal flow is present but needs stronger linked accents.";
+}
+
+function buildLockedDiagonalFixLines(metrics, axisName) {
+  const lines = [];
+  if (metrics.focusSupport < 0.42) {
+    lines.push(`Move or strengthen the focal accent so it supports the ${axisName} path.`);
+  } else {
+    lines.push(`Keep the ${axisName} path clear and remove accents that interrupt it.`);
+  }
+  lines.push(metrics.counterSupport >= 0.5
+    ? "Choose one diagonal as the main read; let the other act as support."
+    : "Add one small counter accent so the diagonal does not feel flat.");
+  return lines;
+}
+
+function buildDiagonalFixLines(metrics, axisName, counterName) {
+  const lines = [];
+  if (metrics.focusSupport < 0.42) {
+    lines.push(`Shift the strongest edge or value accent closer to the ${axisName} diagonal.`);
+  }
+  if (metrics.rhythmSpread < 0.42) {
+    lines.push("Repeat the diagonal with two smaller echoes so the eye travels instead of stopping.");
+  }
+  if (metrics.counterSupport < 0.28) {
+    lines.push(`Add a quiet ${counterName} counter-angle near the focal area for tension.`);
+  } else if (metrics.counterSupport > 0.58) {
+    lines.push(`Reduce one competing ${counterName} passage so the main diagonal stays dominant.`);
+  }
+  if (metrics.balanceTension < 0.08) {
+    lines.push("Darken or sharpen one side of the diagonal to create a more decisive pull.");
+  }
+  lines.push(`Let the ${metrics.quadrant} area lead only if it supports the main diagonal path.`);
   return [...new Set(lines)].slice(0, 4);
 }
 
@@ -1743,10 +2247,13 @@ function updateModeUI() {
   const isThirdsMode = isBasic && state.mode === "thirds";
   const isCenterMode = isBasic && state.mode === "center";
   const isGridMode = isBasic && state.mode === "grid";
+  const isDiagonalMode = isBasic && state.mode === "diagonal";
   const isGoldenSpiral = !isBasic && state.advancedMode === "golden-spiral";
   const isNotan = !isBasic && state.advancedMode === "notan";
   const isFocalBalance = !isBasic && state.advancedMode === "focal-balance";
   const isDynamicSymmetry = !isBasic && state.advancedMode === "dynamic-symmetry";
+
+  document.body.dataset.mode = isBasic ? state.mode : state.advancedMode;
 
   basicToolSwitcher.classList.toggle("hidden", !isBasic);
   advancedToolSwitcher.classList.toggle("hidden", isBasic);
@@ -1765,6 +2272,7 @@ function updateModeUI() {
   gridTransferCard.classList.toggle("hidden", !isGridMode);
   thirdsReadingCard.classList.toggle("hidden", !isThirdsMode);
   centerReadingCard.classList.toggle("hidden", !isCenterMode);
+  diagonalReadingCard.classList.toggle("hidden", !isDiagonalMode);
   gridOverlayInfo.classList.toggle("hidden", !isGridMode || !state.imageLoaded);
   overlayColorControl.classList.toggle("hidden", isNotan || advancedLocked);
   clearNotesButton.classList.toggle("hidden", !isFocalBalance);
@@ -1781,6 +2289,7 @@ function updateModeUI() {
   updateDynamicSymmetryReadout();
   updateThirdsReadingUI();
   updateCenterReadingUI();
+  updateDiagonalReadingUI();
   updateWorkspaceStageVisibility(advancedLocked);
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
 
@@ -1796,6 +2305,8 @@ function updateModeUI() {
         ? "Click on the image to compare a placement with the nearest power point."
         : isCenterMode
         ? "Click on the image to compare a point against the center axes."
+        : isDiagonalMode
+        ? "Use the diagonals to compare the main gesture, value path, and counter movement."
         : "Use the active overlay to study the structure of the composition.")
       : "Upload an image to begin your composition study.");
     statusNote.textContent = state.imageLoading
@@ -1807,6 +2318,8 @@ function updateModeUI() {
         ? getCenterStatusCopy()
         : isGridMode
         ? "Grid is active. Adjust the divisions and use the transfer helper below to match your canvas."
+        : isDiagonalMode
+        ? getDiagonalStatusCopy()
         : "Overlay is active. Switch tools to compare different compositional guides.")
       : "Upload an image to start.");
   } else {
@@ -1973,6 +2486,8 @@ function beginImageLoad() {
   state.loadErrorMessage = "";
   state.centerAnalysis.key = null;
   state.centerAnalysis.reading = null;
+  state.diagonalAnalysis.key = null;
+  state.diagonalAnalysis.reading = null;
   state.centerSelection = null;
   state.thirdsAnalysis.key = null;
   state.thirdsAnalysis.reading = null;

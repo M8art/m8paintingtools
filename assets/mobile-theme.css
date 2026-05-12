@@ -1,0 +1,682 @@
+@media (max-width: 720px) {
+  html:not(.mobile-light-mode) .status-toast,
+  html:not(.mobile-light-mode) .premium-toast,
+  html:not(.mobile-light-mode) .toast,
+  html:not(.mobile-light-mode) .access-message,
+  html:not(.mobile-light-mode) .feedback-float,
+  html:not(.mobile-light-mode) .checkpoint-banner,
+  html:not(.mobile-light-mode) .overlay-card,
+  html:not(.mobile-light-mode) .overlay-achievements,
+  html:not(.mobile-light-mode) .image-loading-copy,
+  html:not(.mobile-light-mode) .feedback-log-empty,
+  html:not(.mobile-light-mode) .feedback-log-item {
+    border: 1px solid rgba(185, 141, 66, 0.42) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.97), rgba(12, 10, 8, 0.97)) !important;
+    color: #f2e7cf !important;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(242, 231, 207, 0.05) !important;
+    text-shadow: none !important;
+  }
+
+  html:not(.mobile-light-mode) .status-toast,
+  html:not(.mobile-light-mode) .premium-toast,
+  html:not(.mobile-light-mode) .toast {
+    left: 16px !important;
+    right: 16px !important;
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: translateY(8px) !important;
+    border-radius: 4px !important;
+    padding: 11px 14px !important;
+    font-size: 0.88rem !important;
+    line-height: 1.38 !important;
+    text-align: center !important;
+  }
+
+  html:not(.mobile-light-mode) .status-toast.is-visible,
+  html:not(.mobile-light-mode) .premium-toast.is-visible,
+  html:not(.mobile-light-mode) .toast.is-visible {
+    transform: translateY(0) !important;
+  }
+
+  html:not(.mobile-light-mode) .status-helper,
+  html:not(.mobile-light-mode) .status-note,
+  html:not(.mobile-light-mode) .status,
+  html:not(.mobile-light-mode) .mobile-value-status,
+  html:not(.mobile-light-mode) .compare-status,
+  html:not(.mobile-light-mode) .helper-message,
+  html:not(.mobile-light-mode) .upload-message {
+    color: rgba(242, 231, 207, 0.76) !important;
+  }
+
+  html:not(.mobile-light-mode) .image-loading-overlay {
+    background: rgba(12, 10, 8, 0.62) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+
+  html:not(.mobile-light-mode) .image-loading-copy {
+    border-radius: 4px !important;
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .image-loading-title {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .image-loading-subcopy {
+    color: rgba(242, 231, 207, 0.76) !important;
+  }
+
+  html:not(.mobile-light-mode) .upload-empty-state,
+  html:not(.mobile-light-mode) .empty-state,
+  html:not(.mobile-light-mode) .compare-empty-state {
+    border-color: rgba(185, 141, 66, 0.30) !important;
+    background:
+      radial-gradient(circle at 50% 36%, rgba(242, 231, 207, 0.16), transparent 34%),
+      repeating-linear-gradient(95deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 8px),
+      linear-gradient(145deg, rgba(93, 88, 80, 0.74), rgba(48, 43, 36, 0.78)) !important;
+    box-shadow: inset 0 1px 0 rgba(242, 231, 207, 0.16), 0 18px 36px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  html:not(.mobile-light-mode) .canvas-wrap,
+  html:not(.mobile-light-mode) .image-wrap,
+  html:not(.mobile-light-mode) .compare-preview-wrap,
+  html:not(.mobile-light-mode) .drawing-stage,
+  html:not(.mobile-light-mode) .compare-stage,
+  html:not(.mobile-light-mode) .workspace-preview,
+  html:not(.mobile-light-mode) .preview-frame {
+    border-color: rgba(185, 141, 66, 0.30) !important;
+    background:
+      radial-gradient(circle at 50% 42%, rgba(242, 231, 207, 0.04), transparent 38%),
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.025) 0 1px, transparent 1px 8px),
+      linear-gradient(145deg, rgba(20, 16, 12, 0.98), rgba(8, 7, 6, 0.98)) !important;
+    box-shadow: inset 0 1px 0 rgba(242, 231, 207, 0.08), 0 18px 36px rgba(0, 0, 0, 0.30) !important;
+  }
+
+  html:not(.mobile-light-mode) .canvas-wrap.upload-enabled:hover,
+  html:not(.mobile-light-mode) .canvas-wrap.upload-enabled:focus-visible,
+  html:not(.mobile-light-mode) .image-wrap.upload-enabled:hover,
+  html:not(.mobile-light-mode) .image-wrap.upload-enabled:focus-visible,
+  html:not(.mobile-light-mode) .compare-preview-wrap.upload-enabled:hover,
+  html:not(.mobile-light-mode) .compare-preview-wrap.upload-enabled:focus-visible {
+    border-color: rgba(217, 173, 92, 0.40) !important;
+    background:
+      radial-gradient(circle at 50% 42%, rgba(217, 173, 92, 0.06), transparent 38%),
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.03) 0 1px, transparent 1px 8px),
+      linear-gradient(145deg, rgba(23, 18, 13, 0.98), rgba(10, 8, 6, 0.98)) !important;
+  }
+
+  html:not(.mobile-light-mode) .upload-empty-state-inner {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html:not(.mobile-light-mode) .upload-empty-icon {
+    width: 92px !important;
+    height: 92px !important;
+    border: 1px solid rgba(217, 173, 92, 0.34) !important;
+    border-radius: 50% !important;
+    background:
+      url("images/upload-medallion.png") center / cover no-repeat,
+      linear-gradient(145deg, rgba(47, 38, 26, 0.96), rgba(15, 12, 9, 0.96)) !important;
+    color: transparent !important;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(242, 231, 207, 0.08) !important;
+  }
+
+  html:not(.mobile-light-mode) .upload-empty-icon svg {
+    opacity: 0 !important;
+  }
+
+  html:not(.mobile-light-mode) .upload-empty-label,
+  html:not(.mobile-light-mode) .upload-empty-subcopy {
+    color: #f2e7cf !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32) !important;
+  }
+
+  html:not(.mobile-light-mode) .canvas-wrap.upload-enabled:hover .upload-empty-icon,
+  html:not(.mobile-light-mode) .canvas-wrap.upload-enabled:focus-visible .upload-empty-icon,
+  html:not(.mobile-light-mode) .canvas-wrap.upload-enabled.dragover .upload-empty-icon,
+  html:not(.mobile-light-mode) .image-wrap.upload-enabled:hover .upload-empty-icon,
+  html:not(.mobile-light-mode) .image-wrap.upload-enabled:focus-visible .upload-empty-icon,
+  html:not(.mobile-light-mode) .compare-preview-wrap.upload-enabled:hover .upload-empty-icon,
+  html:not(.mobile-light-mode) .compare-preview-wrap.upload-enabled:focus-visible .upload-empty-icon {
+    border-color: rgba(217, 173, 92, 0.66) !important;
+    filter: brightness(1.08) saturate(1.05) !important;
+    transform: translateY(-1px) scale(1.02) !important;
+  }
+
+  html:not(.mobile-light-mode) .feedback-float {
+    color: #f2e7cf !important;
+    border-radius: 999px !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  html:not(.mobile-light-mode) .checkpoint-title,
+  html:not(.mobile-light-mode) .overlay-card h2,
+  html:not(.mobile-light-mode) .overlay-title,
+  html:not(.mobile-light-mode) .pause-title,
+  html:not(.mobile-light-mode) .feedback-log-item strong {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .checkpoint-copy,
+  html:not(.mobile-light-mode) .overlay-copy,
+  html:not(.mobile-light-mode) .overlay-achievement,
+  html:not(.mobile-light-mode) .feedback-log-empty,
+  html:not(.mobile-light-mode) .feedback-log-item,
+  html:not(.mobile-light-mode) .feedback-meta {
+    color: rgba(242, 231, 207, 0.76) !important;
+  }
+
+  html:not(.mobile-light-mode) .game-overlay,
+  html:not(.mobile-light-mode) .pause-overlay {
+    background: rgba(12, 10, 8, 0.58) !important;
+  }
+
+  html:not(.mobile-light-mode) .status-helper.is-analysis-running,
+  html:not(.mobile-light-mode) .status-note.is-active,
+  html:not(.mobile-light-mode) .access-message.is-success {
+    border-color: rgba(217, 173, 92, 0.46) !important;
+    background: rgba(185, 141, 66, 0.12) !important;
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .access-message.is-error {
+    border-color: rgba(201, 106, 61, 0.52) !important;
+    background: rgba(201, 106, 61, 0.12) !important;
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .mobile-workspace-toolbar .mobile-toolbar-button.is-result-ready {
+    border-color: rgba(217, 173, 92, 0.58) !important;
+    background:
+      linear-gradient(135deg, rgba(224, 137, 82, 0.98), rgba(185, 82, 43, 0.98)),
+      #c96a3d !important;
+    color: #fffaf4 !important;
+    box-shadow: 0 14px 28px rgba(201, 106, 61, 0.38), 0 0 0 2px rgba(217, 173, 92, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+
+  html:not(.mobile-light-mode) .challenge-feedback,
+  html:not(.mobile-light-mode) .challenge-feedback.reveal-perfect,
+  html:not(.mobile-light-mode) .challenge-feedback.reveal-close,
+  html:not(.mobile-light-mode) .challenge-feedback.reveal-off,
+  html:not(.mobile-light-mode) .challenge-result-item,
+  html:not(.mobile-light-mode) .challenge-session-meta,
+  html:not(.mobile-light-mode) .challenge-session-result {
+    border: 1px solid rgba(185, 141, 66, 0.38) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+    color: #f2e7cf !important;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+  }
+
+  html:not(.mobile-light-mode) .painting-breakdown-verdict,
+  html:not(.mobile-light-mode) .painting-breakdown-plan,
+  html:not(.mobile-light-mode) .painting-breakdown-warning {
+    border-color: rgba(185, 141, 66, 0.38) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .painting-breakdown-verdict .detail-copy,
+  html:not(.mobile-light-mode) .painting-breakdown-warning .detail-copy {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .challenge-reveal-label,
+  html:not(.mobile-light-mode) .challenge-reveal-label.reveal-perfect,
+  html:not(.mobile-light-mode) .challenge-reveal-label.reveal-close,
+  html:not(.mobile-light-mode) .challenge-reveal-label.reveal-off {
+    border: 1px solid rgba(185, 141, 66, 0.34) !important;
+    background: rgba(185, 141, 66, 0.12) !important;
+    color: #d9ad5c !important;
+  }
+
+  html:not(.mobile-light-mode) .challenge-feedback,
+  html:not(.mobile-light-mode) .challenge-feedback-note,
+  html:not(.mobile-light-mode) .challenge-result-label,
+  html:not(.mobile-light-mode) .challenge-session-best,
+  html:not(.mobile-light-mode) .challenge-session-message,
+  html:not(.mobile-light-mode) .challenge-session-best-line,
+  html:not(.mobile-light-mode) .challenge-value-label,
+  html:not(.mobile-light-mode) .challenge-guess-scale-label {
+    color: rgba(242, 231, 207, 0.74) !important;
+  }
+
+  html:not(.mobile-light-mode) .challenge-result-value,
+  html:not(.mobile-light-mode) .challenge-session-progress,
+  html:not(.mobile-light-mode) .challenge-session-title,
+  html:not(.mobile-light-mode) .challenge-session-accuracy {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .premium-fix-preview,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-unlocked,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-reference-warning,
+  html:not(.mobile-light-mode) .premium-fix-item,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-unlocked .premium-fix-item,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-reference-warning .premium-fix-item {
+    border: 1px solid rgba(185, 141, 66, 0.38) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+    color: #f2e7cf !important;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+  }
+
+  html:not(.mobile-light-mode) .premium-fix-preview h3,
+  html:not(.mobile-light-mode) .premium-fix-item strong {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .premium-fix-label,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-unlocked .premium-fix-label,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-reference-warning .premium-fix-label,
+  html:not(.mobile-light-mode) .premium-fix-count,
+  html:not(.mobile-light-mode) .premium-fix-preview .section-label {
+    color: #d9ad5c !important;
+  }
+
+  html:not(.mobile-light-mode) .premium-fix-preview .detail-copy,
+  html:not(.mobile-light-mode) .premium-fix-note,
+  html:not(.mobile-light-mode) .premium-fix-item p,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-unlocked .detail-copy,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-reference-warning .detail-copy,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-unlocked .premium-fix-note,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-unlocked .premium-fix-item p,
+  html:not(.mobile-light-mode) .premium-fix-preview.is-reference-warning .premium-fix-item p {
+    color: rgba(242, 231, 207, 0.74) !important;
+  }
+
+  html:not(.mobile-light-mode) .dynamic-breakdown,
+  html:not(.mobile-light-mode) .result-details.expanded .dynamic-breakdown,
+  html:not(.mobile-light-mode) .result-details.expanded .result-block,
+  html:not(.mobile-light-mode) .result-details.expanded .painters-fix,
+  html:not(.mobile-light-mode) .result-details.expanded .notan-reading-panel {
+    border: 1px solid rgba(185, 141, 66, 0.38) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+    color: #f2e7cf !important;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+  }
+
+  html:not(.mobile-light-mode) .dynamic-breakdown .result-block-title,
+  html:not(.mobile-light-mode) .dynamic-breakdown .breakdown-section-title,
+  html:not(.mobile-light-mode) .result-details.expanded .result-block-title,
+  html:not(.mobile-light-mode) .result-details.expanded h3,
+  html:not(.mobile-light-mode) .result-details.expanded strong {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .dynamic-breakdown .breakdown-list,
+  html:not(.mobile-light-mode) .dynamic-breakdown .breakdown-list li,
+  html:not(.mobile-light-mode) .result-details.expanded .detail-copy,
+  html:not(.mobile-light-mode) .result-details.expanded .result-copy,
+  html:not(.mobile-light-mode) .result-details.expanded .result-note,
+  html:not(.mobile-light-mode) .result-details.expanded p,
+  html:not(.mobile-light-mode) .result-details.expanded li {
+    color: rgba(242, 231, 207, 0.76) !important;
+  }
+
+  html:not(.mobile-light-mode) .dynamic-breakdown .breakdown-list li::marker,
+  html:not(.mobile-light-mode) .result-details.expanded li::marker {
+    color: #d9ad5c !important;
+  }
+
+  html.mobile-light-mode {
+    --bg: #e8e3d8;
+    --panel: rgba(252, 250, 246, 0.92);
+    --panel-soft: #f3efe6;
+    --ink: #1f1c18;
+    --muted: #69635d;
+    --line: rgba(50, 44, 38, 0.14);
+    --shadow: 0 22px 55px rgba(50, 39, 28, 0.12);
+    --accent: #c96a3d;
+  }
+
+  html.mobile-light-mode body {
+    background:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
+      linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%) !important;
+    color: #1f1c18 !important;
+  }
+
+  html.mobile-light-mode .topbar,
+  html.mobile-light-mode .card,
+  html.mobile-light-mode body .layout > .card:first-child,
+  html.mobile-light-mode body .layout > .card:last-child,
+  html.mobile-light-mode .workspace-card,
+  html.mobile-light-mode .side-panel,
+  html.mobile-light-mode .analysis-card,
+  html.mobile-light-mode .analysis-grid,
+  html.mobile-light-mode .detail-card,
+  html.mobile-light-mode .placeholder-card,
+  html.mobile-light-mode .feedback-cta,
+  html.mobile-light-mode .premium-panel,
+  html.mobile-light-mode .unlock-card,
+  html.mobile-light-mode .access-card,
+  html.mobile-light-mode .access-benefits,
+  html.mobile-light-mode .game-card,
+  html.mobile-light-mode .side-card,
+  html.mobile-light-mode .info-card,
+  html.mobile-light-mode .score-card,
+  html.mobile-light-mode .instructions-card,
+  html.mobile-light-mode .artist-feedback-block,
+  html.mobile-light-mode .ai-studio-feedback,
+  html.mobile-light-mode .result-block,
+  html.mobile-light-mode .result-suggestion,
+  html.mobile-light-mode .result-breakdown,
+  html.mobile-light-mode .tool-card,
+  html.mobile-light-mode .drawing-card,
+  html.mobile-light-mode .workspace-panel,
+  html.mobile-light-mode .footer {
+    border-color: rgba(61, 51, 40, 0.12) !important;
+    border-radius: 18px !important;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+      #fffaf4 !important;
+    color: #1f1c18 !important;
+    box-shadow: 0 18px 34px rgba(50, 39, 28, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+  }
+
+  html.mobile-light-mode body .layout > .card:first-child::before,
+  html.mobile-light-mode body .layout > .card:last-child::before,
+  html.mobile-light-mode body .layout > .card:first-child::after,
+  html.mobile-light-mode body .layout > .card:last-child::after {
+    background: linear-gradient(90deg, rgba(201, 106, 61, 0.18), rgba(217, 173, 92, 0.14), transparent) !important;
+    opacity: 0.55 !important;
+  }
+
+  html.mobile-light-mode h1,
+  html.mobile-light-mode h2,
+  html.mobile-light-mode h3,
+  html.mobile-light-mode .access-title,
+  html.mobile-light-mode .artist-feedback-title,
+  html.mobile-light-mode .feedback-title,
+  html.mobile-light-mode .result-block-title,
+  html.mobile-light-mode .hud-value,
+  html.mobile-light-mode .overlay-title {
+    color: #1f1c18 !important;
+    text-shadow: none !important;
+  }
+
+  html.mobile-light-mode .intro,
+  html.mobile-light-mode .access-subtitle,
+  html.mobile-light-mode .hint,
+  html.mobile-light-mode .status,
+  html.mobile-light-mode .summary,
+  html.mobile-light-mode .detail-copy,
+  html.mobile-light-mode .feedback-description,
+  html.mobile-light-mode .feedback-helper,
+  html.mobile-light-mode .panel-copy,
+  html.mobile-light-mode .result-copy,
+  html.mobile-light-mode .workspace-meta,
+  html.mobile-light-mode .access-copy,
+  html.mobile-light-mode .access-helper,
+  html.mobile-light-mode .footer-copy,
+  html.mobile-light-mode .footer-link,
+  html.mobile-light-mode .info-copy,
+  html.mobile-light-mode .overlay-copy,
+  html.mobile-light-mode .artist-feedback-list,
+  html.mobile-light-mode .artist-feedback-list li,
+  html.mobile-light-mode .feedback-list,
+  html.mobile-light-mode .feedback-list li,
+  html.mobile-light-mode .mobile-value-status,
+  html.mobile-light-mode .mobile-value-scale-note,
+  html.mobile-light-mode .feedback-button-note {
+    color: #69635d !important;
+  }
+
+  html.mobile-light-mode .access-benefit,
+  html.mobile-light-mode .access-benefits .access-benefit {
+    color: #1f1c18 !important;
+  }
+
+  html.mobile-light-mode .access-benefits {
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(246, 240, 231, 0.78)),
+      #fffaf4 !important;
+  }
+
+  html.mobile-light-mode .mobile-value-reading,
+  html.mobile-light-mode .value-reading,
+  html.mobile-light-mode .readout-title,
+  html.mobile-light-mode .challenge-feedback,
+  html.mobile-light-mode .feedback-title {
+    color: #1f1c18 !important;
+  }
+
+  html.mobile-light-mode .eyebrow,
+  html.mobile-light-mode .section-label,
+  html.mobile-light-mode .feedback-badge,
+  html.mobile-light-mode .mobile-tool-chip,
+  html.mobile-light-mode .hud-label,
+  html.mobile-light-mode .score-label {
+    border-color: rgba(201, 106, 61, 0.22) !important;
+    background: rgba(201, 106, 61, 0.1) !important;
+    color: #8c3f22 !important;
+  }
+
+  html.mobile-light-mode .top-nav-link,
+  html.mobile-light-mode .mode-switcher,
+  html.mobile-light-mode .primary-switcher,
+  html.mobile-light-mode .secondary-switcher,
+  html.mobile-light-mode .value-map-selector,
+  html.mobile-light-mode .mobile-workspace-toolbar,
+  html.mobile-light-mode .game-tabs,
+  html.mobile-light-mode .tab-button,
+  html.mobile-light-mode .game-tab,
+  html.mobile-light-mode .home-tab-button,
+  html.mobile-light-mode .button-secondary,
+  html.mobile-light-mode .back-button,
+  html.mobile-light-mode .overlay-color-button,
+  html.mobile-light-mode .trainer-pigment-button,
+  html.mobile-light-mode .value-map-option,
+  html.mobile-light-mode .sample-chip,
+  html.mobile-light-mode .mobile-tool-status-pill,
+  html.mobile-light-mode .hud-item,
+  html.mobile-light-mode .overlay-card,
+  html.mobile-light-mode .overlay-stat {
+    border-color: rgba(61, 51, 40, 0.12) !important;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+      #fffaf4 !important;
+    color: #1f1c18 !important;
+    box-shadow: 0 10px 18px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  }
+
+  html.mobile-light-mode .top-nav-link.is-current,
+  html.mobile-light-mode .tab-button.active,
+  html.mobile-light-mode .game-tab.is-active,
+  html.mobile-light-mode .value-map-option.active,
+  html.mobile-light-mode .trainer-pigment-button.is-selected,
+  html.mobile-light-mode .button:not(:disabled),
+  html.mobile-light-mode .button-primary,
+  html.mobile-light-mode button.is-primary {
+    border-color: rgba(201, 106, 61, 0.36) !important;
+    background:
+      linear-gradient(135deg, rgba(224, 137, 82, 0.96), rgba(185, 82, 43, 0.98)),
+      #c96a3d !important;
+    color: #fffaf4 !important;
+    box-shadow: 0 14px 24px rgba(201, 106, 61, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+
+  html.mobile-light-mode .value-map-selector {
+    border-color: transparent !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
+  html.mobile-light-mode .home-tab-button {
+    background: #1f1c18 !important;
+    color: #fffaf4 !important;
+    border-color: #1f1c18 !important;
+  }
+
+  html.mobile-light-mode .button:disabled,
+  html.mobile-light-mode button:disabled,
+  html.mobile-light-mode .button-secondary[disabled],
+  html.mobile-light-mode .mobile-toolbar-button:disabled,
+  html.mobile-light-mode .tab-button[disabled] {
+    border-color: rgba(50, 44, 38, 0.1) !important;
+    background: #f0ebe2 !important;
+    color: rgba(105, 99, 93, 0.68) !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+  }
+
+  html.mobile-light-mode input,
+  html.mobile-light-mode select,
+  html.mobile-light-mode textarea,
+  html.mobile-light-mode .access-input {
+    border-color: rgba(59, 52, 45, 0.14) !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: #1f1c18 !important;
+  }
+
+  html.mobile-light-mode input::placeholder,
+  html.mobile-light-mode textarea::placeholder {
+    color: rgba(105, 99, 93, 0.76) !important;
+  }
+
+  html.mobile-light-mode .analysis-surface,
+  html.mobile-light-mode .canvas-wrap,
+  html.mobile-light-mode #canvasWrap,
+  html.mobile-light-mode #sevenValueCanvasWrap,
+  html.mobile-light-mode #challengeCanvasWrap,
+  html.mobile-light-mode .image-stage,
+  html.mobile-light-mode .upload-empty-state,
+  html.mobile-light-mode .empty-state,
+  html.mobile-light-mode .workspace-preview,
+  html.mobile-light-mode .preview-frame,
+  html.mobile-light-mode .compare-preview-wrap,
+  html.mobile-light-mode .game-shell {
+    border-color: rgba(61, 51, 40, 0.14) !important;
+    background: #f3efe6 !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 18px 36px rgba(50, 39, 28, 0.14) !important;
+  }
+
+  html.mobile-light-mode .canvas-wrap::before,
+  html.mobile-light-mode .compare-preview-wrap::before {
+    background:
+      radial-gradient(circle at 9px 9px, #2f2d29 0 5px, transparent 6px),
+      radial-gradient(circle at 27px 9px, #c96a3d 0 5px, transparent 6px),
+      radial-gradient(circle at 45px 9px, #d9ad5c 0 5px, transparent 6px),
+      radial-gradient(circle at 63px 9px, #516b66 0 5px, transparent 6px) !important;
+    opacity: 0.32 !important;
+  }
+
+  html.mobile-light-mode .upload-empty-state-inner,
+  html.mobile-light-mode .upload-empty-icon {
+    border-color: rgba(62, 54, 47, 0.16) !important;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(246, 240, 231, 0.96)),
+      #fffaf4 !important;
+    color: #c96a3d !important;
+  }
+
+  html.mobile-light-mode .upload-empty-label,
+  html.mobile-light-mode .upload-empty-subcopy,
+  html.mobile-light-mode .mobile-picker-hint {
+    color: #69635d !important;
+  }
+
+  html.mobile-light-mode .upload-empty-state,
+  html.mobile-light-mode .empty-state {
+    border: 1px dashed rgba(61, 51, 40, 0.18) !important;
+    background:
+      radial-gradient(circle at 50% 35%, rgba(217, 173, 92, 0.12), transparent 34%),
+      repeating-linear-gradient(95deg, rgba(61, 51, 40, 0.026) 0 1px, transparent 1px 8px),
+      linear-gradient(145deg, rgba(250, 246, 238, 0.96), rgba(236, 229, 217, 0.92)) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 14px 28px rgba(50, 39, 28, 0.08) !important;
+  }
+
+  html.mobile-light-mode .upload-empty-state-inner {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  html.mobile-light-mode .upload-empty-icon {
+    width: 74px !important;
+    height: 74px !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(61, 51, 40, 0.12) !important;
+    background:
+      linear-gradient(145deg, rgba(255, 252, 246, 0.98), rgba(238, 231, 219, 0.96)) !important;
+    color: #5b4b3a !important;
+    box-shadow: 0 14px 22px rgba(50, 39, 28, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  }
+
+  html.mobile-light-mode .canvas-wrap.upload-enabled:hover .upload-empty-icon,
+  html.mobile-light-mode .canvas-wrap.upload-enabled:focus-visible .upload-empty-icon,
+  html.mobile-light-mode .image-wrap.upload-enabled:hover .upload-empty-icon,
+  html.mobile-light-mode .image-wrap.upload-enabled:focus-visible .upload-empty-icon,
+  html.mobile-light-mode .compare-preview-wrap.upload-enabled:hover .upload-empty-icon,
+  html.mobile-light-mode .compare-preview-wrap.upload-enabled:focus-visible .upload-empty-icon {
+    border-color: rgba(201, 106, 61, 0.34) !important;
+    color: #c96a3d !important;
+    transform: translateY(-1px) !important;
+  }
+
+  html.mobile-light-mode .value-scale-card,
+  html.mobile-light-mode .mobile-value-result-card,
+  html.mobile-light-mode .mobile-scale-details,
+  html.mobile-light-mode .compare-preview-card,
+  html.mobile-light-mode .compare-overlay-card,
+  html.mobile-light-mode .challenge-summary {
+    border-color: rgba(61, 51, 40, 0.12) !important;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+      #fffaf4 !important;
+    color: #1f1c18 !important;
+    box-shadow: 0 16px 32px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+  }
+
+  html.mobile-light-mode .mobile-app-dock,
+  html.mobile-light-mode .mobile-bottom-nav {
+    border-color: rgba(61, 51, 40, 0.12) !important;
+    border-radius: 24px !important;
+    background: rgba(255, 252, 246, 0.94) !important;
+    box-shadow: 0 22px 44px rgba(31, 28, 24, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  }
+
+  html.mobile-light-mode .mobile-app-dock-link,
+  html.mobile-light-mode .mobile-bottom-link {
+    color: rgba(31, 28, 24, 0.66) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html.mobile-light-mode .mobile-app-dock-link.is-active,
+  html.mobile-light-mode .mobile-bottom-link.is-active {
+    color: #fffaf4 !important;
+    background: #1f1c18 !important;
+    box-shadow: 0 14px 24px rgba(31, 28, 24, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  }
+
+  html.mobile-light-mode .mobile-workspace-toolbar .mobile-toolbar-button.is-result-ready {
+    border-color: rgba(201, 106, 61, 0.42) !important;
+    background:
+      linear-gradient(135deg, rgba(224, 137, 82, 0.96), rgba(185, 82, 43, 0.98)),
+      #c96a3d !important;
+    color: #fffaf4 !important;
+    box-shadow: 0 14px 26px rgba(201, 106, 61, 0.28), 0 0 0 3px rgba(201, 106, 61, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+  }
+
+  html.mobile-light-mode .status-toast,
+  html.mobile-light-mode .premium-toast {
+    border-color: rgba(61, 51, 40, 0.14) !important;
+    background: rgba(255, 252, 246, 0.96) !important;
+    color: #1f1c18 !important;
+  }
+}
