@@ -6015,6 +6015,25 @@ html,
         -webkit-overflow-scrolling: touch;
       }
 
+      html:not(.mobile-light-mode) .onboarding-overlay {
+        touch-action: pan-y !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+      }
+
+      html:not(.mobile-light-mode) .onboarding-card {
+        max-height: calc(100dvh - 18px) !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      html:not(.mobile-light-mode) .onboarding-stage,
+      html:not(.mobile-light-mode) .onboarding-slide.is-active,
+      html:not(.mobile-light-mode) .onboarding-access-panel {
+        overflow: visible !important;
+      }
+
       .onboarding-stage {
         min-height: 0;
         height: auto;
@@ -6290,8 +6309,7 @@ html,
         <article class="onboarding-slide is-active" data-onboarding-slide="0">
           <div class="onboarding-copy">
             <h2 id="onboardingTitle" class="onboarding-title">See Values Instantly</h2>
-            <p class="onboarding-text">Use the Value Picker to sample tones directly from your painting. Build a clear 7-step value map and compare your structure against reality.</p>
-            <p class="micro-trust">Value Picker<br>7-step Value Map<br>Value Comparison</p>
+            <p class="onboarding-text">Use the Value Picker to sample tones directly from your painting. Build clear 7, 5, or 3-step value maps, compare your structure against reality, and test how well you can guess values in Challenge.</p>
           </div>
           <div class="onboarding-visual">
             <div class="onboarding-demo-shell">
