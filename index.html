@@ -5999,6 +5999,157 @@ html,
         color: rgba(242, 231, 207, 0.68);
       }
 
+      .onboarding-overlay {
+        overscroll-behavior: contain;
+        touch-action: none;
+      }
+
+      .onboarding-card {
+        height: calc(100dvh - 18px);
+        max-height: calc(100dvh - 18px);
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        overflow: hidden;
+      }
+
+      .onboarding-stage {
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .onboarding-slide.is-active {
+        height: 100%;
+        min-height: 0;
+        align-content: start;
+        overflow: hidden;
+      }
+
+      .onboarding-access-slide.is-active {
+        display: flex;
+      }
+
+      .onboarding-access-panel {
+        width: 100%;
+        min-height: 0;
+        height: 100%;
+        gap: clamp(6px, 1.2dvh, 10px);
+        padding: clamp(10px, 1.7dvh, 14px);
+        overflow: hidden;
+      }
+
+      .onboarding-access-hero {
+        gap: clamp(4px, 0.9dvh, 8px);
+      }
+
+      .onboarding-lock-mark {
+        width: clamp(38px, 7dvh, 50px);
+        height: clamp(38px, 7dvh, 50px);
+      }
+
+      .onboarding-lock-mark svg {
+        width: clamp(18px, 3.4dvh, 24px);
+        height: clamp(18px, 3.4dvh, 24px);
+      }
+
+      .onboarding-access-title {
+        font-size: clamp(1.65rem, 7.8vw, 2.25rem);
+        line-height: 0.94;
+      }
+
+      .onboarding-access-copy {
+        max-width: 21rem;
+        font-size: clamp(0.7rem, 1.8dvh, 0.86rem);
+        line-height: 1.25;
+      }
+
+      .onboarding-plan-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        min-height: 0;
+      }
+
+      .onboarding-plan-card,
+      .onboarding-plan-card.is-paid {
+        min-height: 0;
+        gap: clamp(5px, 0.9dvh, 8px);
+        padding: clamp(9px, 1.45dvh, 12px);
+        border-radius: 16px;
+      }
+
+      .onboarding-plan-card.is-paid {
+        padding-top: clamp(13px, 2dvh, 16px);
+      }
+
+      .onboarding-best-value {
+        top: -9px;
+        min-height: 18px;
+        padding: 3px 9px;
+        font-size: 0.54rem;
+        letter-spacing: 0.08em;
+      }
+
+      .onboarding-plan-head {
+        gap: 4px;
+        padding-bottom: 6px;
+      }
+
+      .onboarding-plan-head strong {
+        font-size: clamp(0.94rem, 2.5dvh, 1.12rem);
+      }
+
+      .onboarding-plan-head span {
+        font-size: clamp(0.62rem, 1.65dvh, 0.74rem);
+        line-height: 1.2;
+      }
+
+      .onboarding-paid-title-row {
+        gap: 6px;
+      }
+
+      .onboarding-price-pill {
+        min-width: 42px;
+        min-height: 24px;
+        padding: 4px 8px;
+        font-size: 0.78rem;
+      }
+
+      .onboarding-plan-list {
+        gap: clamp(3px, 0.7dvh, 6px);
+        font-size: clamp(0.58rem, 1.48dvh, 0.72rem);
+        line-height: 1.2;
+      }
+
+      .onboarding-plan-list li {
+        gap: 6px;
+      }
+
+      .onboarding-plan-list li::before {
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        font-size: 0.68rem;
+      }
+
+      .onboarding-access-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .onboarding-unlock-button,
+      .onboarding-free-button {
+        min-height: 38px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        font-size: clamp(0.66rem, 1.65dvh, 0.78rem);
+      }
+
+      .onboarding-access-note {
+        font-size: clamp(0.56rem, 1.4dvh, 0.68rem);
+        line-height: 1.2;
+      }
+
       .mobile-theme-toggle .theme-icon-dark {
         display: none;
       }
