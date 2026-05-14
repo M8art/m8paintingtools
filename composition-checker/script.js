@@ -192,6 +192,7 @@ const SPIRAL_DEFAULTS = {
 
 const GOLDEN_RATIO = 1.61803398875;
 const SPIRAL_HANDLE_RADIUS = 8;
+const SPIRAL_HANDLE_TOUCH_RADIUS = 26;
 const SPIRAL_TEMPLATE_WIDTH = 89;
 const SPIRAL_TEMPLATE_HEIGHT = 55;
 const SPIRAL_TEMPLATE_RATIO = SPIRAL_TEMPLATE_WIDTH / SPIRAL_TEMPLATE_HEIGHT;
@@ -840,9 +841,12 @@ function handleOverlayPointerDown(event) {
   const bounds = getGoldenSpiralBounds();
   const handle = getGoldenSpiralHandleAtPoint(point, bounds);
 
+  event.preventDefault();
   state.spiral.selected = true;
   state.spiral.movedDuringPointer = false;
-  state.spiral.suppressClick = false;
+  state.spiral.suppressClick = true;
+  state.spiral.dragStartX = point.x;
+  state.spiral.dragStartY = point.y;
 
   if (handle) {
     const opposite = getOppositeCornerPoint(handle, bounds);
@@ -850,16 +854,23 @@ function handleOverlayPointerDown(event) {
     state.spiral.activeHandle = handle;
     state.spiral.anchorX = opposite.x;
     state.spiral.anchorY = opposite.y;
+    overlayCanvas.classList.add("is-spiral-editing");
   } else if (isPointInsideBounds(point, bounds)) {
     state.spiral.interaction = "move";
-    state.spiral.dragStartX = point.x;
-    state.spiral.dragStartY = point.y;
     state.spiral.startOffsetX = state.spiral.offsetX;
     state.spiral.startOffsetY = state.spiral.offsetY;
+    overlayCanvas.classList.add("is-spiral-editing");
   } else {
-    state.spiral.selected = false;
-    state.spiral.interaction = null;
+    const width = Math.max(1, Math.round(compositionImage.clientWidth));
+    const height = Math.max(1, Math.round(compositionImage.clientHeight));
+    const targetOffsets = getGoldenSpiralTargetOffsets(point, width, height);
+    state.spiral.offsetX = targetOffsets.offsetX;
+    state.spiral.offsetY = targetOffsets.offsetY;
+    state.spiral.interaction = "move";
     state.spiral.activeHandle = null;
+    state.spiral.startOffsetX = state.spiral.offsetX;
+    state.spiral.startOffsetY = state.spiral.offsetY;
+    overlayCanvas.classList.add("is-spiral-editing");
   }
 
   if (overlayCanvas.setPointerCapture) {
@@ -880,6 +891,7 @@ function handleOverlayPointerMove(event) {
   }
 
   if (state.spiral.interaction === "move") {
+    event.preventDefault();
     const width = Math.max(1, Math.round(compositionImage.clientWidth));
     const height = Math.max(1, Math.round(compositionImage.clientHeight));
     const maxOffsetX = width * 0.45;
@@ -902,6 +914,7 @@ function handleOverlayPointerMove(event) {
   }
 
   if (state.spiral.interaction === "resize") {
+    event.preventDefault();
     resizeGoldenSpiralFromHandle(point);
     state.spiral.movedDuringPointer = state.spiral.movedDuringPointer
       || Math.hypot(point.x - state.spiral.dragStartX, point.y - state.spiral.dragStartY) > 3;
@@ -917,11 +930,12 @@ function handleOverlayPointerUp(event) {
     return;
   }
 
-  state.spiral.suppressClick = state.spiral.movedDuringPointer;
+  state.spiral.suppressClick = true;
 
   state.spiral.interaction = null;
   state.spiral.activeHandle = null;
   state.spiral.movedDuringPointer = false;
+  overlayCanvas.classList.remove("is-spiral-editing");
 
   if (overlayCanvas.releasePointerCapture) {
     try {
@@ -3818,7 +3832,7 @@ function getGoldenSpiralHandlePoints(bounds) {
 
 function getGoldenSpiralHandleAtPoint(point, bounds) {
   return getGoldenSpiralHandlePoints(bounds).find((handle) => {
-    return Math.hypot(point.x - handle.x, point.y - handle.y) <= SPIRAL_HANDLE_RADIUS * 1.8;
+    return Math.hypot(point.x - handle.x, point.y - handle.y) <= SPIRAL_HANDLE_TOUCH_RADIUS;
   })?.name || null;
 }
 

@@ -579,6 +579,11 @@ a {
 
 .overlay-canvas.notes-mode {
   cursor: grab;
+  touch-action: none;
+}
+
+.overlay-canvas.notes-mode.is-spiral-editing {
+  cursor: grabbing;
 }
 
 .image-loading-overlay {
