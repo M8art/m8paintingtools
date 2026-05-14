@@ -260,25 +260,44 @@
       color: var(--ink);
     }
 
-    .mobile-value-toolbar,
     .mobile-picker-hint,
     .mobile-value-result-card {
       display: none;
     }
 
     .mobile-value-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
       gap: 10px;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      margin-bottom: 12px;
+      width: 100%;
+      margin: 0 0 12px;
+      padding: 10px;
+      border: 1px solid rgba(59, 52, 45, 0.08);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(246, 240, 231, 0.64)),
+        rgba(255, 250, 244, 0.72);
+      box-shadow: 0 10px 22px rgba(50, 39, 28, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
     }
 
     .mobile-toolbar-button {
       padding: 9px 8px;
       font-size: 0.75rem;
       min-height: 38px;
+      min-width: 86px;
       text-align: center;
       justify-content: center;
       white-space: nowrap;
+    }
+
+    .header-actions > .controls.header-controls:not(#compareControls) {
+      display: none;
+    }
+
+    body[data-mode="value-challenge"] #mobileValueToolbar,
+    body[data-mode="compare-values"] #mobileValueToolbar {
+      display: none;
     }
 
     .mobile-picker-hint {
@@ -886,6 +905,29 @@
     .compare-preview-wrap.upload-enabled {
       cursor: pointer;
     }
+
+    .compare-preview-wrap:not(.has-image)::after {
+      content: "+";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 6;
+      width: 54px;
+      height: 54px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(201, 106, 61, 0.38);
+      background: rgba(255, 250, 244, 0.88);
+      color: #c96a3d;
+      font-size: 1.85rem;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 12px 24px rgba(50, 39, 28, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      pointer-events: none;
+    }
+
 
     .compare-preview-wrap.upload-enabled:hover,
     .compare-preview-wrap.upload-enabled:focus-visible {
@@ -2284,6 +2326,16 @@
 
       .mobile-value-toolbar {
         display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .mobile-toolbar-button {
+        min-width: 0;
       }
 
       .mobile-picker-hint {
@@ -3397,6 +3449,22 @@
         display: none !important;
       }
 
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image)::after {
+        width: 38px;
+        height: 38px;
+        font-size: 1.35rem;
+        border-color: rgba(185, 141, 66, 0.62);
+        background:
+          radial-gradient(circle at 50% 32%, rgba(201, 106, 61, 0.22), transparent 56%),
+          linear-gradient(180deg, rgba(37, 30, 22, 0.98), rgba(13, 11, 8, 0.98));
+        color: #d9ad5c;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(242, 231, 207, 0.1);
+      }
+
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-icon,
+      body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-label {
+        display: none !important;
+      }
       body[data-mode="compare-values"] .compare-preview-wrap:not(.has-image) .upload-empty-state-inner {
         gap: 5px;
         padding: 7px 5px;
@@ -3469,13 +3537,8 @@
         </div>
 
         <input id="fileInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
-
-        <div id="compareControls" class="controls header-controls hidden">
-          <label class="button" for="referenceInput"><span class="desktop-compare-label">Reference</span><span class="mobile-compare-label">Ref</span></label>
-          <input id="referenceInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
-          <label class="button-secondary" for="paintingInput"><span class="desktop-compare-label">Painting</span><span class="mobile-compare-label">Paint</span></label>
-          <input id="paintingInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
-        </div>
+        <input id="referenceInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
+        <input id="paintingInput" type="file" accept="image/*" onchange="gtag('event', 'upload_image', { page_location: window.location.href })">
 
         <div class="controls header-controls">
           <button id="resetViewButton" class="button-secondary" type="button">Reset View</button>
@@ -4728,7 +4791,7 @@
         panelSet.analysis.classList.toggle("hidden", !isActive);
       });
 
-      compareControls.classList.toggle("hidden", mode !== "compare-values");
+      compareControls?.classList.toggle("hidden", mode !== "compare-values");
 
       mobileValueToolbar?.classList.toggle("hidden", !showMobilePickerTools);
       mobilePickerHint?.classList.toggle("hidden", !showMobilePickerTools);

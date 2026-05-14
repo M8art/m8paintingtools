@@ -7,6 +7,10 @@ const emptyStateLabel = emptyState?.querySelector(".upload-empty-label");
 const swatchGrid = document.getElementById("swatchGrid");
 const statusNote = document.getElementById("statusNote");
 const workspaceHint = document.getElementById("workspaceHint");
+const undoButton = document.getElementById("undoButton");
+const clearButton = document.getElementById("clearButton");
+const resetButton = document.getElementById("resetButton");
+const exportButton = document.getElementById("exportButton");
 const selectedColorCard = document.getElementById("selectedColorCard");
 const legacySwatchGridCard = swatchGrid.closest(".detail-card");
 const paletteSummary = document.getElementById("paletteSummary");
@@ -240,6 +244,7 @@ const state = {
   mixerResult: null,
   trainerSelection: [],
   trainerEvaluation: null,
+  actionHistory: [],
   imageLoading: false,
   loadErrorMessage: "",
   viewScale: 1,
@@ -317,6 +322,11 @@ if (trainerCheckButton) {
   trainerCheckButton.addEventListener("click", checkTrainerMix);
 }
 
+undoButton?.addEventListener("click", handleUndoWorkspace);
+clearButton?.addEventListener("click", handleClearWorkspace);
+resetButton?.addEventListener("click", handleResetWorkspace);
+exportButton?.addEventListener("click", handleExportWorkspace);
+
 premiumUnlockButton?.addEventListener("click", () => {
   window.location.href = premiumUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
@@ -327,6 +337,7 @@ renderMixerLogicReference();
 const initialColorTab = getInitialColorTab();
 setTab(initialColorTab);
 showInitialColorPaywall(initialColorTab);
+updateWorkspaceActionState();
 
 function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
@@ -408,6 +419,190 @@ function showPremiumLimitToast(message) {
   }, 2000);
 }
 
+function cloneColorState(value) {
+  return value ? JSON.parse(JSON.stringify(value)) : value;
+}
+
+function getActionSnapshot() {
+  return {
+    sampledPoint: cloneColorState(state.sampledPoint),
+    sampledColor: cloneColorState(state.sampledColor),
+    mixerResult: cloneColorState(state.mixerResult),
+    trainerSelection: [...state.trainerSelection],
+    trainerEvaluation: cloneColorState(state.trainerEvaluation),
+    activeTab: state.activeTab
+  };
+}
+
+function pushActionSnapshot() {
+  state.actionHistory.push(getActionSnapshot());
+  if (state.actionHistory.length > 12) {
+    state.actionHistory.shift();
+  }
+  updateWorkspaceActionState();
+}
+
+function restoreActionSnapshot(snapshot) {
+  if (!snapshot) {
+    return;
+  }
+
+  state.sampledPoint = cloneColorState(snapshot.sampledPoint);
+  state.sampledColor = cloneColorState(snapshot.sampledColor);
+  state.mixerResult = cloneColorState(snapshot.mixerResult);
+  state.trainerSelection = [...(snapshot.trainerSelection || [])];
+  state.trainerEvaluation = cloneColorState(snapshot.trainerEvaluation);
+  renderM8ColorMixer(state.mixerResult);
+  renderMixTrainer();
+  if (state.activeTab === "mixer") {
+    renderMixerSupportPanel(state.mixerResult);
+  } else if (state.activeTab === "trainer") {
+    renderTrainerSupportPanel();
+  }
+  updateSampleMarkerPosition();
+  updateWorkspaceActionState();
+}
+
+function updateWorkspaceActionState() {
+  const hasImage = hasLoadedImage();
+  const hasSample = !!state.sampledColor || !!state.sampledPoint || state.trainerSelection.length > 0 || !!state.trainerEvaluation;
+  if (undoButton) {
+    undoButton.disabled = !state.actionHistory.length;
+  }
+  if (clearButton) {
+    clearButton.disabled = !hasImage && !state.imageLoading && !state.loadErrorMessage;
+  }
+  if (resetButton) {
+    resetButton.disabled = !hasImage && !hasSample;
+  }
+  if (exportButton) {
+    exportButton.disabled = !hasImage || !state.analysisResult;
+  }
+}
+
+function handleUndoWorkspace() {
+  const snapshot = state.actionHistory.pop();
+  if (!snapshot) {
+    showStatusToast("Nothing to undo");
+    updateWorkspaceActionState();
+    return;
+  }
+
+  restoreActionSnapshot(snapshot);
+  statusNote.textContent = "Last color action undone.";
+  showStatusToast("Undo complete");
+}
+
+function handleResetWorkspace() {
+  if (!hasLoadedImage()) {
+    return;
+  }
+
+  pushActionSnapshot();
+  resetWorkspaceZoom();
+  resetMixerSampling();
+  renderWorkspaceView();
+  statusNote.textContent = state.activeTab === "palette" ? "Palette analysis ready." : "Sample point cleared.";
+  showStatusToast("Workspace reset");
+  updateWorkspaceActionState();
+}
+
+function handleClearWorkspace() {
+  imageLoadRequestId += 1;
+  if (state.objectUrl) {
+    URL.revokeObjectURL(state.objectUrl);
+  }
+
+  state.objectUrl = null;
+  state.palette = [];
+  state.selectedIndex = -1;
+  state.selectedTechnicalOpen = false;
+  state.technicalOpenByIndex = {};
+  state.harmony = null;
+  state.analysisResult = null;
+  state.actionHistory = [];
+  state.loadErrorMessage = "";
+  state.imageLoading = false;
+  resetWorkspaceZoom();
+  resetMixerSampling();
+  previewImage.onload = null;
+  previewImage.onerror = null;
+  previewImage.removeAttribute("src");
+  previewImage.classList.remove("is-loaded");
+  previewImage.style.display = "none";
+  resetWorkspaceEmptyState();
+  setWorkspaceLoadingState(false);
+  hidePremiumUnlockCard();
+  workspaceHint.textContent = isUnlocked() ? "Upload an image to study the dominant color families." : "Unlock Color Checker to upload and analyze color.";
+  statusNote.textContent = isUnlocked() ? "Upload an image to start." : "Unlock Color Checker to upload and analyze color.";
+  if (fileInput) {
+    fileInput.value = "";
+  }
+  renderPaletteSummary();
+  renderHarmonyAnalysis(null);
+  setTab(state.activeTab);
+  showStatusToast("Workspace cleared");
+  updateWorkspaceActionState();
+}
+
+function handleExportWorkspace() {
+  if (!hasLoadedImage() || !state.analysisResult) {
+    showStatusToast("Upload an image before export");
+    return;
+  }
+
+  const report = buildColorExportReport();
+  const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `m8-color-checker-${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showStatusToast("Color report exported");
+}
+
+function buildColorExportReport() {
+  const result = state.analysisResult;
+  const lines = [
+    "M8 COLOR CHECKER",
+    "",
+    "COLOR HARMONY",
+    `Primary: ${result.primary}`,
+    `Secondary: ${result.secondary || "None"}`,
+    `Confidence: ${Math.round(result.confidence * 100)}%`,
+    result.summary,
+    "",
+    "DOMINANT COLOR ROLES"
+  ];
+
+  (result.dominantColors || state.palette || []).slice(0, 8).forEach((color, index) => {
+    lines.push(`${index + 1}. ${color.painterHueName || color.hex} - ${color.temperature || "--"} - ${color.valueLabel || "--"} - ${Math.round(color.coverage || 0)}%`);
+  });
+
+  lines.push("", "PAINTER INTERPRETATION");
+  (result.painterInterpretation || []).forEach((line) => lines.push(`- ${line}`));
+
+  lines.push("", "HOW TO PAINT");
+  (result.howToPaint || []).forEach((line) => lines.push(`- ${line}`));
+
+  if (state.mixerResult) {
+    lines.push("", "SAMPLED MIX");
+    lines.push(`Color: ${state.mixerResult.sample.hex} / ${state.mixerResult.sample.family}`);
+    state.mixerResult.mix.forEach((item) => lines.push(`- ${item.pigment}: ${item.percent}%`));
+  }
+
+  if (state.trainerEvaluation) {
+    lines.push("", "MIX TRAINER");
+    lines.push(`Score: ${state.trainerEvaluation.score}%`);
+    lines.push(`Selected: ${state.trainerSelection.join(", ") || "None"}`);
+  }
+
+  return lines.join("\n");
+}
+
 function handleUpload(event) {
   const [file] = event.target.files || [];
   if (!file) {
@@ -443,6 +638,7 @@ function handleUpload(event) {
     workspaceHint.textContent = "Color families sampled from the uploaded image.";
     statusNote.textContent = ["mixer", "trainer"].includes(state.activeTab) ? "Click a point in the image to begin." : "Palette analysis ready.";
     hidePremiumUnlockCard();
+    state.actionHistory = [];
     resetWorkspaceZoom();
     resetMixerSampling();
     imageWrap.classList.toggle("sampling-enabled", ["mixer", "trainer"].includes(state.activeTab));
@@ -453,12 +649,14 @@ function handleUpload(event) {
     });
     extractPalette(previewImage);
     showStatusToast("Image loaded");
+    updateWorkspaceActionState();
   };
   previewImage.onerror = () => {
     if (requestId !== imageLoadRequestId) {
       return;
     }
     showWorkspaceLoadError("Couldn't load image. Please try another file.");
+    updateWorkspaceActionState();
   };
   previewImage.src = state.objectUrl;
 }
@@ -851,6 +1049,7 @@ function beginImageLoad() {
   workspaceHint.textContent = "Preparing analysis...";
   statusNote.textContent = "Preparing analysis...";
   imageWrap.classList.remove("sampling-enabled");
+  updateWorkspaceActionState();
 }
 
 function resetWorkspaceEmptyState() {
@@ -877,6 +1076,7 @@ function showWorkspaceLoadError(message) {
   workspaceHint.textContent = "Please try another image.";
   statusNote.textContent = message;
   imageWrap.classList.remove("sampling-enabled");
+  updateWorkspaceActionState();
 }
 
 function extractPalette(image) {
@@ -933,6 +1133,7 @@ function extractPalette(image) {
 
   renderPaletteSummary();
   analyzeHarmony();
+  updateWorkspaceActionState();
 }
 
 function renderPaletteSummary() {
@@ -1152,6 +1353,7 @@ function sampleMixerPoint(event) {
   const relativeX = clamp((event.clientX - rect.left) / rect.width, 0, 1);
   const relativeY = clamp((event.clientY - rect.top) / rect.height, 0, 1);
 
+  pushActionSnapshot();
   state.sampledPoint = { x: relativeX, y: relativeY };
   updateSampleMarkerPosition();
 
@@ -1172,6 +1374,7 @@ function sampleMixerPoint(event) {
       statusNote.textContent = "Unlock Color Checker to continue using the mixer.";
     }
   }
+  updateWorkspaceActionState();
 }
 
 function hasLoadedImage() {
@@ -1905,6 +2108,7 @@ function toggleTrainerPigment(name) {
     return;
   }
 
+  pushActionSnapshot();
   if (state.trainerSelection.includes(name)) {
     state.trainerSelection = state.trainerSelection.filter((item) => item !== name);
   } else if (state.trainerSelection.length < 4) {
@@ -1914,6 +2118,7 @@ function toggleTrainerPigment(name) {
   state.trainerEvaluation = null;
   renderMixTrainer();
   renderTrainerSupportPanel();
+  updateWorkspaceActionState();
 }
 
 function checkTrainerMix() {
@@ -1931,10 +2136,12 @@ function checkTrainerMix() {
     return;
   }
 
+  pushActionSnapshot();
   state.trainerEvaluation = evaluateTrainerMix(state.sampledColor, state.trainerSelection, state.mixerResult);
   renderMixTrainer();
   renderTrainerSupportPanel();
   statusNote.textContent = "Mix trainer feedback ready.";
+  updateWorkspaceActionState();
 }
 
 function evaluateTrainerMix(sample, selectedPigments, mixerResult) {

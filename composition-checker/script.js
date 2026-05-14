@@ -149,6 +149,9 @@ const mobileSpiralResetButton = document.getElementById("mobileSpiralResetButton
 const mobileSpiralRotateButton = document.getElementById("mobileSpiralRotateButton");
 const mobileSpiralFlipHorizontalButton = document.getElementById("mobileSpiralFlipHorizontalButton");
 const mobileSpiralFlipVerticalButton = document.getElementById("mobileSpiralFlipVerticalButton");
+const mobileNotanControlsCard = document.getElementById("mobileNotanControlsCard");
+const mobileNotanLevels = document.getElementById("mobileNotanLevels");
+const mobileNotanLevelsValue = document.getElementById("mobileNotanLevelsValue");
 const gridCanvasWidth = document.getElementById("gridCanvasWidth");
 const gridCanvasHeight = document.getElementById("gridCanvasHeight");
 const gridTransferResult = document.getElementById("gridTransferResult");
@@ -351,6 +354,7 @@ spiralDisplayButtons.forEach((button) => {
   button.addEventListener("click", () => setSpiralDisplayMode(button.dataset.spiralDisplay));
 });
 notanLevels.addEventListener("input", handleNotanLevelsInput);
+mobileNotanLevels?.addEventListener("input", handleNotanLevelsInput);
 focalSuggestButton.addEventListener("click", suggestFocalPointsFromContrast);
 dynamicAlignmentOnlyToggle.addEventListener("change", handleDynamicAlignmentToggle);
 gridSize.addEventListener("input", handleGridSizeInput);
@@ -2414,6 +2418,14 @@ function updateModeUI() {
   notanLevels.value = String(state.notanLevels);
   notanLevelsValue.textContent = `${state.notanLevels} values`;
   notanLevels.disabled = !isNotan;
+  if (mobileNotanLevels) {
+    mobileNotanLevels.value = String(state.notanLevels);
+    mobileNotanLevels.disabled = !isNotan;
+  }
+  if (mobileNotanLevelsValue) {
+    mobileNotanLevelsValue.textContent = `${state.notanLevels} values`;
+  }
+  mobileNotanControlsCard?.classList.toggle("hidden", !isNotan || !state.imageLoaded || advancedLocked);
   gridSize.value = String(state.gridDivisionIndex);
   gridSize.disabled = !isGridMode;
   if (mobileGridSize) {

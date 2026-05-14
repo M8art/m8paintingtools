@@ -113,6 +113,7 @@ const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
 const LAST_STREAK_DAY_STORAGE_KEY = "m8_last_streak_day";
 const RECENT_BREAKDOWN_LINES_STORAGE_KEY = "m8_recent_lines";
 const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
+const QUICK_CHECK_ONBOARDING_STORAGE_KEY = "m8_quick_check_onboarding_seen";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
@@ -223,6 +224,8 @@ let workspacePanY = 0;
 let touchSession = null;
 let suppressSurfaceClick = false;
 let lastTapTimestamp = 0;
+let quickCheckOnboardingLabel = null;
+let quickCheckOnboardingTimers = [];
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -234,6 +237,7 @@ handleUnlockReturn();
 
 updateAnalysisAccessUI();
 updateOverlayColorUI();
+scheduleQuickCheckOnboarding();
 
 if (justUnlockedFromStripe) {
   updateStatusMessage("Unlocked forever. You now have full access.", true);
@@ -241,6 +245,7 @@ if (justUnlockedFromStripe) {
 }
 
 uploadZone.addEventListener("click", () => {
+  completeQuickCheckOnboarding();
   if (shouldBlockAnalysisUpload()) {
     showLockedAnalysisState();
     return;
@@ -300,6 +305,7 @@ analysisSurface.addEventListener("touchend", handleWorkspaceTouchEnd, { passive:
 analysisSurface.addEventListener("touchcancel", handleWorkspaceTouchCancel, { passive: false });
 
 runAnalysisButton.addEventListener("click", () => {
+  completeQuickCheckOnboarding();
   if (isQuickCheckLockedByLimit()) {
     openFullUnlock();
     return;
@@ -323,6 +329,7 @@ mobileRunAnalysisButton?.addEventListener("click", () => {
 
 mobileResetWorkspaceButton?.addEventListener("click", resetUploadedImage);
 mobileResultsButton?.addEventListener("click", clearMobileResultsReady);
+mobileResultsButton?.addEventListener("click", completeQuickCheckOnboarding);
 
 paintingBreakdownButton?.addEventListener("click", requestFullPaintingBreakdown);
 
@@ -4207,6 +4214,118 @@ function capitalizeFirstLetter(text) {
   }
 
   return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
+}
+
+function scheduleQuickCheckOnboarding() {
+  const shouldReplay = params.get("guide") === "1" || params.get("onboarding") === "quick";
+  const hasSeenGuide = safeReadStorage(QUICK_CHECK_ONBOARDING_STORAGE_KEY) === "true";
+  if (hasSeenGuide && !shouldReplay) {
+    return;
+  }
+
+  const steps = getQuickCheckOnboardingSteps();
+  if (!steps.length || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    safeWriteStorage(QUICK_CHECK_ONBOARDING_STORAGE_KEY, "true");
+    return;
+  }
+
+  quickCheckOnboardingTimers.push(window.setTimeout(() => {
+    runQuickCheckOnboardingStep(steps, 0);
+  }, 850));
+}
+
+function getQuickCheckOnboardingSteps() {
+  return [
+    {
+      target: emptyState || uploadZone,
+      label: "Upload here",
+      placement: "inside"
+    },
+    {
+      target: mobileRunAnalysisButton || runAnalysisButton,
+      label: "Run analysis",
+      placement: "top"
+    },
+    {
+      target: mobileResultsButton,
+      label: "See result",
+      placement: "top"
+    }
+  ].filter((step) => step.target);
+}
+
+function runQuickCheckOnboardingStep(steps, index) {
+  if (index >= steps.length) {
+    completeQuickCheckOnboarding();
+    return;
+  }
+
+  const step = steps[index];
+  showQuickCheckOnboardingStep(step);
+  quickCheckOnboardingTimers.push(window.setTimeout(() => {
+    clearQuickCheckOnboardingHighlight();
+    quickCheckOnboardingTimers.push(window.setTimeout(() => {
+      runQuickCheckOnboardingStep(steps, index + 1);
+    }, 180));
+  }, 1250));
+}
+
+function showQuickCheckOnboardingStep(step) {
+  clearQuickCheckOnboardingHighlight();
+
+  const rect = step.target.getBoundingClientRect();
+  if (!rect.width || !rect.height) {
+    return;
+  }
+
+  step.target.classList.add("quick-check-onboarding-target");
+  document.body.classList.add("quick-check-onboarding-active");
+
+  quickCheckOnboardingLabel = document.createElement("div");
+  quickCheckOnboardingLabel.className = `quick-check-onboarding-label placement-${step.placement}`;
+  quickCheckOnboardingLabel.textContent = step.label;
+  document.body.appendChild(quickCheckOnboardingLabel);
+
+  const labelRect = quickCheckOnboardingLabel.getBoundingClientRect();
+  const left = clamp(rect.left + rect.width / 2 - labelRect.width / 2, 12, window.innerWidth - labelRect.width - 12);
+  const top = step.placement === "inside"
+    ? clamp(rect.top + rect.height / 2 + 62, 12, window.innerHeight - labelRect.height - 12)
+    : clamp(rect.top - labelRect.height - 12, 12, window.innerHeight - labelRect.height - 12);
+
+  quickCheckOnboardingLabel.style.left = `${left}px`;
+  quickCheckOnboardingLabel.style.top = `${top}px`;
+}
+
+function clearQuickCheckOnboardingHighlight() {
+  document.querySelectorAll(".quick-check-onboarding-target").forEach((element) => {
+    element.classList.remove("quick-check-onboarding-target");
+  });
+  quickCheckOnboardingLabel?.remove();
+  quickCheckOnboardingLabel = null;
+}
+
+function completeQuickCheckOnboarding() {
+  quickCheckOnboardingTimers.forEach((timerId) => window.clearTimeout(timerId));
+  quickCheckOnboardingTimers = [];
+  clearQuickCheckOnboardingHighlight();
+  document.body.classList.remove("quick-check-onboarding-active");
+  safeWriteStorage(QUICK_CHECK_ONBOARDING_STORAGE_KEY, "true");
+}
+
+function safeReadStorage(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch (error) {
+    return null;
+  }
+}
+
+function safeWriteStorage(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch (error) {
+    // Storage can be unavailable in privacy modes; the guide still runs safely.
+  }
 }
 
 function updateBreakdownUI() {

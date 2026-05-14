@@ -6302,7 +6302,7 @@ html,
     <div class="onboarding-card">
       <div class="onboarding-head">
         <p class="eyebrow">How It Works</p>
-        <button id="onboardingSkipButton" class="onboarding-skip" type="button">Skip</button>
+        <button id="onboardingSkipButton" class="onboarding-skip hidden" type="button">Skip</button>
       </div>
 
       <div id="onboardingStage" class="onboarding-stage" tabindex="0" aria-label="Tap to continue onboarding">
@@ -6355,8 +6355,7 @@ html,
         <article class="onboarding-slide" data-onboarding-slide="1">
           <div class="onboarding-copy">
             <h2 class="onboarding-title">Fix Composition Faster</h2>
-            <p class="onboarding-text">Test your composition with thirds, diagonals, and precision guides. See whether the structure feels balanced before you keep painting.</p>
-            <p class="micro-trust">Rule of Thirds<br>Diagonals<br>Precision Grid</p>
+            <p class="onboarding-text">Test your composition with thirds, diagonals, center lines, grids, golden ratio guides, spirals, and flow checks. See whether the focal point, balance, and structure feel strong before you keep painting.</p>
           </div>
           <div class="onboarding-visual">
             <div class="onboarding-demo-shell">
@@ -6396,8 +6395,7 @@ html,
         <article class="onboarding-slide" data-onboarding-slide="2">
           <div class="onboarding-copy">
             <h2 class="onboarding-title">Understand Color Like a Painter</h2>
-            <p class="onboarding-text">Extract real color relationships from your painting and analyze harmony. Get painter-friendly mixing guidance, not just color codes.</p>
-            <p class="micro-trust">Color Extraction<br>Harmony Detection<br>Mixing Hints</p>
+            <p class="onboarding-text">Extract real color relationships from your painting, read harmony, spot dominant and accent families, and get painter-friendly mixing guidance instead of just color codes.</p>
           </div>
           <div class="onboarding-visual">
             <div class="onboarding-demo-shell">
@@ -7439,6 +7437,7 @@ html,
 
       const isFinalSlide = index === onboardingSlides.length - 1;
       const hasAccessChoice = onboardingSlideHasAccessChoice(index);
+      onboardingSkipButton?.classList.add("hidden");
       onboardingStartButton?.classList.toggle("hidden", !isFinalSlide || hasAccessChoice);
       onboardingSwipeArrow?.classList.toggle("hidden", isFinalSlide || !isMobileViewport());
       if (onboardingNextHint) {
@@ -7474,8 +7473,8 @@ html,
       }
 
       onboardingUserInteracted = false;
-      onboardingCanSkip = allowSkip;
-      onboardingSkipButton?.classList.toggle("hidden", !onboardingCanSkip);
+      onboardingCanSkip = false;
+      onboardingSkipButton?.classList.add("hidden");
       renderOnboardingSlide(0);
       onboardingOverlay?.classList.remove("hidden");
       document.body.style.overflow = "hidden";
