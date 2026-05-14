@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #e8e3d8;
   --panel: rgba(252, 250, 246, 0.92);
   --panel-soft: #f3efe6;
@@ -2780,5 +2780,27 @@ html.mobile-light-mode .grid-overlay-info {
   body[data-mode="grid"] .composition-stage {
     overflow: hidden;
     border-radius: 16px;
+  }
+}
+/* Shared mobile tool heading polish */
+@media (max-width: 720px) {
+  html:not(.mobile-light-mode) .topbar .eyebrow {
+    color: #b98d42 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif !important;
+    font-size: 0.64rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.18em !important;
+    text-transform: uppercase !important;
+  }
+
+  html:not(.mobile-light-mode) .topbar h1,
+  html:not(.mobile-light-mode) .title-row h1 {
+    color: #f2e7cf !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42) !important;
   }
 }
