@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "m8paintingtools.com",
+      "sha256_cert_fingerprints": [
+        "1C:F0:1A:09:E9:C8:26:CC:7E:25:8A:34:CA:1B:7A:92:4A:89:E3:80:51:10:D8:3D:D8:46:F8:91:7B:32:B7:D5"
+      ]
+    }
+  }
+]
