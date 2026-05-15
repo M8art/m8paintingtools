@@ -751,6 +751,43 @@
     const unlockButton = document.getElementById("unlockButton");
     const accessMessage = document.getElementById("accessMessage");
 
+    function hasUnlockedAccess() {
+      return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true";
+    }
+
+    function cleanUnlockQueryFromUrl() {
+      const cleanedUrl = new URL(window.location.href);
+      cleanedUrl.searchParams.delete("unlocked");
+      const nextUrl = `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`;
+      window.history.replaceState({}, "", nextUrl || cleanedUrl.pathname);
+    }
+
+    function renderUnlockedAccessState(message = "Access is already unlocked on this device.") {
+      accessMessage.classList.remove("is-error");
+      accessMessage.textContent = message;
+      accessMessage.classList.add("is-success");
+      unlockButton.disabled = true;
+      unlockButton.textContent = "Tools Unlocked";
+      passwordInput.disabled = true;
+      passwordInput.placeholder = "Already unlocked";
+    }
+
+    function handlePaymentUnlockReturn() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("unlocked") !== "true") {
+        return false;
+      }
+
+      localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+      renderUnlockedAccessState("Payment confirmed. All tools are unlocked on this device.");
+      cleanUnlockQueryFromUrl();
+      return true;
+    }
+
+    if (!handlePaymentUnlockReturn() && hasUnlockedAccess()) {
+      renderUnlockedAccessState();
+    }
+
     accessForm.addEventListener("submit", (event) => {
       event.preventDefault();
 
