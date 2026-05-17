@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M8 Drawing Checker</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-6ZYJSDPH5X');
+  </script>
+  <link rel="stylesheet" href="./style.css?v=20260517-perspective-beam-single">
+  <script src="../assets/mobile-theme.js"></script>
+  <link rel="stylesheet" href="../assets/mobile-theme.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Drawing Study</p>
+        <h1>M8 Drawing Checker</h1>
+        <div class="mobile-tool-status-row" aria-label="Tool status">
+          <span class="mobile-tool-chip">Drawing</span>
+          <span class="mobile-tool-status-pill"><span aria-hidden="true"></span> Draft tool</span>
+        </div>
+        <p class="intro">
+          Check proportion, angles, alignment, and perspective structure before committing to paint.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link" href="../analysis/index.html">Quick Check</a>
+          <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+          <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+          <a class="top-nav-link is-current" href="./index.html" aria-current="page">Drawing Checker</a>
+        </nav>
+        <label class="button" for="drawingFileInput">Upload Drawing</label>
+        <input id="drawingFileInput" type="file" accept="image/png,image/jpeg,image/webp,image/*">
+        <input id="referenceFileInput" type="file" accept="image/png,image/jpeg,image/webp,image/*">
+        <input id="compareDrawingFileInput" type="file" accept="image/png,image/jpeg,image/webp,image/*">
+      </div>
+    </header>
+
+    <nav class="mode-switcher" aria-label="Drawing checker modes">
+      <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 10.5 12 3l9 7.5"></path>
+          <path d="M5.5 9.5V21h13V9.5"></path>
+          <path d="M9.5 21v-6h5v6"></path>
+        </svg>
+      </a>
+      <button class="tab-button active" type="button" data-mode="canon">Head Canon</button>
+      <button class="tab-button" type="button" data-mode="body">Body Canon</button>
+      <button class="tab-button" type="button" data-mode="perspective">Perspective</button>
+      <button class="tab-button" type="button" data-mode="compare">Compare</button>
+    </nav>
+
+    <main class="layout">
+      <section class="card workspace-card">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Workspace</p>
+            <h2 id="workspaceTitle">Head Canon</h2>
+          </div>
+          <div class="workspace-meta">
+            <p id="workspaceHint" class="hint">Upload a sketch, study, or reference to inspect the drawing structure.</p>
+            <div class="overlay-tool-control" aria-label="Overlay controls">
+              <button id="overlayToggleButton" class="icon-toggle is-active" type="button" aria-expanded="false">
+                <span id="overlaySelectedDot" class="overlay-selected-dot overlay-color-amber" aria-hidden="true"></span>
+                Overlay
+              </button>
+              <div class="overlay-color-swatches" aria-label="Overlay color">
+                <button class="overlay-color-swatch is-active" type="button" data-overlay-color="amber" aria-label="Use amber overlay"></button>
+                <button class="overlay-color-swatch overlay-color-dark" type="button" data-overlay-color="dark" aria-label="Use dark overlay"></button>
+                <button class="overlay-color-swatch overlay-color-white" type="button" data-overlay-color="white" aria-label="Use white overlay"></button>
+                <button class="overlay-color-swatch overlay-color-blue" type="button" data-overlay-color="blue" aria-label="Use blue overlay"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mobile-workspace-toolbar" aria-label="Drawing mobile controls">
+          <label class="button mobile-toolbar-button" for="drawingFileInput">Upload</label>
+          <button id="resetButton" class="button-secondary mobile-toolbar-button" type="button" disabled>Reset</button>
+        </div>
+
+        <div class="workspace-tool-strip" aria-label="Workspace tools">
+          <label class="button-secondary tool-strip-button" for="drawingFileInput">Upload</label>
+          <button class="button-secondary tool-strip-button" type="button" data-workspace-action="undo" disabled>Undo</button>
+          <button class="button-secondary tool-strip-button" type="button" data-workspace-action="center" disabled>Center</button>
+          <button class="button-secondary tool-strip-button" type="button" data-workspace-action="reset" disabled>Reset</button>
+          <button class="button-secondary tool-strip-button" type="button" data-workspace-action="export" disabled>Export</button>
+        </div>
+
+        <div id="drawingStage" class="drawing-stage upload-enabled" tabindex="0" role="button" aria-label="Click to upload a drawing">
+          <img id="drawingPreview" class="drawing-preview" alt="Uploaded drawing preview">
+          <div id="emptyState" class="empty-state upload-empty-state">
+            <div class="upload-empty-state-inner">
+              <div class="upload-empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 6v12"></path>
+                  <path d="M6 12h12"></path>
+                </svg>
+              </div>
+              <p class="upload-empty-label">Upload drawing or sketch</p>
+              <p class="upload-empty-subcopy">JPG, PNG, WebP</p>
+            </div>
+          </div>
+
+          <div id="drawingOverlay" class="drawing-overlay mode-proportion" aria-hidden="true">
+            <span class="axis axis-vertical"></span>
+            <span class="axis axis-horizontal"></span>
+            <span class="axis axis-diagonal-one"></span>
+            <span class="axis axis-diagonal-two"></span>
+            <span class="measure measure-top"></span>
+            <span class="measure measure-middle"></span>
+            <span class="measure measure-bottom"></span>
+            <span class="vanish vanish-left"></span>
+            <span class="vanish vanish-right"></span>
+            <span class="note-dot note-dot-a"><span>axis</span></span>
+            <span class="note-dot note-dot-b"><span>angle</span></span>
+            <span class="note-dot note-dot-c"><span>space</span></span>
+            <div id="perspectiveSystem" class="perspective-system" aria-hidden="true">
+              <span id="perspectiveHorizon" class="perspective-horizon"></span>
+              <span id="vpCenterMarker" class="vp-marker vp-center">VP</span>
+              <span id="vpLeftMarker" class="vp-marker vp-left">L</span>
+              <span id="vpRightMarker" class="vp-marker vp-right">R</span>
+              <span class="perspective-ray ray-center" data-perspective-ray="center-top-left"></span>
+              <span class="perspective-ray ray-center" data-perspective-ray="center-top-right"></span>
+              <span class="perspective-ray ray-center" data-perspective-ray="center-bottom-left"></span>
+              <span class="perspective-ray ray-center" data-perspective-ray="center-bottom-right"></span>
+              <span class="perspective-ray ray-left" data-perspective-ray="left-upper"></span>
+              <span class="perspective-ray ray-left" data-perspective-ray="left-middle"></span>
+              <span class="perspective-ray ray-left" data-perspective-ray="left-lower"></span>
+              <span class="perspective-ray ray-right" data-perspective-ray="right-upper"></span>
+              <span class="perspective-ray ray-right" data-perspective-ray="right-middle"></span>
+              <span class="perspective-ray ray-right" data-perspective-ray="right-lower"></span>
+            </div>
+            <div id="canonSystem" class="canon-system" aria-hidden="true">
+              <div id="canonBoard" class="canon-board">
+                <span class="canon-line canon-skull"></span>
+                <span class="canon-line canon-hairline"></span>
+                <span class="canon-line canon-brow"></span>
+                <span class="canon-line canon-eye canon-detail canon-detail-eyes"></span>
+                <span class="canon-line canon-nose"></span>
+                <span class="canon-line canon-mouth canon-detail canon-detail-mouth"></span>
+                <span class="canon-line canon-chin"></span>
+                <span class="canon-line canon-center"></span>
+                <span class="canon-vertical canon-grid-one"></span>
+                <span class="canon-vertical canon-side-grid-three"></span>
+                <span class="canon-vertical canon-width-one canon-detail canon-detail-widths"></span>
+                <span class="canon-vertical canon-width-two canon-detail canon-detail-widths"></span>
+                <span class="canon-vertical canon-width-three canon-detail canon-detail-widths"></span>
+                <span class="canon-vertical canon-width-four canon-detail canon-detail-widths"></span>
+                <span class="canon-label canon-label-skull">Top of skull</span>
+                <span class="canon-label canon-label-hairline">Hairline</span>
+                <span class="canon-label canon-label-brow">Brow line</span>
+                <span class="canon-label canon-label-eye canon-detail canon-detail-eyes">Eye line</span>
+                <span class="canon-label canon-label-nose">Bottom of nose</span>
+                <span class="canon-label canon-label-mouth canon-detail canon-detail-mouth">Bottom mouth</span>
+                <span class="canon-label canon-label-chin">Bottom of chin</span>
+                <span class="canon-third-label canon-third-top">1/3</span>
+                <span class="canon-third-label canon-third-mid">1/3</span>
+                <span class="canon-third-label canon-third-low">1/3</span>
+                <span class="canon-third-label canon-side-width-label-a canon-side-only canon-detail canon-detail-widths">1/3</span>
+                <span class="canon-third-label canon-side-width-label-b canon-side-only canon-detail canon-detail-widths">2/3</span>
+                <span class="canon-resize-handle handle-top-left" data-canon-resize-handle aria-hidden="true"></span>
+                <span class="canon-resize-handle handle-top-right" data-canon-resize-handle aria-hidden="true"></span>
+                <span class="canon-resize-handle handle-bottom-left" data-canon-resize-handle aria-hidden="true"></span>
+                <span class="canon-resize-handle handle-bottom-right" data-canon-resize-handle aria-hidden="true"></span>
+              </div>
+            </div>
+            <div id="bodyCanonSystem" class="body-canon-system" aria-hidden="true">
+              <div id="bodyCanonBoard" class="body-canon-board">
+                <span class="body-canon-line body-head"></span>
+                <span class="body-canon-line body-chest"></span>
+                <span class="body-canon-line body-navel"></span>
+                <span class="body-canon-line body-pelvis"></span>
+                <span class="body-canon-line body-knee"></span>
+                <span class="body-canon-line body-ankle"></span>
+                <span class="body-canon-line body-center"></span>
+                <svg class="body-canon-guide body-front-guide" viewBox="0 0 240 800" aria-hidden="true">
+                  <path d="M120 24 C88 24 68 48 68 78 C68 112 91 134 120 134 C149 134 172 112 172 78 C172 48 152 24 120 24 Z"></path>
+                  <path d="M82 146 C98 160 142 160 158 146"></path>
+                  <path d="M63 160 C40 210 36 300 48 390"></path>
+                  <path d="M177 160 C200 210 204 300 192 390"></path>
+                  <path d="M70 164 C82 262 80 326 62 400"></path>
+                  <path d="M170 164 C158 262 160 326 178 400"></path>
+                  <path d="M63 400 C78 462 88 535 84 610 C82 680 72 730 62 774"></path>
+                  <path d="M177 400 C162 462 152 535 156 610 C158 680 168 730 178 774"></path>
+                  <path d="M106 400 C102 510 100 618 92 774"></path>
+                  <path d="M134 400 C138 510 140 618 148 774"></path>
+                  <path d="M52 382 C83 400 157 400 188 382"></path>
+                </svg>
+                <svg class="body-canon-guide body-side-guide" viewBox="0 0 260 800" aria-hidden="true">
+                  <path d="M132 24 C100 28 82 52 84 84 C86 118 108 136 136 132 C162 128 178 104 174 74 C170 45 153 22 132 24 Z"></path>
+                  <path d="M132 136 C160 172 174 250 164 354"></path>
+                  <path d="M122 138 C96 198 88 278 100 390"></path>
+                  <path d="M100 390 C126 420 164 416 184 386"></path>
+                  <path d="M126 390 C142 500 151 610 160 760"></path>
+                  <path d="M106 390 C102 512 100 628 92 774"></path>
+                  <path d="M100 202 C72 250 72 325 92 390"></path>
+                  <path d="M164 210 C198 280 202 356 184 430"></path>
+                </svg>
+                <span class="canon-resize-handle handle-top-left" data-canon-resize-handle aria-hidden="true"></span>
+                <span class="canon-resize-handle handle-top-right" data-canon-resize-handle aria-hidden="true"></span>
+                <span class="canon-resize-handle handle-bottom-left" data-canon-resize-handle aria-hidden="true"></span>
+                <span class="canon-resize-handle handle-bottom-right" data-canon-resize-handle aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-perspective-hud" aria-label="Mobile perspective quick controls">
+            <div class="mobile-perspective-hud-row">
+              <button class="blend-button" type="button" data-perspective-mode="one">1 VP</button>
+              <button class="blend-button" type="button" data-perspective-mode="two">2 VP</button>
+              <button class="button-secondary mini-button perspective-auto-button mobile-perspective-auto" type="button" data-perspective-auto>Auto</button>
+            </div>
+            <div class="perspective-beam-toggle compact" aria-label="Perspective beam visibility">
+              <button class="mini-button is-active" type="button" data-perspective-beam="left">Left beams</button>
+              <button class="mini-button is-active" type="button" data-perspective-beam="right">Right beams</button>
+            </div>
+            <label class="compare-slider compact">
+              <span>Horizon</span>
+              <input type="range" min="15" max="85" value="48" data-perspective-control="horizon">
+            </label>
+            <label class="compare-slider compact one-point-control">
+              <span>Center</span>
+              <input type="range" min="10" max="90" value="50" data-perspective-control="center">
+            </label>
+            <label class="compare-slider compact two-point-control">
+              <span>Left VP</span>
+              <input type="range" min="-220" max="45" value="-25" data-perspective-control="left">
+            </label>
+            <label class="compare-slider compact two-point-control">
+              <span>Right VP</span>
+              <input type="range" min="55" max="260" value="125" data-perspective-control="right">
+            </label>
+            <div class="mobile-perspective-hud-row">
+              <button class="mini-button" type="button" data-perspective-rays="decrease">-2</button>
+              <strong class="mobile-ray-count" data-perspective-ray-count-stat>4</strong>
+              <button class="mini-button" type="button" data-perspective-rays="increase">+2</button>
+            </div>
+          </div>
+
+          <div id="compareStage" class="compare-stage" aria-hidden="true">
+            <img id="referencePreview" class="compare-image reference-image" alt="Uploaded reference preview">
+            <img id="compareDrawingPreview" class="compare-image compare-drawing-image" alt="Uploaded drawing overlay preview">
+            <div id="compareEmptyState" class="compare-empty-state">
+              <div class="compare-empty-grid">
+                <label class="compare-upload-tile" for="referenceFileInput">
+                  <span class="compare-upload-icon">+</span>
+                  <span>Reference</span>
+                </label>
+                <label class="compare-upload-tile" for="compareDrawingFileInput">
+                  <span class="compare-upload-icon">+</span>
+                  <span>Your drawing</span>
+                </label>
+              </div>
+            </div>
+            <div class="compare-center-guides" aria-hidden="true">
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mobile-compare-controls" aria-label="Mobile compare controls">
+          <div class="mobile-compare-upload-row">
+            <label class="button mini-button" for="referenceFileInput">Ref</label>
+            <label class="button-secondary mini-button" for="compareDrawingFileInput">Drawing</label>
+            <button class="button-secondary mini-button" type="button" data-compare-action="swap">Swap</button>
+          </div>
+          <label class="compare-slider compact">
+            <span>Opacity</span>
+            <input type="range" min="10" max="100" value="58" data-compare-control="opacity">
+          </label>
+          <label class="compare-slider compact">
+            <span>Scale</span>
+            <input type="range" min="45" max="180" value="100" data-compare-control="scale">
+          </label>
+          <label class="compare-slider compact">
+            <span>Move X</span>
+            <input type="range" min="-180" max="180" value="0" data-compare-control="x">
+          </label>
+          <label class="compare-slider compact">
+            <span>Move Y</span>
+            <input type="range" min="-180" max="180" value="0" data-compare-control="y">
+          </label>
+          <label class="compare-slider compact">
+            <span>Rotate</span>
+            <input type="range" min="-25" max="25" value="0" data-compare-control="rotate">
+          </label>
+          <div class="compare-blend-grid compact" aria-label="Blend mode">
+            <button class="blend-button" type="button" data-compare-blend="normal">Normal</button>
+            <button class="blend-button is-active" type="button" data-compare-blend="multiply">Multiply</button>
+            <button class="blend-button" type="button" data-compare-blend="difference">Diff</button>
+          </div>
+          <div class="mobile-nudge-grid" aria-label="Move drawing layer">
+            <button class="button-secondary nudge-button" type="button" data-nudge="up">&uarr;</button>
+            <button class="button-secondary nudge-button" type="button" data-nudge="left">&larr;</button>
+            <button class="button-secondary nudge-button" type="button" data-nudge="right">&rarr;</button>
+            <button class="button-secondary nudge-button" type="button" data-nudge="down">&darr;</button>
+          </div>
+          <div class="mobile-compare-upload-row">
+            <button class="button-secondary mini-button" type="button" data-compare-action="fit">Fit</button>
+            <button class="button-secondary mini-button" type="button" data-compare-action="reset">Reset</button>
+            <button class="button-secondary mini-button" type="button" data-compare-action="center">Center</button>
+          </div>
+        </div>
+
+        <section id="perspectiveToolkit" class="perspective-toolkit" aria-label="Perspective toolkit">
+          <div class="perspective-toolkit-head">
+            <div>
+              <p class="section-label">Vanishing Points</p>
+              <h3>Perspective Check</h3>
+            </div>
+            <span id="perspectiveModeBadge" class="readiness-badge">1 VP</span>
+          </div>
+          <div class="perspective-mode-toggle" aria-label="Perspective mode">
+            <button class="blend-button is-active" type="button" data-perspective-mode="one">1 VP</button>
+            <button class="blend-button" type="button" data-perspective-mode="two">2 VP</button>
+          </div>
+          <div class="perspective-beam-toggle" aria-label="Perspective beam visibility">
+            <button class="mini-button is-active" type="button" data-perspective-beam="left">Left beams</button>
+            <button class="mini-button is-active" type="button" data-perspective-beam="right">Right beams</button>
+          </div>
+          <button class="button-secondary mini-button perspective-auto-button" type="button" data-perspective-auto>Auto align</button>
+          <label class="compare-slider">
+            <span>Horizon</span>
+            <input type="range" min="15" max="85" value="48" data-perspective-control="horizon">
+          </label>
+          <label class="compare-slider one-point-control">
+            <span>VP Center</span>
+            <input type="range" min="10" max="90" value="50" data-perspective-control="center">
+          </label>
+          <label class="compare-slider two-point-control">
+            <span>Left VP</span>
+            <input type="range" min="-220" max="45" value="-25" data-perspective-control="left">
+          </label>
+          <label class="compare-slider two-point-control">
+            <span>Right VP</span>
+            <input type="range" min="55" max="260" value="125" data-perspective-control="right">
+          </label>
+          <div class="perspective-ray-count-control">
+            <span>Rays</span>
+            <div class="ray-stepper" aria-label="Perspective ray count">
+              <button class="mini-button" type="button" data-perspective-rays="decrease">-2</button>
+              <strong id="perspectiveRayCountStat">4</strong>
+              <button class="mini-button" type="button" data-perspective-rays="increase">+2</button>
+            </div>
+          </div>
+          <label class="compare-slider">
+            <span>Left spread</span>
+            <input type="range" min="20" max="100" value="54" data-perspective-control="leftSpread">
+          </label>
+          <label class="compare-slider">
+            <span>Right spread</span>
+            <input type="range" min="20" max="100" value="54" data-perspective-control="rightSpread">
+          </label>
+          <label class="compare-slider">
+            <span>Opacity</span>
+            <input type="range" min="25" max="100" value="68" data-perspective-control="opacity">
+          </label>
+          <div class="perspective-stat-grid">
+            <div>
+              <span class="meta-label">Mode</span>
+              <strong id="perspectiveModeStat">One point</strong>
+            </div>
+            <div>
+              <span class="meta-label">Horizon</span>
+              <strong id="perspectiveHorizonStat">48%</strong>
+            </div>
+            <div>
+              <span class="meta-label">Check</span>
+              <strong id="perspectiveCheckStat">Edges to VP</strong>
+            </div>
+          </div>
+        </section>
+
+        <section id="canonToolkit" class="canon-toolkit" aria-label="Head canon toolkit">
+          <div class="canon-toolkit-head">
+            <div>
+              <p class="section-label">Head Canon</p>
+              <h3>3.5 Unit Overlay</h3>
+            </div>
+            <span id="canonViewBadge" class="readiness-badge">Front</span>
+          </div>
+          <div class="canon-view-toggle" aria-label="Head canon view">
+            <button class="blend-button is-active" type="button" data-canon-view="front">Front</button>
+            <button class="blend-button" type="button" data-canon-view="side">Side</button>
+          </div>
+          <div class="canon-guide-toggle" aria-label="Head canon guide layers">
+            <button class="mini-button" type="button" data-canon-guide="eyes">Eye line</button>
+            <button class="mini-button" type="button" data-canon-guide="mouth">Mouth base</button>
+            <button class="mini-button" type="button" data-canon-guide="widths">Eye/Nose widths</button>
+          </div>
+          <label class="compare-slider compact">
+            <span>Size</span>
+            <input type="range" min="20" max="190" value="100" data-canon-control="scale">
+          </label>
+          <label class="compare-slider compact">
+            <span>Move X</span>
+            <input type="range" min="-220" max="220" value="0" data-canon-control="x">
+          </label>
+          <label class="compare-slider compact">
+            <span>Move Y</span>
+            <input type="range" min="-220" max="220" value="0" data-canon-control="y">
+          </label>
+          <label class="compare-slider compact">
+            <span>Opacity</span>
+            <input type="range" min="25" max="100" value="72" data-canon-control="opacity">
+          </label>
+          <div class="canon-action-row">
+            <button class="button-secondary mini-button" type="button" data-canon-action="center">Center</button>
+            <button class="button-secondary mini-button" type="button" data-canon-action="reset">Reset</button>
+          </div>
+        </section>
+
+        <section id="bodyCanonToolkit" class="body-canon-toolkit" aria-label="Body canon toolkit">
+          <div class="body-canon-toolkit-head">
+            <div>
+              <p class="section-label">Body Canon</p>
+              <h3>8 Head Overlay</h3>
+            </div>
+            <span id="bodyCanonViewBadge" class="readiness-badge">Front</span>
+          </div>
+          <div class="body-canon-view-toggle" aria-label="Body canon view">
+            <button class="blend-button is-active" type="button" data-body-view="front">Front</button>
+            <button class="blend-button" type="button" data-body-view="side">Side</button>
+          </div>
+          <label class="compare-slider compact">
+            <span>Size</span>
+            <input type="range" min="20" max="150" value="100" data-body-control="scale">
+          </label>
+          <label class="compare-slider compact">
+            <span>Move X</span>
+            <input type="range" min="-140" max="140" value="0" data-body-control="x">
+          </label>
+          <label class="compare-slider compact">
+            <span>Move Y</span>
+            <input type="range" min="-140" max="140" value="0" data-body-control="y">
+          </label>
+          <label class="compare-slider compact">
+            <span>Opacity</span>
+            <input type="range" min="25" max="100" value="70" data-body-control="opacity">
+          </label>
+          <div class="body-canon-action-row">
+            <button class="button-secondary mini-button" type="button" data-body-action="center">Center</button>
+            <button class="button-secondary mini-button" type="button" data-body-action="reset">Reset</button>
+          </div>
+        </section>
+
+        <div class="quick-actions" aria-label="Drawing checker actions">
+          <button id="runButton" class="button" type="button" disabled>Run Drawing Check</button>
+          <button id="clearButton" class="button-secondary" type="button" disabled>Clear</button>
+          <button id="compareButton" class="button-secondary" type="button">Compare Mode</button>
+        </div>
+      </section>
+
+      <aside id="resultPanel" class="card side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Drawing Read</p>
+            <h2 id="panelTitle">Head Canon</h2>
+          </div>
+          <span id="readinessBadge" class="readiness-badge">Waiting</span>
+        </div>
+
+        <div class="score-card">
+          <p class="section-label">Structure Score</p>
+          <div class="score-row">
+            <strong id="structureScore">--</strong>
+            <span id="structureVerdict">Upload a drawing to start.</span>
+          </div>
+          <div class="confidence-meter" aria-hidden="true">
+            <span id="scoreFill"></span>
+          </div>
+          <div class="read-metric-grid" aria-label="Drawing read metrics">
+            <div>
+              <span class="meta-label">Envelope</span>
+              <strong id="envelopeMetric">--</strong>
+            </div>
+            <div>
+              <span class="meta-label">Axis Drift</span>
+              <strong id="axisMetric">--</strong>
+            </div>
+            <div>
+              <span class="meta-label">Main Angle</span>
+              <strong id="angleMetric">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <section id="proportionToolkit" class="proportion-toolkit" aria-label="Proportion toolkit">
+          <div class="proportion-toolkit-head">
+            <div>
+              <p class="section-label">Big Shape Check</p>
+              <h3>Envelope + Divisions</h3>
+            </div>
+            <span id="proportionRatioBadge" class="readiness-badge">--</span>
+          </div>
+          <div class="proportion-frame" aria-hidden="true">
+            <span class="proportion-guide vertical"></span>
+            <span class="proportion-guide half"></span>
+            <span class="proportion-guide third-a"></span>
+            <span class="proportion-guide third-b"></span>
+            <span id="proportionEnvelopeBox" class="proportion-envelope-box"></span>
+          </div>
+          <div class="proportion-stat-grid">
+            <div>
+              <span class="meta-label">Envelope</span>
+              <strong id="proportionEnvelopeStat">--</strong>
+            </div>
+            <div>
+              <span class="meta-label">Center Pull</span>
+              <strong id="proportionCenterStat">--</strong>
+            </div>
+            <div>
+              <span class="meta-label">Mass Split</span>
+              <strong id="proportionMassStat">--</strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="analysis-grid">
+          <article class="detail-card">
+            <p id="proportionLabel" class="section-label">Proportions</p>
+            <p id="proportionRead" class="detail-copy">Check the big height-width relationships and major shape divisions.</p>
+          </article>
+
+          <article class="detail-card">
+            <p id="angleLabel" class="section-label">Angles</p>
+            <p id="angleRead" class="detail-copy">Compare the main tilts and directional lines before refining details.</p>
+          </article>
+
+          <article class="detail-card">
+            <p id="alignmentLabel" class="section-label">Alignment</p>
+            <p id="alignmentRead" class="detail-copy">Use center axes and landmarks to see whether the drawing is drifting.</p>
+          </article>
+
+          <article class="detail-card">
+            <p class="section-label">What To Fix First</p>
+            <p id="fixRead" class="detail-copy">The first fix will appear here after upload.</p>
+          </article>
+        </div>
+
+        <section id="comparePanel" class="compare-panel">
+          <div>
+            <p class="section-label">Reference vs Drawing</p>
+            <h3>Layer Compare</h3>
+            <p id="compareStatus" class="detail-copy">Upload both images, then align the drawing over the reference in the preview.</p>
+          </div>
+          <div class="desktop-compare-controls" aria-label="Desktop compare controls">
+            <div class="compare-upload-row">
+              <label class="button" for="referenceFileInput">Upload Reference</label>
+              <label class="button-secondary" for="compareDrawingFileInput">Upload Drawing</label>
+            </div>
+            <label class="compare-slider">
+              <span>Drawing opacity</span>
+              <input type="range" min="10" max="100" value="58" data-compare-control="opacity">
+            </label>
+            <label class="compare-slider">
+              <span>Scale</span>
+              <input type="range" min="45" max="180" value="100" data-compare-control="scale">
+            </label>
+            <label class="compare-slider">
+              <span>Move X</span>
+              <input type="range" min="-180" max="180" value="0" data-compare-control="x">
+            </label>
+            <label class="compare-slider">
+              <span>Move Y</span>
+              <input type="range" min="-180" max="180" value="0" data-compare-control="y">
+            </label>
+            <label class="compare-slider">
+              <span>Rotate</span>
+              <input type="range" min="-25" max="25" value="0" data-compare-control="rotate">
+            </label>
+            <div class="compare-blend-grid" aria-label="Blend mode">
+              <button class="blend-button" type="button" data-compare-blend="normal">Normal</button>
+              <button class="blend-button is-active" type="button" data-compare-blend="multiply">Multiply</button>
+              <button class="blend-button" type="button" data-compare-blend="difference">Difference</button>
+            </div>
+            <div class="compare-control-row">
+              <button class="button-secondary" type="button" data-compare-action="fit">Fit drawing</button>
+              <button class="button-secondary" type="button" data-compare-action="center">Center layer</button>
+              <button class="button-secondary" type="button" data-compare-action="swap">Swap layers</button>
+              <button class="button-secondary" type="button" data-compare-action="reset">Reset layer</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <nav class="mobile-app-dock" aria-label="App navigation">
+      <a class="mobile-app-dock-link" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 11.5 12 4l8 7.5"></path>
+          <path d="M6.5 10.5V20h11v-9.5"></path>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a class="mobile-app-dock-link is-active" href="../analysis/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10.5 18a7.5 7.5 0 1 1 5.3-2.2L21 21"></path>
+          <path d="M7.8 10.5c1.2-2 4.2-2 5.4 0"></path>
+        </svg>
+        <span>Analyze</span>
+      </a>
+      <a class="mobile-app-dock-link" href="../brush-runner/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 17c4-5 8-7 16-8"></path>
+          <path d="M6 15l3 3"></path>
+          <path d="M17 7l2 4"></path>
+        </svg>
+        <span>Game</span>
+      </a>
+      <a class="mobile-app-dock-link" href="../access/index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 11V8a5 5 0 0 1 10 0v3"></path>
+          <path d="M6 11h12v10H6z"></path>
+        </svg>
+        <span>Access</span>
+      </a>
+    </nav>
+  </div>
+
+  <script src="./script.js?v=20260517-perspective-beam-single"></script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260512-dark-controls">
+  <link rel="stylesheet" href="./style.css?v=20260516-dark-paywall-fix">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
@@ -40,6 +40,7 @@
           <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
           <a class="top-nav-link is-current" href="./index.html" aria-current="page">Composition Checker</a>
           <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+          <a class="top-nav-link" href="../drawing-checker/index.html">Drawing Checker</a>
         </nav>
         <div class="social-links" aria-label="Social links">
           <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
@@ -122,6 +123,7 @@
           <button id="clearCompositionButton" class="button-secondary" type="button" disabled>Clear</button>
           <button id="resetCompositionButton" class="button-secondary" type="button" disabled>Reset</button>
           <button id="exportCompositionButton" class="button-secondary" type="button" disabled>Export</button>
+          <button id="diagonalCounterWorkspaceToggle" class="button-secondary diagonal-counter-workspace-toggle hidden" type="button" data-diagonal-counter-toggle aria-pressed="false">Counter</button>
         </div>
 
         <div class="canvas-wrap upload-enabled" id="canvasWrap" tabindex="0" role="button" aria-label="Click to upload your image">
@@ -258,6 +260,9 @@
             <p class="section-label">Diagonal Flow Reading</p>
             <div class="control-stack diagonal-reading-stack">
               <p id="diagonalFlowScore" class="dynamic-score">Diagonal Flow: --</p>
+              <button id="diagonalCounterToggle" class="diagonal-counter-toggle" type="button" data-diagonal-counter-toggle aria-pressed="false">
+                Counter diagonal
+              </button>
               <div class="thirds-reading-grid">
                 <p class="detail-copy"><strong>Main diagonal:</strong> <span id="diagonalMainAxis">Waiting for image.</span></p>
                 <p class="detail-copy"><strong>Counter diagonal:</strong> <span id="diagonalCounterAxis">Waiting for image.</span></p>
@@ -288,22 +293,28 @@
           </div>
 
           <div id="gridTransferCard" class="detail-card hidden">
-            <p class="section-label">Transfer to Canvas</p>
+            <div class="grid-transfer-header">
+              <p class="section-label">Transfer to Canvas</p>
+              <div class="grid-unit-toggle" role="group" aria-label="Canvas measurement units">
+                <button class="grid-unit-button is-active" type="button" data-grid-unit="cm" aria-pressed="true">cm</button>
+                <button class="grid-unit-button" type="button" data-grid-unit="in" aria-pressed="false">in</button>
+              </div>
+            </div>
             <div class="control-stack">
               <p class="detail-copy">Use the grid to match the same spacing on your canvas for easier drawing transfer.</p>
               <div class="grid-transfer-inputs">
                 <label class="grid-transfer-field">
                   <span class="control-label">Canvas width</span>
                   <span class="grid-transfer-input-wrap">
-                    <input id="gridCanvasWidth" class="grid-transfer-input" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Canvas width in centimeters">
-                    <span class="grid-transfer-unit">cm</span>
+                    <input id="gridCanvasWidth" class="grid-transfer-input" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Canvas width in selected units">
+                    <span class="grid-transfer-unit" data-grid-unit-label>cm</span>
                   </span>
                 </label>
                 <label class="grid-transfer-field">
                   <span class="control-label">Canvas height</span>
                   <span class="grid-transfer-input-wrap">
-                    <input id="gridCanvasHeight" class="grid-transfer-input" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Canvas height in centimeters">
-                    <span class="grid-transfer-unit">cm</span>
+                    <input id="gridCanvasHeight" class="grid-transfer-input" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Canvas height in selected units">
+                    <span class="grid-transfer-unit" data-grid-unit-label>cm</span>
                   </span>
                 </label>
               </div>
@@ -495,7 +506,7 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=composition-diagonal-depth-20260512"></script>
+  <script src="./script.js?v=20260516-dark-paywall-fix"></script>
 </body>
 </html>
 

@@ -127,6 +127,7 @@ const diagonalWarning = document.getElementById("diagonalWarning");
 const diagonalFixCard = document.getElementById("diagonalFixCard");
 const diagonalFixList = document.getElementById("diagonalFixList");
 const diagonalFixLock = document.getElementById("diagonalFixLock");
+const diagonalCounterToggles = Array.from(document.querySelectorAll("[data-diagonal-counter-toggle]"));
 const spiralControlsCard = document.getElementById("spiralControlsCard");
 const notanControlsCard = document.getElementById("notanControlsCard");
 const focalControlsCard = document.getElementById("focalControlsCard");
@@ -155,6 +156,8 @@ const mobileNotanLevelsValue = document.getElementById("mobileNotanLevelsValue")
 const gridCanvasWidth = document.getElementById("gridCanvasWidth");
 const gridCanvasHeight = document.getElementById("gridCanvasHeight");
 const gridTransferResult = document.getElementById("gridTransferResult");
+const gridUnitButtons = Array.from(document.querySelectorAll("[data-grid-unit]"));
+const gridUnitLabels = Array.from(document.querySelectorAll("[data-grid-unit-label]"));
 const gridOverlayInfo = document.getElementById("gridOverlayInfo");
 const downloadCompositionAnalysisButton = document.getElementById("downloadCompositionAnalysisButton");
 const spiralScale = document.getElementById("spiralScale");
@@ -196,6 +199,7 @@ const SPIRAL_HANDLE_TOUCH_RADIUS = 26;
 const SPIRAL_TEMPLATE_WIDTH = 89;
 const SPIRAL_TEMPLATE_HEIGHT = 55;
 const SPIRAL_TEMPLATE_RATIO = SPIRAL_TEMPLATE_WIDTH / SPIRAL_TEMPLATE_HEIGHT;
+const INCH_TO_CM = 2.54;
 const SPIRAL_TEMPLATE_SQUARES = [
   { x: 0, y: 0, size: 55 },
   { x: 55, y: 0, size: 34 },
@@ -256,6 +260,7 @@ const state = {
   gridDivisionIndex: 2,
   gridCanvasWidth: "",
   gridCanvasHeight: "",
+  gridUnit: "cm",
   autoDetectedOverlayColor: "#1f1c18",
   userSelectedOverlayColor: null,
   isOverlayColorMenuOpen: false,
@@ -288,6 +293,7 @@ const state = {
     key: null,
     reading: null
   },
+  diagonalShowCounter: false,
   centerSelection: null,
   spiral: {
     ...SPIRAL_DEFAULTS
@@ -358,12 +364,18 @@ notanLevels.addEventListener("input", handleNotanLevelsInput);
 mobileNotanLevels?.addEventListener("input", handleNotanLevelsInput);
 focalSuggestButton.addEventListener("click", suggestFocalPointsFromContrast);
 dynamicAlignmentOnlyToggle.addEventListener("change", handleDynamicAlignmentToggle);
+diagonalCounterToggles.forEach((button) => {
+  button.addEventListener("click", toggleDiagonalCounter);
+});
 gridSize.addEventListener("input", handleGridSizeInput);
 mobileGridSize?.addEventListener("input", handleGridSizeInput);
 mobileGridControlsCard?.addEventListener("click", stopMobileGridControlEvent);
 mobileGridControlsCard?.addEventListener("pointerdown", stopMobileGridControlEvent);
 gridCanvasWidth.addEventListener("input", handleGridCanvasInput);
 gridCanvasHeight.addEventListener("input", handleGridCanvasInput);
+gridUnitButtons.forEach((button) => {
+  button.addEventListener("click", () => setGridUnit(button.dataset.gridUnit));
+});
 overlayCanvas.addEventListener("pointerdown", handleOverlayPointerDown);
 window.addEventListener("pointermove", handleOverlayPointerMove);
 window.addEventListener("pointerup", handleOverlayPointerUp);
@@ -1603,7 +1615,26 @@ function updateDiagonalReadingUI() {
   diagonalRhythm.textContent = reading ? reading.rhythmLine : "Waiting for image.";
   diagonalTension.textContent = reading ? reading.tensionLine : "Waiting for image.";
   diagonalWarning.textContent = reading ? reading.warning : "Upload an image to read directional flow.";
+  updateDiagonalCounterToggle();
   renderDiagonalFixUI(reading);
+}
+
+function toggleDiagonalCounter() {
+  state.diagonalShowCounter = !state.diagonalShowCounter;
+  updateDiagonalCounterToggle();
+  requestOverlayDraw();
+}
+
+function updateDiagonalCounterToggle() {
+  const isDiagonalMode = state.analysisMode === "basic" && state.mode === "diagonal";
+  diagonalCounterToggles.forEach((button) => {
+    button.classList.toggle("hidden", !isDiagonalMode);
+    button.classList.toggle("is-active", state.diagonalShowCounter);
+    button.setAttribute("aria-pressed", String(state.diagonalShowCounter));
+    button.textContent = state.diagonalShowCounter
+      ? button.id === "diagonalCounterWorkspaceToggle" ? "Counter on" : "Counter diagonal on"
+      : button.id === "diagonalCounterWorkspaceToggle" ? "Counter" : "Counter diagonal";
+  });
 }
 
 function renderDiagonalFixUI(reading) {
@@ -1960,6 +1991,8 @@ function generateDiagonalReading(sample, focalArea) {
 
   return {
     score: clamp(score, 0, 100),
+    dominantAxis,
+    secondaryAxis,
     mainAxisLine: `${capitalizeLabel(strengthLabel)} ${axisName} movement.`,
     counterAxisLine: `${capitalizeLabel(counterLabel)} counter movement on the ${counterName} diagonal.`,
     eyePathLine: getDiagonalEyePathLine(metrics, axisName),
@@ -2220,6 +2253,31 @@ function formatGridMeasurement(value) {
   return value.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
 }
 
+function convertGridMeasurement(value, fromUnit, toUnit) {
+  const numericValue = Number(value);
+  if (!(numericValue > 0) || fromUnit === toUnit) {
+    return value;
+  }
+
+  return fromUnit === "cm"
+    ? numericValue / INCH_TO_CM
+    : numericValue * INCH_TO_CM;
+}
+
+function setGridUnit(unit) {
+  if (unit !== "cm" && unit !== "in") {
+    return;
+  }
+  if (unit === state.gridUnit) {
+    return;
+  }
+
+  state.gridCanvasWidth = formatGridMeasurement(convertGridMeasurement(state.gridCanvasWidth, state.gridUnit, unit));
+  state.gridCanvasHeight = formatGridMeasurement(convertGridMeasurement(state.gridCanvasHeight, state.gridUnit, unit));
+  state.gridUnit = unit;
+  updateGridTransferUI();
+}
+
 function updateGridOverlayInfo() {
   gridOverlayInfo.textContent = `Grid: ${getGridDivisions()} x ${getGridDivisions()}`;
 }
@@ -2232,13 +2290,28 @@ function updateGridTransferUI() {
 
   if (!(width > 0) || !(height > 0)) {
     gridTransferResult.textContent = "Enter your canvas size to calculate each square.";
+    updateGridUnitUI();
     return;
   }
 
   const divisions = getGridDivisions();
   const cellWidth = width / divisions;
   const cellHeight = height / divisions;
-  gridTransferResult.textContent = `Each square: ${formatGridMeasurement(cellWidth)} x ${formatGridMeasurement(cellHeight)} cm`;
+  gridTransferResult.textContent = `Each square: ${formatGridMeasurement(cellWidth)} x ${formatGridMeasurement(cellHeight)} ${state.gridUnit}`;
+  updateGridUnitUI();
+}
+
+function updateGridUnitUI() {
+  gridUnitButtons.forEach((button) => {
+    const isActive = button.dataset.gridUnit === state.gridUnit;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+  gridUnitLabels.forEach((label) => {
+    label.textContent = state.gridUnit;
+  });
+  gridCanvasWidth.setAttribute("aria-label", `Canvas width in ${state.gridUnit === "cm" ? "centimeters" : "inches"}`);
+  gridCanvasHeight.setAttribute("aria-label", `Canvas height in ${state.gridUnit === "cm" ? "centimeters" : "inches"}`);
 }
 
 function handleGridSizeInput(event) {
@@ -2448,6 +2521,9 @@ function updateModeUI() {
   }
   gridCanvasWidth.disabled = !isGridMode;
   gridCanvasHeight.disabled = !isGridMode;
+  gridUnitButtons.forEach((button) => {
+    button.disabled = !isGridMode;
+  });
   gridCanvasWidth.value = state.gridCanvasWidth;
   gridCanvasHeight.value = state.gridCanvasHeight;
   const gridSizeLabel = `Grid: ${getGridDivisions()} x ${getGridDivisions()}`;
@@ -3089,14 +3165,39 @@ function drawCenterSelection(ctx, width, height, overlayPalette) {
 }
 
 function drawDiagonals(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
-  ctx.strokeStyle = overlayPalette.stroke;
-  ctx.lineWidth = lineWidth;
+  const reading = getDiagonalReading();
+  const mainAxis = reading?.dominantAxis || "TL-BR";
+  const counterAxis = mainAxis === "TL-BR" ? "TR-BL" : "TL-BR";
+
+  drawDiagonalAxis(ctx, width, height, mainAxis, {
+    strokeStyle: overlayPalette.strokeStrong,
+    lineWidth
+  });
+
+  if (state.diagonalShowCounter) {
+    drawDiagonalAxis(ctx, width, height, counterAxis, {
+      strokeStyle: overlayPalette.strokeSoft,
+      lineWidth: Math.max(1, lineWidth * 0.75),
+      lineDash: [10, 9]
+    });
+  }
+}
+
+function drawDiagonalAxis(ctx, width, height, axis, options = {}) {
+  ctx.save();
+  ctx.strokeStyle = options.strokeStyle || "#1f1c18";
+  ctx.lineWidth = options.lineWidth || BASIC_OVERLAY_LINE_WIDTH;
+  ctx.setLineDash(options.lineDash || []);
   ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(width, height);
-  ctx.moveTo(width, 0);
-  ctx.lineTo(0, height);
+  if (axis === "TR-BL") {
+    ctx.moveTo(width, 0);
+    ctx.lineTo(0, height);
+  } else {
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, height);
+  }
   ctx.stroke();
+  ctx.restore();
 }
 
 function drawGoldenRatio(ctx, width, height, overlayPalette) {

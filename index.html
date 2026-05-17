@@ -2341,6 +2341,16 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
+    .app-tool-tile-drawing {
+      --tool-image: url("./assets/images/drawing-checker-preview.png");
+      --tool-image-position: center 48%;
+    }
+
+    .app-tool-tile-wide {
+      grid-column: 1 / -1;
+      min-height: 86px;
+    }
+
     .app-tool-name {
       font-family: Georgia, "Times New Roman", serif;
       font-size: 1.32rem;
@@ -4311,6 +4321,28 @@ html,
           inset 0 -18px 26px rgba(61, 51, 40, 0.075);
       }
 
+      .app-tool-tile-wide {
+        min-height: 96px;
+        aspect-ratio: auto;
+        align-content: center;
+      }
+
+      .app-tool-tile-drawing::after {
+        inset: 0;
+        width: auto;
+        height: auto;
+        border-radius: inherit;
+        background:
+          linear-gradient(90deg, rgba(21, 18, 15, 0.76), rgba(21, 18, 15, 0.3) 45%, rgba(21, 18, 15, 0.05)),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 250, 244, 0.08)),
+          var(--tool-image);
+        background-position: center, center, var(--tool-image-position);
+        background-size: auto, auto, cover;
+        opacity: 0.96;
+        transform: scale(1.01);
+        z-index: 0;
+      }
+
       .app-tool-tile:not(.is-primary)::after {
         inset: 0;
         width: auto;
@@ -4363,6 +4395,10 @@ html,
         font-weight: 900;
         overflow-wrap: normal;
         white-space: nowrap;
+      }
+
+      .app-tool-tile-wide .app-tool-name {
+        font-size: 1rem;
       }
 
       .app-tool-main {
@@ -5031,6 +5067,11 @@ html,
         aspect-ratio: 1 / 1;
         padding: 11px;
         border-radius: 20px;
+      }
+
+      .app-tool-tile-wide {
+        min-height: 82px;
+        aspect-ratio: auto;
       }
 
       .app-tool-name {
@@ -6590,6 +6631,7 @@ html,
           <a class="top-nav-link" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Value Checker</a>
           <a class="top-nav-link" href="./composition-checker/index.html" onclick="gtag('event', 'open_composition_tool', { page_location: window.location.href })">Composition Checker</a>
           <a class="top-nav-link" href="./color-studio/index.html">Color Checker</a>
+          <a class="top-nav-link" href="./drawing-checker/index.html">Drawing Checker</a>
         </nav>
         <div class="social-links desktop-landing-only" aria-label="Social links">
           <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
@@ -6782,6 +6824,22 @@ html,
             </span>
             <span class="app-tool-copy">Palette read</span>
           </a>
+
+          <a class="app-tool-tile is-primary app-tool-tile-wide app-tool-tile-drawing" href="./drawing-checker/index.html">
+            <span class="app-tool-kicker">Drawing <span class="app-tool-arrow" aria-hidden="true">&gt;</span></span>
+            <span class="app-tool-main">
+              <span class="app-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 20h16"></path>
+                  <path d="M6 16 17.5 4.5a2.1 2.1 0 0 1 3 3L9 19l-4 1 1-4Z"></path>
+                  <path d="m15.5 6.5 2 2"></path>
+                </svg>
+              </span>
+              <span class="app-tool-name">Drawing Checker (BETA)</span>
+            </span>
+            <span class="app-tool-copy">Check the structure of your drawing before painting.</span>
+          </a>
+
         </div>
       </div>
 
@@ -7276,7 +7334,7 @@ html,
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js?v=20260509launch").catch(() => {
+        navigator.serviceWorker.register("./service-worker.js?v=20260515-drawing-cache").catch(() => {
           // Keep app behavior unchanged if service worker registration fails.
         });
       });

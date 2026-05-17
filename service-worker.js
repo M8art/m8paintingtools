@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v12";
+const CACHE_NAME = "m8-painting-tools-shell-v16";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -52,6 +52,15 @@ self.addEventListener("fetch", (event) => {
 
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith("/drawing-checker/")) {
+    event.respondWith(
+      fetch(request, { cache: "no-store" }).catch(async () => {
+        return (await caches.match(request)) || Response.error();
+      })
+    );
     return;
   }
 
