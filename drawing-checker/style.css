@@ -286,7 +286,8 @@ svg {
 
   .perspective-toolkit,
   .canon-toolkit,
-  .body-canon-toolkit {
+  .body-canon-toolkit,
+  .compare-panel {
     grid-area: inspector;
     align-self: start;
     margin: 0;
@@ -1652,6 +1653,7 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
 .perspective-toolkit-head,
 .canon-toolkit-head,
 .body-canon-toolkit-head,
+.compare-toolkit-head,
 .canon3d-toolkit-head {
   display: flex;
   align-items: start;
@@ -1663,6 +1665,7 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
 .perspective-toolkit h3,
 .canon-toolkit h3,
 .body-canon-toolkit h3,
+.compare-panel h3,
 .canon3d-toolkit h3 {
   margin: 5px 0 0;
   font-size: 1.18rem;
@@ -1937,21 +1940,18 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
 
 .compare-panel {
   display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-top: 14px;
+  gap: 12px;
+  margin: 10px 0 14px;
   background: var(--tool-card);
 }
 
 .app.compare-active .compare-panel {
-  display: flex;
-  margin-top: 0;
+  display: grid;
+  margin: 0;
 }
 
 .compare-panel h3 {
-  margin: 5px 0 7px;
-  font-size: 1.2rem;
+  margin-bottom: 0;
 }
 
 .desktop-compare-controls {

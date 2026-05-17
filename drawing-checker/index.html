@@ -457,6 +457,54 @@
           </div>
         </section>
 
+        <section id="comparePanel" class="compare-panel">
+          <div class="compare-toolkit-head">
+            <div>
+              <p class="section-label">Reference vs Drawing</p>
+              <h3>Layer Compare</h3>
+            </div>
+            <span class="readiness-badge">Align</span>
+          </div>
+          <p id="compareStatus" class="detail-copy">Upload both images, then align the drawing over the reference in the preview.</p>
+          <div class="desktop-compare-controls" aria-label="Desktop compare controls">
+            <div class="compare-upload-row">
+              <label class="button" for="referenceFileInput">Upload Reference</label>
+              <label class="button-secondary" for="compareDrawingFileInput">Upload Drawing</label>
+            </div>
+            <label class="compare-slider">
+              <span>Drawing opacity</span>
+              <input type="range" min="10" max="100" value="58" data-compare-control="opacity">
+            </label>
+            <label class="compare-slider">
+              <span>Scale</span>
+              <input type="range" min="45" max="180" value="100" data-compare-control="scale">
+            </label>
+            <label class="compare-slider">
+              <span>Move X</span>
+              <input type="range" min="-180" max="180" value="0" data-compare-control="x">
+            </label>
+            <label class="compare-slider">
+              <span>Move Y</span>
+              <input type="range" min="-180" max="180" value="0" data-compare-control="y">
+            </label>
+            <label class="compare-slider">
+              <span>Rotate</span>
+              <input type="range" min="-25" max="25" value="0" data-compare-control="rotate">
+            </label>
+            <div class="compare-blend-grid" aria-label="Blend mode">
+              <button class="blend-button" type="button" data-compare-blend="normal">Normal</button>
+              <button class="blend-button is-active" type="button" data-compare-blend="multiply">Multiply</button>
+              <button class="blend-button" type="button" data-compare-blend="difference">Difference</button>
+            </div>
+            <div class="compare-control-row">
+              <button class="button-secondary" type="button" data-compare-action="fit">Fit drawing</button>
+              <button class="button-secondary" type="button" data-compare-action="center">Center layer</button>
+              <button class="button-secondary" type="button" data-compare-action="swap">Swap layers</button>
+              <button class="button-secondary" type="button" data-compare-action="reset">Reset layer</button>
+            </div>
+          </div>
+        </section>
+
         <div class="quick-actions" aria-label="Drawing checker actions">
           <button id="runButton" class="button" type="button" disabled>Run Drawing Check</button>
           <button id="clearButton" class="button-secondary" type="button" disabled>Clear</button>
@@ -550,51 +598,6 @@
             <p id="fixRead" class="detail-copy">The first fix will appear here after upload.</p>
           </article>
         </div>
-
-        <section id="comparePanel" class="compare-panel">
-          <div>
-            <p class="section-label">Reference vs Drawing</p>
-            <h3>Layer Compare</h3>
-            <p id="compareStatus" class="detail-copy">Upload both images, then align the drawing over the reference in the preview.</p>
-          </div>
-          <div class="desktop-compare-controls" aria-label="Desktop compare controls">
-            <div class="compare-upload-row">
-              <label class="button" for="referenceFileInput">Upload Reference</label>
-              <label class="button-secondary" for="compareDrawingFileInput">Upload Drawing</label>
-            </div>
-            <label class="compare-slider">
-              <span>Drawing opacity</span>
-              <input type="range" min="10" max="100" value="58" data-compare-control="opacity">
-            </label>
-            <label class="compare-slider">
-              <span>Scale</span>
-              <input type="range" min="45" max="180" value="100" data-compare-control="scale">
-            </label>
-            <label class="compare-slider">
-              <span>Move X</span>
-              <input type="range" min="-180" max="180" value="0" data-compare-control="x">
-            </label>
-            <label class="compare-slider">
-              <span>Move Y</span>
-              <input type="range" min="-180" max="180" value="0" data-compare-control="y">
-            </label>
-            <label class="compare-slider">
-              <span>Rotate</span>
-              <input type="range" min="-25" max="25" value="0" data-compare-control="rotate">
-            </label>
-            <div class="compare-blend-grid" aria-label="Blend mode">
-              <button class="blend-button" type="button" data-compare-blend="normal">Normal</button>
-              <button class="blend-button is-active" type="button" data-compare-blend="multiply">Multiply</button>
-              <button class="blend-button" type="button" data-compare-blend="difference">Difference</button>
-            </div>
-            <div class="compare-control-row">
-              <button class="button-secondary" type="button" data-compare-action="fit">Fit drawing</button>
-              <button class="button-secondary" type="button" data-compare-action="center">Center layer</button>
-              <button class="button-secondary" type="button" data-compare-action="swap">Swap layers</button>
-              <button class="button-secondary" type="button" data-compare-action="reset">Reset layer</button>
-            </div>
-          </div>
-        </section>
       </aside>
     </main>
 
