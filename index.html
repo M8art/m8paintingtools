@@ -1095,6 +1095,118 @@
       animation-delay: 0.5s;
     }
 
+    .onboarding-drawing-lab {
+      position: absolute;
+      inset: 18px;
+      display: grid;
+      grid-template-columns: 0.88fr 1.12fr;
+      gap: 14px;
+      z-index: 2;
+    }
+
+    .onboarding-drawing-panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      border-radius: 20px;
+      background: rgba(255, 252, 246, 0.86);
+      box-shadow: 0 14px 28px rgba(32, 24, 18, 0.14);
+    }
+
+    .onboarding-drawing-head {
+      display: grid;
+      grid-template-columns: 1fr 0.82fr;
+      align-items: end;
+      background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(239, 227, 211, 0.9));
+    }
+
+    .onboarding-drawing-head img,
+    .onboarding-drawing-house img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .onboarding-drawing-head img {
+      object-position: center 20%;
+      filter: sepia(0.08) saturate(0.92);
+    }
+
+    .onboarding-drawing-side-head {
+      opacity: 0.76;
+      transform: translateX(-8%);
+    }
+
+    .onboarding-canon-overlay,
+    .onboarding-perspective-overlay,
+    .onboarding-perspective-image {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .onboarding-canon-overlay {
+      left: 7%;
+      right: 34%;
+      top: 8%;
+      bottom: 9%;
+      border: 2px solid rgba(66, 139, 156, 0.82);
+      background:
+        linear-gradient(to right, transparent 24.5%, rgba(66, 139, 156, 0.78) 24.5%, rgba(66, 139, 156, 0.78) 25.5%, transparent 25.5%, transparent 49.5%, rgba(66, 139, 156, 0.78) 49.5%, rgba(66, 139, 156, 0.78) 50.5%, transparent 50.5%, transparent 74.5%, rgba(66, 139, 156, 0.78) 74.5%, rgba(66, 139, 156, 0.78) 75.5%, transparent 75.5%),
+        linear-gradient(to bottom, transparent 16%, rgba(66, 139, 156, 0.78) 16%, rgba(66, 139, 156, 0.78) 17%, transparent 17%, transparent 33%, rgba(66, 139, 156, 0.78) 33%, rgba(66, 139, 156, 0.78) 34%, transparent 34%, transparent 50%, rgba(66, 139, 156, 0.78) 50%, rgba(66, 139, 156, 0.78) 51%, transparent 51%, transparent 66%, rgba(66, 139, 156, 0.78) 66%, rgba(66, 139, 156, 0.78) 67%, transparent 67%, transparent 83%, rgba(66, 139, 156, 0.78) 83%, rgba(66, 139, 156, 0.78) 84%, transparent 84%);
+      opacity: 0;
+      transform: scale(0.96);
+      animation: onboardingCanonSnap 6s ease-in-out infinite;
+    }
+
+    .onboarding-drawing-house img {
+      object-position: center;
+      filter: contrast(1.04) saturate(0.9);
+    }
+
+    .onboarding-perspective-image {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0;
+      z-index: 2;
+      animation: onboardingPerspectiveSweep 6s ease-in-out infinite;
+    }
+
+    .onboarding-perspective-overlay {
+      z-index: 3;
+      background:
+        linear-gradient(13deg, transparent 48.8%, rgba(202, 102, 55, 0.86) 49%, rgba(202, 102, 55, 0.86) 49.35%, transparent 49.55%),
+        linear-gradient(-13deg, transparent 48.8%, rgba(202, 102, 55, 0.86) 49%, rgba(202, 102, 55, 0.86) 49.35%, transparent 49.55%),
+        linear-gradient(28deg, transparent 48.6%, rgba(202, 102, 55, 0.72) 48.9%, rgba(202, 102, 55, 0.72) 49.3%, transparent 49.6%),
+        linear-gradient(-28deg, transparent 48.6%, rgba(202, 102, 55, 0.72) 48.9%, rgba(202, 102, 55, 0.72) 49.3%, transparent 49.6%),
+        linear-gradient(to bottom, transparent 53%, rgba(202, 102, 55, 0.9) 53%, rgba(202, 102, 55, 0.9) 53.5%, transparent 53.5%);
+      opacity: 0;
+      transform: scale(1.04);
+      animation: onboardingPerspectiveSweep 6s ease-in-out infinite;
+    }
+
+    .onboarding-drawing-labels {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .onboarding-drawing-labels .onboarding-demo-label {
+      position: relative;
+      opacity: 0;
+      animation: onboardingDrawingLabels 6s ease-in-out infinite;
+    }
+
     .onboarding-workflow-shell {
       padding: 20px;
       display: grid;
@@ -1590,6 +1702,24 @@
     @keyframes onboardingWheelRotate {
       0%, 100% { transform: rotate(0deg); }
       50% { transform: rotate(12deg); }
+    }
+
+    @keyframes onboardingCanonSnap {
+      0%, 20% { opacity: 0; transform: translateY(10px) scale(0.96); }
+      32%, 70% { opacity: 1; transform: translateY(0) scale(1); }
+      88%, 100% { opacity: 0; transform: translateY(-4px) scale(1.02); }
+    }
+
+    @keyframes onboardingPerspectiveSweep {
+      0%, 42% { opacity: 0; transform: scale(1.04); }
+      56%, 82% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.02); }
+    }
+
+    @keyframes onboardingDrawingLabels {
+      0%, 18% { opacity: 0; transform: translateY(10px); }
+      34%, 82% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(8px); }
     }
 
     @keyframes onboardingBirdGlow {
@@ -4975,6 +5105,40 @@ html,
         bottom: 86px;
       }
 
+      .onboarding-drawing-lab {
+        inset: 14px;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .onboarding-drawing-panel {
+        border-radius: 16px;
+      }
+
+      .onboarding-drawing-head {
+        grid-template-columns: 1fr 0.7fr;
+      }
+
+      .onboarding-canon-overlay {
+        left: 8%;
+        right: 31%;
+        top: 8%;
+        bottom: 8%;
+      }
+
+      .onboarding-drawing-labels {
+        left: 22px;
+        right: 22px;
+        bottom: 18px;
+      }
+
+      .onboarding-drawing-labels .onboarding-demo-label {
+        padding: 5px 8px;
+        font-size: 0.54rem;
+        letter-spacing: 0.04em;
+      }
+
       .onboarding-workflow-row {
         grid-template-columns: 1fr;
       }
@@ -6491,8 +6655,43 @@ html,
 
         <article class="onboarding-slide" data-onboarding-slide="3">
           <div class="onboarding-copy">
+            <h2 class="onboarding-title">Check Drawing Structure</h2>
+            <p class="onboarding-text">Use Drawing Checker before painting to fit head canons, compare body proportions, test perspective lines, and overlay your drawing against a reference.</p>
+          </div>
+          <div class="onboarding-visual">
+            <div class="onboarding-demo-shell">
+              <div class="onboarding-app-frame">
+                <div class="onboarding-toolbar">
+                  <span>Drawing Checker</span>
+                  <span>Canon + Perspective</span>
+                </div>
+                <div class="onboarding-canvas">
+                  <div class="onboarding-drawing-lab">
+                    <div class="onboarding-drawing-panel onboarding-drawing-head">
+                      <img src="./assets/images/onboarding-drawing-head-front.jpg" alt="Front head drawing with canon overlay demo">
+                      <img class="onboarding-drawing-side-head" src="./assets/images/onboarding-drawing-head-side.jpg" alt="Side head drawing demo">
+                      <div class="onboarding-canon-overlay" aria-hidden="true"></div>
+                    </div>
+                    <div class="onboarding-drawing-panel onboarding-drawing-house">
+                      <img src="./assets/images/onboarding-drawing-house.jpg" alt="House drawing for perspective overlay demo">
+                      <img class="onboarding-perspective-image" src="./assets/images/onboarding-drawing-perspective.jpg" alt="">
+                      <div class="onboarding-perspective-overlay" aria-hidden="true"></div>
+                    </div>
+                  </div>
+                  <div class="onboarding-drawing-labels">
+                    <span class="onboarding-demo-label">Head canon</span>
+                    <span class="onboarding-demo-label">Perspective check</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="onboarding-slide" data-onboarding-slide="4">
+          <div class="onboarding-copy">
             <h2 class="onboarding-title">Start Improving Your Painting</h2>
-            <p class="onboarding-text">Check value, composition, and color before you spend hours painting in the wrong direction.</p>
+            <p class="onboarding-text">Check value, composition, color, and drawing structure before you spend hours painting in the wrong direction.</p>
           </div>
           <div class="onboarding-visual">
             <div class="onboarding-workflow-shell">
@@ -6526,7 +6725,7 @@ html,
           </div>
         </article>
 
-        <article class="onboarding-slide onboarding-access-slide" data-onboarding-slide="4">
+        <article class="onboarding-slide onboarding-access-slide" data-onboarding-slide="5">
           <div class="onboarding-access-panel">
             <div class="onboarding-access-hero">
               <span class="onboarding-lock-mark" aria-hidden="true">
@@ -6589,6 +6788,7 @@ html,
           <span class="onboarding-dot" data-onboarding-dot="2"></span>
           <span class="onboarding-dot" data-onboarding-dot="3"></span>
           <span class="onboarding-dot" data-onboarding-dot="4"></span>
+          <span class="onboarding-dot" data-onboarding-dot="5"></span>
         </div>
         <div class="onboarding-next-row">
           <span class="onboarding-swipe-arrow" aria-hidden="true"></span>
@@ -7334,7 +7534,7 @@ html,
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js?v=20260515-drawing-cache").catch(() => {
+        navigator.serviceWorker.register("./service-worker.js?v=20260517-drawing-onboarding").catch(() => {
           // Keep app behavior unchanged if service worker registration fails.
         });
       });

@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v16";
+const CACHE_NAME = "m8-painting-tools-shell-v17";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -20,7 +20,11 @@ const SHELL_URLS = [
   "/assets/pwa/icon-192-v3.png",
   "/assets/pwa/icon-512-v3.png",
   "/assets/pwa/apple-touch-icon-v3.png",
-  "/assets/pwa/launch-logo-v3.png"
+  "/assets/pwa/launch-logo-v3.png",
+  "/assets/images/onboarding-drawing-head-front.jpg",
+  "/assets/images/onboarding-drawing-head-side.jpg",
+  "/assets/images/onboarding-drawing-house.jpg",
+  "/assets/images/onboarding-drawing-perspective.jpg"
 ];
 
 self.addEventListener("install", (event) => {
