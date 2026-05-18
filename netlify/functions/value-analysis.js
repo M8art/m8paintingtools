@@ -8,6 +8,20 @@ const JSON_SCHEMA = {
   properties: {
     valueKey: { type: "string" },
     valueRange: { type: "string" },
+    valueScale: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        minValue: { type: "integer", minimum: 1, maximum: 20 },
+        maxValue: { type: "integer", minimum: 1, maximum: 20 },
+        keyLabel: {
+          type: "string",
+          enum: ["high key", "mid key", "low key", "full range", "compressed range", "high contrast"]
+        },
+        note: { type: "string" }
+      },
+      required: ["minValue", "maxValue", "keyLabel", "note"]
+    },
     lightShadowStructure: { type: "string" },
     focalContrast: { type: "string" },
     squintReadability: { type: "string" },
@@ -25,6 +39,7 @@ const JSON_SCHEMA = {
   required: [
     "valueKey",
     "valueRange",
+    "valueScale",
     "lightShadowStructure",
     "focalContrast",
     "squintReadability",
@@ -84,6 +99,7 @@ exports.handler = async (event) => {
     "Analyze these areas:",
     "1. Overall Value Key: identify whether the image is high key, mid key, low key, full range, compressed range, or high contrast. Explain what this means for painting.",
     "2. Value Range: estimate whether the image uses a narrow, moderate, or wide value range. Mention if the darkest darks or lightest lights are missing, overused, or well controlled.",
+    "Also estimate the visible range on the M8 value scale where 1 is the lightest possible value and 20 is the darkest possible value. Return minValue as the lightest important value used, maxValue as the darkest important value used, keyLabel as the best key description, and a short note.",
     "3. Light and Shadow Families: check separation between light family, halftones, core shadows, reflected lights, cast shadows, and accents/highlights. Point out if reflected lights are too bright, shadows are too broken, or halftones are confusing.",
     "4. Focal Point by Value Contrast: identify where the strongest value contrast is and whether it supports the main focal point or distracts from it.",
     "5. Big Shape Readability: imagine squinting at the image. Say whether the large light and dark masses read clearly or whether there are too many small value changes/noise.",
@@ -224,6 +240,7 @@ function normalizeAnalysis(value) {
   return {
     valueKey: clean(value.valueKey),
     valueRange: clean(value.valueRange),
+    valueScale: normalizeValueScale(value.valueScale),
     lightShadowStructure: clean(value.lightShadowStructure),
     focalContrast: clean(value.focalContrast),
     squintReadability: clean(value.squintReadability),
@@ -237,4 +254,24 @@ function normalizeAnalysis(value) {
 
 function clean(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeValueScale(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const minValue = clampValueScale(source.minValue, 1);
+  const maxValue = clampValueScale(source.maxValue, 20);
+  return {
+    minValue: Math.min(minValue, maxValue),
+    maxValue: Math.max(minValue, maxValue),
+    keyLabel: clean(source.keyLabel || "mid key"),
+    note: clean(source.note)
+  };
+}
+
+function clampValueScale(value, fallback) {
+  const number = Math.round(Number(value));
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.min(20, Math.max(1, number));
 }

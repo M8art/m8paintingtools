@@ -20,6 +20,7 @@
   const proUnlockButton = document.getElementById("aiValueUnlockButton");
   const proUploadButtons = Array.from(document.querySelectorAll('label[for="aiValueFileInput"]'));
   const proAnalyzeButtons = [proAnalyzeButton, proMobileAnalyzeButton].filter(Boolean);
+  const proResultLinks = Array.from(document.querySelectorAll('a[href="#aiValueResultPanel"]'));
 
   const params = new URLSearchParams(window.location.search);
   const DEV_MODE = params.get("dev") === "true";
@@ -34,6 +35,8 @@
   let currentAnalysisUsesFreeSlot = false;
   let animationTimers = [];
   let uploadAnimationTimer = null;
+  let analyzeCueTimer = null;
+  let resultCueTimer = null;
   const VALUE_SCAN_STAGES = [
     { className: "stage-grid", line: "Preparing value scan...", detail: "Building a tonal read of the uploaded image.", delay: 420 },
     { className: "stage-values", line: "Grouping values...", detail: "Separating lights, halftones, and shadows.", delay: 640 },
@@ -42,6 +45,7 @@
 
   proUploadButtons.forEach((button) => button.classList.add("value-pro-upload-button"));
   proAnalyzeButtons.forEach((button) => button.classList.add("value-pro-analyze-button"));
+  proResultLinks.forEach((link) => link.classList.add("value-pro-result-link"));
 
   function setTier(tier) {
     const isPro = tier === "pro";
@@ -78,9 +82,41 @@
 
   function setAnalyzeButtonState(state) {
     proAnalyzeButtons.forEach((button) => {
-      button.classList.toggle("is-ready", state === "ready");
+      button.classList.toggle("is-cue", state === "cue");
       button.classList.toggle("is-running", state === "running");
     });
+  }
+
+  function setResultButtonState(state) {
+    proResultLinks.forEach((link) => {
+      link.classList.toggle("is-result-ready", state === "ready" || state === "cue");
+      link.classList.toggle("is-result-cue", state === "cue");
+    });
+
+    if (resultCueTimer) {
+      window.clearTimeout(resultCueTimer);
+      resultCueTimer = null;
+    }
+
+    if (state === "cue") {
+      resultCueTimer = window.setTimeout(() => {
+        proResultLinks.forEach((link) => link.classList.remove("is-result-cue"));
+        resultCueTimer = null;
+      }, 900);
+    }
+  }
+
+  function cueAnalyzeButtons() {
+    if (analyzeCueTimer) {
+      window.clearTimeout(analyzeCueTimer);
+      analyzeCueTimer = null;
+    }
+
+    setAnalyzeButtonState("cue");
+    analyzeCueTimer = window.setTimeout(() => {
+      setAnalyzeButtonState("");
+      analyzeCueTimer = null;
+    }, 950);
   }
 
   function pulseUploadButtons() {
@@ -226,9 +262,14 @@
     clearAnimationTimers();
     clearSurfaceStages();
     setAnalyzeButtonState("");
+    setResultButtonState("");
     if (uploadAnimationTimer) {
       window.clearTimeout(uploadAnimationTimer);
       uploadAnimationTimer = null;
+    }
+    if (analyzeCueTimer) {
+      window.clearTimeout(analyzeCueTimer);
+      analyzeCueTimer = null;
     }
     proUploadButtons.forEach((button) => button.classList.remove("is-upload-complete"));
     setAnalyzeEnabled(false);
@@ -258,7 +299,8 @@
       clearSurfaceStages();
       proSurface?.classList.add("stage-upload");
       pulseUploadButtons();
-      setAnalyzeButtonState("ready");
+      setResultButtonState("");
+      cueAnalyzeButtons();
       setStatus("Image loaded.", "Ready for AI Value Analysis.");
       if (proResults) {
         proResults.innerHTML = "";
@@ -273,6 +315,7 @@
 
   function renderResults(data) {
     const analysis = data?.analysis || {};
+    const valueScaleHtml = renderValueScale(analysis.valueScale);
     const blocks = [
       ["VALUE KEY", analysis.valueKey],
       ["VALUE RANGE", analysis.valueRange],
@@ -297,13 +340,59 @@
       : "";
 
     if (proResults) {
-      proResults.innerHTML = html + fixesHtml + verdictHtml;
+      proResults.innerHTML = valueScaleHtml + html + fixesHtml + verdictHtml;
       proResults.classList.toggle("hidden", !proResults.innerHTML);
       proResults.classList.remove("is-visible");
       window.requestAnimationFrame(() => {
         proResults.classList.add("is-visible");
       });
+      setResultButtonState("cue");
     }
+  }
+
+  function renderValueScale(scale) {
+    if (!scale || typeof scale !== "object") {
+      return "";
+    }
+
+    const minValue = clampScaleValue(scale.minValue, 1);
+    const maxValue = clampScaleValue(scale.maxValue, 20);
+    const start = Math.min(minValue, maxValue);
+    const end = Math.max(minValue, maxValue);
+    const rangeLeft = ((start - 1) / 19) * 100;
+    const rangeWidth = Math.max(3, ((end - start) / 19) * 100);
+    const ticks = Array.from({ length: 20 }, (_, index) => {
+      const value = index + 1;
+      const active = value >= start && value <= end;
+      return `<span class="value-pro-scale-tick${active ? " active" : ""}" aria-hidden="true">${value}</span>`;
+    }).join("");
+
+    return [
+      `<div class="value-pro-result-block value-pro-scale-card">`,
+      `<div class="value-pro-scale-head">`,
+      `<h3>M8 VALUE SCALE RANGE</h3>`,
+      `<span>${escapeHtml(scale.keyLabel || "value key")}</span>`,
+      `</div>`,
+      `<div class="value-pro-scale" style="--range-left: ${rangeLeft.toFixed(2)}%; --range-width: ${rangeWidth.toFixed(2)}%;">`,
+      `<div class="value-pro-scale-range" aria-hidden="true"></div>`,
+      `<div class="value-pro-scale-ticks">${ticks}</div>`,
+      `</div>`,
+      `<div class="value-pro-scale-foot">`,
+      `<span>1 lightest</span>`,
+      `<strong>${start}-${end}</strong>`,
+      `<span>20 darkest</span>`,
+      `</div>`,
+      scale.note ? `<p>${escapeHtml(scale.note)}</p>` : "",
+      `</div>`
+    ].join("");
+  }
+
+  function clampScaleValue(value, fallback) {
+    const number = Math.round(Number(value));
+    if (!Number.isFinite(number)) {
+      return fallback;
+    }
+    return Math.min(20, Math.max(1, number));
   }
 
   function escapeHtml(value) {
@@ -355,9 +444,15 @@
       isRunning = false;
       currentAnalysisUsesFreeSlot = false;
       proSurface?.classList.remove("is-running");
-      setAnalyzeButtonState(imageDataUrl && !isLockedByLimit() ? "ready" : "");
+      setAnalyzeButtonState("");
       updateAccessUI();
     }
+  }
+
+  function scrollToResults(event) {
+    event.preventDefault();
+    const target = proResults && !proResults.classList.contains("hidden") ? proResults : document.getElementById("aiValueResultPanel");
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   tierButtons.forEach((button) => {
@@ -380,6 +475,9 @@
   });
   [proResetButton, proMobileResetButton].forEach((button) => {
     button?.addEventListener("click", resetProValue);
+  });
+  proResultLinks.forEach((link) => {
+    link.addEventListener("click", scrollToResults);
   });
   proUnlockButton?.addEventListener("click", openFullUnlock);
 
