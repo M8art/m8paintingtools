@@ -1,0 +1,389 @@
+(function () {
+  const tierButtons = Array.from(document.querySelectorAll("[data-value-tier]"));
+  const basicModeSwitcher = document.getElementById("valueBasicModeSwitcher");
+  const basicLayout = document.getElementById("valueBasicLayout");
+  const proLayout = document.getElementById("valueProLayout");
+  const proInput = document.getElementById("aiValueFileInput");
+  const proUploadZone = document.getElementById("aiValueUploadZone");
+  const proPreview = document.getElementById("aiValuePreview");
+  const proImageStage = document.getElementById("aiValueImageStage");
+  const proEmptyState = document.getElementById("aiValueEmptyState");
+  const proAnalyzeButton = document.getElementById("runAiValueAnalysisButton");
+  const proMobileAnalyzeButton = document.getElementById("mobileRunAiValueAnalysisButton");
+  const proResetButton = document.getElementById("resetAiValueButton");
+  const proMobileResetButton = document.getElementById("mobileResetAiValueButton");
+  const proStatusLine = document.getElementById("aiValueStatusLine");
+  const proStatusDetail = document.getElementById("aiValueStatusDetail");
+  const proResults = document.getElementById("aiValueResults");
+  const proSurface = document.getElementById("aiValueSurface");
+  const proLockPanel = document.getElementById("aiValueLockPanel");
+  const proUnlockButton = document.getElementById("aiValueUnlockButton");
+  const proUploadButtons = Array.from(document.querySelectorAll('label[for="aiValueFileInput"]'));
+  const proAnalyzeButtons = [proAnalyzeButton, proMobileAnalyzeButton].filter(Boolean);
+
+  const params = new URLSearchParams(window.location.search);
+  const DEV_MODE = params.get("dev") === "true";
+  const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
+  const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+  const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
+  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
+
+  let imageDataUrl = "";
+  let imageName = "";
+  let isRunning = false;
+  let currentAnalysisUsesFreeSlot = false;
+  let animationTimers = [];
+  let uploadAnimationTimer = null;
+  const VALUE_SCAN_STAGES = [
+    { className: "stage-grid", line: "Preparing value scan...", detail: "Building a tonal read of the uploaded image.", delay: 420 },
+    { className: "stage-values", line: "Grouping values...", detail: "Separating lights, halftones, and shadows.", delay: 640 },
+    { className: "stage-structure", line: "Reading structure...", detail: "Checking whether the big value masses support the image.", delay: 720 }
+  ];
+
+  proUploadButtons.forEach((button) => button.classList.add("value-pro-upload-button"));
+  proAnalyzeButtons.forEach((button) => button.classList.add("value-pro-analyze-button"));
+
+  function setTier(tier) {
+    const isPro = tier === "pro";
+    document.body.dataset.valueTier = tier;
+    tierButtons.forEach((button) => {
+      const active = button.dataset.valueTier === tier;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    basicModeSwitcher?.classList.toggle("hidden", isPro);
+    basicLayout?.classList.toggle("hidden", isPro);
+    proLayout?.classList.toggle("hidden", !isPro);
+  }
+
+  function setStatus(line, detail) {
+    if (proStatusLine) proStatusLine.textContent = line;
+    if (proStatusDetail) proStatusDetail.textContent = detail;
+  }
+
+  function setAnalyzeEnabled(enabled) {
+    proAnalyzeButtons.forEach((button) => {
+      if (button) button.disabled = !enabled || isRunning;
+    });
+  }
+
+  function clearAnimationTimers() {
+    animationTimers.forEach((timer) => window.clearTimeout(timer));
+    animationTimers = [];
+  }
+
+  function clearSurfaceStages() {
+    proSurface?.classList.remove("stage-upload", "stage-grid", "stage-values", "stage-structure", "stage-final");
+  }
+
+  function setAnalyzeButtonState(state) {
+    proAnalyzeButtons.forEach((button) => {
+      button.classList.toggle("is-ready", state === "ready");
+      button.classList.toggle("is-running", state === "running");
+    });
+  }
+
+  function pulseUploadButtons() {
+    proUploadButtons.forEach((button) => {
+      button.classList.remove("is-upload-complete");
+      void button.offsetWidth;
+      button.classList.add("is-upload-complete");
+    });
+
+    if (uploadAnimationTimer) {
+      window.clearTimeout(uploadAnimationTimer);
+    }
+    uploadAnimationTimer = window.setTimeout(() => {
+      proUploadButtons.forEach((button) => button.classList.remove("is-upload-complete"));
+      uploadAnimationTimer = null;
+    }, 900);
+  }
+
+  function runScanAnimation() {
+    clearAnimationTimers();
+    clearSurfaceStages();
+    proSurface?.classList.add("stage-upload");
+
+    let elapsed = 0;
+    VALUE_SCAN_STAGES.forEach((stage) => {
+      elapsed += stage.delay;
+      const timer = window.setTimeout(() => {
+        clearSurfaceStages();
+        proSurface?.classList.add(stage.className);
+        setStatus(stage.line, stage.detail);
+      }, elapsed);
+      animationTimers.push(timer);
+    });
+  }
+
+  function finishScanAnimation() {
+    clearAnimationTimers();
+    clearSurfaceStages();
+    proSurface?.classList.add("stage-final");
+    const timer = window.setTimeout(() => {
+      proSurface?.classList.remove("stage-final");
+    }, 900);
+    animationTimers.push(timer);
+  }
+
+  function hasUnlockedAccess() {
+    return window.localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true" ||
+      document.cookie.split(";").some((item) => item.trim() === `${UNLOCKED_ACCESS_COOKIE_NAME}=true`);
+  }
+
+  function persistUnlockedAccess() {
+    window.localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+    document.cookie = `${UNLOCKED_ACCESS_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
+  }
+
+  function getTodayAnalysisStamp() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function getLastFreeCheckDay() {
+    const storedValue = window.localStorage.getItem(LAST_FREE_CHECK_STORAGE_KEY) || "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(storedValue)) {
+      return storedValue;
+    }
+
+    const timestamp = Number(storedValue);
+    if (!Number.isFinite(timestamp) || timestamp <= 0) {
+      return "";
+    }
+
+    const previousDate = new Date(timestamp);
+    if (Number.isNaN(previousDate.getTime())) {
+      return "";
+    }
+
+    const year = previousDate.getFullYear();
+    const month = String(previousDate.getMonth() + 1).padStart(2, "0");
+    const day = String(previousDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function hasUsedFreeAnalysisToday() {
+    if (DEV_MODE || hasUnlockedAccess()) {
+      return false;
+    }
+    return getLastFreeCheckDay() === getTodayAnalysisStamp();
+  }
+
+  function markFreeAnalysisUsedToday() {
+    window.localStorage.setItem(LAST_FREE_CHECK_STORAGE_KEY, getTodayAnalysisStamp());
+  }
+
+  function handleUnlockReturn() {
+    if (params.get("unlocked") !== "true") {
+      return;
+    }
+
+    persistUnlockedAccess();
+    const cleanedUrl = new URL(window.location.href);
+    cleanedUrl.searchParams.delete("unlocked");
+    window.history.replaceState({}, "", `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`);
+    setStatus("Unlocked forever.", "AI Value Analysis is now available without the daily free limit.");
+  }
+
+  function openFullUnlock() {
+    window.location.href = STRIPE_PAYMENT_LINK;
+  }
+
+  function isLockedByLimit() {
+    return !DEV_MODE && !hasUnlockedAccess() && hasUsedFreeAnalysisToday();
+  }
+
+  function updateAccessUI() {
+    const locked = isLockedByLimit();
+    proLockPanel?.classList.toggle("hidden", !locked);
+
+    proAnalyzeButtons.forEach((button) => {
+      if (!button) return;
+      button.classList.toggle("is-unlock-cta", locked);
+      button.textContent = locked ? "Unlock All Tools" : "Analyze";
+      button.disabled = locked ? false : (!imageDataUrl || isRunning);
+    });
+
+    if (locked && !isRunning) {
+      setAnalyzeButtonState("");
+      setStatus("Daily free AI analysis used.", "Unlock all tools for $5 to keep using AI Value Analysis today.");
+    }
+  }
+
+  function resetProValue() {
+    imageDataUrl = "";
+    imageName = "";
+    isRunning = false;
+    if (proInput) proInput.value = "";
+    if (proPreview) proPreview.removeAttribute("src");
+    proImageStage?.classList.add("hidden");
+    proEmptyState?.classList.remove("hidden");
+    proSurface?.classList.remove("is-running");
+    clearAnimationTimers();
+    clearSurfaceStages();
+    setAnalyzeButtonState("");
+    if (uploadAnimationTimer) {
+      window.clearTimeout(uploadAnimationTimer);
+      uploadAnimationTimer = null;
+    }
+    proUploadButtons.forEach((button) => button.classList.remove("is-upload-complete"));
+    setAnalyzeEnabled(false);
+    if (proResults) {
+      proResults.innerHTML = "";
+      proResults.classList.add("hidden");
+      proResults.classList.remove("is-visible");
+    }
+    setStatus("Waiting for image upload.", "Upload a painting or reference image, then run AI Value Analysis.");
+    updateAccessUI();
+  }
+
+  function loadProImage(file) {
+    if (!file || !file.type || !file.type.startsWith("image/")) {
+      setStatus("Upload an image file.", "Use JPG, PNG, or WebP.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      imageDataUrl = String(reader.result || "");
+      imageName = file.name || "uploaded image";
+      if (proPreview) proPreview.src = imageDataUrl;
+      proImageStage?.classList.remove("hidden");
+      proEmptyState?.classList.add("hidden");
+      setAnalyzeEnabled(true);
+      clearSurfaceStages();
+      proSurface?.classList.add("stage-upload");
+      pulseUploadButtons();
+      setAnalyzeButtonState("ready");
+      setStatus("Image loaded.", "Ready for AI Value Analysis.");
+      if (proResults) {
+        proResults.innerHTML = "";
+        proResults.classList.add("hidden");
+        proResults.classList.remove("is-visible");
+      }
+      updateAccessUI();
+    };
+    reader.onerror = () => setStatus("Could not read image.", "Try another JPG, PNG, or WebP file.");
+    reader.readAsDataURL(file);
+  }
+
+  function renderResults(data) {
+    const analysis = data?.analysis || {};
+    const blocks = [
+      ["VALUE KEY", analysis.valueKey],
+      ["VALUE RANGE", analysis.valueRange],
+      ["LIGHT / SHADOW STRUCTURE", analysis.lightShadowStructure],
+      ["FOCAL CONTRAST", analysis.focalContrast],
+      ["SQUINT READABILITY", analysis.squintReadability],
+      ["VALUE GROUPING", analysis.valueGrouping],
+      ["DEPTH", analysis.depth],
+      ["PAINTABILITY", analysis.paintability]
+    ];
+
+    const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+    const html = blocks
+      .filter(([, value]) => value)
+      .map(([title, value]) => `<div class="value-pro-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+      .join("");
+    const fixesHtml = fixes.length
+      ? `<div class="value-pro-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+      : "";
+    const verdictHtml = analysis.painterValueVerdict
+      ? `<div class="value-pro-result-block value-pro-verdict"><h3>PAINTER'S VALUE VERDICT</h3><p>${escapeHtml(analysis.painterValueVerdict)}</p></div>`
+      : "";
+
+    if (proResults) {
+      proResults.innerHTML = html + fixesHtml + verdictHtml;
+      proResults.classList.toggle("hidden", !proResults.innerHTML);
+      proResults.classList.remove("is-visible");
+      window.requestAnimationFrame(() => {
+        proResults.classList.add("is-visible");
+      });
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  async function runAiValueAnalysis() {
+    if (isLockedByLimit()) {
+      openFullUnlock();
+      return;
+    }
+
+    if (!imageDataUrl || isRunning) return;
+
+    isRunning = true;
+    currentAnalysisUsesFreeSlot = !DEV_MODE && !hasUnlockedAccess();
+    if (currentAnalysisUsesFreeSlot) {
+      markFreeAnalysisUsedToday();
+    }
+    proSurface?.classList.add("is-running");
+    setAnalyzeButtonState("running");
+    setAnalyzeEnabled(false);
+    runScanAnimation();
+    setStatus("Analyzing values...", "Reading the image through value structure, light mass, shadow mass, and painterly clarity.");
+
+    try {
+      const response = await fetch("/.netlify/functions/value-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageDataUrl, imageName })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "AI Value Analysis failed.");
+      }
+      renderResults(data);
+      finishScanAnimation();
+      setStatus("AI Value Analysis ready.", "Review the value key, grouping, light/shadow structure, and practical fixes before painting.");
+    } catch (error) {
+      clearAnimationTimers();
+      clearSurfaceStages();
+      setStatus("AI Value Analysis failed.", error.message || "Try again in a moment.");
+    } finally {
+      isRunning = false;
+      currentAnalysisUsesFreeSlot = false;
+      proSurface?.classList.remove("is-running");
+      setAnalyzeButtonState(imageDataUrl && !isLockedByLimit() ? "ready" : "");
+      updateAccessUI();
+    }
+  }
+
+  tierButtons.forEach((button) => {
+    button.addEventListener("click", () => setTier(button.dataset.valueTier));
+  });
+
+  proInput?.addEventListener("change", () => loadProImage(proInput.files?.[0]));
+  proUploadZone?.addEventListener("click", () => {
+    if (!imageDataUrl) proInput?.click();
+  });
+  proUploadZone?.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && !imageDataUrl) {
+      event.preventDefault();
+      proInput?.click();
+    }
+  });
+
+  [proAnalyzeButton, proMobileAnalyzeButton].forEach((button) => {
+    button?.addEventListener("click", runAiValueAnalysis);
+  });
+  [proResetButton, proMobileResetButton].forEach((button) => {
+    button?.addEventListener("click", resetProValue);
+  });
+  proUnlockButton?.addEventListener("click", openFullUnlock);
+
+  handleUnlockReturn();
+  resetProValue();
+  setTier("basic");
+})();

@@ -3515,6 +3515,7 @@
 }
   </style>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
+  <link rel="stylesheet" href="./pro-value.css">
 </head>
 <body>
   <div class="app">
@@ -3571,7 +3572,11 @@
       </div>
     </header>
 
-    <div class="mode-switcher" role="tablist" aria-label="Analysis modes">
+    <nav class="mode-switcher primary-switcher value-tier-switcher" aria-label="Value Checker level">
+      <button class="tab-button active" type="button" data-value-tier="basic" aria-selected="true">Basic</button>
+      <button class="tab-button" type="button" data-value-tier="pro" aria-selected="false">Pro</button>
+    </nav>
+    <div id="valueBasicModeSwitcher" class="mode-switcher" role="tablist" aria-label="Analysis modes">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-mode="value-picker" aria-selected="true"><span class="desktop-tab-label">Value Picker</span><span class="mobile-tab-label">Pick</span></button>
       <button class="tab-button" type="button" data-mode="seven-value-map" aria-selected="false"><span class="desktop-tab-label">Value Map</span><span class="mobile-tab-label">Map</span></button>
@@ -3579,7 +3584,7 @@
       <button class="tab-button" type="button" data-mode="compare-values" aria-selected="false"><span class="desktop-tab-label">Compare Values</span><span class="mobile-tab-label">Compare</span></button>
     </div>
 
-    <main class="layout">
+    <main id="valueBasicLayout" class="layout">
       <section class="card">
         <div class="panel-heading">
           <div>
@@ -3997,6 +4002,85 @@
       </aside>
     </main>
 
+
+    <main id="valueProLayout" class="layout value-pro-layout hidden">
+      <section class="card workspace-card value-pro-workspace-card">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Workspace</p>
+            <h2>AI Value Analysis</h2>
+          </div>
+          <div class="value-pro-meta">
+            <p class="hint">Upload an image, then run the Pro value read.</p>
+          </div>
+        </div>
+
+        <input id="aiValueFileInput" type="file" accept="image/png,image/jpeg,image/webp">
+
+        <div class="mobile-workspace-toolbar" aria-label="AI Value mobile controls">
+          <label class="button mobile-toolbar-button" for="aiValueFileInput">Upload</label>
+          <button id="mobileRunAiValueAnalysisButton" class="button mobile-toolbar-button" type="button" disabled>Analyze</button>
+          <button id="mobileResetAiValueButton" class="button-secondary mobile-toolbar-button" type="button">Reset</button>
+          <a class="button-secondary mobile-toolbar-button" href="#aiValueResultPanel">Results</a>
+        </div>
+
+        <div class="value-pro-toolbar" aria-label="AI Value controls">
+          <label class="button" for="aiValueFileInput">Upload</label>
+          <button id="runAiValueAnalysisButton" class="button-secondary" type="button" disabled>Analyze</button>
+          <button id="resetAiValueButton" class="button-secondary" type="button">Reset</button>
+          <a class="button-secondary" href="#aiValueResultPanel">Results</a>
+        </div>
+
+        <div id="aiValueUploadZone" class="canvas-wrap upload-enabled value-pro-stage" tabindex="0" role="button" aria-label="Click to upload your image for AI Value Analysis">
+          <div id="aiValueImageStage" class="image-stage hidden">
+            <div id="aiValueSurface" class="value-pro-surface">
+              <img id="aiValuePreview" class="workspace-image value-pro-image" alt="Uploaded value analysis preview">
+            </div>
+          </div>
+          <div id="aiValueEmptyState" class="empty-state upload-empty-state value-pro-empty">
+            <div class="upload-empty-state-inner">
+              <div class="upload-empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 6v12"></path>
+                  <path d="M6 12h12"></path>
+                </svg>
+              </div>
+              <p class="upload-empty-label">Click to upload your image</p>
+              <p class="upload-empty-subcopy hidden">JPG, PNG, WebP</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside id="aiValueResultPanel" class="card side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Pro Result</p>
+            <h2>AI Value Analysis</h2>
+          </div>
+        </div>
+        <div class="analysis-grid value-pro-readout">
+          <div class="placeholder-panel">
+            <p class="section-label">How It Works</p>
+            <div class="placeholder-card">
+              Upload a painting or reference, then run a focused value read before you paint.
+            </div>
+          </div>
+          <div class="value-pro-status" aria-live="polite">
+            <p id="aiValueStatusLine" class="value-pro-status-line">Waiting for image upload.</p>
+            <p id="aiValueStatusDetail" class="value-pro-status-detail">Upload a painting or reference image, then run AI Value Analysis.</p>
+          </div>
+          <div id="aiValueLockPanel" class="value-pro-lock hidden">
+            <h3>Unlock All Tools</h3>
+            <p>You have used today&apos;s free AI analysis. Unlock full access to keep using Pro tools without the daily limit.</p>
+            <button id="aiValueUnlockButton" class="button" type="button">Unlock All Tools</button>
+            <p class="value-pro-lock-note">One-time unlock &mdash; $5. Lifetime access. No subscription.</p>
+            <p class="value-pro-lock-note"><a href="../access/index.html">Already paid? Restore access</a></p>
+          </div>
+          <div id="aiValueResults" class="value-pro-results hidden"></div>
+        </div>
+      </aside>
+    </main>
     <section class="app-cta">
     </section>
 
@@ -7305,6 +7389,7 @@
 
     void consumeLandingHandoff();
   </script>
+  <script src="./pro-value.js"></script>
 </body>
 </html>
 
