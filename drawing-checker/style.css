@@ -2231,25 +2231,16 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
     max-height: min(42vh, 310px);
   }
 
-  .app[data-mode="perspective"] .drawing-stage.has-image {
-    padding-bottom: 158px;
-  }
-
-  .app[data-mode="perspective"] .drawing-stage.has-image .mobile-perspective-hud {
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    z-index: 12;
+  .app[data-mode="perspective"] .mobile-perspective-hud {
     display: grid;
     gap: 6px;
+    margin: 10px 0 12px;
     padding: 8px;
     border: 1px solid rgba(255, 255, 255, 0.42);
     border-radius: 16px;
     background: rgba(31, 28, 24, 0.76);
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
     backdrop-filter: blur(16px);
-    pointer-events: auto;
     touch-action: auto;
   }
 
