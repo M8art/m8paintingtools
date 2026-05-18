@@ -7693,7 +7693,7 @@ html,
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js?v=20260517-drawing-onboarding-v4").catch(() => {
+        navigator.serviceWorker.register("./service-worker.js?v=20260518-restore-access").catch(() => {
           // Keep app behavior unchanged if service worker registration fails.
         });
       });
@@ -7703,6 +7703,7 @@ html,
   <script>
     const ONBOARDING_SEEN_KEY = "m8_onboarding_seen";
     const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+    const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
     const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
     const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
     const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
@@ -7748,11 +7749,12 @@ html,
     let onboardingCanSkip = true;
 
     function isUnlocked() {
-      return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
+      return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
     }
 
     function setUnlocked() {
       localStorage.setItem(GLOBAL_UNLOCK_STORAGE_KEY, "true");
+      document.cookie = `${GLOBAL_UNLOCK_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
     }
 
     function clearUnlockQueryFromUrl() {

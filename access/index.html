@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patreon Access | M8 Painting Studio</title>
+  <title>Restore Access | M8 Painting Studio</title>
     <script src="../assets/mobile-theme.js"></script>
   <style>
     :root {
@@ -186,6 +186,25 @@
       display: grid;
       gap: 14px;
       margin-top: 4px;
+    }
+
+    .restore-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .restore-divider::before,
+    .restore-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: rgba(61, 51, 40, 0.13);
     }
 
     .access-input {
@@ -670,7 +689,7 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">M8 Painting Studio</p>
-        <h1 class="access-title">Patreon Access</h1>
+        <h1 class="access-title">Restore Access</h1>
         <div class="mobile-tool-status-row" aria-label="Access status">
           <span class="mobile-tool-chip">Access</span>
           <span class="mobile-tool-status-pill"><span aria-hidden="true"></span> Locked</span>
@@ -692,11 +711,11 @@
       <section class="card access-card">
         <div>
           <p class="eyebrow">Premium Access</p>
-          <h2>Patreon Access</h2>
+          <h2>Unlock or Restore</h2>
         </div>
 
         <p class="access-subtitle">Unlock unlimited access to all premium painting tools.</p>
-        <p class="access-copy">Enter your Patreon member password to unlock all premium tools.</p>
+        <p class="access-copy">Already paid with Stripe? Restore your purchase with the same email you used at checkout. This is useful when iPhone app mode does not share Safari access.</p>
         <div class="access-benefits" aria-label="Premium access includes">
           <p class="access-benefit">Advanced composition overlays</p>
           <p class="access-benefit">Premium color analysis tools</p>
@@ -708,8 +727,15 @@
           <button id="unlockButton" class="button" type="submit">Unlock Tools</button>
         </form>
 
+        <div class="restore-divider">Already paid?</div>
+
+        <form id="restoreForm" class="access-form">
+          <input id="restoreEmailInput" class="access-input" type="email" placeholder="Stripe receipt email" autocomplete="email">
+          <button id="restoreButton" class="button" type="submit">Restore Stripe Purchase</button>
+        </form>
+
         <p id="accessMessage" class="access-message" aria-live="polite"></p>
-        <p class="access-helper">Patreon members can find the password in the latest Patreon post.</p>
+        <p class="access-helper">Patreon members can still use the member password. Stripe buyers can restore access on any browser or iPhone app install with their receipt email.</p>
       </section>
     </main>
 
@@ -745,14 +771,29 @@
   <script>
     const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
     const PATREON_PASSWORD = "patreonmate";
+    const UNLOCK_COOKIE_NAME = "m8_unlocked";
     const REDIRECT_PATH = "../analysis/index.html";
     const accessForm = document.getElementById("accessForm");
+    const restoreForm = document.getElementById("restoreForm");
     const passwordInput = document.getElementById("passwordInput");
+    const restoreEmailInput = document.getElementById("restoreEmailInput");
     const unlockButton = document.getElementById("unlockButton");
+    const restoreButton = document.getElementById("restoreButton");
     const accessMessage = document.getElementById("accessMessage");
 
+    function hasUnlockCookie() {
+      return document.cookie
+        .split(";")
+        .some((item) => item.trim() === `${UNLOCK_COOKIE_NAME}=true`);
+    }
+
+    function persistUnlockedAccess() {
+      localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+      document.cookie = `${UNLOCK_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
+    }
+
     function hasUnlockedAccess() {
-      return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true";
+      return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true" || hasUnlockCookie();
     }
 
     function cleanUnlockQueryFromUrl() {
@@ -770,6 +811,10 @@
       unlockButton.textContent = "Tools Unlocked";
       passwordInput.disabled = true;
       passwordInput.placeholder = "Already unlocked";
+      restoreButton.disabled = true;
+      restoreButton.textContent = "Access Restored";
+      restoreEmailInput.disabled = true;
+      restoreEmailInput.placeholder = "Already unlocked";
     }
 
     function handlePaymentUnlockReturn() {
@@ -778,7 +823,7 @@
         return false;
       }
 
-      localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+      persistUnlockedAccess();
       renderUnlockedAccessState("Payment confirmed. All tools are unlocked on this device.");
       cleanUnlockQueryFromUrl();
       return true;
@@ -795,7 +840,7 @@
       accessMessage.classList.remove("is-success", "is-error");
 
       if (normalizedValue === PATREON_PASSWORD) {
-        localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+        persistUnlockedAccess();
         accessMessage.textContent = "Access unlocked. You now have unlimited access to all premium tools.";
         accessMessage.classList.add("is-success");
         unlockButton.disabled = true;
@@ -809,6 +854,38 @@
 
       accessMessage.textContent = "Wrong password. Please check your Patreon post.";
       accessMessage.classList.add("is-error");
+    });
+
+    restoreForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const email = (restoreEmailInput.value || "").trim();
+      accessMessage.classList.remove("is-success", "is-error");
+      restoreButton.disabled = true;
+      restoreButton.textContent = "Checking Stripe...";
+
+      try {
+        const response = await fetch("/.netlify/functions/restore-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.unlocked) {
+          throw new Error(result.error || "No paid unlock was found for that email.");
+        }
+
+        persistUnlockedAccess();
+        renderUnlockedAccessState("Purchase restored. All tools are unlocked in this app mode.");
+        window.setTimeout(() => {
+          window.location.href = REDIRECT_PATH;
+        }, 1200);
+      } catch (error) {
+        restoreButton.disabled = false;
+        restoreButton.textContent = "Restore Stripe Purchase";
+        accessMessage.textContent = error.message || "Could not restore access right now.";
+        accessMessage.classList.add("is-error");
+      }
     });
   </script>
 </body>

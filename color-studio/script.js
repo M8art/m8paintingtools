@@ -178,6 +178,7 @@ const PALETTE_SIZE = 8;
 const HARMONY_SAMPLE_SIZE = 84;
 const HARMONY_CLUSTER_COUNT = 8;
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
 const M8_PALETTE = {
@@ -340,7 +341,7 @@ showInitialColorPaywall(initialColorTab);
 updateWorkspaceActionState();
 
 function isUnlocked() {
-  return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
+  return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
 }
 
 function getInitialColorTab() {

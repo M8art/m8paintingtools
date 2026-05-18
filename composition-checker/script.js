@@ -238,6 +238,7 @@ const OVERLAY_COLOR_NAMES = {
   "#c96a3d": "overlay-color-red"
 };
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
@@ -414,7 +415,7 @@ function applyInitialRoute() {
 }
 
 function isUnlocked() {
-  return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true";
+  return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
 }
 
 function isAdvancedLocked() {

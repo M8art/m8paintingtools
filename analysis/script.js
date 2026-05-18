@@ -116,6 +116,7 @@ const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
 const QUICK_CHECK_ONBOARDING_STORAGE_KEY = "m8_quick_check_onboarding_seen";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const PAINTING_BREAKDOWN_ENDPOINT = window.M8_PAINTING_BREAKDOWN_ENDPOINT || (
   window.location.protocol === "file:"
@@ -495,7 +496,12 @@ function hasUsedFullAnalysis() {
 }
 
 function hasUnlockedAccess() {
-  return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true";
+  return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${UNLOCKED_ACCESS_COOKIE_NAME}=true`);
+}
+
+function persistUnlockedAccess() {
+  localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+  document.cookie = `${UNLOCKED_ACCESS_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 
 function getTodayAnalysisStamp() {
@@ -588,7 +594,7 @@ function handleUnlockReturn() {
     return;
   }
 
-  localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+  persistUnlockedAccess();
   justUnlockedFromStripe = true;
 
   const cleanedUrl = new URL(window.location.href);
