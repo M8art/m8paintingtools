@@ -104,6 +104,10 @@ const confirmSpiralPlacementButton = document.getElementById("confirmSpiralPlace
 const runSpiralAiButton = document.getElementById("runSpiralAiButton");
 const spiralAiStatus = document.getElementById("spiralAiStatus");
 const spiralAiResults = document.getElementById("spiralAiResults");
+const dynamicSymmetryAiCard = document.getElementById("dynamicSymmetryAiCard");
+const runDynamicSymmetryAiButton = document.getElementById("runDynamicSymmetryAiButton");
+const dynamicSymmetryAiStatus = document.getElementById("dynamicSymmetryAiStatus");
+const dynamicSymmetryAiResults = document.getElementById("dynamicSymmetryAiResults");
 const premiumToast = document.getElementById("premiumToast");
 const thirdsReadingCard = document.getElementById("thirdsReadingCard");
 const thirdsReadScore = document.getElementById("thirdsReadScore");
@@ -315,6 +319,12 @@ const state = {
       error: "",
       confirmed: false,
       confirmedState: null
+    },
+    dynamicSymmetry: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: ""
     }
   },
   thirdsAnalysis: {
@@ -429,6 +439,7 @@ runGoldenRatioAiButton?.addEventListener("click", runGoldenRatioAiAnalysis);
 runNotanAiButton?.addEventListener("click", runNotanAiAnalysis);
 confirmSpiralPlacementButton?.addEventListener("click", confirmSpiralPlacement);
 runSpiralAiButton?.addEventListener("click", runSpiralAiAnalysis);
+runDynamicSymmetryAiButton?.addEventListener("click", runDynamicSymmetryAiAnalysis);
 
 applyInitialRoute();
 updateModeUI();
@@ -1069,6 +1080,7 @@ function resetCompositionWorkspace() {
   resetGoldenRatioAi();
   resetNotanAi();
   resetSpiralAi();
+  resetDynamicSymmetryAi();
   Object.assign(state.spiral, SPIRAL_DEFAULTS);
   invalidateNotanCache();
   closeOverlayColorMenu();
@@ -2419,6 +2431,7 @@ function updateModeUI() {
   goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
   notanAiCard?.classList.toggle("hidden", !isNotan || advancedLocked);
   spiralAiCard?.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
+  dynamicSymmetryAiCard?.classList.toggle("hidden", !isDynamicSymmetry || advancedLocked);
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
   notanControlsCard.classList.toggle("hidden", !isNotan);
   focalControlsCard.classList.toggle("hidden", !isFocalBalance);
@@ -2448,8 +2461,9 @@ function updateModeUI() {
   updateGoldenRatioAiUI(isGoldenRatio, advancedLocked);
   updateNotanAiUI(isNotan, advancedLocked);
   updateSpiralAiUI(isGoldenSpiral, advancedLocked);
+  updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked);
   uploadLabels.forEach((label) => {
-    label.classList.toggle("is-action-cue", (isGoldenRatio || isNotan || isGoldenSpiral) && !state.imageLoaded && !state.imageLoading && !advancedLocked);
+    label.classList.toggle("is-action-cue", (isGoldenRatio || isNotan || isGoldenSpiral || isDynamicSymmetry) && !state.imageLoaded && !state.imageLoading && !advancedLocked);
   });
   updateWorkspaceStageVisibility(advancedLocked);
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
@@ -2750,6 +2764,45 @@ function updateSpiralAiUI(isGoldenSpiral, advancedLocked) {
   }
 }
 
+function updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked) {
+  const analysisState = state.compositionAi.dynamicSymmetry;
+  const canRun = isDynamicSymmetry && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
+  const hasResult = Boolean(analysisState.result);
+  const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
+  const status = analysisState.isRunning
+    ? "Reading the armature points and diagonal structure..."
+    : analysisState.error
+    ? analysisState.error
+    : hasResult
+    ? "Dynamic Symmetry read is ready."
+    : state.imageLoaded
+    ? "Run the Dynamic read to explain the detected points and armature line fit."
+    : "Upload an image to begin.";
+
+  dynamicSymmetryAiCard?.classList.toggle("hidden", !isDynamicSymmetry || advancedLocked);
+  if (runDynamicSymmetryAiButton) {
+    runDynamicSymmetryAiButton.disabled = !canRun;
+    runDynamicSymmetryAiButton.classList.toggle("hidden", !isDynamicSymmetry || advancedLocked);
+    runDynamicSymmetryAiButton.classList.toggle("is-running", analysisState.isRunning);
+    runDynamicSymmetryAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
+    runDynamicSymmetryAiButton.classList.toggle("is-result-ready", hasResult);
+    runDynamicSymmetryAiButton.textContent = analysisState.isRunning
+      ? "Analyzing..."
+      : hasResult
+      ? "Analyze Again"
+      : "Analyze";
+  }
+
+  if (dynamicSymmetryAiStatus) {
+    dynamicSymmetryAiStatus.textContent = status;
+  }
+
+  if (dynamicSymmetryAiResults) {
+    dynamicSymmetryAiResults.classList.toggle("hidden", !hasResult);
+    dynamicSymmetryAiResults.classList.toggle("is-visible", hasResult);
+  }
+}
+
 function resetGoldenRatioAi() {
   state.compositionAi.goldenRatio.isRunning = false;
   state.compositionAi.goldenRatio.result = null;
@@ -2785,6 +2838,18 @@ function resetSpiralAi() {
     spiralAiResults.innerHTML = "";
     spiralAiResults.classList.add("hidden");
     spiralAiResults.classList.remove("is-visible");
+  }
+}
+
+function resetDynamicSymmetryAi() {
+  state.compositionAi.dynamicSymmetry.isRunning = false;
+  state.compositionAi.dynamicSymmetry.result = null;
+  state.compositionAi.dynamicSymmetry.imageKey = "";
+  state.compositionAi.dynamicSymmetry.error = "";
+  if (dynamicSymmetryAiResults) {
+    dynamicSymmetryAiResults.innerHTML = "";
+    dynamicSymmetryAiResults.classList.add("hidden");
+    dynamicSymmetryAiResults.classList.remove("is-visible");
   }
 }
 
@@ -2885,6 +2950,70 @@ function getSpiralPlacementMetadata() {
       centerX: Number((bounds.centerX / width).toFixed(4)),
       centerY: Number((bounds.centerY / height).toFixed(4))
     }
+  };
+}
+
+function getCompositionImageDataUrlWithDynamicForAi(maxSide = 1500, quality = 0.86) {
+  if (!state.imageLoaded || !compositionImage.naturalWidth || !compositionImage.naturalHeight) {
+    throw new Error("Upload an image before running the composition read.");
+  }
+
+  const sourceWidth = compositionImage.naturalWidth;
+  const sourceHeight = compositionImage.naturalHeight;
+  const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+  const width = Math.max(1, Math.round(sourceWidth * scale));
+  const height = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(compositionImage, 0, 0, width, height);
+
+  const previousMode = state.advancedMode;
+  const previousAnalysisMode = state.analysisMode;
+  const previousOverlayColor = state.userSelectedOverlayColor;
+  const previousAlignmentOnly = state.dynamicSymmetry.showAlignmentsOnly;
+  try {
+    state.analysisMode = "advanced";
+    state.advancedMode = "dynamic-symmetry";
+    state.userSelectedOverlayColor = "#c96a3d";
+    state.dynamicSymmetry.showAlignmentsOnly = false;
+    drawDynamicSymmetry(ctx, width, height, getOverlayPalette());
+    drawDynamicSymmetryHighlights(ctx, width, height, getOverlayPalette());
+  } finally {
+    state.analysisMode = previousAnalysisMode;
+    state.advancedMode = previousMode;
+    state.userSelectedOverlayColor = previousOverlayColor;
+    state.dynamicSymmetry.showAlignmentsOnly = previousAlignmentOnly;
+  }
+
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+function getDynamicSymmetryMetadata() {
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const analysis = getDynamicSymmetryAnalysis(width, height);
+  const threshold = getDynamicAlignmentThreshold(width, height);
+  const pointData = analysis.points.slice(0, 10).map((point) => {
+    const nearest = getNearestDynamicLineDistance(point.x * width, point.y * height, width, height);
+    return {
+      x: Number(point.x.toFixed(4)),
+      y: Number(point.y.toFixed(4)),
+      contrastScore: Number(point.score.toFixed(2)),
+      aligned: nearest.distance <= threshold,
+      distanceToArmature: Number((nearest.distance / Math.min(width, height)).toFixed(4)),
+      nearestLine: nearest.line?.label || "unknown armature line"
+    };
+  });
+
+  return {
+    score: Number.isFinite(analysis.score) ? analysis.score : 0,
+    detectedPoints: analysis.points.length,
+    alignedPoints: analysis.alignedPoints.length,
+    threshold: Number((threshold / Math.min(width, height)).toFixed(4)),
+    showAlignmentsOnly: state.dynamicSymmetry.showAlignmentsOnly,
+    points: pointData
   };
 }
 
@@ -3085,6 +3214,60 @@ async function runSpiralAiAnalysis() {
   }
 }
 
+async function runDynamicSymmetryAiAnalysis() {
+  if (!requireUnlock("Dynamic Symmetry AI analysis")) {
+    return;
+  }
+
+  const analysisState = state.compositionAi.dynamicSymmetry;
+  if (analysisState.isRunning || !state.imageLoaded) {
+    return;
+  }
+
+  const metadata = getDynamicSymmetryMetadata();
+  analysisState.isRunning = true;
+  analysisState.result = null;
+  analysisState.error = "";
+  analysisState.imageKey = `${getCurrentCompositionImageKey()}|dynamic-${metadata.score}-${metadata.detectedPoints}`;
+  if (dynamicSymmetryAiResults) {
+    dynamicSymmetryAiResults.innerHTML = "";
+    dynamicSymmetryAiResults.classList.add("hidden");
+    dynamicSymmetryAiResults.classList.remove("is-visible");
+  }
+  updateModeUI();
+
+  try {
+    const imageDataUrl = getCompositionImageDataUrlWithDynamicForAi();
+    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "dynamic-symmetry",
+        imageDataUrl,
+        imageName: state.imageName || "composition upload",
+        overlay: {
+          type: "dynamic-symmetry",
+          metadata
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Dynamic Symmetry analysis failed.");
+    }
+    analysisState.result = data.analysis || null;
+    renderDynamicSymmetryAiResult(analysisState.result);
+    showStatusToast("Dynamic Symmetry read ready");
+    scrollToDynamicSymmetryAiResults();
+  } catch (error) {
+    analysisState.error = error.message || "Dynamic Symmetry analysis failed. Try again in a moment.";
+    showStatusToast("Dynamic Symmetry read failed");
+  } finally {
+    analysisState.isRunning = false;
+    updateModeUI();
+  }
+}
+
 function renderGoldenRatioAiResult(analysis) {
   if (!goldenRatioAiResults || !analysis) {
     return;
@@ -3181,6 +3364,38 @@ function renderSpiralAiResult(analysis) {
   });
 }
 
+function renderDynamicSymmetryAiResult(analysis) {
+  if (!dynamicSymmetryAiResults || !analysis) {
+    return;
+  }
+
+  const sections = [
+    ["WHAT YOU ARE LOOKING AT", analysis.overlayRead],
+    ["WHY THESE POINTS", analysis.whatWorks],
+    ["WHAT TO IMPROVE", analysis.problemAreas],
+    ["HOW TO ADJUST", analysis.whatToAdjust],
+    ["WHAT TO WATCH", analysis.watchFor]
+  ];
+  const sectionHtml = sections
+    .filter(([, value]) => value)
+    .map(([title, value]) => `<div class="advanced-ai-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+    .join("");
+  const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+  const fixesHtml = fixes.length
+    ? `<div class="advanced-ai-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.slice(0, 3).map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+    : "";
+  const verdictHtml = analysis.verdict
+    ? `<div class="advanced-ai-result-block advanced-ai-verdict"><h3>DYNAMIC VERDICT</h3><p>${escapeHtml(analysis.verdict)}</p></div>`
+    : "";
+
+  dynamicSymmetryAiResults.innerHTML = sectionHtml + fixesHtml + verdictHtml;
+  dynamicSymmetryAiResults.classList.toggle("hidden", !dynamicSymmetryAiResults.innerHTML);
+  dynamicSymmetryAiResults.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    dynamicSymmetryAiResults.classList.add("is-visible");
+  });
+}
+
 function scrollToGoldenRatioAiResults() {
   const target = goldenRatioAiResults && !goldenRatioAiResults.classList.contains("hidden")
     ? goldenRatioAiResults
@@ -3203,6 +3418,15 @@ function scrollToNotanAiResults() {
   const target = notanAiResults && !notanAiResults.classList.contains("hidden")
     ? notanAiResults
     : notanAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
+function scrollToDynamicSymmetryAiResults() {
+  const target = dynamicSymmetryAiResults && !dynamicSymmetryAiResults.classList.contains("hidden")
+    ? dynamicSymmetryAiResults
+    : dynamicSymmetryAiCard;
   window.setTimeout(() => {
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 120);
@@ -3268,6 +3492,7 @@ function beginImageLoad() {
   resetGoldenRatioAi();
   resetNotanAi();
   resetSpiralAi();
+  resetDynamicSymmetryAi();
   compositionImage.classList.remove("is-loaded");
   compositionImage.style.display = "none";
   overlayCanvas.style.display = "none";
@@ -4488,12 +4713,12 @@ function getDynamicSymmetryLines(width, height) {
   const quarterX = width * 0.25;
   const threeQuarterX = width * 0.75;
   return [
-    { x1: 0, y1: height, x2: width, y2: 0 },
-    { x1: 0, y1: 0, x2: width, y2: height },
-    { x1: 0, y1: height, x2: quarterX, y2: 0 },
-    { x1: width, y1: height, x2: threeQuarterX, y2: 0 },
-    { x1: 0, y1: 0, x2: quarterX, y2: height },
-    { x1: width, y1: 0, x2: threeQuarterX, y2: height }
+    { label: "main rising diagonal", x1: 0, y1: height, x2: width, y2: 0 },
+    { label: "main falling diagonal", x1: 0, y1: 0, x2: width, y2: height },
+    { label: "left upper reciprocal", x1: 0, y1: height, x2: quarterX, y2: 0 },
+    { label: "right upper reciprocal", x1: width, y1: height, x2: threeQuarterX, y2: 0 },
+    { label: "left lower reciprocal", x1: 0, y1: 0, x2: quarterX, y2: height },
+    { label: "right lower reciprocal", x1: width, y1: 0, x2: threeQuarterX, y2: height }
   ];
 }
 

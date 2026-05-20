@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260520-advanced-ai-overlays">
+  <link rel="stylesheet" href="./style.css?v=20260520-dynamic-ai">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
@@ -124,6 +124,7 @@
           <button id="runNotanAiButton" class="button-secondary notan-action-analyze hidden" type="button" disabled>Analyze</button>
           <button id="confirmSpiralPlacementButton" class="button-secondary spiral-action-confirm hidden" type="button" disabled>Set Spiral</button>
           <button id="runSpiralAiButton" class="button-secondary spiral-action-analyze hidden" type="button" disabled>Analyze</button>
+          <button id="runDynamicSymmetryAiButton" class="button-secondary dynamic-action-analyze hidden" type="button" disabled>Analyze</button>
           <button id="clearCompositionButton" class="button-secondary" type="button" disabled>Clear</button>
           <button id="resetCompositionButton" class="button-secondary" type="button" disabled>Reset</button>
           <button id="exportCompositionButton" class="button-secondary" type="button" disabled>Export</button>
@@ -466,6 +467,14 @@
               <p id="dynamicSymmetryTooltip" class="detail-copy dynamic-tooltip hidden"></p>
             </div>
           </div>
+
+          <div id="dynamicSymmetryAiCard" class="detail-card advanced-ai-card hidden">
+            <p class="section-label">AI Dynamic Read</p>
+            <h3 class="feedback-title">Dynamic Symmetry Composition Check</h3>
+            <p class="detail-copy">Run a focused read of why the detected points sit on, near, or away from the armature lines.</p>
+            <p id="dynamicSymmetryAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
+            <div id="dynamicSymmetryAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
+          </div>
         </div>
 
         <button id="downloadCompositionAnalysisButton" class="button-secondary analysis-download-button" type="button" disabled onclick="gtag('event', 'download_image', { page_location: window.location.href })">Download Composition Analysis</button>
@@ -535,7 +544,7 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=20260520-advanced-ai-overlays"></script>
+  <script src="./script.js?v=20260520-dynamic-ai"></script>
 </body>
 </html>
 

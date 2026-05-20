@@ -51,7 +51,7 @@ exports.handler = async (event) => {
     return response(400, { error: "Invalid JSON body." });
   }
 
-  if (!["golden-ratio", "notan", "golden-spiral"].includes(body.mode)) {
+  if (!["golden-ratio", "notan", "golden-spiral", "dynamic-symmetry"].includes(body.mode)) {
     return response(400, { error: "Unsupported composition analysis mode." });
   }
 
@@ -182,6 +182,41 @@ function buildPrompt(body) {
     ].join("\n");
   }
 
+  if (mode === "dynamic-symmetry") {
+    const metadata = body.overlay?.metadata
+      ? JSON.stringify(body.overlay.metadata).slice(0, 1800)
+      : "No dynamic symmetry metadata supplied.";
+    return [
+      "You are an expert classical oil painting instructor and composition critic.",
+      "",
+      "Analyze the uploaded image only from the perspective of COMPOSITION and DYNAMIC SYMMETRY armature structure.",
+      "Do not give generic art feedback.",
+      "Do not discuss color or brushwork unless it affects compositional structure, value contrast, edge pull, or focal readability.",
+      "Do not praise randomly.",
+      "Do not mention AI, models, prompts, APIs, or software.",
+      "",
+      "The uploaded image includes dynamic symmetry armature lines and highlighted detected points.",
+      "The highlighted points were selected from strong local value/edge contrast and then checked against the nearest armature line.",
+      "Explain why those points were selected in painter language: they are likely focal accents, edge intersections, value contrast knots, or visual weight anchors.",
+      "Dynamic symmetry is a guide, not a rule. Judge whether the detected points and major masses actually support the armature or whether the structure feels accidental.",
+      "",
+      "Evaluate:",
+      "1. What the painter is looking at when the armature overlay is on the image.",
+      "2. Why the highlighted points were chosen and what visual role they probably play.",
+      "3. Whether those points sit on useful dynamic lines or distract from the intended structure.",
+      "4. Whether the large masses, focal accents, diagonals, edge pressure, and negative space support dynamic symmetry.",
+      "5. What should be moved, simplified, strengthened, cropped, lightened, darkened, or de-emphasized before painting.",
+      "",
+      "Use clear, direct, painterly language for a serious student.",
+      "Avoid vague phrases like 'nice movement' or 'good structure'.",
+      "Always explain what the painter should actually do.",
+      "Return JSON only, following the required schema.",
+      "",
+      `Dynamic symmetry metadata: ${metadata}`,
+      `Image name: ${imageName}`
+    ].join("\n");
+  }
+
   return [
     "You are an expert classical oil painting instructor and composition critic.",
     "",
@@ -216,6 +251,9 @@ function getAnalysisErrorLabel(mode) {
   }
   if (mode === "golden-spiral") {
     return "Golden Spiral analysis failed.";
+  }
+  if (mode === "dynamic-symmetry") {
+    return "Dynamic Symmetry analysis failed.";
   }
   return "Golden Ratio analysis failed.";
 }

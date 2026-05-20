@@ -755,7 +755,9 @@ a {
 .spiral-action-confirm.is-action-cue,
 .spiral-action-confirm.is-result-ready,
 .spiral-action-analyze.is-action-cue,
-.spiral-action-analyze.is-result-ready {
+.spiral-action-analyze.is-result-ready,
+.dynamic-action-analyze.is-action-cue,
+.dynamic-action-analyze.is-result-ready {
   position: relative;
   overflow: hidden;
 }
@@ -764,14 +766,16 @@ a {
 .golden-ratio-action-analyze.is-action-cue,
 .notan-action-analyze.is-action-cue,
 .spiral-action-confirm.is-action-cue,
-.spiral-action-analyze.is-action-cue {
+.spiral-action-analyze.is-action-cue,
+.dynamic-action-analyze.is-action-cue {
   animation: advancedAiCuePulse 980ms ease-in-out infinite;
 }
 
 .golden-ratio-action-analyze.is-result-ready,
 .notan-action-analyze.is-result-ready,
 .spiral-action-confirm.is-result-ready,
-.spiral-action-analyze.is-result-ready {
+.spiral-action-analyze.is-result-ready,
+.dynamic-action-analyze.is-result-ready {
   border-color: rgba(201, 106, 61, 0.72) !important;
   background: linear-gradient(135deg, #d6783f, #bf5f31) !important;
   color: #fff7e8 !important;
@@ -786,7 +790,9 @@ a {
 .spiral-action-confirm.is-action-cue::after,
 .spiral-action-confirm.is-result-ready::after,
 .spiral-action-analyze.is-action-cue::after,
-.spiral-action-analyze.is-result-ready::after {
+.spiral-action-analyze.is-result-ready::after,
+.dynamic-action-analyze.is-action-cue::after,
+.dynamic-action-analyze.is-result-ready::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1878,7 +1884,8 @@ html.mobile-light-mode .grid-overlay-info {
   }
 
   body[data-mode="golden-ratio"] .composition-action-row,
-  body[data-mode="notan"] .composition-action-row {
+  body[data-mode="notan"] .composition-action-row,
+  body[data-mode="dynamic-symmetry"] .composition-action-row {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
