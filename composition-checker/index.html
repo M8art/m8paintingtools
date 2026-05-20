@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260520-ratio-ai-toolbar">
+  <link rel="stylesheet" href="./style.css?v=20260520-advanced-ai-overlays">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
@@ -121,6 +121,9 @@
         <div class="composition-action-row" aria-label="Composition workspace actions">
           <label class="button composition-upload-button" for="fileInput">Upload</label>
           <button id="runGoldenRatioAiButton" class="button-secondary golden-ratio-action-analyze hidden" type="button" disabled>Analyze</button>
+          <button id="runNotanAiButton" class="button-secondary notan-action-analyze hidden" type="button" disabled>Analyze</button>
+          <button id="confirmSpiralPlacementButton" class="button-secondary spiral-action-confirm hidden" type="button" disabled>Set Spiral</button>
+          <button id="runSpiralAiButton" class="button-secondary spiral-action-analyze hidden" type="button" disabled>Analyze</button>
           <button id="clearCompositionButton" class="button-secondary" type="button" disabled>Clear</button>
           <button id="resetCompositionButton" class="button-secondary" type="button" disabled>Reset</button>
           <button id="exportCompositionButton" class="button-secondary" type="button" disabled>Export</button>
@@ -407,6 +410,14 @@
             </div>
           </div>
 
+          <div id="spiralAiCard" class="detail-card advanced-ai-card hidden">
+            <p class="section-label">AI Spiral Read</p>
+            <h3 class="feedback-title">Golden Spiral Composition Check</h3>
+            <p class="detail-copy">Place and confirm the spiral first, then run a focused read of how the eye travels through the image.</p>
+            <p id="spiralAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
+            <div id="spiralAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
+          </div>
+
           <div id="notanControlsCard" class="detail-card hidden">
             <p class="section-label">Notan Controls</p>
 
@@ -421,6 +432,14 @@
 
               <p class="detail-copy control-hint">Use fewer values to simplify the design into larger, clearer light and dark shapes.</p>
             </div>
+          </div>
+
+          <div id="notanAiCard" class="detail-card advanced-ai-card hidden">
+            <p class="section-label">AI Notan Read</p>
+            <h3 class="feedback-title">Notan Composition Check</h3>
+            <p class="detail-copy">Use the Notan overlay to simplify the image, then run a focused read of the large light and dark masses.</p>
+            <p id="notanAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
+            <div id="notanAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
           </div>
 
           <div id="focalControlsCard" class="detail-card hidden">
@@ -516,7 +535,7 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=20260516-dark-paywall-fix"></script>
+  <script src="./script.js?v=20260520-advanced-ai-overlays"></script>
 </body>
 </html>
 

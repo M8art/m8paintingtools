@@ -95,6 +95,15 @@ const goldenRatioAiCard = document.getElementById("goldenRatioAiCard");
 const runGoldenRatioAiButton = document.getElementById("runGoldenRatioAiButton");
 const goldenRatioAiStatus = document.getElementById("goldenRatioAiStatus");
 const goldenRatioAiResults = document.getElementById("goldenRatioAiResults");
+const notanAiCard = document.getElementById("notanAiCard");
+const runNotanAiButton = document.getElementById("runNotanAiButton");
+const notanAiStatus = document.getElementById("notanAiStatus");
+const notanAiResults = document.getElementById("notanAiResults");
+const spiralAiCard = document.getElementById("spiralAiCard");
+const confirmSpiralPlacementButton = document.getElementById("confirmSpiralPlacementButton");
+const runSpiralAiButton = document.getElementById("runSpiralAiButton");
+const spiralAiStatus = document.getElementById("spiralAiStatus");
+const spiralAiResults = document.getElementById("spiralAiResults");
 const premiumToast = document.getElementById("premiumToast");
 const thirdsReadingCard = document.getElementById("thirdsReadingCard");
 const thirdsReadScore = document.getElementById("thirdsReadScore");
@@ -292,6 +301,20 @@ const state = {
       result: null,
       imageKey: "",
       error: ""
+    },
+    notan: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: ""
+    },
+    spiral: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: "",
+      confirmed: false,
+      confirmedState: null
     }
   },
   thirdsAnalysis: {
@@ -403,6 +426,9 @@ advancedUnlockButton?.addEventListener("click", () => {
   window.location.href = advancedUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
 runGoldenRatioAiButton?.addEventListener("click", runGoldenRatioAiAnalysis);
+runNotanAiButton?.addEventListener("click", runNotanAiAnalysis);
+confirmSpiralPlacementButton?.addEventListener("click", confirmSpiralPlacement);
+runSpiralAiButton?.addEventListener("click", runSpiralAiAnalysis);
 
 applyInitialRoute();
 updateModeUI();
@@ -939,6 +965,9 @@ function handleOverlayPointerMove(event) {
     );
     state.spiral.movedDuringPointer = state.spiral.movedDuringPointer
       || Math.hypot(point.x - state.spiral.dragStartX, point.y - state.spiral.dragStartY) > 3;
+    if (state.spiral.movedDuringPointer) {
+      invalidateSpiralAiPlacement();
+    }
     requestOverlayDraw();
     return;
   }
@@ -948,6 +977,9 @@ function handleOverlayPointerMove(event) {
     resizeGoldenSpiralFromHandle(point);
     state.spiral.movedDuringPointer = state.spiral.movedDuringPointer
       || Math.hypot(point.x - state.spiral.dragStartX, point.y - state.spiral.dragStartY) > 3;
+    if (state.spiral.movedDuringPointer) {
+      invalidateSpiralAiPlacement();
+    }
     requestOverlayDraw();
     return;
   }
@@ -1035,6 +1067,8 @@ function resetCompositionWorkspace() {
   state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
   state.dynamicSymmetry.tooltip = null;
   resetGoldenRatioAi();
+  resetNotanAi();
+  resetSpiralAi();
   Object.assign(state.spiral, SPIRAL_DEFAULTS);
   invalidateNotanCache();
   closeOverlayColorMenu();
@@ -1062,6 +1096,7 @@ function toggleSpiralFlipX() {
   }
   cancelGoldenSpiralAnimation();
   state.spiral.flipX = !state.spiral.flipX;
+  invalidateSpiralAiPlacement();
   updateModeUI();
   requestOverlayDraw();
 }
@@ -1073,6 +1108,7 @@ function rotateGoldenSpiral() {
   cancelGoldenSpiralAnimation();
   state.spiral.rotation = (state.spiral.rotation + 90) % 360;
   state.spiral.selected = true;
+  invalidateSpiralAiPlacement();
   updateModeUI();
   requestOverlayDraw();
 }
@@ -1083,6 +1119,7 @@ function toggleSpiralFlipY() {
   }
   cancelGoldenSpiralAnimation();
   state.spiral.flipY = !state.spiral.flipY;
+  invalidateSpiralAiPlacement();
   updateModeUI();
   requestOverlayDraw();
 }
@@ -1093,6 +1130,7 @@ function setSpiralDisplayMode(displayMode) {
   }
   cancelGoldenSpiralAnimation();
   state.spiral.displayMode = displayMode;
+  invalidateSpiralAiPlacement();
   updateModeUI();
   requestOverlayDraw();
 }
@@ -1105,6 +1143,7 @@ function handleSpiralScaleInput(event) {
   cancelGoldenSpiralAnimation();
   state.spiral.scale = Number(event.target.value) / 100;
   state.spiral.selected = true;
+  invalidateSpiralAiPlacement();
   updateModeUI();
   requestOverlayDraw();
 }
@@ -1116,6 +1155,7 @@ function resetGoldenSpiral() {
   cancelGoldenSpiralAnimation();
   Object.assign(state.spiral, SPIRAL_DEFAULTS);
   state.spiral.selected = true;
+  invalidateSpiralAiPlacement();
   updateModeUI();
   requestOverlayDraw();
 }
@@ -2377,6 +2417,8 @@ function updateModeUI() {
   basicAnalysisPanel.style.display = isBasic ? "" : "none";
   advancedAnalysisPanel.style.display = isBasic ? "none" : "";
   goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
+  notanAiCard?.classList.toggle("hidden", !isNotan || advancedLocked);
+  spiralAiCard?.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
   notanControlsCard.classList.toggle("hidden", !isNotan);
   focalControlsCard.classList.toggle("hidden", !isFocalBalance);
@@ -2404,6 +2446,11 @@ function updateModeUI() {
   updateCenterReadingUI();
   updateDiagonalReadingUI();
   updateGoldenRatioAiUI(isGoldenRatio, advancedLocked);
+  updateNotanAiUI(isNotan, advancedLocked);
+  updateSpiralAiUI(isGoldenSpiral, advancedLocked);
+  uploadLabels.forEach((label) => {
+    label.classList.toggle("is-action-cue", (isGoldenRatio || isNotan || isGoldenSpiral) && !state.imageLoaded && !state.imageLoading && !advancedLocked);
+  });
   updateWorkspaceStageVisibility(advancedLocked);
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
 
@@ -2579,7 +2626,6 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
   const analysisState = state.compositionAi.goldenRatio;
   const canRun = isGoldenRatio && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
-  const shouldCueUpload = isGoldenRatio && !state.imageLoaded && !state.imageLoading && !advancedLocked;
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
   const status = analysisState.isRunning
     ? "Reading the image against the golden ratio structure..."
@@ -2592,9 +2638,6 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
     : "Upload an image to begin.";
 
   goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
-  uploadLabels.forEach((label) => {
-    label.classList.toggle("is-action-cue", shouldCueUpload);
-  });
   if (runGoldenRatioAiButton) {
     runGoldenRatioAiButton.disabled = !canRun;
     runGoldenRatioAiButton.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
@@ -2618,6 +2661,95 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
   }
 }
 
+function updateNotanAiUI(isNotan, advancedLocked) {
+  const analysisState = state.compositionAi.notan;
+  const canRun = isNotan && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
+  const hasResult = Boolean(analysisState.result);
+  const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
+  const status = analysisState.isRunning
+    ? `Reading the Notan structure in ${state.notanLevels} value groups...`
+    : analysisState.error
+    ? analysisState.error
+    : hasResult
+    ? "Notan read is ready."
+    : state.imageLoaded
+    ? "Run the Notan read after checking the large light and dark masses."
+    : "Upload an image to begin.";
+
+  notanAiCard?.classList.toggle("hidden", !isNotan || advancedLocked);
+  if (runNotanAiButton) {
+    runNotanAiButton.disabled = !canRun;
+    runNotanAiButton.classList.toggle("hidden", !isNotan || advancedLocked);
+    runNotanAiButton.classList.toggle("is-running", analysisState.isRunning);
+    runNotanAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
+    runNotanAiButton.classList.toggle("is-result-ready", hasResult);
+    runNotanAiButton.textContent = analysisState.isRunning
+      ? "Analyzing..."
+      : hasResult
+      ? "Analyze Again"
+      : "Analyze";
+  }
+
+  if (notanAiStatus) {
+    notanAiStatus.textContent = status;
+  }
+
+  if (notanAiResults) {
+    notanAiResults.classList.toggle("hidden", !hasResult);
+    notanAiResults.classList.toggle("is-visible", hasResult);
+  }
+}
+
+function updateSpiralAiUI(isGoldenSpiral, advancedLocked) {
+  const analysisState = state.compositionAi.spiral;
+  const canConfirm = isGoldenSpiral && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
+  const canRun = canConfirm && analysisState.confirmed;
+  const hasResult = Boolean(analysisState.result);
+  const shouldCueConfirm = canConfirm && !analysisState.confirmed && !analysisState.error;
+  const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
+  const status = analysisState.isRunning
+    ? "Reading the confirmed spiral placement..."
+    : analysisState.error
+    ? analysisState.error
+    : hasResult
+    ? "Golden Spiral read is ready."
+    : analysisState.confirmed
+    ? "Spiral placement is set. Run the composition read."
+    : state.imageLoaded
+    ? "Place the spiral over the intended eye path, then confirm it."
+    : "Upload an image to begin.";
+
+  spiralAiCard?.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
+  if (confirmSpiralPlacementButton) {
+    confirmSpiralPlacementButton.disabled = !canConfirm;
+    confirmSpiralPlacementButton.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
+    confirmSpiralPlacementButton.classList.toggle("is-action-cue", shouldCueConfirm);
+    confirmSpiralPlacementButton.classList.remove("is-result-ready");
+    confirmSpiralPlacementButton.textContent = analysisState.confirmed ? "Spiral Set" : "Set Spiral";
+  }
+  if (runSpiralAiButton) {
+    runSpiralAiButton.disabled = !canRun || analysisState.isRunning;
+    runSpiralAiButton.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
+    runSpiralAiButton.classList.toggle("is-running", analysisState.isRunning);
+    runSpiralAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
+    runSpiralAiButton.classList.toggle("is-result-ready", hasResult);
+    runSpiralAiButton.textContent = analysisState.isRunning
+      ? "Analyzing..."
+      : hasResult
+      ? "Analyze Again"
+      : "Analyze";
+  }
+
+  if (spiralAiStatus) {
+    spiralAiStatus.textContent = status;
+  }
+
+  if (spiralAiResults) {
+    spiralAiResults.classList.toggle("hidden", !hasResult);
+    spiralAiResults.classList.toggle("is-visible", hasResult);
+  }
+}
+
 function resetGoldenRatioAi() {
   state.compositionAi.goldenRatio.isRunning = false;
   state.compositionAi.goldenRatio.result = null;
@@ -2627,6 +2759,49 @@ function resetGoldenRatioAi() {
     goldenRatioAiResults.innerHTML = "";
     goldenRatioAiResults.classList.add("hidden");
     goldenRatioAiResults.classList.remove("is-visible");
+  }
+}
+
+function resetNotanAi() {
+  state.compositionAi.notan.isRunning = false;
+  state.compositionAi.notan.result = null;
+  state.compositionAi.notan.imageKey = "";
+  state.compositionAi.notan.error = "";
+  if (notanAiResults) {
+    notanAiResults.innerHTML = "";
+    notanAiResults.classList.add("hidden");
+    notanAiResults.classList.remove("is-visible");
+  }
+}
+
+function resetSpiralAi() {
+  state.compositionAi.spiral.isRunning = false;
+  state.compositionAi.spiral.result = null;
+  state.compositionAi.spiral.imageKey = "";
+  state.compositionAi.spiral.error = "";
+  state.compositionAi.spiral.confirmed = false;
+  state.compositionAi.spiral.confirmedState = null;
+  if (spiralAiResults) {
+    spiralAiResults.innerHTML = "";
+    spiralAiResults.classList.add("hidden");
+    spiralAiResults.classList.remove("is-visible");
+  }
+}
+
+function invalidateSpiralAiPlacement() {
+  const analysisState = state.compositionAi.spiral;
+  if (!analysisState.confirmed && !analysisState.result && !analysisState.error) {
+    return;
+  }
+  analysisState.confirmed = false;
+  analysisState.confirmedState = null;
+  analysisState.result = null;
+  analysisState.error = "";
+  analysisState.imageKey = "";
+  if (spiralAiResults) {
+    spiralAiResults.innerHTML = "";
+    spiralAiResults.classList.add("hidden");
+    spiralAiResults.classList.remove("is-visible");
   }
 }
 
@@ -2654,6 +2829,63 @@ function getCompositionImageDataUrlForAi(maxSide = 1500, quality = 0.84) {
   const ctx = canvas.getContext("2d");
   ctx.drawImage(compositionImage, 0, 0, width, height);
   return canvas.toDataURL("image/jpeg", quality);
+}
+
+function getCompositionImageDataUrlWithSpiralForAi(maxSide = 1500, quality = 0.86) {
+  if (!state.imageLoaded || !compositionImage.naturalWidth || !compositionImage.naturalHeight) {
+    throw new Error("Upload an image before running the composition read.");
+  }
+
+  const sourceWidth = compositionImage.naturalWidth;
+  const sourceHeight = compositionImage.naturalHeight;
+  const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+  const width = Math.max(1, Math.round(sourceWidth * scale));
+  const height = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(compositionImage, 0, 0, width, height);
+
+  const previousMode = state.advancedMode;
+  const previousAnalysisMode = state.analysisMode;
+  const previousOverlayColor = state.userSelectedOverlayColor;
+  try {
+    state.analysisMode = "advanced";
+    state.advancedMode = "golden-spiral";
+    state.userSelectedOverlayColor = "#c96a3d";
+    drawGoldenSpiral(ctx, width, height, getOverlayPalette(), {
+      includeSelection: false,
+      spiralState: getScaledSpiralState(width, height)
+    });
+  } finally {
+    state.analysisMode = previousAnalysisMode;
+    state.advancedMode = previousMode;
+    state.userSelectedOverlayColor = previousOverlayColor;
+  }
+
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+function getSpiralPlacementMetadata() {
+  const width = Math.max(1, Math.round(compositionImage.clientWidth));
+  const height = Math.max(1, Math.round(compositionImage.clientHeight));
+  const bounds = getGoldenSpiralBounds(width, height, state.spiral);
+  return {
+    rotation: state.spiral.rotation,
+    flipX: state.spiral.flipX,
+    flipY: state.spiral.flipY,
+    scale: Number(state.spiral.scale.toFixed(3)),
+    displayMode: state.spiral.displayMode,
+    bounds: {
+      x: Number((bounds.x / width).toFixed(4)),
+      y: Number((bounds.y / height).toFixed(4)),
+      width: Number((bounds.width / width).toFixed(4)),
+      height: Number((bounds.height / height).toFixed(4)),
+      centerX: Number((bounds.centerX / width).toFixed(4)),
+      centerY: Number((bounds.centerY / height).toFixed(4))
+    }
+  };
 }
 
 async function runGoldenRatioAiAnalysis() {
@@ -2716,6 +2948,143 @@ async function runGoldenRatioAiAnalysis() {
   }
 }
 
+async function runNotanAiAnalysis() {
+  if (!requireUnlock("Notan AI analysis")) {
+    return;
+  }
+
+  const analysisState = state.compositionAi.notan;
+  if (analysisState.isRunning || !state.imageLoaded) {
+    return;
+  }
+
+  analysisState.isRunning = true;
+  analysisState.result = null;
+  analysisState.error = "";
+  analysisState.imageKey = `${getCurrentCompositionImageKey()}|notan-${state.notanLevels}`;
+  if (notanAiResults) {
+    notanAiResults.innerHTML = "";
+    notanAiResults.classList.add("hidden");
+    notanAiResults.classList.remove("is-visible");
+  }
+  updateModeUI();
+
+  try {
+    const imageDataUrl = getCompositionImageDataUrlForAi();
+    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "notan",
+        imageDataUrl,
+        imageName: state.imageName || "composition upload",
+        overlay: {
+          type: "notan",
+          valueGroups: state.notanLevels
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Notan analysis failed.");
+    }
+    analysisState.result = data.analysis || null;
+    renderNotanAiResult(analysisState.result);
+    showStatusToast("Notan read ready");
+    scrollToNotanAiResults();
+  } catch (error) {
+    analysisState.error = error.message || "Notan analysis failed. Try again in a moment.";
+    showStatusToast("Notan read failed");
+  } finally {
+    analysisState.isRunning = false;
+    updateModeUI();
+  }
+}
+
+function confirmSpiralPlacement() {
+  if (!requireUnlock("Golden Spiral AI analysis")) {
+    return;
+  }
+  if (!state.imageLoaded) {
+    return;
+  }
+
+  state.spiral.selected = true;
+  state.compositionAi.spiral.confirmed = true;
+  state.compositionAi.spiral.confirmedState = {
+    ...state.spiral,
+    interaction: null,
+    activeHandle: null,
+    animationFrame: 0
+  };
+  state.compositionAi.spiral.result = null;
+  state.compositionAi.spiral.error = "";
+  state.compositionAi.spiral.imageKey = `${getCurrentCompositionImageKey()}|spiral-${Date.now()}`;
+  if (spiralAiResults) {
+    spiralAiResults.innerHTML = "";
+    spiralAiResults.classList.add("hidden");
+    spiralAiResults.classList.remove("is-visible");
+  }
+  showStatusToast("Spiral placement set");
+  updateModeUI();
+  requestOverlayDraw();
+}
+
+async function runSpiralAiAnalysis() {
+  if (!requireUnlock("Golden Spiral AI analysis")) {
+    return;
+  }
+
+  const analysisState = state.compositionAi.spiral;
+  if (analysisState.isRunning || !state.imageLoaded || !analysisState.confirmed) {
+    if (!analysisState.confirmed) {
+      showStatusToast("Set the spiral first");
+    }
+    return;
+  }
+
+  analysisState.isRunning = true;
+  analysisState.result = null;
+  analysisState.error = "";
+  if (spiralAiResults) {
+    spiralAiResults.innerHTML = "";
+    spiralAiResults.classList.add("hidden");
+    spiralAiResults.classList.remove("is-visible");
+  }
+  updateModeUI();
+
+  try {
+    const imageDataUrl = getCompositionImageDataUrlWithSpiralForAi();
+    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "golden-spiral",
+        imageDataUrl,
+        imageName: state.imageName || "composition upload",
+        overlay: {
+          type: "golden-spiral",
+          placement: getSpiralPlacementMetadata()
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Golden Spiral analysis failed.");
+    }
+    analysisState.result = data.analysis || null;
+    renderSpiralAiResult(analysisState.result);
+    showStatusToast("Golden Spiral read ready");
+    scrollToSpiralAiResults();
+  } catch (error) {
+    analysisState.error = error.message || "Golden Spiral analysis failed. Try again in a moment.";
+    showStatusToast("Golden Spiral read failed");
+  } finally {
+    analysisState.isRunning = false;
+    updateModeUI();
+  }
+}
+
 function renderGoldenRatioAiResult(analysis) {
   if (!goldenRatioAiResults || !analysis) {
     return;
@@ -2748,10 +3117,92 @@ function renderGoldenRatioAiResult(analysis) {
   });
 }
 
+function renderNotanAiResult(analysis) {
+  if (!notanAiResults || !analysis) {
+    return;
+  }
+
+  const sections = [
+    ["WHAT YOU ARE LOOKING AT", analysis.overlayRead],
+    ["WHAT WORKS", analysis.whatWorks],
+    ["WHAT TO IMPROVE", analysis.problemAreas],
+    ["HOW TO ADJUST", analysis.whatToAdjust],
+    ["WHAT TO WATCH", analysis.watchFor]
+  ];
+  const sectionHtml = sections
+    .filter(([, value]) => value)
+    .map(([title, value]) => `<div class="advanced-ai-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+    .join("");
+  const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+  const fixesHtml = fixes.length
+    ? `<div class="advanced-ai-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.slice(0, 3).map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+    : "";
+  const verdictHtml = analysis.verdict
+    ? `<div class="advanced-ai-result-block advanced-ai-verdict"><h3>COMPOSITION VERDICT</h3><p>${escapeHtml(analysis.verdict)}</p></div>`
+    : "";
+
+  notanAiResults.innerHTML = sectionHtml + fixesHtml + verdictHtml;
+  notanAiResults.classList.toggle("hidden", !notanAiResults.innerHTML);
+  notanAiResults.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    notanAiResults.classList.add("is-visible");
+  });
+}
+
+function renderSpiralAiResult(analysis) {
+  if (!spiralAiResults || !analysis) {
+    return;
+  }
+
+  const sections = [
+    ["WHAT YOU ARE LOOKING AT", analysis.overlayRead],
+    ["WHAT WORKS", analysis.whatWorks],
+    ["WHAT TO IMPROVE", analysis.problemAreas],
+    ["HOW TO ADJUST", analysis.whatToAdjust],
+    ["WHAT TO WATCH", analysis.watchFor]
+  ];
+  const sectionHtml = sections
+    .filter(([, value]) => value)
+    .map(([title, value]) => `<div class="advanced-ai-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+    .join("");
+  const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+  const fixesHtml = fixes.length
+    ? `<div class="advanced-ai-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.slice(0, 3).map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+    : "";
+  const verdictHtml = analysis.verdict
+    ? `<div class="advanced-ai-result-block advanced-ai-verdict"><h3>COMPOSITION VERDICT</h3><p>${escapeHtml(analysis.verdict)}</p></div>`
+    : "";
+
+  spiralAiResults.innerHTML = sectionHtml + fixesHtml + verdictHtml;
+  spiralAiResults.classList.toggle("hidden", !spiralAiResults.innerHTML);
+  spiralAiResults.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    spiralAiResults.classList.add("is-visible");
+  });
+}
+
 function scrollToGoldenRatioAiResults() {
   const target = goldenRatioAiResults && !goldenRatioAiResults.classList.contains("hidden")
     ? goldenRatioAiResults
     : goldenRatioAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
+function scrollToSpiralAiResults() {
+  const target = spiralAiResults && !spiralAiResults.classList.contains("hidden")
+    ? spiralAiResults
+    : spiralAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
+function scrollToNotanAiResults() {
+  const target = notanAiResults && !notanAiResults.classList.contains("hidden")
+    ? notanAiResults
+    : notanAiCard;
   window.setTimeout(() => {
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 120);
@@ -2815,6 +3266,8 @@ function beginImageLoad() {
   state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
   state.dynamicSymmetry.tooltip = null;
   resetGoldenRatioAi();
+  resetNotanAi();
+  resetSpiralAi();
   compositionImage.classList.remove("is-loaded");
   compositionImage.style.display = "none";
   overlayCanvas.style.display = "none";
@@ -2948,6 +3401,7 @@ function snapGoldenSpiralToPoint(point) {
   const startTime = performance.now();
 
   state.spiral.selected = true;
+  invalidateSpiralAiPlacement();
 
   const animate = (timestamp) => {
     const progress = clamp((timestamp - startTime) / duration, 0, 1);
@@ -3866,7 +4320,9 @@ function handleNotanLevelsInput(event) {
   }
   state.notanLevels = Number(event.target.value);
   invalidateNotanCache();
+  resetNotanAi();
   notanLevelsValue.textContent = `${state.notanLevels} values`;
+  updateModeUI();
   requestOverlayDraw();
 }
 

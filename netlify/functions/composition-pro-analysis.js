@@ -51,7 +51,7 @@ exports.handler = async (event) => {
     return response(400, { error: "Invalid JSON body." });
   }
 
-  if (body.mode !== "golden-ratio") {
+  if (!["golden-ratio", "notan", "golden-spiral"].includes(body.mode)) {
     return response(400, { error: "Unsupported composition analysis mode." });
   }
 
@@ -61,36 +61,11 @@ exports.handler = async (event) => {
   }
 
   if (imageDataUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
-    return response(413, { error: "Image is too large for Golden Ratio analysis." });
+    return response(413, { error: "Image is too large for composition analysis." });
   }
 
   const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
-  const prompt = [
-    "You are an expert classical oil painting instructor and composition critic.",
-    "",
-    "Analyze the uploaded image only from the perspective of COMPOSITION and the Golden Ratio overlay.",
-    "Do not give generic art feedback.",
-    "Do not discuss color or brushwork unless it affects compositional readability.",
-    "Do not praise randomly.",
-    "Do not mention AI, models, prompts, APIs, or software.",
-    "",
-    "The Golden Ratio overlay divides the image at 38.2% and 61.8% horizontally and vertically.",
-    "The four golden intersections are the main power areas. The vertical and horizontal golden divisions are structural guides, not strict rules.",
-    "",
-    "Evaluate:",
-    "1. What the painter is looking at when this overlay is on the image.",
-    "2. Whether the main focal area, strongest value contrast, important edges, or major masses sit near golden lines or intersections.",
-    "3. Whether the composition feels intentionally weighted or accidentally off-balance.",
-    "4. Whether empty space, subject placement, horizon/eye line, large value masses, and edge pressure support the golden ratio structure.",
-    "5. What is working, what is weakening the design, and what the painter should adjust before painting.",
-    "",
-    "Use clear, direct, painterly language for a serious student.",
-    "Avoid vague phrases like 'nice composition' or 'interesting balance'.",
-    "Always explain what the painter should actually do.",
-    "Return JSON only, following the required schema.",
-    "",
-    `Image name: ${String(body.imageName || "uploaded image").slice(0, 120)}`
-  ].join("\n");
+  const prompt = buildPrompt(body);
 
   const payload = {
     model,
@@ -115,7 +90,7 @@ exports.handler = async (event) => {
     text: {
       format: {
         type: "json_schema",
-        name: "composition_golden_ratio_analysis",
+        name: "composition_pro_analysis",
         schema: JSON_SCHEMA,
         strict: true
       }
@@ -131,9 +106,119 @@ exports.handler = async (event) => {
     });
   } catch (error) {
     console.error(error);
-    return response(502, { error: "Golden Ratio analysis failed." });
+    return response(502, { error: getAnalysisErrorLabel(body.mode) });
   }
 };
+
+function buildPrompt(body) {
+  const mode = body.mode;
+  const imageName = String(body.imageName || "uploaded image").slice(0, 120);
+
+  if (mode === "notan") {
+    const rawGroups = Number(body.overlay?.valueGroups);
+    const valueGroups = Number.isFinite(rawGroups) ? Math.min(4, Math.max(2, Math.round(rawGroups))) : 3;
+    return [
+      "You are an expert classical oil painting instructor and composition critic.",
+      "",
+      "Analyze the uploaded image only from the perspective of COMPOSITION and NOTAN value design.",
+      "Do not give generic art feedback.",
+      "Do not discuss color or brushwork unless it affects value grouping and composition readability.",
+      "Do not praise randomly.",
+      "Do not mention AI, models, prompts, APIs, or software.",
+      "",
+      `The Notan overlay simplifies the image into ${valueGroups} value groups.`,
+      "Read the image as large light and dark masses, not as details.",
+      "The goal is to judge whether the image remains strong when simplified.",
+      "",
+      "Evaluate:",
+      "1. What the painter is looking at in the Notan view.",
+      "2. Whether the large light and dark masses read clearly when squinting.",
+      "3. Whether the focal area is supported by value grouping or lost in small value noise.",
+      "4. Whether shadow shapes are grouped together or broken into too many pieces.",
+      "5. Whether background values compete with the foreground.",
+      "6. What should be simplified, joined, lightened, darkened, or redesigned before painting.",
+      "",
+      "Use clear, direct, painterly language for a serious student.",
+      "Avoid vague phrases like 'nice contrast' or 'interesting balance'.",
+      "Always explain what the painter should actually do.",
+      "Return JSON only, following the required schema.",
+      "",
+      `Image name: ${imageName}`
+    ].join("\n");
+  }
+
+  if (mode === "golden-spiral") {
+    const placement = body.overlay?.placement
+      ? JSON.stringify(body.overlay.placement).slice(0, 1200)
+      : "No placement metadata supplied.";
+    return [
+      "You are an expert classical oil painting instructor and composition critic.",
+      "",
+      "Analyze the uploaded image only from the perspective of COMPOSITION and the Golden Spiral overlay.",
+      "Do not give generic art feedback.",
+      "Do not discuss color or brushwork unless it affects compositional readability.",
+      "Do not praise randomly.",
+      "Do not mention AI, models, prompts, APIs, or software.",
+      "",
+      "The uploaded image includes the user's confirmed Golden Spiral overlay drawn on top of the picture.",
+      "Treat the spiral as a teaching guide for eye movement, focal hierarchy, large masses, and visual rhythm. Do not treat it as a strict rule.",
+      "Use the overlay to judge whether the main focal point, strongest value contrast, important edges, and major shape movement support the spiral path.",
+      "Also judge whether the spiral feels forced, misses the subject, cuts through the wrong masses, or needs to be moved, rotated, scaled, or flipped.",
+      "",
+      "Evaluate:",
+      "1. What the painter is looking at when this spiral placement is on the image.",
+      "2. Whether the spiral eye path supports the intended focal area.",
+      "3. Whether major shapes, edges, value masses, and empty space help or fight the spiral movement.",
+      "4. Whether the placement should be adjusted before painting.",
+      "5. What the painter should simplify, crop, move, lighten, darken, or emphasize.",
+      "",
+      "Use clear, direct, painterly language for a serious student.",
+      "Avoid vague phrases like 'nice flow' or 'interesting composition'.",
+      "Always explain what the painter should actually do.",
+      "Return JSON only, following the required schema.",
+      "",
+      `Spiral placement metadata: ${placement}`,
+      `Image name: ${imageName}`
+    ].join("\n");
+  }
+
+  return [
+    "You are an expert classical oil painting instructor and composition critic.",
+    "",
+    "Analyze the uploaded image only from the perspective of COMPOSITION and the Golden Ratio overlay.",
+    "Do not give generic art feedback.",
+    "Do not discuss color or brushwork unless it affects compositional readability.",
+    "Do not praise randomly.",
+    "Do not mention AI, models, prompts, APIs, or software.",
+    "",
+    "The Golden Ratio overlay divides the image at 38.2% and 61.8% horizontally and vertically.",
+    "The four golden intersections are the main power areas. The vertical and horizontal golden divisions are structural guides, not strict rules.",
+    "",
+    "Evaluate:",
+    "1. What the painter is looking at when this overlay is on the image.",
+    "2. Whether the main focal area, strongest value contrast, important edges, or major masses sit near golden lines or intersections.",
+    "3. Whether the composition feels intentionally weighted or accidentally off-balance.",
+    "4. Whether empty space, subject placement, horizon/eye line, large value masses, and edge pressure support the golden ratio structure.",
+    "5. What is working, what is weakening the design, and what the painter should adjust before painting.",
+    "",
+    "Use clear, direct, painterly language for a serious student.",
+    "Avoid vague phrases like 'nice composition' or 'interesting balance'.",
+    "Always explain what the painter should actually do.",
+    "Return JSON only, following the required schema.",
+    "",
+    `Image name: ${imageName}`
+  ].join("\n");
+}
+
+function getAnalysisErrorLabel(mode) {
+  if (mode === "notan") {
+    return "Notan analysis failed.";
+  }
+  if (mode === "golden-spiral") {
+    return "Golden Spiral analysis failed.";
+  }
+  return "Golden Ratio analysis failed.";
+}
 
 function response(statusCode, body) {
   return {
