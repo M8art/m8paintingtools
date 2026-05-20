@@ -93,7 +93,6 @@ const advancedUnlockCopy = document.getElementById("advancedUnlockCopy");
 const advancedUnlockButton = document.getElementById("advancedUnlockButton");
 const goldenRatioAiCard = document.getElementById("goldenRatioAiCard");
 const runGoldenRatioAiButton = document.getElementById("runGoldenRatioAiButton");
-const mobileGoldenRatioAnalyzeButton = document.getElementById("mobileGoldenRatioAnalyzeButton");
 const goldenRatioAiStatus = document.getElementById("goldenRatioAiStatus");
 const goldenRatioAiResults = document.getElementById("goldenRatioAiResults");
 const premiumToast = document.getElementById("premiumToast");
@@ -404,7 +403,6 @@ advancedUnlockButton?.addEventListener("click", () => {
   window.location.href = advancedUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
 runGoldenRatioAiButton?.addEventListener("click", runGoldenRatioAiAnalysis);
-mobileGoldenRatioAnalyzeButton?.addEventListener("click", runGoldenRatioAiAnalysis);
 
 applyInitialRoute();
 updateModeUI();
@@ -2581,6 +2579,8 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
   const analysisState = state.compositionAi.goldenRatio;
   const canRun = isGoldenRatio && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
+  const shouldCueUpload = isGoldenRatio && !state.imageLoaded && !state.imageLoading && !advancedLocked;
+  const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
   const status = analysisState.isRunning
     ? "Reading the image against the golden ratio structure..."
     : analysisState.error
@@ -2592,21 +2592,21 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
     : "Upload an image to begin.";
 
   goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
-  [runGoldenRatioAiButton, mobileGoldenRatioAnalyzeButton].forEach((button) => {
-    if (!button) {
-      return;
-    }
-    button.disabled = !canRun;
-    button.classList.toggle("is-running", analysisState.isRunning);
-    button.classList.toggle("hidden", button === mobileGoldenRatioAnalyzeButton && (!isGoldenRatio || advancedLocked || !state.imageLoaded));
-    button.textContent = analysisState.isRunning
+  uploadLabels.forEach((label) => {
+    label.classList.toggle("is-action-cue", shouldCueUpload);
+  });
+  if (runGoldenRatioAiButton) {
+    runGoldenRatioAiButton.disabled = !canRun;
+    runGoldenRatioAiButton.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
+    runGoldenRatioAiButton.classList.toggle("is-running", analysisState.isRunning);
+    runGoldenRatioAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
+    runGoldenRatioAiButton.classList.toggle("is-result-ready", hasResult);
+    runGoldenRatioAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
       : hasResult
       ? "Analyze Again"
-      : button === mobileGoldenRatioAnalyzeButton
-      ? "Analyze Ratio"
-      : "Analyze Golden Ratio";
-  });
+      : "Analyze";
+  }
 
   if (goldenRatioAiStatus) {
     goldenRatioAiStatus.textContent = status;
@@ -2706,6 +2706,7 @@ async function runGoldenRatioAiAnalysis() {
     analysisState.result = data.analysis || null;
     renderGoldenRatioAiResult(analysisState.result);
     showStatusToast("Golden Ratio read ready");
+    scrollToGoldenRatioAiResults();
   } catch (error) {
     analysisState.error = error.message || "Golden Ratio analysis failed. Try again in a moment.";
     showStatusToast("Golden Ratio read failed");
@@ -2745,6 +2746,15 @@ function renderGoldenRatioAiResult(analysis) {
   window.requestAnimationFrame(() => {
     goldenRatioAiResults.classList.add("is-visible");
   });
+}
+
+function scrollToGoldenRatioAiResults() {
+  const target = goldenRatioAiResults && !goldenRatioAiResults.classList.contains("hidden")
+    ? goldenRatioAiResults
+    : goldenRatioAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
 }
 
 function escapeHtml(value) {

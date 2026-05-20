@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260516-dark-paywall-fix">
+  <link rel="stylesheet" href="./style.css?v=20260520-ratio-ai-toolbar">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
 </head>
@@ -115,12 +115,12 @@
         </div>
 
         <div class="mobile-workspace-toolbar" aria-label="Composition mobile controls">
-          <button id="mobileGoldenRatioAnalyzeButton" class="button mobile-toolbar-button hidden" type="button" disabled>Analyze Ratio</button>
           <button id="mobileClearNotesButton" class="button-secondary mobile-toolbar-button hidden" type="button" disabled>Clear</button>
         </div>
 
         <div class="composition-action-row" aria-label="Composition workspace actions">
           <label class="button composition-upload-button" for="fileInput">Upload</label>
+          <button id="runGoldenRatioAiButton" class="button-secondary golden-ratio-action-analyze hidden" type="button" disabled>Analyze</button>
           <button id="clearCompositionButton" class="button-secondary" type="button" disabled>Clear</button>
           <button id="resetCompositionButton" class="button-secondary" type="button" disabled>Reset</button>
           <button id="exportCompositionButton" class="button-secondary" type="button" disabled>Export</button>
@@ -367,7 +367,6 @@
             <p class="section-label">AI Ratio Read</p>
             <h3 class="feedback-title">Golden Ratio Composition Check</h3>
             <p class="detail-copy">Place the golden ratio overlay over the image, then run a focused composition read against the ratio lines and intersections.</p>
-            <button id="runGoldenRatioAiButton" class="button advanced-ai-button" type="button" disabled>Analyze Golden Ratio</button>
             <p id="goldenRatioAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
             <div id="goldenRatioAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
           </div>
