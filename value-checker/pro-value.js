@@ -28,6 +28,18 @@
   const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
   const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
   const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
+  const VALUE_ANALYSIS_ENDPOINT = window.M8_VALUE_ANALYSIS_ENDPOINT || (
+    window.M8_GOOGLE_PLAY_BUILD || window.location.protocol === "file:"
+      ? "https://m8paintingtools.com/.netlify/functions/value-analysis"
+      : "/.netlify/functions/value-analysis"
+  );
+  const AI_VALUE_IMAGE_MAX_DIMENSION = 1280;
+  const AI_VALUE_IMAGE_QUALITY = 0.82;
+  const MOBILE_AI_VALUE_IMAGE_MAX_DIMENSION = 896;
+  const MOBILE_AI_VALUE_IMAGE_QUALITY = 0.68;
+  const MOBILE_AI_VALUE_FALLBACK_MAX_DIMENSION = 720;
+  const MOBILE_AI_VALUE_FALLBACK_QUALITY = 0.6;
+  const MOBILE_AI_VALUE_TARGET_LENGTH = 1600000;
 
   let imageDataUrl = "";
   let imageName = "";
@@ -282,15 +294,18 @@
     updateAccessUI();
   }
 
-  function loadProImage(file) {
+  async function loadProImage(file) {
     if (!file || !file.type || !file.type.startsWith("image/")) {
       setStatus("Upload an image file.", "Use JPG, PNG, or WebP.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      imageDataUrl = String(reader.result || "");
+    setAnalyzeEnabled(false);
+    setStatus("Loading image...", "Preparing a mobile-safe image for AI Value Analysis.");
+
+    try {
+      const sourceDataUrl = await readFileAsDataUrl(file);
+      imageDataUrl = await resizeImageDataUrl(sourceDataUrl, AI_VALUE_IMAGE_MAX_DIMENSION, AI_VALUE_IMAGE_QUALITY);
       imageName = file.name || "uploaded image";
       if (proPreview) proPreview.src = imageDataUrl;
       proImageStage?.classList.remove("hidden");
@@ -308,9 +323,76 @@
         proResults.classList.remove("is-visible");
       }
       updateAccessUI();
-    };
-    reader.onerror = () => setStatus("Could not read image.", "Try another JPG, PNG, or WebP file.");
-    reader.readAsDataURL(file);
+    } catch (error) {
+      setAnalyzeEnabled(false);
+      setStatus("Could not read image.", "Try another JPG, PNG, or WebP file.");
+    }
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImageFromDataUrl(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = dataUrl;
+    });
+  }
+
+  async function resizeImageDataUrl(dataUrl, maxDimension, quality) {
+    const image = await loadImageFromDataUrl(dataUrl);
+    const sourceWidth = image.naturalWidth || image.width;
+    const sourceHeight = image.naturalHeight || image.height;
+    if (!sourceWidth || !sourceHeight) {
+      return dataUrl;
+    }
+
+    const scale = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { alpha: false });
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+    return canvas.toDataURL("image/jpeg", quality);
+  }
+
+  function isMobileAiValueRun(event) {
+    return event?.currentTarget === proMobileAnalyzeButton ||
+      Boolean(window.matchMedia?.("(max-width: 720px)").matches);
+  }
+
+  async function createMobileAnalysisDataUrl(dataUrl) {
+    try {
+      const mobileDataUrl = await resizeImageDataUrl(
+        dataUrl,
+        MOBILE_AI_VALUE_IMAGE_MAX_DIMENSION,
+        MOBILE_AI_VALUE_IMAGE_QUALITY
+      );
+
+      if (mobileDataUrl.length <= MOBILE_AI_VALUE_TARGET_LENGTH) {
+        return mobileDataUrl;
+      }
+
+      return await resizeImageDataUrl(
+        mobileDataUrl,
+        MOBILE_AI_VALUE_FALLBACK_MAX_DIMENSION,
+        MOBILE_AI_VALUE_FALLBACK_QUALITY
+      );
+    } catch {
+      return dataUrl;
+    }
   }
 
   function renderResults(data) {
@@ -404,7 +486,7 @@
       .replace(/'/g, "&#039;");
   }
 
-  async function runAiValueAnalysis() {
+  async function runAiValueAnalysis(event) {
     if (isLockedByLimit()) {
       openFullUnlock();
       return;
@@ -412,9 +494,10 @@
 
     if (!imageDataUrl || isRunning) return;
 
+    const isMobileRun = isMobileAiValueRun(event);
     isRunning = true;
     currentAnalysisUsesFreeSlot = !DEV_MODE && !hasUnlockedAccess();
-    if (currentAnalysisUsesFreeSlot) {
+    if (currentAnalysisUsesFreeSlot && !isMobileRun) {
       markFreeAnalysisUsedToday();
     }
     proSurface?.classList.add("is-running");
@@ -424,14 +507,20 @@
     setStatus("Analyzing values...", "Reading the image through value structure, light mass, shadow mass, and painterly clarity.");
 
     try {
-      const response = await fetch("/.netlify/functions/value-analysis", {
+      const requestImageDataUrl = isMobileRun
+        ? await createMobileAnalysisDataUrl(imageDataUrl)
+        : imageDataUrl;
+      const response = await fetch(VALUE_ANALYSIS_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageDataUrl, imageName })
+        body: JSON.stringify({ imageDataUrl: requestImageDataUrl, imageName })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(data.error || "AI Value Analysis failed.");
+      }
+      if (currentAnalysisUsesFreeSlot && isMobileRun) {
+        markFreeAnalysisUsedToday();
       }
       renderResults(data);
       finishScanAnimation();
