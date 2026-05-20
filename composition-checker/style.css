@@ -38,6 +38,16 @@ p {
   margin: 0;
 }
 
+@keyframes advancedAiWorking {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.08); }
+  100% { filter: brightness(1); }
+}
+
+@keyframes advancedAiSweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
 a {
   color: inherit;
   text-decoration: none;
@@ -711,6 +721,91 @@ a {
   line-height: 1.65;
 }
 
+.advanced-ai-card {
+  display: grid;
+  gap: 12px;
+}
+
+.advanced-ai-card.hidden,
+.advanced-ai-results.hidden {
+  display: none !important;
+}
+
+.advanced-ai-button {
+  width: 100%;
+}
+
+.advanced-ai-button.is-running {
+  position: relative;
+  overflow: hidden;
+  animation: advancedAiWorking 920ms linear infinite;
+}
+
+.advanced-ai-button.is-running::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 248, 232, 0.42) 48%, transparent 100%);
+  transform: translateX(-120%);
+  animation: advancedAiSweep 1.2s ease-in-out infinite;
+}
+
+.advanced-ai-status {
+  font-size: 0.92rem;
+}
+
+.advanced-ai-results {
+  display: grid;
+  gap: 10px;
+}
+
+.advanced-ai-result-block {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(61, 51, 40, 0.1);
+  background: rgba(255, 250, 244, 0.68);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.advanced-ai-results.is-visible .advanced-ai-result-block {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.advanced-ai-result-block:nth-child(2) { transition-delay: 70ms; }
+.advanced-ai-result-block:nth-child(3) { transition-delay: 140ms; }
+.advanced-ai-result-block:nth-child(4) { transition-delay: 210ms; }
+.advanced-ai-result-block:nth-child(5) { transition-delay: 280ms; }
+.advanced-ai-result-block:nth-child(6) { transition-delay: 350ms; }
+
+.advanced-ai-result-block h3 {
+  margin: 0 0 8px;
+  font-family: "Segoe UI", "Aptos", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9f4f28;
+}
+
+.advanced-ai-result-block p,
+.advanced-ai-result-block li {
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 0.94rem;
+}
+
+.advanced-ai-result-block ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.advanced-ai-verdict {
+  border-color: rgba(201, 106, 61, 0.24);
+  background: rgba(248, 229, 205, 0.62);
+}
 .control-stack {
   display: grid;
   gap: 16px;

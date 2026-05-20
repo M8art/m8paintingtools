@@ -1,0 +1,228 @@
+const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+const DEFAULT_MODEL = "gpt-5.4-mini";
+const MAX_IMAGE_DATA_URL_LENGTH = 7_500_000;
+
+const JSON_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    overlayRead: { type: "string" },
+    whatWorks: { type: "string" },
+    problemAreas: { type: "string" },
+    whatToAdjust: { type: "string" },
+    watchFor: { type: "string" },
+    practicalFixes: {
+      type: "array",
+      minItems: 3,
+      maxItems: 3,
+      items: { type: "string" }
+    },
+    verdict: { type: "string" }
+  },
+  required: [
+    "overlayRead",
+    "whatWorks",
+    "problemAreas",
+    "whatToAdjust",
+    "watchFor",
+    "practicalFixes",
+    "verdict"
+  ]
+};
+
+exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return response(204, "");
+  }
+
+  if (event.httpMethod !== "POST") {
+    return response(405, { error: "Method not allowed." });
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return response(500, { error: "Missing OPENAI_API_KEY environment variable." });
+  }
+
+  let body;
+  try {
+    body = JSON.parse(event.body || "{}");
+  } catch {
+    return response(400, { error: "Invalid JSON body." });
+  }
+
+  if (body.mode !== "golden-ratio") {
+    return response(400, { error: "Unsupported composition analysis mode." });
+  }
+
+  const imageDataUrl = body.imageDataUrl;
+  if (!isValidImageDataUrl(imageDataUrl)) {
+    return response(400, { error: "A JPG, PNG, or WebP data URL is required." });
+  }
+
+  if (imageDataUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
+    return response(413, { error: "Image is too large for Golden Ratio analysis." });
+  }
+
+  const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
+  const prompt = [
+    "You are an expert classical oil painting instructor and composition critic.",
+    "",
+    "Analyze the uploaded image only from the perspective of COMPOSITION and the Golden Ratio overlay.",
+    "Do not give generic art feedback.",
+    "Do not discuss color or brushwork unless it affects compositional readability.",
+    "Do not praise randomly.",
+    "Do not mention AI, models, prompts, APIs, or software.",
+    "",
+    "The Golden Ratio overlay divides the image at 38.2% and 61.8% horizontally and vertically.",
+    "The four golden intersections are the main power areas. The vertical and horizontal golden divisions are structural guides, not strict rules.",
+    "",
+    "Evaluate:",
+    "1. What the painter is looking at when this overlay is on the image.",
+    "2. Whether the main focal area, strongest value contrast, important edges, or major masses sit near golden lines or intersections.",
+    "3. Whether the composition feels intentionally weighted or accidentally off-balance.",
+    "4. Whether empty space, subject placement, horizon/eye line, large value masses, and edge pressure support the golden ratio structure.",
+    "5. What is working, what is weakening the design, and what the painter should adjust before painting.",
+    "",
+    "Use clear, direct, painterly language for a serious student.",
+    "Avoid vague phrases like 'nice composition' or 'interesting balance'.",
+    "Always explain what the painter should actually do.",
+    "Return JSON only, following the required schema.",
+    "",
+    `Image name: ${String(body.imageName || "uploaded image").slice(0, 120)}`
+  ].join("\n");
+
+  const payload = {
+    model,
+    input: [
+      {
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text: "You are a serious classical painting mentor. Return strict JSON only."
+          }
+        ]
+      },
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text: prompt },
+          { type: "input_image", image_url: imageDataUrl, detail: "high" }
+        ]
+      }
+    ],
+    text: {
+      format: {
+        type: "json_schema",
+        name: "composition_golden_ratio_analysis",
+        schema: JSON_SCHEMA,
+        strict: true
+      }
+    },
+    max_output_tokens: 1500
+  };
+
+  try {
+    const data = await callOpenAI(apiKey, payload);
+    return response(200, {
+      analysis: normalizeAnalysis(parseModelJson(data)),
+      model
+    });
+  } catch (error) {
+    console.error(error);
+    return response(502, { error: "Golden Ratio analysis failed." });
+  }
+};
+
+function response(statusCode, body) {
+  return {
+    statusCode,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    body: typeof body === "string" ? body : JSON.stringify(body)
+  };
+}
+
+function isValidImageDataUrl(value) {
+  return typeof value === "string" && /^data:image\/(png|jpe?g|webp);base64,/i.test(value);
+}
+
+async function callOpenAI(apiKey, payload) {
+  const openAiResponse = await fetch(OPENAI_RESPONSES_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await openAiResponse.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!openAiResponse.ok) {
+    throw new Error(`OpenAI ${openAiResponse.status}: ${text}`);
+  }
+
+  return data;
+}
+
+function parseModelJson(data) {
+  const text = extractOutputText(data);
+  if (!text) {
+    throw new Error("OpenAI response did not include output text.");
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) {
+      throw new Error("OpenAI response was not valid JSON.");
+    }
+    return JSON.parse(match[0]);
+  }
+}
+
+function extractOutputText(data) {
+  if (typeof data.output_text === "string") {
+    return data.output_text;
+  }
+
+  if (!Array.isArray(data.output)) {
+    return "";
+  }
+
+  return data.output
+    .flatMap((item) => Array.isArray(item.content) ? item.content : [])
+    .map((content) => content.text || "")
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+function normalizeAnalysis(value) {
+  return {
+    overlayRead: clean(value.overlayRead),
+    whatWorks: clean(value.whatWorks),
+    problemAreas: clean(value.problemAreas),
+    whatToAdjust: clean(value.whatToAdjust),
+    watchFor: clean(value.watchFor),
+    practicalFixes: Array.isArray(value.practicalFixes) ? value.practicalFixes.slice(0, 3).map(clean).filter(Boolean) : [],
+    verdict: clean(value.verdict)
+  };
+}
+
+function clean(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}

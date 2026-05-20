@@ -91,6 +91,11 @@ const advancedStatusNote = document.getElementById("advancedStatusNote");
 const advancedUnlockCard = document.getElementById("advancedUnlockCard");
 const advancedUnlockCopy = document.getElementById("advancedUnlockCopy");
 const advancedUnlockButton = document.getElementById("advancedUnlockButton");
+const goldenRatioAiCard = document.getElementById("goldenRatioAiCard");
+const runGoldenRatioAiButton = document.getElementById("runGoldenRatioAiButton");
+const mobileGoldenRatioAnalyzeButton = document.getElementById("mobileGoldenRatioAnalyzeButton");
+const goldenRatioAiStatus = document.getElementById("goldenRatioAiStatus");
+const goldenRatioAiResults = document.getElementById("goldenRatioAiResults");
 const premiumToast = document.getElementById("premiumToast");
 const thirdsReadingCard = document.getElementById("thirdsReadingCard");
 const thirdsReadScore = document.getElementById("thirdsReadScore");
@@ -253,6 +258,7 @@ const state = {
   advancedMode: "golden-ratio",
   imageLoaded: false,
   imageLoading: false,
+  imageName: "",
   loadErrorMessage: "",
   objectUrl: null,
   noteMarkers: [],
@@ -280,6 +286,14 @@ const state = {
     score: null,
     feedback: "Upload an image to detect structural alignment.",
     tooltip: null
+  },
+  compositionAi: {
+    goldenRatio: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: ""
+    }
   },
   thirdsAnalysis: {
     key: null,
@@ -389,6 +403,8 @@ document.addEventListener("click", handleDocumentClick);
 advancedUnlockButton?.addEventListener("click", () => {
   window.location.href = advancedUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
+runGoldenRatioAiButton?.addEventListener("click", runGoldenRatioAiAnalysis);
+mobileGoldenRatioAnalyzeButton?.addEventListener("click", runGoldenRatioAiAnalysis);
 
 applyInitialRoute();
 updateModeUI();
@@ -491,6 +507,7 @@ function handleUpload(event) {
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
+  state.imageName = file.name || "composition upload";
   beginImageLoad();
   compositionImage.onload = null;
   compositionImage.onerror = null;
@@ -539,6 +556,7 @@ function loadCompositionFromDataUrl(dataUrl) {
   }
 
   setAnalysisMode("basic");
+  state.imageName = "composition upload";
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
   beginImageLoad();
@@ -636,6 +654,7 @@ function loadCompositionFromObjectFile(file) {
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
+  state.imageName = file.name || "composition upload";
   beginImageLoad();
   compositionImage.onload = null;
   compositionImage.onerror = null;
@@ -996,6 +1015,7 @@ function resetCompositionWorkspace() {
   imageLoadRequestId += 1;
   state.imageLoaded = false;
   state.imageLoading = false;
+  state.imageName = "";
   state.loadErrorMessage = "";
   state.noteMarkers = [];
   state.focalPoints = [];
@@ -1016,6 +1036,7 @@ function resetCompositionWorkspace() {
   state.dynamicSymmetry.score = null;
   state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
   state.dynamicSymmetry.tooltip = null;
+  resetGoldenRatioAi();
   Object.assign(state.spiral, SPIRAL_DEFAULTS);
   invalidateNotanCache();
   closeOverlayColorMenu();
@@ -2340,6 +2361,7 @@ function updateModeUI() {
   const isCenterMode = isBasic && state.mode === "center";
   const isGridMode = isBasic && state.mode === "grid";
   const isDiagonalMode = isBasic && state.mode === "diagonal";
+  const isGoldenRatio = !isBasic && state.advancedMode === "golden-ratio";
   const isGoldenSpiral = !isBasic && state.advancedMode === "golden-spiral";
   const isNotan = !isBasic && state.advancedMode === "notan";
   const isFocalBalance = !isBasic && state.advancedMode === "focal-balance";
@@ -2356,6 +2378,7 @@ function updateModeUI() {
   advancedToolSwitcher.style.display = isBasic ? "none" : "";
   basicAnalysisPanel.style.display = isBasic ? "" : "none";
   advancedAnalysisPanel.style.display = isBasic ? "none" : "";
+  goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
   spiralControlsCard.classList.toggle("hidden", !isGoldenSpiral);
   notanControlsCard.classList.toggle("hidden", !isNotan);
   focalControlsCard.classList.toggle("hidden", !isFocalBalance);
@@ -2382,6 +2405,7 @@ function updateModeUI() {
   updateThirdsReadingUI();
   updateCenterReadingUI();
   updateDiagonalReadingUI();
+  updateGoldenRatioAiUI(isGoldenRatio, advancedLocked);
   updateWorkspaceStageVisibility(advancedLocked);
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
 
@@ -2553,6 +2577,185 @@ function updateModeUI() {
   });
 }
 
+function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
+  const analysisState = state.compositionAi.goldenRatio;
+  const canRun = isGoldenRatio && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
+  const hasResult = Boolean(analysisState.result);
+  const status = analysisState.isRunning
+    ? "Reading the image against the golden ratio structure..."
+    : analysisState.error
+    ? analysisState.error
+    : hasResult
+    ? "Golden Ratio read is ready."
+    : state.imageLoaded
+    ? "Run the composition read after checking the ratio overlay against the main shapes."
+    : "Upload an image to begin.";
+
+  goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
+  [runGoldenRatioAiButton, mobileGoldenRatioAnalyzeButton].forEach((button) => {
+    if (!button) {
+      return;
+    }
+    button.disabled = !canRun;
+    button.classList.toggle("is-running", analysisState.isRunning);
+    button.classList.toggle("hidden", button === mobileGoldenRatioAnalyzeButton && (!isGoldenRatio || advancedLocked || !state.imageLoaded));
+    button.textContent = analysisState.isRunning
+      ? "Analyzing..."
+      : hasResult
+      ? "Analyze Again"
+      : button === mobileGoldenRatioAnalyzeButton
+      ? "Analyze Ratio"
+      : "Analyze Golden Ratio";
+  });
+
+  if (goldenRatioAiStatus) {
+    goldenRatioAiStatus.textContent = status;
+  }
+
+  if (goldenRatioAiResults) {
+    goldenRatioAiResults.classList.toggle("hidden", !hasResult);
+    goldenRatioAiResults.classList.toggle("is-visible", hasResult);
+  }
+}
+
+function resetGoldenRatioAi() {
+  state.compositionAi.goldenRatio.isRunning = false;
+  state.compositionAi.goldenRatio.result = null;
+  state.compositionAi.goldenRatio.imageKey = "";
+  state.compositionAi.goldenRatio.error = "";
+  if (goldenRatioAiResults) {
+    goldenRatioAiResults.innerHTML = "";
+    goldenRatioAiResults.classList.add("hidden");
+    goldenRatioAiResults.classList.remove("is-visible");
+  }
+}
+
+function getCurrentCompositionImageKey() {
+  return [
+    compositionImage.currentSrc || compositionImage.src || "",
+    compositionImage.naturalWidth || 0,
+    compositionImage.naturalHeight || 0
+  ].join("|");
+}
+
+function getCompositionImageDataUrlForAi(maxSide = 1500, quality = 0.84) {
+  if (!state.imageLoaded || !compositionImage.naturalWidth || !compositionImage.naturalHeight) {
+    throw new Error("Upload an image before running the composition read.");
+  }
+
+  const sourceWidth = compositionImage.naturalWidth;
+  const sourceHeight = compositionImage.naturalHeight;
+  const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+  const width = Math.max(1, Math.round(sourceWidth * scale));
+  const height = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(compositionImage, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function runGoldenRatioAiAnalysis() {
+  if (!requireUnlock("Golden Ratio AI analysis")) {
+    return;
+  }
+
+  const analysisState = state.compositionAi.goldenRatio;
+  if (analysisState.isRunning || !state.imageLoaded) {
+    return;
+  }
+
+  analysisState.isRunning = true;
+  analysisState.result = null;
+  analysisState.error = "";
+  analysisState.imageKey = getCurrentCompositionImageKey();
+  if (goldenRatioAiResults) {
+    goldenRatioAiResults.innerHTML = "";
+    goldenRatioAiResults.classList.add("hidden");
+    goldenRatioAiResults.classList.remove("is-visible");
+  }
+  updateModeUI();
+
+  try {
+    const imageDataUrl = getCompositionImageDataUrlForAi();
+    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "golden-ratio",
+        imageDataUrl,
+        imageName: state.imageName || "composition upload",
+        overlay: {
+          type: "golden-ratio",
+          verticalLines: [0.38196601125, 0.61803398875],
+          horizontalLines: [0.38196601125, 0.61803398875],
+          intersections: [
+            [0.38196601125, 0.38196601125],
+            [0.61803398875, 0.38196601125],
+            [0.38196601125, 0.61803398875],
+            [0.61803398875, 0.61803398875]
+          ]
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Golden Ratio analysis failed.");
+    }
+    analysisState.result = data.analysis || null;
+    renderGoldenRatioAiResult(analysisState.result);
+    showStatusToast("Golden Ratio read ready");
+  } catch (error) {
+    analysisState.error = error.message || "Golden Ratio analysis failed. Try again in a moment.";
+    showStatusToast("Golden Ratio read failed");
+  } finally {
+    analysisState.isRunning = false;
+    updateModeUI();
+  }
+}
+
+function renderGoldenRatioAiResult(analysis) {
+  if (!goldenRatioAiResults || !analysis) {
+    return;
+  }
+
+  const sections = [
+    ["WHAT YOU ARE LOOKING AT", analysis.overlayRead],
+    ["WHAT WORKS", analysis.whatWorks],
+    ["WHAT TO IMPROVE", analysis.problemAreas],
+    ["HOW TO ADJUST", analysis.whatToAdjust],
+    ["WHAT TO WATCH", analysis.watchFor]
+  ];
+  const sectionHtml = sections
+    .filter(([, value]) => value)
+    .map(([title, value]) => `<div class="advanced-ai-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+    .join("");
+  const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+  const fixesHtml = fixes.length
+    ? `<div class="advanced-ai-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.slice(0, 3).map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+    : "";
+  const verdictHtml = analysis.verdict
+    ? `<div class="advanced-ai-result-block advanced-ai-verdict"><h3>COMPOSITION VERDICT</h3><p>${escapeHtml(analysis.verdict)}</p></div>`
+    : "";
+
+  goldenRatioAiResults.innerHTML = sectionHtml + fixesHtml + verdictHtml;
+  goldenRatioAiResults.classList.toggle("hidden", !goldenRatioAiResults.innerHTML);
+  goldenRatioAiResults.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    goldenRatioAiResults.classList.add("is-visible");
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function updateWorkspaceStageVisibility(advancedLocked) {
   const shouldHideImage = advancedLocked && !state.imageLoading;
   const shouldShowImage = state.imageLoaded && !shouldHideImage;
@@ -2601,6 +2804,7 @@ function beginImageLoad() {
   state.dynamicSymmetry.score = null;
   state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
   state.dynamicSymmetry.tooltip = null;
+  resetGoldenRatioAi();
   compositionImage.classList.remove("is-loaded");
   compositionImage.style.display = "none";
   overlayCanvas.style.display = "none";
