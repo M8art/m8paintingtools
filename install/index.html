@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0b08">
+  <meta name="background-color" content="#0d0b08">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="M8 Painting Tools">
+  <link rel="manifest" href="../manifest.webmanifest?v=20260512-dark-splash">
+  <link rel="apple-touch-icon" href="../assets/pwa/apple-touch-icon-v3.png">
+  <title>How to Install | M8 Painting Studio</title>
+  <script src="../assets/mobile-theme.js"></script>
+  <style>
+    :root {
+      --panel: rgba(255, 251, 246, 0.9);
+      --panel-soft: rgba(244, 237, 227, 0.78);
+      --ink: #241f1a;
+      --muted: #6f6459;
+      --line: rgba(61, 51, 40, 0.1);
+      --accent: #c96a3d;
+      --accent-deep: #a44f29;
+      --shadow: 0 20px 48px rgba(50, 39, 28, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background:
+        repeating-linear-gradient(90deg, rgba(68, 54, 39, 0.018) 0 1px, transparent 1px 9px),
+        repeating-linear-gradient(0deg, rgba(68, 54, 39, 0.014) 0 1px, transparent 1px 11px),
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.94), rgba(245, 239, 230, 0.94) 48%, rgba(236, 228, 215, 0.98)),
+        linear-gradient(180deg, #f9f5ef, #efe6d9 65%, #e6dac7);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 34px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .brand-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: clamp(2.4rem, 4.8vw, 4.2rem);
+      line-height: 0.98;
+      white-space: nowrap;
+    }
+
+    .brand-logo {
+      display: block;
+      height: clamp(40px, 6vw, 56px);
+      width: auto;
+      flex: none;
+    }
+
+    .header-actions {
+      display: grid;
+      gap: 12px;
+      justify-items: end;
+    }
+
+    .top-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .top-nav-link {
+      padding: 0 16px;
+      color: var(--ink);
+      font-size: 0.96rem;
+      line-height: 1;
+      border-right: 1px solid rgba(50, 44, 38, 0.18);
+      transition: color 180ms ease, opacity 180ms ease;
+    }
+
+    .top-nav-link:first-child {
+      padding-left: 0;
+    }
+
+    .top-nav-link:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+
+    .top-nav-link:hover,
+    .top-nav-link.is-current {
+      color: var(--accent);
+    }
+
+    .social-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .social-link {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(50, 44, 38, 0.1);
+      background: rgba(255, 255, 255, 0.38);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, opacity 140ms ease;
+    }
+
+    .social-link:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.62);
+      border-color: rgba(30, 25, 20, 0.2);
+      opacity: 0.92;
+    }
+
+    .social-link svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .install-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .install-hero,
+    .install-card,
+    .install-note {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background:
+        repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.018) 0 1px, transparent 1px 10px),
+        var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .install-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+      gap: clamp(22px, 4vw, 42px);
+      align-items: center;
+      padding: clamp(26px, 4vw, 42px);
+    }
+
+    .install-hero-copy {
+      display: grid;
+      gap: 16px;
+    }
+
+    .install-hero h2 {
+      font-size: clamp(2.2rem, 5vw, 4.3rem);
+      line-height: 0.98;
+      max-width: 780px;
+    }
+
+    .install-hero p {
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .install-visual {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(255, 255, 255, 0.52);
+    }
+
+    .phone-frame {
+      width: min(260px, 100%);
+      aspect-ratio: 10 / 16;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      border-radius: 32px;
+      border: 8px solid #24201b;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 34%),
+        linear-gradient(145deg, #322b23, #14110e);
+      box-shadow: 0 22px 38px rgba(50, 39, 28, 0.22);
+    }
+
+    .phone-screen {
+      width: 78%;
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+      color: #f6ead5;
+      text-align: center;
+    }
+
+    .app-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: #f7f2e8;
+      box-shadow: inset 0 0 0 1px rgba(61, 51, 40, 0.14), 0 12px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    .app-icon img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+    }
+
+    .phone-screen strong {
+      font-size: 1rem;
+    }
+
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .install-card,
+    .install-note {
+      padding: clamp(22px, 3vw, 30px);
+    }
+
+    .install-card {
+      display: grid;
+      gap: 20px;
+    }
+
+    .install-card h3 {
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      line-height: 1.05;
+    }
+
+    .step-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 12px;
+      counter-reset: install-step;
+    }
+
+    .step-list li {
+      counter-increment: install-step;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .step-list li::before {
+      content: counter(install-step);
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(201, 106, 61, 0.12);
+      color: var(--accent-deep);
+      font-weight: 800;
+    }
+
+    .install-note {
+      display: grid;
+      gap: 14px;
+      background:
+        linear-gradient(135deg, rgba(201, 106, 61, 0.1), rgba(255, 255, 255, 0.76)),
+        var(--panel);
+    }
+
+    .install-note p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .button,
+    .button-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      font-size: 0.96rem;
+      font-weight: 800;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .button {
+      border: 1px solid rgba(201, 106, 61, 0.34);
+      background: linear-gradient(135deg, #d57840, #a94f29);
+      color: #fff4df;
+      box-shadow: 0 14px 26px rgba(201, 106, 61, 0.22);
+    }
+
+    .button-secondary {
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+    }
+
+    .button:hover,
+    .button-secondary:hover {
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 920px) {
+      .topbar {
+        display: grid;
+      }
+
+      .header-actions {
+        justify-items: start;
+      }
+
+      .top-nav,
+      .social-links {
+        justify-content: flex-start;
+      }
+
+      .install-hero,
+      .install-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 24px, 1200px);
+        padding: 20px 0 34px;
+      }
+
+      .brand-title {
+        white-space: normal;
+      }
+
+      .top-nav {
+        gap: 8px;
+      }
+
+      .top-nav-link,
+      .top-nav-link:first-child,
+      .top-nav-link:last-child {
+        padding: 8px 10px;
+        border: 1px solid rgba(50, 44, 38, 0.12);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.42);
+        font-size: 0.82rem;
+      }
+
+      .install-hero,
+      .install-card,
+      .install-note {
+        border-radius: 22px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      html:not(.mobile-light-mode) body {
+        color: #f2e7cf;
+        background:
+          radial-gradient(circle at top, rgba(81, 58, 32, 0.32), transparent 34%),
+          linear-gradient(180deg, #15120e 0%, #0f0d0a 100%);
+      }
+
+      html:not(.mobile-light-mode) .install-hero,
+      html:not(.mobile-light-mode) .install-card,
+      html:not(.mobile-light-mode) .install-note,
+      html:not(.mobile-light-mode) .install-visual {
+        border-color: rgba(185, 141, 66, 0.24);
+        background: rgba(28, 22, 16, 0.74);
+      }
+
+      html:not(.mobile-light-mode) .eyebrow,
+      html:not(.mobile-light-mode) .install-hero p,
+      html:not(.mobile-light-mode) .install-note p,
+      html:not(.mobile-light-mode) .step-list li {
+        color: rgba(242, 231, 207, 0.72);
+      }
+
+      html:not(.mobile-light-mode) .button-secondary {
+        border-color: rgba(185, 141, 66, 0.32);
+        background: rgba(13, 11, 8, 0.58);
+        color: rgba(242, 231, 207, 0.86);
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/mobile-theme.css">
+  <link rel="stylesheet" href="../assets/desktop-nav.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Painting Analysis</p>
+        <h1 class="brand-title">
+          <img class="brand-logo" src="../assets/images/m8-painting-tools-logo.png" alt="M8 Painting Tools logo">
+          <span>Painting Studio</span>
+        </h1>
+      </div>
+
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="Tool navigation">
+          <a class="top-nav-link" href="../analysis/index.html">Quick Check</a>
+          <a class="top-nav-link" href="../value-checker/index.html">Value Checker</a>
+          <a class="top-nav-link" href="../composition-checker/index.html">Composition Checker</a>
+          <a class="top-nav-link" href="../color-studio/index.html">Color Checker</a>
+          <a class="top-nav-link" href="../drawing-checker/index.html">Drawing Checker</a>
+        </nav>
+
+        <div class="social-links" aria-label="Social links">
+          <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.8ZM9.6 15.7V8.3l6.5 3.7-6.5 3.7Z"></path>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/matejakart/" target="_blank" rel="noopener noreferrer" aria-label="Open MateJak Art on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2Zm0 1.8A3.4 3.4 0 0 0 3.8 7.2v9.6a3.4 3.4 0 0 0 3.4 3.4h9.6a3.4 3.4 0 0 0 3.4-3.4V7.2a3.4 3.4 0 0 0-3.4-3.4H7.2Zm9.9 1.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z"></path>
+            </svg>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/jan.matejak.9." target="_blank" rel="noopener noreferrer" aria-label="Open Jan Matejak on Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.3 22v-8.2h2.8l.4-3.2h-3.2V8.6c0-.9.2-1.6 1.5-1.6h1.8V4.1c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5v2.1H7.9v3.2h2.8V22h2.6Z"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="install-shell">
+      <section class="install-hero" aria-labelledby="installTitle">
+        <div class="install-hero-copy">
+          <p class="eyebrow">Phone Setup</p>
+          <h2 id="installTitle">How to install M8 Painting Tools on your phone</h2>
+          <p>Open the website once, add it to your home screen, and the M8 Tools icon will sit on your phone like a normal app. It is still a web app, so it stays easy to update while I keep improving the mobile version.</p>
+          <div class="button-row">
+            <a class="button" href="https://m8paintingtools.com">Open m8paintingtools.com</a>
+            <a class="button-secondary" href="../index.html">Back to tools</a>
+          </div>
+        </div>
+
+        <div class="install-visual" aria-hidden="true">
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <span class="app-icon">
+                <img src="../assets/images/m8-painting-tools-logo.png" alt="">
+              </span>
+              <strong>M8 Tools</strong>
+              <span>Add to Home Screen</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="install-grid" aria-label="Installation instructions">
+        <article class="install-card">
+          <div>
+            <p class="eyebrow">Android</p>
+            <h3>Install from Chrome</h3>
+          </div>
+          <ol class="step-list">
+            <li><span>Open <strong>m8paintingtools.com</strong> in Chrome.</span></li>
+            <li><span>Tap the three dots in the top-right corner.</span></li>
+            <li><span>Choose <strong>Add to Home screen</strong> or <strong>Install app</strong>.</span></li>
+            <li><span>Confirm the install.</span></li>
+            <li><span>The M8 Tools icon will appear on your phone like a normal app.</span></li>
+          </ol>
+        </article>
+
+        <article class="install-card">
+          <div>
+            <p class="eyebrow">iPhone / iPad</p>
+            <h3>Add from Safari</h3>
+          </div>
+          <ol class="step-list">
+            <li><span>Open <strong>m8paintingtools.com</strong> in Safari.</span></li>
+            <li><span>Tap the Share button at the bottom of the screen.</span></li>
+            <li><span>Choose <strong>Add to Home Screen</strong>.</span></li>
+            <li><span>Tap <strong>Add</strong>.</span></li>
+            <li><span>The M8 Tools icon will appear on your iPhone or iPad like an app.</span></li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="install-note">
+        <p class="eyebrow">Testing note</p>
+        <h3>This is still a web app</h3>
+        <p>I am still testing and improving the mobile version. Please let me know how it works on your phone, especially on iPhone and iPad.</p>
+        <div class="button-row">
+          <a class="button-secondary" href="../contact/index.html">Send feedback</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
