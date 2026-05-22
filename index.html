@@ -4146,12 +4146,18 @@
         position: relative;
         isolation: isolate;
         overflow: hidden;
+        padding: clamp(22px, 3.2vw, 32px);
         border-color: rgba(86, 64, 45, 0.11);
         background:
           radial-gradient(circle at 88% 12%, rgba(198, 92, 53, 0.15), transparent 24%),
           radial-gradient(circle at 10% 88%, rgba(95, 116, 95, 0.12), transparent 26%),
           repeating-linear-gradient(115deg, rgba(88, 72, 56, 0.025) 0 1px, transparent 1px 12px),
           linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(243, 239, 230, 0.94));
+      }
+
+      .landing-hero.desktop-landing-only .landing-hero-grid {
+        grid-template-columns: minmax(350px, 0.78fr) minmax(600px, 1.22fr);
+        gap: 28px;
       }
 
       .landing-hero.desktop-landing-only::before,
@@ -4204,7 +4210,13 @@
       }
 
       .landing-hero-title {
+        font-size: clamp(2.65rem, 4.4vw, 3.65rem);
+        max-width: 10.5ch;
         text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+      }
+
+      .landing-hero-subheadline {
+        max-width: 33rem;
       }
 
       .landing-hero-note {
@@ -4237,6 +4249,7 @@
       }
 
       .desktop-landing-preview {
+        padding: 16px;
         border-color: rgba(93, 72, 52, 0.13);
         background:
           radial-gradient(circle at 88% 14%, rgba(207, 100, 55, 0.12), transparent 24%),
@@ -4273,9 +4286,17 @@
         border-radius: 999px;
       }
 
+      .desktop-landing-preview .hero-preview-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
       .desktop-landing-preview .hero-preview-card {
         position: relative;
         overflow: hidden;
+        gap: 9px;
+        min-height: 0;
+        padding: 12px;
         background:
           linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(251, 247, 240, 0.88));
       }
@@ -4299,9 +4320,29 @@
         background: rgba(217, 173, 92, 0.58);
       }
 
+      .desktop-landing-preview .hero-preview-card:nth-child(4)::before {
+        background: rgba(168, 118, 76, 0.56);
+      }
+
+      .desktop-landing-preview .hero-preview-title {
+        font-size: 0.92rem;
+      }
+
+      .desktop-landing-preview .hero-preview-copy {
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
       .desktop-landing-preview .hero-preview-image {
+        aspect-ratio: 0.72;
         border-radius: 16px 16px 22px 14px;
         box-shadow: 0 14px 25px rgba(47, 37, 28, 0.13);
+      }
+
+      .desktop-landing-preview .hero-preview-card-drawing .hero-preview-image {
+        object-position: center 12%;
+        background: linear-gradient(180deg, #fbf8f1, #efe4d4);
+        filter: saturate(0.96) contrast(1.02);
       }
 
       .quick-check-banner.landing-long-form {
@@ -7088,6 +7129,12 @@ html,
                 <h3 class="hero-preview-title">Stop guessing colors. Know what to mix.</h3>
                 <img class="hero-preview-image" src="./assets/images/Color check.png" alt="Color checker preview">
                 <p class="hero-preview-copy">Extract palettes and understand how colors work together before you start mixing paint.</p>
+              </a>
+              <a class="hero-preview-card hero-preview-card-drawing" href="./drawing-checker/index.html">
+                <span class="hero-preview-kicker">Drawing Preview</span>
+                <h3 class="hero-preview-title">Check your drawing structure before painting</h3>
+                <img class="hero-preview-image" src="./assets/images/drawing check.png" alt="Drawing checker preview">
+                <p class="hero-preview-copy">Use head-canon guides to catch proportion problems before you start painting.</p>
               </a>
             </div>
             <p class="hero-microcopy">No guesswork. Clear visual feedback instantly.</p>
