@@ -332,7 +332,6 @@ mobileResetWorkspaceButton?.addEventListener("click", resetUploadedImage);
 mobileResultsButton?.addEventListener("click", clearMobileResultsReady);
 mobileResultsButton?.addEventListener("click", completeQuickCheckOnboarding);
 
-paintingBreakdownButton?.addEventListener("click", requestFullPaintingBreakdown);
 
 window.addEventListener("resize", () => {
   if (!hasUploadedImage) {
@@ -2554,10 +2553,10 @@ function buildPremiumFixPlan(result) {
   }
 
   return {
-    lockedTitle: "Unlock the full painter fix",
-    unlockedTitle: "Your Studio Fix Plan",
-    lockedSummary: "Quick Check found the weak spots. Unlock shows exactly what to change first, in painting terms.",
-    unlockedSummary: "Start with these fixes in order. They are based on the measured value, balance, focal, and frame signals.",
+    lockedTitle: "AI Analysis for Painters",
+    unlockedTitle: "AI Analysis for Painters",
+    lockedSummary: "Quick Check found the weak spots. Unlock shows the exact first painting moves in plain studio language.",
+    unlockedSummary: "Start here before details. These are the first painting moves based on value, balance, focal pull, and frame signals.",
     fixes: fixes.slice(0, 3)
   };
 }
@@ -2684,8 +2683,10 @@ function setupQuickCheckDeepReport() {
     return;
   }
 
+  quickCheckPremiumFix?.classList.add("painter-ai-analysis");
+  quickCheckDeepReportContent.append(...[quickCheckPremiumFix].filter(Boolean));
+
   [
-    quickCheckPremiumFix,
     quickCheckScoreBreakdown,
     quickCheckComparison,
     quickCheckDetails,
@@ -2693,7 +2694,7 @@ function setupQuickCheckDeepReport() {
     paintingBreakdownButton,
     paintingBreakdownResult
   ].filter(Boolean).forEach((element) => {
-    quickCheckDeepReportContent.appendChild(element);
+    element.classList.add("hidden");
   });
 }
 

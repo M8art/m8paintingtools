@@ -593,13 +593,14 @@ a {
 
 .quick-check-deep-report-content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: start;
 }
 
 .quick-check-deep-report-content #quickCheckDetails,
-.quick-check-deep-report-content #paintingBreakdownResult {
+.quick-check-deep-report-content #paintingBreakdownResult,
+.quick-check-deep-report-content .painter-ai-analysis {
   grid-column: 1 / -1;
 }
 
@@ -2150,6 +2151,53 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   line-height: 1.4;
 }
 
+
+.painter-ai-analysis.premium-fix-preview {
+  padding: clamp(16px, 2.4vw, 24px);
+  background:
+    radial-gradient(circle at top left, rgba(224, 137, 82, 0.1), transparent 34%),
+    rgba(255, 250, 244, 0.94);
+  color: var(--ink);
+  border-color: rgba(201, 106, 61, 0.2);
+  box-shadow: 0 16px 32px rgba(50, 39, 28, 0.1);
+}
+
+.painter-ai-analysis .premium-fix-head {
+  align-items: flex-start;
+}
+
+.painter-ai-analysis .section-label,
+.painter-ai-analysis .premium-fix-label {
+  color: #9d542f;
+}
+
+.painter-ai-analysis .premium-fix-count {
+  color: #9d542f;
+  background: rgba(201, 106, 61, 0.14);
+}
+
+.painter-ai-analysis .detail-copy,
+.painter-ai-analysis .premium-fix-note,
+.painter-ai-analysis .premium-fix-item p {
+  color: var(--muted);
+}
+
+.painter-ai-analysis .premium-fix-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.painter-ai-analysis .premium-fix-item {
+  align-content: start;
+  min-height: 132px;
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(50, 44, 38, 0.08);
+}
+
+.painter-ai-analysis .premium-fix-item.is-locked p {
+  max-width: none;
+}
+
 #quickCheckTopSections {
   display: grid;
   gap: 10px;
@@ -2718,6 +2766,14 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
 }
 
 @media (max-width: 720px) {
+  .painter-ai-analysis .premium-fix-list {
+    grid-template-columns: 1fr;
+  }
+
+  .painter-ai-analysis .premium-fix-item {
+    min-height: 0;
+  }
+
   html,
   body,
   .app {
