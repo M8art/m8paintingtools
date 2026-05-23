@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./style.css?v=20260520-dynamic-ai">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
+  <link rel="stylesheet" href="../assets/desktop-nav.css">
 </head>
 <body>
   <div class="app">
@@ -67,11 +68,6 @@
       </div>
     </header>
 
-    <nav class="mode-switcher primary-switcher" aria-label="Composition modes">
-      <button class="tab-button active" type="button" data-analysis-mode="basic"><span class="desktop-tab-label">Basic Analysis</span><span class="mobile-tab-label">Basic</span></button>
-      <button class="tab-button" type="button" data-analysis-mode="advanced"><span class="desktop-tab-label">Advanced Analysis</span><span class="mobile-tab-label">Pro</span></button>
-    </nav>
-
     <div id="basicToolSwitcher" class="mode-switcher secondary-switcher" aria-label="Basic analysis tools">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-mode="thirds"><span class="desktop-tab-label">Rule of Thirds</span><span class="mobile-tab-label">Thirds</span></button>
@@ -97,6 +93,10 @@
             <h2 id="workspaceTitle">Rule of Thirds</h2>
           </div>
           <div class="workspace-meta">
+            <nav class="mode-switcher primary-switcher workspace-tier-switcher" aria-label="Composition modes">
+              <button class="tab-button active" type="button" data-analysis-mode="basic" aria-selected="true">Basic</button>
+              <button class="tab-button" type="button" data-analysis-mode="advanced" aria-selected="false">Pro</button>
+            </nav>
             <p id="workspaceHint" class="hint">Upload an image to begin your composition study.</p>
 
             <div id="overlayColorControl" class="overlay-color-control">

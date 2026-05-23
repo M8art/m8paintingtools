@@ -4219,6 +4219,14 @@
         max-width: 33rem;
       }
 
+      .landing-hero.desktop-landing-only .button-row {
+        align-items: center;
+      }
+
+      .landing-hero.desktop-landing-only .button {
+        box-shadow: 0 16px 30px rgba(201, 106, 61, 0.22);
+      }
+
       .landing-hero-note {
         display: inline-flex;
         align-items: center;
@@ -4368,6 +4376,80 @@
         background:
           linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.9)),
           repeating-linear-gradient(110deg, rgba(70, 55, 42, 0.025) 0 1px, transparent 1px 10px);
+      }
+
+      #tool-system.landing-long-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 24px;
+      }
+
+      #tool-system.landing-long-form .tool-card {
+        min-height: 0;
+        padding: 30px;
+      }
+
+      #tool-system.landing-long-form .tool-card-primary {
+        transform: none;
+      }
+
+      #tool-system.landing-long-form .tool-card-primary:hover {
+        transform: translateY(-2px);
+      }
+
+      #tool-system.landing-long-form .tool-heading {
+        min-height: 0;
+      }
+
+      #tool-system.landing-long-form .button-row {
+        margin-top: auto;
+      }
+
+      #tool-system.landing-long-form .button,
+      #tool-system.landing-long-form .button-secondary {
+        min-height: 46px;
+      }
+
+      @media (min-width: 1180px) {
+        #tool-system.landing-long-form {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        #tool-system.landing-long-form .tool-card {
+          padding: 24px;
+        }
+
+        #tool-system.landing-long-form .subheadline {
+          font-size: 1.05rem;
+        }
+
+        #tool-system.landing-long-form .feature {
+          padding: 16px;
+        }
+
+        #tool-system.landing-long-form .button-row .button,
+        #tool-system.landing-long-form .button-row .button-secondary {
+          width: 100%;
+        }
+      }
+
+      .footer {
+        padding: 24px 28px;
+        border-radius: 26px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 243, 236, 0.9));
+      }
+
+      .footer-copy {
+        display: grid;
+        gap: 3px;
+      }
+
+      .footer-copy strong {
+        color: var(--ink);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.06rem;
       }
     }
 @media (max-width: 720px) {
@@ -6631,6 +6713,7 @@ html,
       }
     }
   </style>
+  <link rel="stylesheet" href="./assets/desktop-nav.css">
 </head>
 <body>
   <div id="startupSplash" class="startup-splash" aria-hidden="true">
@@ -7092,10 +7175,10 @@ html,
           <p class="eyebrow">Painting Tools System</p>
           <h2 class="landing-hero-title">Stop Guessing. Start Painting With Confidence.</h2>
           <p class="landing-hero-explainer">Most paintings fail before the first brushstroke - this shows you exactly why.</p>
-          <p class="landing-hero-subheadline">Instantly check your values, composition, and color before you waste hours on a painting that doesn&rsquo;t work.</p>
+          <p class="landing-hero-subheadline">Instantly check your values, composition, color, and drawing structure before you waste hours on a painting that doesn&rsquo;t work.</p>
           <div class="button-row">
-            <a class="button" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">Start With Value</a>
-            <a class="button-secondary" href="#tool-system">Explore All Tools</a>
+            <button id="desktopHeroUploadButton" class="button" type="button">Upload Painting</button>
+            <a class="button-secondary" href="./analysis/index.html">Open Quick Check</a>
           </div>
           <div class="landing-hero-meta" aria-label="Tool highlights">
             <span class="landing-hero-note">Built from real studio practice - not theory</span>
@@ -7109,7 +7192,7 @@ html,
             <button id="desktopUploadTrigger" class="hero-upload-mock desktop-landing-upload" type="button">
               <span class="hero-upload-icon" aria-hidden="true">+</span>
               <span class="hero-upload-title">Upload your painting</span>
-              <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, and color before you touch the canvas.</span>
+              <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, color, and drawing structure before you touch the canvas.</span>
             </button>
             <div class="hero-preview-grid" aria-label="Tool previews">
               <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
@@ -7242,7 +7325,7 @@ html,
                   <path d="m15.5 6.5 2 2"></path>
                 </svg>
               </span>
-              <span class="app-tool-name">Drawing Checker (BETA)</span>
+              <span class="app-tool-name">Drawing Checker</span>
             </span>
             <span class="app-tool-copy">Check the structure of your drawing before painting.</span>
           </a>
@@ -7323,7 +7406,7 @@ html,
       </div>
       <p class="hidden-structure-demo-caption">
         <strong>Hidden Structure Demo</strong>
-        <span>Values, composition, and color revealed from one reference before you paint.</span>
+        <span>Values, composition, color, and drawing structure revealed from one reference before you paint.</span>
       </p>
     </section>
 
@@ -7467,6 +7550,10 @@ html,
             <span class="upload-tool-option-title">Color Checker</span>
             <span class="upload-tool-option-copy">Open the image in palette analysis with the first color tab active.</span>
           </button>
+          <button class="upload-tool-option" type="button" data-upload-target="drawing">
+            <span class="upload-tool-option-title">Drawing Checker</span>
+            <span class="upload-tool-option-copy">Open the image with head-canon, body, perspective, and compare tools.</span>
+          </button>
         </div>
         <div class="upload-tool-actions">
           <button id="uploadToolModalClose" class="button-secondary" type="button">Cancel</button>
@@ -7505,7 +7592,7 @@ html,
 
     <section class="card quick-check-banner landing-long-form" aria-label="Quick Check">
       <h2>Quick Check</h2>
-      <p class="quick-check-banner-copy">Upload or open a checker. Get a full read before you choose Value, Comp, or Color.</p>
+      <p class="quick-check-banner-copy">Upload once, get the biggest issue first, then go deeper into Value, Composition, Color, or Drawing.</p>
       <div class="button-row">
         <a class="button" href="./analysis/index.html">Open Quick Check</a>
       </div>
@@ -7530,7 +7617,7 @@ html,
           </div>
           <div class="step-card">
             <span class="step-number">2</span>
-            <h3>Check values, composition, and color</h3>
+            <h3>Check values, composition, color, and drawing</h3>
             <p>Reveal weak value structure, poor focal balance, and unclear color relationships.</p>
           </div>
           <div class="step-card">
@@ -7669,6 +7756,45 @@ html,
           </div>
         </div>
       </div>
+
+      <div class="card tool-card tool-card-drawing">
+        <div class="tool-heading">
+          <p class="eyebrow">Tool Four</p>
+          <h2>Drawing Checker</h2>
+          <p class="subheadline">Check Your Drawing Structure Before You Paint</p>
+        </div>
+
+        <div class="button-row">
+          <a class="button" href="./drawing-checker/index.html" onclick="gtag('event', 'open_drawing_tool', { page_location: window.location.href })">Check My Drawing</a>
+        </div>
+
+        <div>
+          <p class="feature-label">Key tools:</p>
+          <p class="section-copy">Use canon, perspective, and compare overlays to catch drawing problems before they get buried under paint.</p>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <h3 class="feature-title">Head Canon</h3>
+            <p class="feature-copy">Compare front and side head structure with clear proportional guides.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Body Canon</h3>
+            <p class="feature-copy">Fit figure proportions with an 8-head guide before anatomy details distract you.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Perspective Lines</h3>
+            <p class="feature-copy">Check horizon, vanishing points, and major edge directions in one workspace.</p>
+          </div>
+
+          <div class="feature">
+            <h3 class="feature-title">Reference Compare</h3>
+            <p class="feature-copy">Overlay your drawing against a reference to see proportion drift fast.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="mini-game-callout" aria-label="Mini game">
@@ -7680,7 +7806,7 @@ html,
     </section>
 
     <footer class="footer" aria-label="Site footer">
-      <p class="footer-copy">Simple tools for better painting decisions.</p>
+      <p class="footer-copy"><strong>M8 Painting Tools</strong><span>Quick studio checks for value, composition, color, and drawing before you paint.</span></p>
       <div class="social-links footer-social-links" aria-label="Social links">
         <a class="social-link" href="https://www.youtube.com/@mateart" target="_blank" rel="noopener noreferrer" aria-label="Open MateArt on YouTube">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -7699,6 +7825,8 @@ html,
         </a>
       </div>
       <div class="footer-links">
+        <a class="footer-link" href="./analysis/index.html">Quick Check</a>
+        <a class="footer-link" href="./install/index.html">Install App</a>
         <a class="footer-link" href="./privacy.html">Privacy Policy</a>
         <a class="footer-link" href="./terms.html">Terms of Use</a>
         <a class="footer-link" href="./contact.html">Contact</a>
@@ -7775,8 +7903,10 @@ html,
     const mobileThemeToggle = document.getElementById("mobileThemeToggle");
     const shareLandingButton = document.getElementById("shareLandingButton");
     const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
+    const desktopHeroUploadButton = document.getElementById("desktopHeroUploadButton");
     const heroUploadTrigger = document.getElementById("heroUploadTrigger");
     const hiddenDemoUploadTrigger = document.getElementById("hiddenDemoUploadTrigger");
+    const desktopUploadTrigger = document.getElementById("desktopUploadTrigger");
     const uploadToolModal = document.getElementById("uploadToolModal");
     const uploadToolModalClose = document.getElementById("uploadToolModalClose");
     const landingUploadInput = document.getElementById("landingUploadInput");
@@ -7784,7 +7914,8 @@ html,
     const TOOL_UPLOAD_DESTINATIONS = {
       value: "./value-checker/index.html",
       composition: "./composition-checker/index.html",
-      color: "./color-studio/index.html"
+      color: "./color-studio/index.html",
+      drawing: "./drawing-checker/index.html"
     };
     const MOBILE_LANDING_THEME_KEY = "m8MobileLandingTheme";
     let activeOnboardingSlide = 0;
@@ -7991,7 +8122,7 @@ html,
     async function shareLandingPage() {
       const shareUrl = getLandingShareUrl();
       const shareTitle = "M8 Painting Tools";
-      const shareText = "Simple tools for checking value, composition, and color in a painting.";
+      const shareText = "Simple tools for checking value, composition, color, and drawing structure before painting.";
 
       try {
         if (navigator.share) {
@@ -8139,23 +8270,30 @@ html,
       onboardingTouchStartY = touch.clientY;
     }, { passive: true });
     onboardingStage?.addEventListener("touchend", (event) => {
+      if (event.target.closest("button")) {
+        return;
+      }
       const touch = event.changedTouches[0];
       if (!touch) {
         return;
       }
       const deltaX = touch.clientX - onboardingTouchStartX;
       const deltaY = touch.clientY - onboardingTouchStartY;
-      if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY)) {
-        return;
-      }
+      const isHorizontalSwipe = Math.abs(deltaX) >= 40 && Math.abs(deltaX) >= Math.abs(deltaY);
       onboardingUserInteracted = true;
       suppressOnboardingTapAdvance = true;
+      event.preventDefault();
+
+      if (!isHorizontalSwipe) {
+        advanceOnboarding();
+        return;
+      }
       if (deltaX < 0) {
         advanceOnboarding();
         return;
       }
       goToPreviousOnboardingSlide();
-    }, { passive: true });
+    }, { passive: false });
     window.addEventListener("resize", () => {
       if (!onboardingOverlay?.classList.contains("hidden")) {
         renderOnboardingSlide(activeOnboardingSlide);
@@ -8163,6 +8301,7 @@ html,
     });
     heroUploadTrigger?.addEventListener("click", openUploadToolModal);
     hiddenDemoUploadTrigger?.addEventListener("click", openUploadToolModal);
+    desktopHeroUploadButton?.addEventListener("click", openUploadToolModal);
     desktopUploadTrigger?.addEventListener("click", openUploadToolModal);
     uploadToolModalClose?.addEventListener("click", closeUploadToolModal);
     uploadToolModal?.addEventListener("click", (event) => {

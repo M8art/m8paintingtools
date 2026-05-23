@@ -785,7 +785,12 @@ a {
 }
 
 #analysisFileInput {
-  display: none;
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-9999px, -9999px);
 }
 
 .canvas-wrap {
@@ -806,6 +811,21 @@ a {
   display: grid;
   place-items: center;
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.upload-input-hitbox {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.canvas-wrap.has-image .upload-input-hitbox,
+.canvas-wrap.is-analysis-running .upload-input-hitbox,
+.canvas-wrap.has-load-error .upload-input-hitbox {
+  display: none;
 }
 
 .canvas-wrap.upload-enabled {
@@ -2151,7 +2171,6 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   line-height: 1.4;
 }
 
-
 .painter-ai-analysis.premium-fix-preview {
   padding: clamp(16px, 2.4vw, 24px);
   background:
@@ -2187,11 +2206,30 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   gap: 10px;
 }
 
+.painter-ai-analysis.is-full-report .premium-fix-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .painter-ai-analysis .premium-fix-item {
   align-content: start;
   min-height: 132px;
   background: rgba(255, 255, 255, 0.62);
   border-color: rgba(50, 44, 38, 0.08);
+}
+
+.painter-ai-analysis.is-full-report .premium-fix-item {
+  min-height: 142px;
+}
+
+.painter-ai-analysis .premium-fix-item.is-verdict {
+  grid-column: 1 / -1;
+  min-height: 0;
+  background: rgba(255, 248, 239, 0.82);
+  border-color: rgba(201, 106, 61, 0.18);
+}
+
+.painter-ai-analysis .premium-fix-item.is-priority {
+  background: rgba(255, 255, 255, 0.78);
 }
 
 .painter-ai-analysis .premium-fix-item.is-locked p {

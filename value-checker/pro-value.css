@@ -1,6 +1,6 @@
 .value-tier-switcher {
-  width: 132px;
-  margin: -12px 0 4px auto;
+  width: 118px;
+  margin: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   position: relative;
@@ -35,16 +35,18 @@
 .value-tier-switcher .tab-button {
   position: relative;
   z-index: 1;
-  min-height: 34px;
-  padding: 7px 12px;
+  min-height: 28px;
+  padding: 5px 8px;
   border: 0 !important;
   border-radius: 999px !important;
   background: transparent !important;
   box-shadow: none !important;
   color: rgba(31, 28, 24, 0.72);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 900;
+  letter-spacing: 0.02em;
   line-height: 1;
+  text-transform: uppercase;
 }
 
 .value-tier-switcher .tab-button.active {
@@ -62,6 +64,22 @@
 
 .value-pro-layout .mobile-workspace-toolbar {
   display: none;
+}
+
+.workspace-heading-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+  align-content: start;
+}
+
+.workspace-tier-switcher {
+  flex: 0 0 auto;
+}
+
+.workspace-heading-actions .hint,
+.value-pro-meta .hint {
+  text-align: right;
 }
 
 .value-pro-workspace-card .panel-heading {
@@ -97,13 +115,8 @@
   animation: valueAnalyzePulse 760ms ease-in-out both;
 }
 
-.value-pro-analyze-button.is-running {
-  animation: valueAnalyzeWorking 920ms linear infinite;
-}
-
 .value-pro-upload-button.is-upload-complete::after,
 .value-pro-analyze-button.is-cue::after,
-.value-pro-analyze-button.is-running::after,
 .value-pro-result-link.is-result-cue::after {
   content: "";
   position: absolute;
@@ -120,10 +133,6 @@
 .value-pro-analyze-button.is-cue::after,
 .value-pro-result-link.is-result-cue::after {
   animation: valueButtonSweep 760ms ease-out both;
-}
-
-.value-pro-analyze-button.is-running::after {
-  animation: valueButtonSweep 1.2s ease-in-out infinite;
 }
 
 .value-pro-result-link.is-result-ready {
@@ -461,6 +470,116 @@ html:not(.mobile-light-mode) .value-pro-scale-foot strong {
   color: #f0ba7a;
 }
 
+html.mobile-light-mode .value-pro-workspace-card,
+html.mobile-light-mode #aiValueResultPanel,
+html.mobile-light-mode .value-pro-layout .card {
+  border-color: rgba(61, 51, 40, 0.12) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+    #fffaf4 !important;
+  color: #1f1c18 !important;
+  box-shadow: 0 18px 34px rgba(50, 39, 28, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+html.mobile-light-mode .value-tier-switcher,
+html.mobile-light-mode .value-pro-layout .mobile-workspace-toolbar,
+html.mobile-light-mode .value-pro-toolbar {
+  border-color: rgba(61, 51, 40, 0.12) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+    #fffaf4 !important;
+  color: #1f1c18 !important;
+  box-shadow: 0 10px 18px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+}
+
+html.mobile-light-mode .value-tier-switcher .tab-button:not(.active),
+html.mobile-light-mode .value-pro-layout .mobile-workspace-toolbar .button-secondary,
+html.mobile-light-mode .value-pro-toolbar .button-secondary {
+  border-color: rgba(61, 51, 40, 0.12) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+    #fffaf4 !important;
+  color: #1f1c18 !important;
+  box-shadow: 0 10px 18px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+}
+
+html.mobile-light-mode .value-pro-layout .mobile-workspace-toolbar .button,
+html.mobile-light-mode .value-pro-toolbar .button,
+html.mobile-light-mode .value-pro-analyze-button.is-cue:not([disabled]),
+html.mobile-light-mode .value-pro-result-link.is-result-ready,
+html.mobile-light-mode .value-pro-result-link.is-result-cue {
+  border-color: rgba(201, 106, 61, 0.36) !important;
+  background:
+    linear-gradient(135deg, rgba(224, 137, 82, 0.96), rgba(185, 82, 43, 0.98)),
+    #c96a3d !important;
+  color: #fffaf4 !important;
+  box-shadow: 0 14px 24px rgba(201, 106, 61, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+html.mobile-light-mode .value-pro-layout .mobile-workspace-toolbar .button:disabled,
+html.mobile-light-mode .value-pro-layout .mobile-workspace-toolbar .button-secondary:disabled,
+html.mobile-light-mode .value-pro-toolbar .button:disabled,
+html.mobile-light-mode .value-pro-toolbar .button-secondary:disabled {
+  border-color: rgba(50, 44, 38, 0.1) !important;
+  background: #f0ebe2 !important;
+  color: rgba(105, 99, 93, 0.68) !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+html.mobile-light-mode .value-pro-stage,
+html.mobile-light-mode .value-pro-surface,
+html.mobile-light-mode #aiValueUploadZone {
+  border-color: rgba(61, 51, 40, 0.14) !important;
+  background:
+    linear-gradient(rgba(61, 51, 40, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 51, 40, 0.05) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(250, 246, 238, 0.96), rgba(236, 229, 217, 0.92)) !important;
+  background-size: 34px 34px, 34px 34px, auto !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 18px 36px rgba(50, 39, 28, 0.14) !important;
+}
+
+html.mobile-light-mode .value-pro-status,
+html.mobile-light-mode .value-pro-lock,
+html.mobile-light-mode .value-pro-result-block,
+html.mobile-light-mode .value-pro-scale-card,
+html.mobile-light-mode .value-pro-readout .placeholder-panel,
+html.mobile-light-mode .value-pro-readout .placeholder-card {
+  border-color: rgba(61, 51, 40, 0.12) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+    #fffaf4 !important;
+  color: #1f1c18 !important;
+  box-shadow: 0 16px 32px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+html.mobile-light-mode .value-pro-status-line,
+html.mobile-light-mode .value-pro-lock h3,
+html.mobile-light-mode .value-pro-result-block h3,
+html.mobile-light-mode .value-pro-workspace-card h2,
+html.mobile-light-mode #aiValueResultPanel h2 {
+  color: #1f1c18 !important;
+  text-shadow: none !important;
+}
+
+html.mobile-light-mode .value-pro-status-detail,
+html.mobile-light-mode .value-pro-lock p,
+html.mobile-light-mode .value-pro-result-block p,
+html.mobile-light-mode .value-pro-result-block li,
+html.mobile-light-mode .value-pro-meta,
+html.mobile-light-mode .value-pro-lock-note,
+html.mobile-light-mode .value-pro-scale-foot,
+html.mobile-light-mode .value-pro-readout .placeholder-card {
+  color: #69635d !important;
+}
+
+html.mobile-light-mode .value-pro-workspace-card .section-label,
+html.mobile-light-mode #aiValueResultPanel .section-label,
+html.mobile-light-mode .value-pro-scale-head span,
+html.mobile-light-mode .value-pro-scale-foot strong {
+  color: #8c3f22 !important;
+}
+
 @keyframes valueAiSweep {
   from {
     opacity: 0.28;
@@ -516,22 +635,21 @@ html:not(.mobile-light-mode) .value-pro-scale-foot strong {
   }
 }
 
-@keyframes valueAnalyzeWorking {
-  from {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(1.12);
-  }
-  to {
-    filter: brightness(1);
-  }
-}
-
 @media (max-width: 720px) {
   .value-tier-switcher {
-    width: 132px;
-    margin: -10px 0 8px auto;
+    width: 118px;
+    margin: 0;
+  }
+
+  .workspace-heading-actions,
+  .value-pro-meta {
+    width: 100%;
+    justify-items: start;
+  }
+
+  .workspace-heading-actions .hint,
+  .value-pro-meta .hint {
+    text-align: left;
   }
 
   .value-pro-toolbar {
@@ -555,10 +673,6 @@ html:not(.mobile-light-mode) .value-pro-scale-foot strong {
   .value-pro-stage,
   .value-pro-surface {
     min-height: min(70vh, 520px);
-  }
-
-  .value-pro-meta {
-    justify-items: start;
   }
 
   .value-pro-layout .card {

@@ -3572,10 +3572,6 @@
       </div>
     </header>
 
-    <nav class="mode-switcher primary-switcher value-tier-switcher" aria-label="Value Checker level">
-      <button class="tab-button active" type="button" data-value-tier="basic" aria-selected="true">Basic</button>
-      <button class="tab-button" type="button" data-value-tier="pro" aria-selected="false">Pro</button>
-    </nav>
     <div id="valueBasicModeSwitcher" class="mode-switcher" role="tablist" aria-label="Analysis modes">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-mode="value-picker" aria-selected="true"><span class="desktop-tab-label">Value Picker</span><span class="mobile-tab-label">Pick</span></button>
@@ -3596,7 +3592,13 @@
               <button class="value-map-option" type="button" data-map-values="3">3 Value Map</button>
             </div>
           </div>
-          <p id="workspaceHint" class="hint">Click the image to sample a value.</p>
+          <div class="workspace-heading-actions">
+            <nav class="mode-switcher primary-switcher value-tier-switcher workspace-tier-switcher" aria-label="Value Checker level">
+              <button class="tab-button active" type="button" data-value-tier="basic" aria-selected="true">Basic</button>
+              <button class="tab-button" type="button" data-value-tier="pro" aria-selected="false">Pro</button>
+            </nav>
+            <p id="workspaceHint" class="hint">Click the image to sample a value.</p>
+          </div>
         </div>
 
         <div id="mobileValueToolbar" class="mobile-value-toolbar">
@@ -4011,6 +4013,10 @@
             <h2>AI Value Analysis</h2>
           </div>
           <div class="value-pro-meta">
+            <nav class="mode-switcher primary-switcher value-tier-switcher workspace-tier-switcher" aria-label="Value Checker level">
+              <button class="tab-button active" type="button" data-value-tier="basic" aria-selected="true">Basic</button>
+              <button class="tab-button" type="button" data-value-tier="pro" aria-selected="false">Pro</button>
+            </nav>
             <p class="hint">Upload an image, then run the Pro value read.</p>
           </div>
         </div>

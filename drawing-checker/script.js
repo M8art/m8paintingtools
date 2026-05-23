@@ -85,6 +85,11 @@ const PERSPECTIVE_ALIGN_ENDPOINT = window.M8_PERSPECTIVE_ALIGN_ENDPOINT || (
     ? "http://localhost:8888/.netlify/functions/perspective-align"
     : "/.netlify/functions/perspective-align"
 );
+const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
+const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
+const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
+const LANDING_HANDOFF_STORE = "uploads";
+const LANDING_HANDOFF_RECORD = "latest";
 const AI_PERSPECTIVE_IMAGE_MAX_DIMENSION = 1024;
 const AI_PERSPECTIVE_IMAGE_QUALITY = 0.82;
 
@@ -567,10 +572,90 @@ window.addEventListener("resize", () => {
   updateCanonUI();
   updateBodyCanonUI();
 });
+restoreLandingHandoff();
 
 function openFilePicker(input) {
   input.value = "";
   input.click();
+}
+
+function openLandingHandoffDb() {
+  return new Promise((resolve, reject) => {
+    const request = window.indexedDB?.open(LANDING_HANDOFF_DB, 1);
+    if (!request) {
+      reject(new Error("IndexedDB is not available."));
+      return;
+    }
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(LANDING_HANDOFF_STORE)) {
+        db.createObjectStore(LANDING_HANDOFF_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Failed to open handoff database."));
+  });
+}
+
+async function readLandingHandoff() {
+  const db = await openLandingHandoffDb();
+  try {
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(LANDING_HANDOFF_STORE, "readonly");
+      const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+      const request = store.get(LANDING_HANDOFF_RECORD);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error || new Error("Failed to read handoff record."));
+    });
+  } finally {
+    db.close();
+  }
+}
+
+async function clearLandingHandoff() {
+  const db = await openLandingHandoffDb();
+  try {
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(LANDING_HANDOFF_STORE, "readwrite");
+      const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+      store.delete(LANDING_HANDOFF_RECORD);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error("Failed to clear handoff record."));
+    });
+  } finally {
+    db.close();
+  }
+}
+
+async function restoreLandingHandoff() {
+  try {
+    const handoff = await readLandingHandoff();
+    if (handoff?.target === "drawing" && handoff.file instanceof File) {
+      await clearLandingHandoff();
+      showDrawing(handoff.file);
+      return;
+    }
+  } catch (error) {
+    // Session storage fallback below handles older browsers and private modes.
+  }
+
+  try {
+    const target = window.sessionStorage.getItem(LANDING_HANDOFF_TARGET_KEY);
+    const imageData = window.sessionStorage.getItem(LANDING_HANDOFF_IMAGE_KEY);
+    if (target !== "drawing" || !imageData) {
+      return;
+    }
+
+    window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
+    window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+    const response = await fetch(imageData);
+    const blob = await response.blob();
+    showDrawing(new File([blob], "landing-drawing-upload.png", { type: blob.type || "image/png" }));
+  } catch (error) {
+    window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
+    window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+  }
 }
 
 function showDrawing(file) {

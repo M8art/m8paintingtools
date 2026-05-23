@@ -11,7 +11,7 @@
   --teal: #5d7773;
   --gold: #d8a844;
   --shadow: 0 24px 55px rgba(50, 39, 28, 0.14);
-  --button-shadow: 0 16px 26px rgba(50, 39, 28, 0.13), 0 5px 0 rgba(61, 51, 40, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  --button-shadow: 0 10px 22px rgba(31, 28, 24, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --panel-gradient: repeating-linear-gradient(105deg, rgba(80, 61, 40, 0.018) 0 1px, transparent 1px 10px), linear-gradient(180deg, rgba(255, 253, 248, 0.94), rgba(248, 244, 237, 0.91));
   --tool-card: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(244, 239, 230, 0.84));
   --primary-gradient: linear-gradient(135deg, #e08952, #b9522b);
@@ -145,7 +145,10 @@ svg {
 .button,
 .button-secondary,
 .tab-button,
-.icon-toggle {
+.icon-toggle,
+.blend-button,
+.mini-button,
+.nudge-button {
   border: 1px solid rgba(50, 44, 38, 0.12);
   border-radius: 999px;
   min-height: 44px;
@@ -155,26 +158,31 @@ svg {
   justify-content: center;
   gap: 8px;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.78);
+  background: transparent;
   cursor: pointer;
-  box-shadow: var(--button-shadow);
-  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  font: inherit;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 .button {
-  border-color: rgba(201, 106, 61, 0.42);
-  background: var(--primary-gradient);
-  color: #fffaf5;
+  border-color: rgba(31, 28, 24, 0.2);
+  background: linear-gradient(135deg, #25211c 0%, #15120f 100%);
+  color: #f7f4ee;
   font-weight: 800;
-  box-shadow: 0 12px 24px rgba(181, 82, 47, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: var(--button-shadow);
 }
 
 .button-secondary,
-.icon-toggle {
-  background: rgba(255, 252, 246, 0.74);
+.icon-toggle,
+.mini-button,
+.nudge-button,
+.blend-button {
+  background: rgba(255, 255, 255, 0.55);
   color: var(--ink);
-  font-weight: 750;
-  box-shadow: var(--button-shadow);
+  font-weight: 700;
+  box-shadow: none;
 }
 
 .button:disabled,
@@ -187,8 +195,11 @@ svg {
 .button:active,
 .button-secondary:active,
 .tab-button:active,
-.icon-toggle:active {
-  transform: translateY(2px);
+.icon-toggle:active,
+.blend-button:active,
+.mini-button:active,
+.nudge-button:active {
+  transform: translateY(1px);
 }
 
 .mobile-tool-status-row,
@@ -218,6 +229,7 @@ svg {
   border-color: rgba(201, 106, 61, 0.55);
   background: var(--primary-gradient);
   color: #fffaf5;
+  box-shadow: 0 10px 24px rgba(201, 106, 61, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .home-tab-button {
@@ -1171,6 +1183,13 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
   white-space: normal;
 }
 
+.canon-guide-toggle .mini-button.is-active,
+.mini-button.is-active {
+  border-color: rgba(201, 106, 61, 0.45);
+  background: rgba(201, 106, 61, 0.12);
+  color: var(--ink);
+}
+
 .canon-guide-toggle .mini-button:not(.is-active) {
   opacity: 0.62;
 }
@@ -1984,18 +2003,19 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
 
 .blend-button {
   border: 1px solid rgba(50, 44, 38, 0.1);
-  border-radius: 14px;
-  background: rgba(255, 252, 246, 0.74);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
   color: var(--ink);
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: var(--button-shadow);
+  box-shadow: none;
 }
 
 .blend-button.is-active {
   border-color: rgba(201, 106, 61, 0.45);
   background: var(--primary-gradient);
   color: #fffaf5;
+  box-shadow: 0 10px 24px rgba(201, 106, 61, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .compare-slider {

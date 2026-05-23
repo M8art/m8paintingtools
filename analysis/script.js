@@ -123,6 +123,11 @@ const PAINTING_BREAKDOWN_ENDPOINT = window.M8_PAINTING_BREAKDOWN_ENDPOINT || (
     ? "http://localhost:8888/.netlify/functions/painting-breakdown"
     : "/.netlify/functions/painting-breakdown"
 );
+const QUICK_AI_ENDPOINT = window.M8_QUICK_AI_ENDPOINT || (
+  window.location.protocol === "file:"
+    ? "http://localhost:8888/.netlify/functions/analyze-painting"
+    : "/.netlify/functions/analyze-painting"
+);
 const AI_IMAGE_MAX_DIMENSION = 1024;
 const AI_IMAGE_QUALITY = 0.82;
 const NOTAN_SAMPLE_SIZE = 68;
@@ -245,8 +250,11 @@ if (justUnlockedFromStripe) {
   workspaceHint.textContent = "Unlocked forever. You now have full access.";
 }
 
-uploadZone.addEventListener("click", () => {
+uploadZone.addEventListener("click", (event) => {
   completeQuickCheckOnboarding();
+  if (event.target.closest(".upload-input-hitbox")) {
+    return;
+  }
   if (shouldBlockAnalysisUpload()) {
     showLockedAnalysisState();
     return;
@@ -279,16 +287,79 @@ analysisFileInput.addEventListener("change", (event) => {
   }
 });
 
+window.M8HandleNativeQuickUpload = async function handleNativeQuickUpload(payload) {
+  if (shouldBlockAnalysisUpload()) {
+    showLockedAnalysisState();
+    return false;
+  }
+
+  const source = payload?.dataUrl || payload?.fileUrl;
+  if (!source) {
+    showUploadError("Couldn't load image. Please try another file.");
+    return false;
+  }
+
+  try {
+    updateStatusMessage("Image returned from gallery. Loading preview...", true);
+    showPreviewFromSource(source, false);
+    clearAnalysisFileInput();
+    return true;
+  } catch (error) {
+    showUploadError("Couldn't load image. Please try another file.");
+    return false;
+  }
+};
+
+function readNativeUploadBlob(source) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(source, { cache: "no-store" });
+      resolve(await response.blob());
+      return;
+    } catch (error) {
+      // Android WebView can reject fetch(file://...). Try XHR before giving up.
+    }
+
+    try {
+      const request = new XMLHttpRequest();
+      request.open("GET", source, true);
+      request.responseType = "blob";
+      request.onload = () => {
+        if (request.status === 0 || request.status < 400) {
+          resolve(request.response);
+          return;
+        }
+        reject(new Error("Upload read failed"));
+      };
+      request.onerror = () => reject(new Error("Upload read failed"));
+      request.send();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 analysisUploadLabels.forEach((label) => {
   label.addEventListener("click", (event) => {
-    if (!shouldBlockAnalysisUpload()) {
-      clearAnalysisFileInput();
+    event.preventDefault();
+    if (shouldBlockAnalysisUpload()) {
+      showLockedAnalysisState();
       return;
     }
 
-    event.preventDefault();
-    showLockedAnalysisState();
+    openAnalysisFilePicker();
   });
+});
+
+document.querySelector(".upload-input-hitbox")?.addEventListener("click", (event) => {
+  completeQuickCheckOnboarding();
+  event.preventDefault();
+  if (shouldBlockAnalysisUpload()) {
+    showLockedAnalysisState();
+    return;
+  }
+
+  openAnalysisFilePicker();
 });
 
 overlayColorButton.addEventListener("click", toggleOverlayColorMenu);
@@ -332,7 +403,6 @@ mobileResetWorkspaceButton?.addEventListener("click", resetUploadedImage);
 mobileResultsButton?.addEventListener("click", clearMobileResultsReady);
 mobileResultsButton?.addEventListener("click", completeQuickCheckOnboarding);
 
-
 window.addEventListener("resize", () => {
   if (!hasUploadedImage) {
     resetWorkspaceViewport(true);
@@ -355,6 +425,65 @@ notanUnlockButton?.addEventListener("click", () => {
 });
 
 premiumFixUnlockButton?.addEventListener("click", openFullUnlock);
+
+function preparePlayQuickDirectImageForAnalysis(imageSource) {
+  return new Promise((resolve) => {
+    if (!window.M8_GOOGLE_PLAY_BUILD || typeof imageSource !== "string" || !imageSource) {
+      resolve(false);
+      return;
+    }
+
+    let settled = false;
+    const finish = (ready) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      window.removeEventListener("m8:quick-image-ready", onReady);
+      resolve(Boolean(ready));
+    };
+    const onReady = () => finish(true);
+
+    window.addEventListener("m8:quick-image-ready", onReady, { once: true });
+    try {
+      showPreviewFromSource(imageSource, false);
+    } catch (error) {
+      finish(false);
+      return;
+    }
+    window.setTimeout(() => finish(Boolean(analysisPreview.naturalWidth && analysisPreview.naturalHeight)), 1500);
+  });
+}
+
+window.M8RunPlayQuickAnalysis = async function runPlayQuickAnalysis(imageDataUrl) {
+  if (!window.M8_GOOGLE_PLAY_BUILD || isAnalysisRunning) {
+    return false;
+  }
+
+  const hasDirectImage = typeof imageDataUrl === "string" && imageDataUrl.startsWith("data:image/");
+  const hasPlayImageSource = window.M8_GOOGLE_PLAY_BUILD && typeof imageDataUrl === "string" && imageDataUrl.length > 0;
+  if (hasPlayImageSource) {
+    await preparePlayQuickDirectImageForAnalysis(imageDataUrl);
+  }
+
+  if (!hasPlayImageSource && !hasUploadedImage) {
+    showStatusToast("Upload an image first");
+    updateStatusMessage("Upload an image first.", true);
+    return false;
+  }
+
+  hasUploadedImage = true;
+  currentAnalysisUsesFreeSlot = false;
+  updateAnalysisAccessUI();
+  runQuickCheck();
+
+  const result = latestQuickCheckResult || buildQuickCheckResult();
+  const aiImage = hasDirectImage ? imageDataUrl : createAiAnalysisImageDataUrl();
+  if (aiImage) {
+    requestPlayQuickAiAnalysis(aiImage, result);
+  }
+  return true;
+};
 
 ["dragenter", "dragover"].forEach((eventName) => {
   uploadZone.addEventListener(eventName, (event) => {
@@ -385,12 +514,17 @@ uploadZone.addEventListener("drop", (event) => {
 });
 
 function showPreview(file) {
+  const objectUrl = URL.createObjectURL(file);
+  showPreviewFromSource(objectUrl, true);
+}
+
+function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
   resetAnalysisSequence();
   resetNotanReading();
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
 
-  if (currentObjectUrl) {
+  if (currentObjectUrl && currentObjectUrl.startsWith("blob:")) {
     URL.revokeObjectURL(currentObjectUrl);
   }
 
@@ -412,7 +546,7 @@ function showPreview(file) {
   analysisPreview.classList.remove("is-loaded");
   analysisPreview.onload = null;
   analysisPreview.onerror = null;
-  currentObjectUrl = URL.createObjectURL(file);
+  currentObjectUrl = sourceUrl;
   analysisPreview.onload = () => {
     if (requestId !== imageLoadRequestId) {
       return;
@@ -438,6 +572,9 @@ function showPreview(file) {
     updateNotanReading();
     resetWorkspaceViewport();
     showStatusToast("Image loaded");
+    if (window.M8_GOOGLE_PLAY_BUILD) {
+      window.dispatchEvent(new CustomEvent("m8:quick-image-ready", { detail: { source: currentObjectUrl } }));
+    }
   };
   analysisPreview.onerror = () => {
     if (requestId !== imageLoadRequestId) {
@@ -1126,9 +1263,13 @@ function getImageSampleData(image, maxDimension) {
 
   canvas.width = sampleWidth;
   canvas.height = sampleHeight;
-  context.drawImage(image, 0, 0, sampleWidth, sampleHeight);
-
-  const { data } = context.getImageData(0, 0, sampleWidth, sampleHeight);
+  let data;
+  try {
+    context.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+    data = context.getImageData(0, 0, sampleWidth, sampleHeight).data;
+  } catch (error) {
+    return null;
+  }
   const luminance = new Float32Array(sampleWidth * sampleHeight);
   const luminanceValues = new Array(sampleWidth * sampleHeight);
   const colorBins = new Uint32Array(512);
@@ -2250,6 +2391,12 @@ function clearAnalysisFileInput() {
 
 function openAnalysisFilePicker() {
   clearAnalysisFileInput();
+  if (typeof window.M8PickImageForInput === "function" && window.M8PickImageForInput(analysisFileInput)) {
+    return;
+  }
+  if (typeof window.M8OpenSystemFileInput === "function" && window.M8OpenSystemFileInput(analysisFileInput)) {
+    return;
+  }
   analysisFileInput.click();
 }
 
@@ -2266,8 +2413,10 @@ function resetUploadedImage() {
   resetNotanReading();
   setUploadLoadingState(false);
 
-  if (currentObjectUrl) {
+  if (currentObjectUrl && currentObjectUrl.startsWith("blob:")) {
     URL.revokeObjectURL(currentObjectUrl);
+  }
+  if (currentObjectUrl) {
     currentObjectUrl = null;
   }
 
@@ -2414,45 +2563,71 @@ function renderPremiumFixPreview(result) {
   const plan = buildPremiumFixPlan(result);
   const isUnlocked = hasUnlockedAccess() || DEV_MODE;
   const isReferenceIssue = Boolean(result?.metrics?.referenceIssue);
+  const hasFullPainterReport = isUnlocked || currentAnalysisUsesFreeSlot || isReferenceIssue;
 
   quickCheckPremiumFix.classList.remove("hidden", "is-locked", "is-unlocked", "is-reference-warning");
   quickCheckPremiumFix.classList.add(isUnlocked ? "is-unlocked" : "is-locked");
   quickCheckPremiumFix.classList.toggle("is-reference-warning", isReferenceIssue);
+  quickCheckPremiumFix.classList.toggle("is-full-report", hasFullPainterReport && !isReferenceIssue);
 
   if (premiumFixCount) {
-    premiumFixCount.textContent = isReferenceIssue ? "Bad reference detected" : `${plan.fixes.length} fixes detected`;
+    premiumFixCount.textContent = isReferenceIssue
+      ? "Bad reference detected"
+      : hasFullPainterReport
+        ? "Full painter read"
+        : `${plan.fixes.length} fixes detected`;
   }
   if (premiumFixTitle) {
     premiumFixTitle.textContent = isUnlocked ? plan.unlockedTitle : plan.lockedTitle;
   }
   if (premiumFixSummary) {
-    premiumFixSummary.textContent = isUnlocked ? plan.unlockedSummary : plan.lockedSummary;
+    premiumFixSummary.textContent = hasFullPainterReport ? plan.unlockedSummary : plan.lockedSummary;
   }
   if (premiumFixUnlockButton) {
     premiumFixUnlockButton.classList.toggle("hidden", isUnlocked || isReferenceIssue);
+    premiumFixUnlockButton.textContent = hasFullPainterReport ? "Unlock Unlimited Checks" : "Unlock Full Painter Report";
   }
   if (premiumFixNote) {
     premiumFixNote.textContent = isUnlocked
       ? "Use this as your first painting pass before details."
-      : "Unlock to see the exact painting moves behind the detected fixes.";
+      : hasFullPainterReport
+        ? "This is your free full check for today. Unlock for unlimited painter reports and deeper tool access."
+        : "Unlock to see the exact painting moves behind the detected fixes.";
     premiumFixNote.classList.toggle("hidden", isReferenceIssue);
   }
 
   premiumFixList.innerHTML = "";
-  plan.fixes.forEach((fix, index) => {
+  const reportItems = hasFullPainterReport && !isReferenceIssue
+    ? [
+      ...(plan.sections || []),
+      ...plan.fixes.map((fix, index) => ({
+        ...fix,
+        label: `Priority ${index + 1}`,
+        className: "is-priority"
+      }))
+    ]
+    : plan.fixes.map((fix, index) => ({
+      ...fix,
+      label: isReferenceIssue ? "Source" : `Fix ${index + 1}`
+    }));
+
+  reportItems.forEach((fix) => {
     const item = document.createElement("div");
     item.className = "premium-fix-item";
-    item.classList.toggle("is-locked", !isUnlocked && !isReferenceIssue);
+    if (fix.className) {
+      item.classList.add(fix.className);
+    }
+    item.classList.toggle("is-locked", !hasFullPainterReport && !isReferenceIssue);
 
     const label = document.createElement("span");
     label.className = "premium-fix-label";
-    label.textContent = isReferenceIssue ? "Source" : `Fix ${index + 1}`;
+    label.textContent = fix.label || "Painter note";
 
     const title = document.createElement("strong");
     title.textContent = fix.title;
 
     const text = document.createElement("p");
-    text.textContent = isUnlocked || isReferenceIssue ? fix.advice : fix.preview;
+    text.textContent = hasFullPainterReport || isReferenceIssue ? fix.advice : fix.preview;
 
     item.append(label, title, text);
     premiumFixList.appendChild(item);
@@ -2461,6 +2636,8 @@ function renderPremiumFixPreview(result) {
 
 function buildPremiumFixPlan(result) {
   const metrics = result?.metrics || {};
+  const whyThisScore = result?.whyThisScore || buildWhyThisScore(metrics);
+  const fastestFix = result?.fastestFix || buildFastestFix(metrics);
 
   if (metrics.referenceIssue) {
     return {
@@ -2555,8 +2732,46 @@ function buildPremiumFixPlan(result) {
   return {
     lockedTitle: "AI Analysis for Painters",
     unlockedTitle: "AI Analysis for Painters",
-    lockedSummary: "Quick Check found the weak spots. Unlock shows the exact first painting moves in plain studio language.",
-    unlockedSummary: "Start here before details. These are the first painting moves based on value, balance, focal pull, and frame signals.",
+    lockedSummary: "Quick Check found the weak spots. Unlock shows the full painter diagnosis, priorities, and first-pass plan.",
+    unlockedSummary: "This is a painter-first read: what is working, what is costing the image, and what to change before details.",
+    sections: [
+      {
+        label: "Studio verdict",
+        title: "Main read",
+        advice: result?.verdict || buildOneSentenceVerdict(metrics),
+        className: "is-verdict"
+      },
+      {
+        label: "What helps",
+        title: "Keep this working",
+        advice: whyThisScore.positive,
+        className: "is-diagnosis"
+      },
+      {
+        label: "What hurts",
+        title: "Main score limit",
+        advice: whyThisScore.limiting,
+        className: "is-diagnosis"
+      },
+      {
+        label: "Value read",
+        title: "Light and dark structure",
+        advice: getValuesLine(metrics),
+        className: "is-diagnosis"
+      },
+      {
+        label: "Composition read",
+        title: "Eye path and balance",
+        advice: getStructureLine(metrics),
+        className: "is-diagnosis"
+      },
+      {
+        label: "First pass",
+        title: "Do this before detail",
+        advice: `${fastestFix} Make the change as a small test first, then repaint the surrounding area only if the read improves.`,
+        className: "is-verdict"
+      }
+    ],
     fixes: fixes.slice(0, 3)
   };
 }
@@ -2746,6 +2961,129 @@ function renderPaintingBreakdownPlan(lines) {
   });
 }
 
+async function requestPlayQuickAiAnalysis(imageDataUrl, computedAnalysis) {
+  if (!window.M8_GOOGLE_PLAY_BUILD || !imageDataUrl) {
+    return;
+  }
+
+  showPlayQuickAiMessage("AI analysis is running...");
+  try {
+    const response = await fetch(QUICK_AI_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        imageDataUrl,
+        computedAnalysis: sanitizeQuickAiComputedAnalysis(computedAnalysis)
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || "AI analysis failed.");
+    }
+
+    renderPlayQuickAiAnalysis(data.analysis);
+  } catch (error) {
+    showPlayQuickAiMessage(error.message || "AI analysis failed. The normal Quick Check result is still available.");
+  }
+}
+
+function sanitizeQuickAiComputedAnalysis(result) {
+  const metrics = result?.metrics || {};
+  return {
+    score: result?.score,
+    verdict: result?.verdict,
+    keyInsight: result?.keyInsight,
+    strength: result?.strength,
+    weakness: result?.weakness,
+    suggestion: result?.suggestion,
+    fastestFix: result?.fastestFix,
+    tags: result?.tags || [],
+    scoreBreakdown: result?.scoreBreakdown || [],
+    metrics: {
+      valueSpread: metrics.valueSpread,
+      valueStd: metrics.valueStd,
+      focalClarity: metrics.focalClarity,
+      flowStrength: metrics.flowStrength,
+      depthStrength: metrics.depthStrength,
+      balanceQuality: metrics.balanceQuality,
+      centerQuality: metrics.centerQuality,
+      cropRisk: metrics.cropRisk,
+      referenceConfidence: metrics.referenceConfidence,
+      referenceIssue: metrics.referenceIssue
+    }
+  };
+}
+
+function ensurePlayQuickAiResultBlock() {
+  let block = document.getElementById("playQuickAiResult");
+  if (block) {
+    return block;
+  }
+
+  block = document.createElement("div");
+  block.id = "playQuickAiResult";
+  block.className = "result-block play-quick-ai-result result-reveal";
+  const anchor = quickCheckFastestFix || quickCheckResult;
+  anchor?.insertAdjacentElement("afterend", block);
+  return block;
+}
+
+function showPlayQuickAiMessage(message) {
+  const block = ensurePlayQuickAiResultBlock();
+  if (!block) {
+    return;
+  }
+
+  block.innerHTML = `
+    <p class="result-block-title">AI Mentor Read</p>
+    <p class="detail-copy">${escapeHtml(message)}</p>
+  `;
+  block.classList.remove("hidden");
+  quickCheckDeepReport?.classList.remove("hidden");
+}
+
+function renderPlayQuickAiAnalysis(analysis) {
+  if (!analysis) {
+    showPlayQuickAiMessage("AI analysis failed. The normal Quick Check result is still available.");
+    return;
+  }
+
+  const list = (items) => (Array.isArray(items) ? items : [])
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
+
+  const block = ensurePlayQuickAiResultBlock();
+  if (!block) {
+    return;
+  }
+
+  block.innerHTML = `
+    <p class="result-block-title">AI Mentor Read</p>
+    ${analysis.summary ? `<p class="detail-copy">${escapeHtml(analysis.summary)}</p>` : ""}
+    ${analysis.mainPriority ? `<div class="breakdown-section"><p class="breakdown-section-title">Main Priority</p><p class="detail-copy">${escapeHtml(analysis.mainPriority)}</p></div>` : ""}
+    ${analysis.valueStructure ? `<div class="breakdown-section"><p class="breakdown-section-title">Value Structure</p><p class="detail-copy">${escapeHtml(analysis.valueStructure)}</p></div>` : ""}
+    ${analysis.composition ? `<div class="breakdown-section"><p class="breakdown-section-title">Composition</p><p class="detail-copy">${escapeHtml(analysis.composition)}</p></div>` : ""}
+    ${list(analysis.nextSteps) ? `<div class="breakdown-section"><p class="breakdown-section-title">Next Steps</p><ol class="breakdown-list">${list(analysis.nextSteps)}</ol></div>` : ""}
+  `;
+  block.classList.remove("hidden");
+  quickCheckDeepReport?.classList.remove("hidden");
+  block.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function createAiAnalysisImageDataUrl() {
   if (!analysisPreview.naturalWidth || !analysisPreview.naturalHeight) {
     return "";
@@ -2763,8 +3101,12 @@ function createAiAnalysisImageDataUrl() {
 
   canvas.width = width;
   canvas.height = height;
-  context.drawImage(analysisPreview, 0, 0, width, height);
-  return canvas.toDataURL("image/jpeg", AI_IMAGE_QUALITY);
+  try {
+    context.drawImage(analysisPreview, 0, 0, width, height);
+    return canvas.toDataURL("image/jpeg", AI_IMAGE_QUALITY);
+  } catch (error) {
+    return "";
+  }
 }
 
 function buildBreakdownContext(result) {

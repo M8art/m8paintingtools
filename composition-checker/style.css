@@ -367,11 +367,59 @@ a {
 }
 
 .workspace-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  align-items: start;
+  justify-items: end;
+  gap: 8px;
+}
+
+.primary-switcher.workspace-tier-switcher {
+  width: 118px;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 3px;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-switcher.workspace-tier-switcher::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 3px;
+  top: 3px;
+  bottom: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: #c96a3d;
+  box-shadow: 0 8px 18px rgba(201, 106, 61, 0.2);
+  transform: translateX(0);
+  transition: transform 220ms ease;
+}
+
+.primary-switcher.workspace-tier-switcher:has([data-analysis-mode="advanced"].active)::before {
+  transform: translateX(100%);
+}
+
+.workspace-tier-switcher .tab-button {
+  position: relative;
+  z-index: 1;
+  min-height: 28px;
+  padding: 5px 8px;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .section-label {
@@ -1745,6 +1793,17 @@ html.mobile-light-mode .grid-overlay-info {
     transform: translateX(100%);
   }
 
+  .primary-switcher.workspace-tier-switcher {
+    width: 118px;
+    margin: 0;
+  }
+
+  .workspace-tier-switcher .tab-button {
+    min-height: 28px;
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
   .secondary-switcher {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     margin-bottom: 10px;
@@ -2485,6 +2544,13 @@ html.mobile-light-mode .grid-overlay-info {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .primary-switcher.workspace-tier-switcher {
+    width: 118px;
+    margin: 0;
+    border-radius: 999px;
+    z-index: auto;
+  }
+
   .secondary-switcher {
     position: sticky;
     top: 8px;
@@ -2500,6 +2566,13 @@ html.mobile-light-mode .grid-overlay-info {
     border-radius: 18px;
     font-size: 0.69rem;
     box-shadow: 0 10px 18px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .workspace-tier-switcher .tab-button {
+    min-height: 28px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    box-shadow: none;
   }
 
   .tab-button.active,
