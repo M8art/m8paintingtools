@@ -93,9 +93,21 @@
   }
 
   function setAnalyzeButtonState(state) {
+    if (state === "running" || state === "") {
+      if (analyzeCueTimer) {
+        window.clearTimeout(analyzeCueTimer);
+        analyzeCueTimer = null;
+      }
+    }
+
     proAnalyzeButtons.forEach((button) => {
       button.classList.toggle("is-cue", state === "cue");
       button.classList.toggle("is-running", state === "running");
+      if (state === "running") {
+        button.textContent = "Analyzing...";
+      } else if (!button.classList.contains("is-unlock-cta")) {
+        button.textContent = "Analyze";
+      }
     });
   }
 
@@ -429,6 +441,10 @@
         proResults.classList.add("is-visible");
       });
       setResultButtonState("cue");
+      window.setTimeout(() => {
+        setResultButtonState("ready");
+        scrollResultsIntoView();
+      }, 920);
     }
   }
 
@@ -501,6 +517,11 @@
       markFreeAnalysisUsedToday();
     }
     proSurface?.classList.add("is-running");
+    if (uploadAnimationTimer) {
+      window.clearTimeout(uploadAnimationTimer);
+      uploadAnimationTimer = null;
+      proUploadButtons.forEach((button) => button.classList.remove("is-upload-complete"));
+    }
     setAnalyzeButtonState("running");
     setAnalyzeEnabled(false);
     runScanAnimation();
@@ -540,6 +561,10 @@
 
   function scrollToResults(event) {
     event.preventDefault();
+    scrollResultsIntoView();
+  }
+
+  function scrollResultsIntoView() {
     const target = proResults && !proResults.classList.contains("hidden") ? proResults : document.getElementById("aiValueResultPanel");
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
