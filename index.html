@@ -1998,6 +1998,76 @@
       border-color: rgba(30, 25, 20, 0.28);
     }
 
+    .cta-glow {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    .button.cta-glow,
+    .button-secondary.cta-glow,
+    .hero-upload-mock.cta-glow {
+      animation: ctaWarmGlow 3.8s ease-in-out infinite;
+    }
+
+    .cta-glow::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(105deg, transparent 12%, rgba(255, 244, 221, 0.34) 45%, transparent 68%);
+      opacity: 0;
+      transform: translateX(-135%);
+      animation: ctaEdgeSweep 3.8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .cta-glow:hover,
+    .cta-glow:focus-visible {
+      transform: none;
+      box-shadow: 0 15px 31px rgba(201, 106, 61, 0.24), 0 0 0 1px rgba(255, 232, 197, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .hero-upload-mock.cta-glow:hover,
+    .hero-upload-mock.cta-glow:focus-visible {
+      transform: none;
+      border-color: rgba(201, 106, 61, 0.5);
+      box-shadow: 0 17px 34px rgba(50, 39, 28, 0.1), 0 0 0 1px rgba(255, 232, 197, 0.28);
+    }
+
+    @keyframes ctaWarmGlow {
+      0%, 72%, 100% {
+        box-shadow: 0 10px 24px rgba(201, 106, 61, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      }
+      36% {
+        box-shadow: 0 14px 30px rgba(201, 106, 61, 0.25), 0 0 0 1px rgba(255, 232, 197, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    @keyframes ctaEdgeSweep {
+      0%, 58%, 100% {
+        opacity: 0;
+        transform: translateX(-135%);
+      }
+      68% {
+        opacity: 0.68;
+      }
+      84% {
+        opacity: 0;
+        transform: translateX(135%);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .button.cta-glow,
+      .button-secondary.cta-glow,
+      .hero-upload-mock.cta-glow,
+      .cta-glow::after {
+        animation: none !important;
+      }
+    }
+
     .button:hover {
       background: #ffffff;
       color: #c96a3d;
@@ -4387,6 +4457,8 @@
       #tool-system.landing-long-form .tool-card {
         min-height: 0;
         padding: 30px;
+        grid-template-rows: auto auto auto 1fr;
+        align-content: start;
       }
 
       #tool-system.landing-long-form .tool-card-primary {
@@ -4398,11 +4470,15 @@
       }
 
       #tool-system.landing-long-form .tool-heading {
-        min-height: 0;
+        min-height: 126px;
+        align-content: start;
       }
 
       #tool-system.landing-long-form .button-row {
-        margin-top: auto;
+        min-height: 104px;
+        margin-top: 0;
+        align-content: start;
+        align-items: flex-start;
       }
 
       #tool-system.landing-long-form .button,
@@ -4418,6 +4494,10 @@
 
         #tool-system.landing-long-form .tool-card {
           padding: 24px;
+        }
+
+        #tool-system.landing-long-form .tool-heading {
+          min-height: 128px;
         }
 
         #tool-system.landing-long-form .subheadline {
@@ -7177,8 +7257,8 @@ html,
           <p class="landing-hero-explainer">Most paintings fail before the first brushstroke - this shows you exactly why.</p>
           <p class="landing-hero-subheadline">Instantly check your values, composition, color, and drawing structure before you waste hours on a painting that doesn&rsquo;t work.</p>
           <div class="button-row">
-            <button id="desktopHeroUploadButton" class="button" type="button">Upload Painting</button>
-            <a class="button-secondary" href="./analysis/index.html">Open Quick Check</a>
+            <button id="desktopHeroUploadButton" class="button cta-glow" type="button">Upload Painting</button>
+            <a class="button-secondary cta-glow" href="./analysis/index.html">Open Quick Check</a>
           </div>
           <div class="landing-hero-meta" aria-label="Tool highlights">
             <span class="landing-hero-note">Built from real studio practice - not theory</span>
@@ -7189,7 +7269,7 @@ html,
 
         <div class="landing-hero-visual">
           <div class="hero-preview-frame desktop-landing-preview">
-            <button id="desktopUploadTrigger" class="hero-upload-mock desktop-landing-upload" type="button">
+            <button id="desktopUploadTrigger" class="hero-upload-mock desktop-landing-upload cta-glow" type="button">
               <span class="hero-upload-icon" aria-hidden="true">+</span>
               <span class="hero-upload-title">Upload your painting</span>
               <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, color, and drawing structure before you touch the canvas.</span>
@@ -7594,7 +7674,7 @@ html,
       <h2>Quick Check</h2>
       <p class="quick-check-banner-copy">Upload once, get the biggest issue first, then go deeper into Value, Composition, Color, or Drawing.</p>
       <div class="button-row">
-        <a class="button" href="./analysis/index.html">Open Quick Check</a>
+        <a class="button cta-glow" href="./analysis/index.html">Open Quick Check</a>
       </div>
       <div class="quick-check-banner-meta">
         <span>Quick gives you the full read.</span>
