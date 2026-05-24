@@ -922,16 +922,16 @@ a {
   background: rgba(248, 229, 205, 0.62);
 }
 
-@media (min-width: 901px) {
+@media (min-width: 1061px) {
   body[data-mode="golden-ratio"] .layout,
   body[data-mode="golden-spiral"] .layout,
   body[data-mode="dynamic-symmetry"] .layout,
   body[data-mode="notan"] .layout,
   body[data-mode="focal-balance"] .layout {
-    grid-template-columns: minmax(560px, 1.08fr) minmax(360px, 0.72fr);
+    grid-template-columns: minmax(640px, 1.18fr) minmax(340px, 0.62fr);
     grid-auto-rows: auto;
     align-items: start;
-    gap: 22px;
+    gap: 24px;
   }
 
   body[data-mode="golden-ratio"] .workspace-card,
@@ -1029,7 +1029,7 @@ a {
   body[data-mode="notan"] .advanced-ai-card .advanced-ai-results {
     grid-column: 1 / -1;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
+    gap: 16px;
     align-items: stretch;
   }
 
@@ -1037,7 +1037,7 @@ a {
   body[data-mode="golden-spiral"] .advanced-ai-result-block,
   body[data-mode="dynamic-symmetry"] .advanced-ai-result-block,
   body[data-mode="notan"] .advanced-ai-result-block {
-    min-height: 142px;
+    min-height: 160px;
   }
 
   body[data-mode="golden-ratio"] .advanced-ai-verdict,
@@ -1065,13 +1065,13 @@ a {
   }
 }
 
-@media (min-width: 901px) and (max-width: 1180px) {
+@media (min-width: 1061px) and (max-width: 1180px) {
   body[data-mode="golden-ratio"] .layout,
   body[data-mode="golden-spiral"] .layout,
   body[data-mode="dynamic-symmetry"] .layout,
   body[data-mode="notan"] .layout,
   body[data-mode="focal-balance"] .layout {
-    grid-template-columns: minmax(500px, 1fr) minmax(320px, 0.72fr);
+    grid-template-columns: minmax(580px, 1fr) minmax(320px, 0.68fr);
   }
 
   body[data-mode="golden-ratio"] .advanced-ai-card .advanced-ai-results,
@@ -1079,6 +1079,57 @@ a {
   body[data-mode="dynamic-symmetry"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="notan"] .advanced-ai-card .advanced-ai-results {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-mode="golden-ratio"] .advanced-ai-verdict,
+  body[data-mode="golden-spiral"] .advanced-ai-verdict,
+  body[data-mode="dynamic-symmetry"] .advanced-ai-verdict,
+  body[data-mode="notan"] .advanced-ai-verdict,
+  body[data-mode="golden-ratio"] .advanced-ai-result-block:has(ol),
+  body[data-mode="golden-spiral"] .advanced-ai-result-block:has(ol),
+  body[data-mode="dynamic-symmetry"] .advanced-ai-result-block:has(ol),
+  body[data-mode="notan"] .advanced-ai-result-block:has(ol) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1060px) {
+  body[data-mode="golden-ratio"] .layout,
+  body[data-mode="golden-spiral"] .layout,
+  body[data-mode="dynamic-symmetry"] .layout,
+  body[data-mode="notan"] .layout,
+  body[data-mode="focal-balance"] .layout {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-mode="golden-ratio"] .workspace-card,
+  body[data-mode="golden-spiral"] .workspace-card,
+  body[data-mode="dynamic-symmetry"] .workspace-card,
+  body[data-mode="notan"] .workspace-card,
+  body[data-mode="focal-balance"] .workspace-card {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  body[data-mode="golden-ratio"] .side-panel,
+  body[data-mode="golden-spiral"] .side-panel,
+  body[data-mode="dynamic-symmetry"] .side-panel,
+  body[data-mode="notan"] .side-panel,
+  body[data-mode="focal-balance"] .side-panel,
+  body[data-mode="golden-ratio"] #advancedAnalysisPanel,
+  body[data-mode="golden-spiral"] #advancedAnalysisPanel,
+  body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel,
+  body[data-mode="notan"] #advancedAnalysisPanel,
+  body[data-mode="focal-balance"] #advancedAnalysisPanel {
+    display: block;
+  }
+
+  body[data-mode="golden-ratio"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="golden-spiral"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="dynamic-symmetry"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="notan"] .advanced-ai-card .advanced-ai-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
 
   body[data-mode="golden-ratio"] .advanced-ai-verdict,
