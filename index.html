@@ -2361,6 +2361,352 @@
       line-height: 1.5;
     }
 
+    .conversion-demo-section {
+      margin: -12px 0 34px;
+      padding: clamp(24px, 4vw, 38px);
+      border-radius: 30px;
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(217, 173, 92, 0.16), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(201, 106, 61, 0.12), transparent 24%),
+        linear-gradient(180deg, rgba(255, 252, 246, 0.86), rgba(239, 232, 219, 0.94));
+      box-shadow: 0 28px 70px rgba(50, 39, 28, 0.14);
+      overflow: hidden;
+    }
+
+    .conversion-demo-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .conversion-demo-head h2 {
+      max-width: 16ch;
+      font-size: clamp(2.2rem, 3.5vw, 3.25rem);
+      line-height: 0.98;
+    }
+
+    .conversion-demo-lede {
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.62;
+    }
+
+    .conversion-demo-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.92fr) minmax(420px, 1.08fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .conversion-image-card,
+    .sample-analysis-card,
+    .premium-preview-card,
+    .painter-pay-card,
+    .unlock-compare-card {
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(247, 242, 234, 0.9));
+      box-shadow: 0 18px 42px rgba(50, 39, 28, 0.1);
+    }
+
+    .conversion-image-card {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .conversion-image-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1.1;
+      object-fit: cover;
+      border-radius: 18px;
+      border: 1px solid rgba(50, 44, 38, 0.12);
+      filter: saturate(0.92) contrast(1.03);
+      box-shadow: 0 16px 34px rgba(31, 28, 24, 0.16);
+    }
+
+    .conversion-image-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .conversion-result-stack {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+      gap: 16px;
+    }
+
+    .sample-analysis-card,
+    .premium-preview-card,
+    .painter-pay-card,
+    .unlock-compare-card {
+      border-radius: 24px;
+      padding: 20px;
+    }
+
+    .sample-analysis-card {
+      display: grid;
+      gap: 14px;
+    }
+
+    .sample-score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .sample-score {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      color: #3a2a1d;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.5rem;
+      line-height: 1;
+    }
+
+    .sample-score span {
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-family: "Segoe UI", "Aptos", sans-serif;
+      font-weight: 800;
+    }
+
+    .sample-score-bar {
+      position: relative;
+      height: 10px;
+      flex: 1;
+      border-radius: 999px;
+      background: rgba(61, 51, 40, 0.1);
+      overflow: hidden;
+    }
+
+    .sample-score-bar::before {
+      content: "";
+      position: absolute;
+      inset: 0 28% 0 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #c96a3d, #d9ad5c);
+    }
+
+    .sample-finding-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .sample-finding {
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(255, 252, 246, 0.68);
+    }
+
+    .sample-finding span,
+    .paint-plan span,
+    .premium-preview-card span,
+    .compare-plan span {
+      display: block;
+      margin-bottom: 5px;
+      color: #9b5b37;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .sample-finding strong {
+      color: var(--ink);
+      font-size: 1.04rem;
+    }
+
+    .sample-finding p,
+    .paint-plan li,
+    .premium-preview-card li,
+    .painter-pay-card li,
+    .compare-plan li {
+      color: var(--muted);
+      line-height: 1.52;
+    }
+
+    .paint-plan {
+      padding: 15px;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(61, 51, 40, 0.9), rgba(28, 22, 16, 0.94));
+      border: 1px solid rgba(185, 141, 66, 0.34);
+      color: #f7efe2;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .paint-plan span {
+      color: #d9ad5c;
+    }
+
+    .paint-plan ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .paint-plan li {
+      color: rgba(247, 239, 226, 0.84);
+    }
+
+    .premium-preview-card {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      background:
+        radial-gradient(circle at 80% 0%, rgba(217, 173, 92, 0.16), transparent 34%),
+        linear-gradient(180deg, rgba(64, 48, 36, 0.96), rgba(28, 22, 16, 0.98));
+      color: #f7efe2;
+      border-color: rgba(185, 141, 66, 0.42);
+      box-shadow: 0 22px 52px rgba(31, 24, 18, 0.22);
+    }
+
+    .premium-preview-card h3,
+    .premium-preview-card span {
+      color: #f7efe2;
+    }
+
+    .premium-preview-card ul {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .premium-preview-card li {
+      position: relative;
+      padding-left: 18px;
+      color: rgba(247, 239, 226, 0.82);
+    }
+
+    .premium-preview-card li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.6em;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #d9ad5c;
+    }
+
+    .conversion-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      justify-self: center;
+      width: 100%;
+    }
+
+    .conversion-actions .button,
+    .conversion-actions .button-secondary {
+      min-height: 46px;
+      padding-inline: 20px;
+      text-align: center;
+    }
+
+    .premium-preview-card .conversion-actions .button,
+    .premium-preview-card .conversion-actions .button-secondary {
+      width: min(100%, 230px);
+    }
+
+    .paid-cta {
+      border-color: rgba(217, 173, 92, 0.5);
+      background: linear-gradient(135deg, #d9ad5c, #b76a34);
+      color: #fffaf0;
+      box-shadow: 0 16px 30px rgba(185, 106, 52, 0.24);
+    }
+
+    .conversion-support-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .painter-pay-card h3,
+    .unlock-compare-card h3 {
+      margin-bottom: 14px;
+      font-size: 1.35rem;
+    }
+
+    .painter-pay-card ol,
+    .compare-plan ul {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .unlock-compare-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .compare-plan {
+      padding: 15px;
+      border-radius: 18px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(255, 252, 246, 0.66);
+    }
+
+    .compare-plan.is-full {
+      border-color: rgba(201, 106, 61, 0.22);
+      background: rgba(248, 229, 205, 0.46);
+    }
+
+    .compare-price {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #8c3f22;
+      background: rgba(201, 106, 61, 0.12);
+      font-weight: 900;
+    }
+
+    @media (max-width: 1120px) {
+      .conversion-demo-head,
+      .conversion-demo-grid,
+      .conversion-result-stack,
+      .conversion-support-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .conversion-demo-head {
+        align-items: start;
+      }
+
+      .unlock-compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .app-home {
       margin-bottom: 18px;
       padding: 16px;
@@ -7305,6 +7651,116 @@ html,
         </div>
       </div>
     </section>
+
+    <section class="conversion-demo-section desktop-landing-only" aria-label="See what M8 finds before you paint">
+      <div class="conversion-demo-head">
+        <div>
+          <p class="eyebrow">Atelier Analysis Desk</p>
+          <h2>See What M8 Finds Before You Paint</h2>
+        </div>
+        <p class="conversion-demo-lede">M8 is built to show the first painting decision that matters. Before you spend hours polishing details, it points to the structure that will make or break the image.</p>
+      </div>
+
+      <div class="conversion-demo-grid">
+        <figure class="conversion-image-card">
+          <img src="./assets/images/demo-painting.jpg" alt="Demo still life painting reference for M8 analysis">
+          <figcaption class="conversion-image-caption">
+            <span>Demo reference</span>
+            <span>Value + composition read</span>
+          </figcaption>
+        </figure>
+
+        <div class="conversion-result-stack">
+          <article class="sample-analysis-card" aria-label="Sample M8 analysis result">
+            <div class="sample-score-row">
+              <div class="sample-score">72<span>/100</span></div>
+              <div class="sample-score-bar" aria-hidden="true"></div>
+            </div>
+
+            <div class="sample-finding-grid">
+              <div class="sample-finding">
+                <span>Biggest issue</span>
+                <strong>Values are too compressed</strong>
+              </div>
+              <div class="sample-finding">
+                <span>Key insight</span>
+                <p>The focal point does not separate enough from the surrounding midtones.</p>
+              </div>
+              <div class="sample-finding">
+                <span>Fix this first</span>
+                <p>Separate the main light and shadow masses before adding detail.</p>
+              </div>
+            </div>
+
+            <div class="paint-plan">
+              <span>3-step paint plan</span>
+              <ol>
+                <li>Simplify the shadow mass</li>
+                <li>Push focal contrast</li>
+                <li>Reduce distracting midtone noise</li>
+              </ol>
+            </div>
+
+            <div class="conversion-actions">
+              <button id="conversionTryButton" class="button cta-glow" type="button">Try It On Your Painting</button>
+            </div>
+          </article>
+
+          <aside class="premium-preview-card" aria-label="Locked premium preview">
+            <span>Full Unlock</span>
+            <h3>Unlock the full painter fix plan</h3>
+            <ul>
+              <li>Unlimited Quick Checks</li>
+              <li>Full value, composition, color, and drawing tools</li>
+              <li>Export and save your studies</li>
+              <li>Lifetime access, no subscription</li>
+            </ul>
+            <div class="conversion-actions">
+              <button id="conversionUnlockButton" class="button paid-cta" type="button">Unlock Lifetime Access &mdash; $5</button>
+              <button id="conversionTrySecondaryButton" class="button-secondary" type="button">Try It On Your Painting</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="conversion-support-grid">
+        <section class="painter-pay-card" aria-label="Why painters pay for M8">
+          <h3>Why painters pay for M8</h3>
+          <ol>
+            <li>Catch weak values before details take over.</li>
+            <li>Find composition problems before they are hard to fix.</li>
+            <li>Understand color relationships before mixing paint.</li>
+            <li>Check drawing structure before committing to canvas.</li>
+          </ol>
+        </section>
+
+        <section class="unlock-compare-card" aria-label="Free versus full unlock comparison">
+          <h3>Free vs Full Unlock</h3>
+          <div class="unlock-compare-grid">
+            <div class="compare-plan">
+              <span>Free</span>
+              <ul>
+                <li>Try the system</li>
+                <li>1 Quick Check per day</li>
+                <li>Basic value and composition tools</li>
+              </ul>
+            </div>
+            <div class="compare-plan is-full">
+              <span>Full Unlock</span>
+              <ul>
+                <li>Unlimited Quick Checks</li>
+                <li>Full painter fix plans</li>
+                <li>Advanced composition tools</li>
+                <li>Full color checker and mixer</li>
+                <li>Drawing checker tools</li>
+                <li>Future updates included</li>
+              </ul>
+              <strong class="compare-price">$5 lifetime access</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
     <section class="app-home" aria-label="Painting Studio app home">
       <div class="app-home-top">
         <div>
@@ -7907,9 +8363,9 @@ html,
       <div class="footer-links">
         <a class="footer-link" href="./analysis/index.html">Quick Check</a>
         <a class="footer-link" href="./install/index.html">Install App</a>
-        <a class="footer-link" href="./privacy.html">Privacy Policy</a>
-        <a class="footer-link" href="./terms.html">Terms of Use</a>
-        <a class="footer-link" href="./contact.html">Contact</a>
+        <a class="footer-link" href="./privacy/index.html">Privacy Policy</a>
+        <a class="footer-link" href="./terms/index.html">Terms of Use</a>
+        <a class="footer-link" href="./contact/index.html">Contact</a>
       </div>
     </footer>
 
@@ -7984,6 +8440,9 @@ html,
     const shareLandingButton = document.getElementById("shareLandingButton");
     const unlockSuccessBanner = document.getElementById("unlockSuccessBanner");
     const desktopHeroUploadButton = document.getElementById("desktopHeroUploadButton");
+    const conversionTryButton = document.getElementById("conversionTryButton");
+    const conversionTrySecondaryButton = document.getElementById("conversionTrySecondaryButton");
+    const conversionUnlockButton = document.getElementById("conversionUnlockButton");
     const heroUploadTrigger = document.getElementById("heroUploadTrigger");
     const hiddenDemoUploadTrigger = document.getElementById("hiddenDemoUploadTrigger");
     const desktopUploadTrigger = document.getElementById("desktopUploadTrigger");
@@ -8382,6 +8841,9 @@ html,
     heroUploadTrigger?.addEventListener("click", openUploadToolModal);
     hiddenDemoUploadTrigger?.addEventListener("click", openUploadToolModal);
     desktopHeroUploadButton?.addEventListener("click", openUploadToolModal);
+    conversionTryButton?.addEventListener("click", openUploadToolModal);
+    conversionTrySecondaryButton?.addEventListener("click", openUploadToolModal);
+    conversionUnlockButton?.addEventListener("click", startPaidUnlockFromOnboarding);
     desktopUploadTrigger?.addEventListener("click", openUploadToolModal);
     uploadToolModalClose?.addEventListener("click", closeUploadToolModal);
     uploadToolModal?.addEventListener("click", (event) => {
