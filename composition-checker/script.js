@@ -2539,6 +2539,7 @@ function syncDesktopAiResultSlot() {
 
   const hasVisibleAiBlock = aiBlocks.some(({ element }) => element && !element.classList.contains("hidden"));
   desktopAiResultsSlot.classList.toggle("hidden", !isDesktop || !hasVisibleAiBlock);
+  document.body.classList.toggle("has-desktop-ai-slot", isDesktop && hasVisibleAiBlock);
 }
 
 function updateModeUI() {
