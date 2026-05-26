@@ -85,6 +85,7 @@ const basicToolSwitcher = document.getElementById("basicToolSwitcher");
 const advancedToolSwitcher = document.getElementById("advancedToolSwitcher");
 const basicAnalysisPanel = document.getElementById("basicAnalysisPanel");
 const advancedAnalysisPanel = document.getElementById("advancedAnalysisPanel");
+const desktopAiResultsSlot = document.getElementById("desktopAiResultsSlot");
 const advancedModeDescription = document.getElementById("advancedModeDescription");
 const advancedModeTip = document.getElementById("advancedModeTip");
 const advancedStatusNote = document.getElementById("advancedStatusNote");
@@ -496,6 +497,7 @@ runNotanAiButton?.addEventListener("click", runNotanAiAnalysis);
 confirmSpiralPlacementButton?.addEventListener("click", confirmSpiralPlacement);
 runSpiralAiButton?.addEventListener("click", runSpiralAiAnalysis);
 runDynamicSymmetryAiButton?.addEventListener("click", runDynamicSymmetryAiAnalysis);
+window.matchMedia("(min-width: 1061px)").addEventListener?.("change", syncDesktopAiResultSlot);
 
 applyInitialRoute();
 updateModeUI();
@@ -2509,6 +2511,36 @@ function handleGridCanvasInput() {
   updateGridTransferUI();
 }
 
+function syncDesktopAiResultSlot() {
+  if (!desktopAiResultsSlot) {
+    return;
+  }
+
+  const isDesktop = window.matchMedia("(min-width: 1061px)").matches;
+  const aiBlocks = [
+    { element: thirdsAiCard, parent: basicAnalysisPanel },
+    { element: thirdsAiLockCard, parent: basicAnalysisPanel },
+    { element: centerAiCard, parent: basicAnalysisPanel },
+    { element: centerAiLockCard, parent: basicAnalysisPanel },
+    { element: diagonalAiCard, parent: basicAnalysisPanel },
+    { element: diagonalAiLockCard, parent: basicAnalysisPanel },
+    { element: goldenRatioAiCard, parent: advancedAnalysisPanel },
+    { element: spiralAiCard, parent: advancedAnalysisPanel },
+    { element: notanAiCard, parent: advancedAnalysisPanel },
+    { element: dynamicSymmetryAiCard, parent: advancedAnalysisPanel }
+  ];
+
+  aiBlocks.forEach(({ element, parent }) => {
+    const target = isDesktop ? desktopAiResultsSlot : parent;
+    if (element && target && element.parentElement !== target) {
+      target.appendChild(element);
+    }
+  });
+
+  const hasVisibleAiBlock = aiBlocks.some(({ element }) => element && !element.classList.contains("hidden"));
+  desktopAiResultsSlot.classList.toggle("hidden", !isDesktop || !hasVisibleAiBlock);
+}
+
 function updateModeUI() {
   const isBasic = state.analysisMode === "basic";
   const advancedLocked = !isBasic && !isUnlocked();
@@ -2572,6 +2604,7 @@ function updateModeUI() {
   updateNotanAiUI(isNotan, advancedLocked);
   updateSpiralAiUI(isGoldenSpiral, advancedLocked);
   updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked);
+  syncDesktopAiResultSlot();
   uploadLabels.forEach((label) => {
     label.classList.toggle("is-action-cue", (isThirdsMode || isCenterMode || isDiagonalMode || isGoldenRatio || isNotan || isGoldenSpiral || isDynamicSymmetry) && !state.imageLoaded && !state.imageLoading && !advancedLocked);
   });

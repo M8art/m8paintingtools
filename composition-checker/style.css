@@ -1144,6 +1144,104 @@ a {
   body[data-mode="focal-balance"] .feedback-cta {
     grid-column: 1 / -1;
   }
+
+  .desktop-ai-results-slot {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    gap: 12px;
+    align-self: start;
+  }
+
+  .desktop-ai-results-slot.hidden,
+  .desktop-ai-results-slot:empty {
+    display: none;
+  }
+
+  .desktop-ai-results-slot > .advanced-ai-card,
+  .desktop-ai-results-slot > .detail-card:not(.hidden) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .desktop-ai-results-slot > .advanced-ai-card.hidden,
+  .desktop-ai-results-slot > .detail-card.hidden {
+    display: none !important;
+  }
+
+  .desktop-ai-results-slot .advanced-ai-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .desktop-ai-results-slot .advanced-ai-result-block {
+    min-height: 160px;
+  }
+
+  .desktop-ai-results-slot .advanced-ai-verdict,
+  .desktop-ai-results-slot .advanced-ai-result-block:has(ol) {
+    grid-column: 1 / -1;
+  }
+
+  body[data-mode="thirds"] .side-panel,
+  body[data-mode="center"] .side-panel,
+  body[data-mode="diagonal"] .side-panel,
+  body[data-mode="golden-ratio"] .side-panel,
+  body[data-mode="golden-spiral"] .side-panel,
+  body[data-mode="dynamic-symmetry"] .side-panel,
+  body[data-mode="notan"] .side-panel,
+  body[data-mode="focal-balance"] .side-panel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: grid;
+    align-self: start;
+  }
+
+  body[data-mode="thirds"] #basicAnalysisPanel,
+  body[data-mode="center"] #basicAnalysisPanel,
+  body[data-mode="diagonal"] #basicAnalysisPanel,
+  body[data-mode="golden-ratio"] #advancedAnalysisPanel,
+  body[data-mode="golden-spiral"] #advancedAnalysisPanel,
+  body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel,
+  body[data-mode="notan"] #advancedAnalysisPanel,
+  body[data-mode="focal-balance"] #advancedAnalysisPanel {
+    display: grid;
+  }
+
+  body[data-mode="thirds"] .side-panel > .panel-heading,
+  body[data-mode="center"] .side-panel > .panel-heading,
+  body[data-mode="diagonal"] .side-panel > .panel-heading,
+  body[data-mode="golden-ratio"] .side-panel > .panel-heading,
+  body[data-mode="golden-spiral"] .side-panel > .panel-heading,
+  body[data-mode="dynamic-symmetry"] .side-panel > .panel-heading,
+  body[data-mode="notan"] .side-panel > .panel-heading,
+  body[data-mode="focal-balance"] .side-panel > .panel-heading {
+    margin-bottom: 16px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  body[data-mode="thirds"] #basicAnalysisPanel > .placeholder-panel,
+  body[data-mode="center"] #basicAnalysisPanel > .placeholder-panel,
+  body[data-mode="diagonal"] #basicAnalysisPanel > .placeholder-panel,
+  body[data-mode="thirds"] #basicAnalysisPanel > .detail-card,
+  body[data-mode="center"] #basicAnalysisPanel > .detail-card,
+  body[data-mode="diagonal"] #basicAnalysisPanel > .detail-card,
+  body[data-mode="golden-ratio"] #advancedAnalysisPanel > .placeholder-panel,
+  body[data-mode="golden-spiral"] #advancedAnalysisPanel > .placeholder-panel,
+  body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel > .placeholder-panel,
+  body[data-mode="notan"] #advancedAnalysisPanel > .placeholder-panel,
+  body[data-mode="focal-balance"] #advancedAnalysisPanel > .placeholder-panel,
+  body[data-mode="golden-ratio"] #advancedAnalysisPanel > .detail-card,
+  body[data-mode="golden-spiral"] #advancedAnalysisPanel > .detail-card,
+  body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel > .detail-card,
+  body[data-mode="notan"] #advancedAnalysisPanel > .detail-card,
+  body[data-mode="focal-balance"] #advancedAnalysisPanel > .detail-card {
+    grid-column: auto;
+  }
 }
 
 @media (min-width: 1061px) and (max-width: 1180px) {
