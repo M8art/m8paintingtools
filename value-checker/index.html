@@ -2021,6 +2021,69 @@
           linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(248, 244, 237, 0.82));
       }
     }
+    @media (min-width: 1061px) {
+      .value-pro-layout {
+        grid-template-columns: minmax(640px, 1fr) minmax(320px, 0.66fr);
+        gap: 24px;
+      }
+
+      .value-pro-layout .value-pro-workspace-card {
+        grid-column: 1;
+        grid-row: 1 / span 4;
+      }
+
+      .value-pro-layout #aiValueResultPanel,
+      .value-pro-layout .value-pro-readout {
+        display: contents;
+      }
+
+      .value-pro-layout #aiValueResultPanel > .panel-heading,
+      .value-pro-layout .value-pro-readout > .placeholder-panel,
+      .value-pro-layout .value-pro-status,
+      .value-pro-layout .value-pro-lock {
+        grid-column: 2;
+      }
+
+      .value-pro-layout #aiValueResultPanel > .panel-heading,
+      .value-pro-layout .value-pro-readout > .placeholder-panel,
+      .value-pro-layout .value-pro-status,
+      .value-pro-layout .value-pro-lock,
+      .value-pro-layout .value-pro-results {
+        width: 100%;
+      }
+
+      .value-pro-layout .value-pro-results:not(.hidden) {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        align-items: stretch;
+      }
+
+      .value-pro-layout .value-pro-results > * {
+        min-height: 150px;
+      }
+
+      .value-pro-layout .value-pro-results > :first-child,
+      .value-pro-layout .value-pro-results > :last-child {
+        grid-column: span 2;
+      }
+    }
+
+    @media (min-width: 1061px) and (max-width: 1180px) {
+      .value-pro-layout {
+        grid-template-columns: minmax(580px, 1fr) minmax(300px, 0.68fr);
+      }
+
+      .value-pro-layout .value-pro-results:not(.hidden) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .value-pro-layout .value-pro-results > :first-child,
+      .value-pro-layout .value-pro-results > :last-child {
+        grid-column: 1 / -1;
+      }
+    }
 @media (min-width: 721px) and (max-width: 1060px) {
       .layout {
         grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.85fr);

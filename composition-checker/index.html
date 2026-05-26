@@ -120,6 +120,9 @@
 
         <div class="composition-action-row" aria-label="Composition workspace actions">
           <label class="button composition-upload-button" for="fileInput">Upload</label>
+          <button id="runThirdsAiButton" class="button-secondary thirds-action-analyze advanced-ai-button" type="button" disabled>Analyze</button>
+          <button id="runCenterAiButton" class="button-secondary center-action-analyze advanced-ai-button hidden" type="button" disabled>Analyze</button>
+          <button id="runDiagonalAiButton" class="button-secondary diagonal-action-analyze advanced-ai-button hidden" type="button" disabled>Analyze</button>
           <button id="runGoldenRatioAiButton" class="button-secondary golden-ratio-action-analyze hidden" type="button" disabled>Analyze</button>
           <button id="runNotanAiButton" class="button-secondary notan-action-analyze hidden" type="button" disabled>Analyze</button>
           <button id="confirmSpiralPlacementButton" class="button-secondary spiral-action-confirm hidden" type="button" disabled>Set Spiral</button>
@@ -238,6 +241,21 @@
               <p id="thirdsClickReadout" class="detail-copy hidden"></p>
             </div>
           </div>
+          <div id="thirdsAiCard" class="detail-card advanced-ai-card hidden">
+            <p class="section-label">AI Thirds Read</p>
+            <h3 class="feedback-title">Rule of Thirds Composition Check</h3>
+            <p class="detail-copy">Run a focused painter read of the focal placement, balance, edge pressure, and how strongly the image uses the thirds structure.</p>
+            <p id="thirdsAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
+            <div id="thirdsAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
+          </div>
+          <div id="thirdsAiLockCard" class="detail-card hidden">
+            <p class="section-label">Pro Limit</p>
+            <h3 class="feedback-title">Unlock more Rule of Thirds reads</h3>
+            <p class="detail-copy">You have used today&apos;s free AI analysis. Unlock full access to keep analyzing, or wait 24 hours for the next free read.</p>
+            <button id="thirdsAiUnlockButton" class="button premium-unlock-button" type="button">Unlock All Tools</button>
+            <p class="detail-copy">One-time unlock &mdash; $5. Lifetime access. No subscription.</p>
+            <p class="detail-copy"><a href="../access/index.html">Already paid? Restore access</a></p>
+          </div>
           <div id="centerReadingCard" class="detail-card hidden">
             <p class="section-label">Center Reading</p>
             <div class="control-stack center-reading-stack">
@@ -261,6 +279,21 @@
               </div>
             </div>
           </div>
+          <div id="centerAiCard" class="detail-card advanced-ai-card hidden">
+            <p class="section-label">AI Center Read</p>
+            <h3 class="feedback-title">Center Lines Composition Check</h3>
+            <p class="detail-copy">Run a focused painter read of center lock, symmetry, visual weight, and whether the centered structure helps or weakens the painting.</p>
+            <p id="centerAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
+            <div id="centerAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
+          </div>
+          <div id="centerAiLockCard" class="detail-card hidden">
+            <p class="section-label">Pro Limit</p>
+            <h3 class="feedback-title">Unlock more Center Lines reads</h3>
+            <p class="detail-copy">You have used today&apos;s free AI analysis. Unlock full access to keep analyzing, or wait 24 hours for the next free read.</p>
+            <button id="centerAiUnlockButton" class="button premium-unlock-button" type="button">Unlock All Tools</button>
+            <p class="detail-copy">One-time unlock &mdash; $5. Lifetime access. No subscription.</p>
+            <p class="detail-copy"><a href="../access/index.html">Already paid? Restore access</a></p>
+          </div>
           <div id="diagonalReadingCard" class="detail-card hidden">
             <p class="section-label">Diagonal Flow Reading</p>
             <div class="control-stack diagonal-reading-stack">
@@ -283,6 +316,21 @@
                 <p id="diagonalFixLock" class="center-fix-lock hidden">Unlock to see the painter fix.</p>
               </div>
             </div>
+          </div>
+          <div id="diagonalAiCard" class="detail-card advanced-ai-card hidden">
+            <p class="section-label">AI Diagonal Read</p>
+            <h3 class="feedback-title">Diagonal Flow Composition Check</h3>
+            <p class="detail-copy">Run a focused painter read of the main diagonal pull, counter movement, rhythm, and whether the eye path is strong before painting.</p>
+            <p id="diagonalAiStatus" class="detail-copy advanced-ai-status">Upload an image to begin.</p>
+            <div id="diagonalAiResults" class="advanced-ai-results hidden" aria-live="polite"></div>
+          </div>
+          <div id="diagonalAiLockCard" class="detail-card hidden">
+            <p class="section-label">Pro Limit</p>
+            <h3 class="feedback-title">Unlock more Diagonal Flow reads</h3>
+            <p class="detail-copy">You have used today&apos;s free AI analysis. Unlock full access to keep analyzing, or wait 24 hours for the next free read.</p>
+            <button id="diagonalAiUnlockButton" class="button premium-unlock-button" type="button">Unlock All Tools</button>
+            <p class="detail-copy">One-time unlock &mdash; $5. Lifetime access. No subscription.</p>
+            <p class="detail-copy"><a href="../access/index.html">Already paid? Restore access</a></p>
           </div>
         <div id="gridControlsCard" class="detail-card hidden">
             <p class="section-label">Grid Size</p>

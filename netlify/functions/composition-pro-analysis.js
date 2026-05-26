@@ -51,7 +51,7 @@ exports.handler = async (event) => {
     return response(400, { error: "Invalid JSON body." });
   }
 
-  if (!["golden-ratio", "notan", "golden-spiral", "dynamic-symmetry"].includes(body.mode)) {
+  if (!["golden-ratio", "notan", "golden-spiral", "dynamic-symmetry", "rule-of-thirds", "center-lines", "diagonal-flow"].includes(body.mode)) {
     return response(400, { error: "Unsupported composition analysis mode." });
   }
 
@@ -113,6 +113,108 @@ exports.handler = async (event) => {
 function buildPrompt(body) {
   const mode = body.mode;
   const imageName = String(body.imageName || "uploaded image").slice(0, 120);
+
+  if (mode === "rule-of-thirds") {
+    const measuredRead = body.overlay?.measuredRead
+      ? JSON.stringify(body.overlay.measuredRead).slice(0, 1600)
+      : "No measured thirds read supplied.";
+    return [
+      "You are an expert classical oil painting instructor and composition critic.",
+      "",
+      "Analyze the uploaded image only from the perspective of COMPOSITION and the Rule of Thirds.",
+      "Do not give generic art feedback.",
+      "Do not discuss color or brushwork unless it affects focal placement, value contrast, edge pressure, or compositional readability.",
+      "Do not praise randomly.",
+      "Do not mention AI, models, prompts, APIs, or software.",
+      "",
+      "The Rule of Thirds overlay divides the image into thirds horizontally and vertically.",
+      "The four intersections are power areas, but they are teaching guides, not strict rules.",
+      "Judge whether the main focal area, strongest value contrast, major shape mass, horizon/eye line, and edge pressure support a strong off-center design.",
+      "Also judge whether the image feels too centered, too edge-heavy, split in half, or unclear about where the viewer should look first.",
+      "",
+      "Evaluate:",
+      "1. What the painter is looking at when the thirds overlay is on the image.",
+      "2. Whether the main focal point lands near a useful thirds zone or fights it.",
+      "3. Whether the large value masses and negative spaces support the focal placement.",
+      "4. Whether the composition feels balanced, too centered, too symmetrical, or pulled toward an edge.",
+      "5. What the painter should crop, move, simplify, lighten, darken, or emphasize before painting.",
+      "",
+      "Use clear, direct, painterly language for a serious student.",
+      "Avoid vague phrases like 'nice composition' or 'good balance'.",
+      "Always explain what the painter should actually do first.",
+      "Return JSON only, following the required schema.",
+      "",
+      `Measured thirds read from the app: ${measuredRead}`,
+      `Image name: ${imageName}`
+    ].join("\n");
+  }
+
+  if (mode === "center-lines") {
+    const measuredRead = body.overlay?.measuredRead
+      ? JSON.stringify(body.overlay.measuredRead).slice(0, 1800)
+      : "No measured center read supplied.";
+    return [
+      "You are an expert classical oil painting instructor and composition critic.",
+      "",
+      "Analyze the uploaded image only from the perspective of COMPOSITION and CENTER LINES.",
+      "Do not give generic art feedback.",
+      "Do not discuss color or brushwork unless it affects center lock, symmetry, value weight, or focal readability.",
+      "Do not praise randomly.",
+      "Do not mention AI, models, prompts, APIs, or software.",
+      "",
+      "The center-line overlay shows the vertical and horizontal center axes.",
+      "Judge whether the painting is intentionally centered, accidentally locked in the middle, too symmetrical, or successfully offset.",
+      "Explain how visual weight sits left/right and top/bottom, whether the first read returns to the center, and whether the center structure helps the idea.",
+      "",
+      "Evaluate:",
+      "1. What the painter is looking at when the center lines are on the image.",
+      "2. Whether the main focal mass locks to the center or escapes it.",
+      "3. Whether symmetry helps the image or makes it static.",
+      "4. Whether the large value masses create enough directional pull away from the center.",
+      "5. What the painter should move, crop, simplify, lighten, darken, or offset before painting.",
+      "",
+      "Use clear, direct, painterly language for a serious student.",
+      "Avoid vague phrases like 'balanced composition'.",
+      "Always explain what the painter should actually do first.",
+      "Return JSON only, following the required schema.",
+      "",
+      `Measured center read from the app: ${measuredRead}`,
+      `Image name: ${imageName}`
+    ].join("\n");
+  }
+
+  if (mode === "diagonal-flow") {
+    const measuredRead = body.overlay?.measuredRead
+      ? JSON.stringify(body.overlay.measuredRead).slice(0, 1800)
+      : "No measured diagonal read supplied.";
+    return [
+      "You are an expert classical oil painting instructor and composition critic.",
+      "",
+      "Analyze the uploaded image only from the perspective of COMPOSITION and DIAGONAL FLOW.",
+      "Do not give generic art feedback.",
+      "Do not discuss color or brushwork unless it affects directional movement, focal pull, edge pressure, or value-path readability.",
+      "Do not praise randomly.",
+      "Do not mention AI, models, prompts, APIs, or software.",
+      "",
+      "The diagonal-flow overlay uses the two main diagonals as guides for movement, counter movement, rhythm, and visual tension.",
+      "Judge whether the image has a clear eye path, whether one diagonal dominates, whether the counter diagonal supports or fights it, and whether the large value masses create movement.",
+      "",
+      "Evaluate:",
+      "1. What the painter is looking at when the diagonal overlay is on the image.",
+      "2. Whether the main directional pull is clear or weak.",
+      "3. Whether the counter diagonal supports the eye path or creates confusion.",
+      "4. Whether focal accents, edges, value masses, and negative shapes create rhythm.",
+      "5. What the painter should simplify, rotate, crop, darken, lighten, connect, or quiet before painting.",
+      "",
+      "Use clear, direct, painterly language for a serious student.",
+      "Avoid vague phrases like 'nice movement'.",
+      "Always explain what the painter should actually do first.",
+      "Return JSON only, following the required schema.",
+      "",
+      `Measured diagonal read from the app: ${measuredRead}`,
+      `Image name: ${imageName}`
+    ].join("\n");
+  }
 
   if (mode === "notan") {
     const rawGroups = Number(body.overlay?.valueGroups);
@@ -254,6 +356,15 @@ function getAnalysisErrorLabel(mode) {
   }
   if (mode === "dynamic-symmetry") {
     return "Dynamic Symmetry analysis failed.";
+  }
+  if (mode === "rule-of-thirds") {
+    return "Rule of Thirds analysis failed.";
+  }
+  if (mode === "center-lines") {
+    return "Center Lines analysis failed.";
+  }
+  if (mode === "diagonal-flow") {
+    return "Diagonal Flow analysis failed.";
   }
   return "Golden Ratio analysis failed.";
 }

@@ -795,7 +795,18 @@ a {
   width: 100%;
 }
 
+.composition-action-row .advanced-ai-button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
 .composition-upload-button.is-action-cue,
+.thirds-action-analyze.is-action-cue,
+.thirds-action-analyze.is-result-ready,
+.center-action-analyze.is-action-cue,
+.center-action-analyze.is-result-ready,
+.diagonal-action-analyze.is-action-cue,
+.diagonal-action-analyze.is-result-ready,
 .golden-ratio-action-analyze.is-action-cue,
 .golden-ratio-action-analyze.is-result-ready,
 .notan-action-analyze.is-action-cue,
@@ -811,6 +822,9 @@ a {
 }
 
 .composition-upload-button.is-action-cue,
+.thirds-action-analyze.is-action-cue,
+.center-action-analyze.is-action-cue,
+.diagonal-action-analyze.is-action-cue,
 .golden-ratio-action-analyze.is-action-cue,
 .notan-action-analyze.is-action-cue,
 .spiral-action-confirm.is-action-cue,
@@ -819,6 +833,9 @@ a {
   animation: advancedAiCuePulse 980ms ease-in-out infinite;
 }
 
+.thirds-action-analyze.is-result-ready,
+.center-action-analyze.is-result-ready,
+.diagonal-action-analyze.is-result-ready,
 .golden-ratio-action-analyze.is-result-ready,
 .notan-action-analyze.is-result-ready,
 .spiral-action-confirm.is-result-ready,
@@ -831,6 +848,12 @@ a {
 }
 
 .composition-upload-button.is-action-cue::after,
+.thirds-action-analyze.is-action-cue::after,
+.thirds-action-analyze.is-result-ready::after,
+.center-action-analyze.is-action-cue::after,
+.center-action-analyze.is-result-ready::after,
+.diagonal-action-analyze.is-action-cue::after,
+.diagonal-action-analyze.is-result-ready::after,
 .golden-ratio-action-analyze.is-action-cue::after,
 .golden-ratio-action-analyze.is-result-ready::after,
 .notan-action-analyze.is-action-cue::after,
@@ -923,6 +946,9 @@ a {
 }
 
 @media (min-width: 1061px) {
+  body[data-mode="thirds"] .layout,
+  body[data-mode="center"] .layout,
+  body[data-mode="diagonal"] .layout,
   body[data-mode="golden-ratio"] .layout,
   body[data-mode="golden-spiral"] .layout,
   body[data-mode="dynamic-symmetry"] .layout,
@@ -934,15 +960,21 @@ a {
     gap: 24px;
   }
 
+  body[data-mode="thirds"] .workspace-card,
+  body[data-mode="center"] .workspace-card,
+  body[data-mode="diagonal"] .workspace-card,
   body[data-mode="golden-ratio"] .workspace-card,
   body[data-mode="golden-spiral"] .workspace-card,
   body[data-mode="dynamic-symmetry"] .workspace-card,
   body[data-mode="notan"] .workspace-card,
   body[data-mode="focal-balance"] .workspace-card {
     grid-column: 1;
-    grid-row: 1 / span 5;
+    grid-row: 1;
   }
 
+  body[data-mode="thirds"] .canvas-wrap,
+  body[data-mode="center"] .canvas-wrap,
+  body[data-mode="diagonal"] .canvas-wrap,
   body[data-mode="golden-ratio"] .canvas-wrap,
   body[data-mode="golden-spiral"] .canvas-wrap,
   body[data-mode="dynamic-symmetry"] .canvas-wrap,
@@ -951,6 +983,9 @@ a {
     min-height: clamp(420px, 35vw, 580px);
   }
 
+  body[data-mode="thirds"] .workspace-image,
+  body[data-mode="center"] .workspace-image,
+  body[data-mode="diagonal"] .workspace-image,
   body[data-mode="golden-ratio"] .workspace-image,
   body[data-mode="golden-spiral"] .workspace-image,
   body[data-mode="dynamic-symmetry"] .workspace-image,
@@ -959,6 +994,12 @@ a {
     max-height: min(62vh, 620px);
   }
 
+  body[data-mode="thirds"] .side-panel,
+  body[data-mode="center"] .side-panel,
+  body[data-mode="diagonal"] .side-panel,
+  body[data-mode="thirds"] #basicAnalysisPanel,
+  body[data-mode="center"] #basicAnalysisPanel,
+  body[data-mode="diagonal"] #basicAnalysisPanel,
   body[data-mode="golden-ratio"] .side-panel,
   body[data-mode="golden-spiral"] .side-panel,
   body[data-mode="dynamic-symmetry"] .side-panel,
@@ -972,6 +1013,15 @@ a {
     display: contents;
   }
 
+  body[data-mode="thirds"] .side-panel > .panel-heading,
+  body[data-mode="center"] .side-panel > .panel-heading,
+  body[data-mode="diagonal"] .side-panel > .panel-heading,
+  body[data-mode="thirds"] #basicAnalysisPanel > .placeholder-panel,
+  body[data-mode="center"] #basicAnalysisPanel > .placeholder-panel,
+  body[data-mode="diagonal"] #basicAnalysisPanel > .placeholder-panel,
+  body[data-mode="thirds"] #basicAnalysisPanel > .detail-card:not(.advanced-ai-card),
+  body[data-mode="center"] #basicAnalysisPanel > .detail-card:not(.advanced-ai-card),
+  body[data-mode="diagonal"] #basicAnalysisPanel > .detail-card:not(.advanced-ai-card),
   body[data-mode="golden-ratio"] .side-panel > .panel-heading,
   body[data-mode="golden-spiral"] .side-panel > .panel-heading,
   body[data-mode="dynamic-symmetry"] .side-panel > .panel-heading,
@@ -990,6 +1040,9 @@ a {
     grid-column: 2;
   }
 
+  body[data-mode="thirds"] .side-panel > .panel-heading,
+  body[data-mode="center"] .side-panel > .panel-heading,
+  body[data-mode="diagonal"] .side-panel > .panel-heading,
   body[data-mode="golden-ratio"] .side-panel > .panel-heading,
   body[data-mode="golden-spiral"] .side-panel > .panel-heading,
   body[data-mode="dynamic-symmetry"] .side-panel > .panel-heading,
@@ -1005,17 +1058,31 @@ a {
     box-shadow: 0 16px 34px rgba(50, 39, 28, 0.08);
   }
 
+  body[data-mode="thirds"] #basicAnalysisPanel > .advanced-ai-card,
+  body[data-mode="center"] #basicAnalysisPanel > .advanced-ai-card,
+  body[data-mode="diagonal"] #basicAnalysisPanel > .advanced-ai-card,
   body[data-mode="golden-ratio"] #advancedAnalysisPanel > .advanced-ai-card,
   body[data-mode="golden-spiral"] #advancedAnalysisPanel > .advanced-ai-card,
   body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel > .advanced-ai-card,
   body[data-mode="notan"] #advancedAnalysisPanel > .advanced-ai-card {
-    grid-column: 1 / -1;
+    grid-column: 1;
     display: grid;
-    grid-template-columns: minmax(260px, 0.34fr) minmax(0, 1fr);
-    gap: 14px 18px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
     align-items: start;
   }
 
+  body[data-mode="thirds"] #thirdsAiLockCard:not(.hidden),
+  body[data-mode="center"] #centerAiLockCard:not(.hidden),
+  body[data-mode="diagonal"] #diagonalAiLockCard:not(.hidden) {
+    grid-column: 1;
+    display: grid;
+    gap: 12px;
+  }
+
+  body[data-mode="thirds"] #basicAnalysisPanel > .advanced-ai-card.hidden,
+  body[data-mode="center"] #basicAnalysisPanel > .advanced-ai-card.hidden,
+  body[data-mode="diagonal"] #basicAnalysisPanel > .advanced-ai-card.hidden,
   body[data-mode="golden-ratio"] #advancedAnalysisPanel > .advanced-ai-card.hidden,
   body[data-mode="golden-spiral"] #advancedAnalysisPanel > .advanced-ai-card.hidden,
   body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel > .advanced-ai-card.hidden,
@@ -1023,16 +1090,22 @@ a {
     display: none !important;
   }
 
+  body[data-mode="thirds"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="center"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="diagonal"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="golden-ratio"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="golden-spiral"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="dynamic-symmetry"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="notan"] .advanced-ai-card .advanced-ai-results {
     grid-column: 1 / -1;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     align-items: stretch;
   }
 
+  body[data-mode="thirds"] .advanced-ai-result-block,
+  body[data-mode="center"] .advanced-ai-result-block,
+  body[data-mode="diagonal"] .advanced-ai-result-block,
   body[data-mode="golden-ratio"] .advanced-ai-result-block,
   body[data-mode="golden-spiral"] .advanced-ai-result-block,
   body[data-mode="dynamic-symmetry"] .advanced-ai-result-block,
@@ -1040,6 +1113,12 @@ a {
     min-height: 160px;
   }
 
+  body[data-mode="thirds"] .advanced-ai-verdict,
+  body[data-mode="center"] .advanced-ai-verdict,
+  body[data-mode="diagonal"] .advanced-ai-verdict,
+  body[data-mode="thirds"] .advanced-ai-result-block:has(ol),
+  body[data-mode="center"] .advanced-ai-result-block:has(ol),
+  body[data-mode="diagonal"] .advanced-ai-result-block:has(ol),
   body[data-mode="golden-ratio"] .advanced-ai-verdict,
   body[data-mode="golden-spiral"] .advanced-ai-verdict,
   body[data-mode="dynamic-symmetry"] .advanced-ai-verdict,
@@ -1048,7 +1127,7 @@ a {
   body[data-mode="golden-spiral"] .advanced-ai-result-block:has(ol),
   body[data-mode="dynamic-symmetry"] .advanced-ai-result-block:has(ol),
   body[data-mode="notan"] .advanced-ai-result-block:has(ol) {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 
   body[data-mode="golden-ratio"] .analysis-download-button,
@@ -1066,6 +1145,9 @@ a {
 }
 
 @media (min-width: 1061px) and (max-width: 1180px) {
+  body[data-mode="thirds"] .layout,
+  body[data-mode="center"] .layout,
+  body[data-mode="diagonal"] .layout,
   body[data-mode="golden-ratio"] .layout,
   body[data-mode="golden-spiral"] .layout,
   body[data-mode="dynamic-symmetry"] .layout,
@@ -1074,6 +1156,9 @@ a {
     grid-template-columns: minmax(580px, 1fr) minmax(320px, 0.68fr);
   }
 
+  body[data-mode="thirds"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="center"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="diagonal"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="golden-ratio"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="golden-spiral"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="dynamic-symmetry"] .advanced-ai-card .advanced-ai-results,
@@ -1081,6 +1166,12 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  body[data-mode="thirds"] .advanced-ai-verdict,
+  body[data-mode="center"] .advanced-ai-verdict,
+  body[data-mode="diagonal"] .advanced-ai-verdict,
+  body[data-mode="thirds"] .advanced-ai-result-block:has(ol),
+  body[data-mode="center"] .advanced-ai-result-block:has(ol),
+  body[data-mode="diagonal"] .advanced-ai-result-block:has(ol),
   body[data-mode="golden-ratio"] .advanced-ai-verdict,
   body[data-mode="golden-spiral"] .advanced-ai-verdict,
   body[data-mode="dynamic-symmetry"] .advanced-ai-verdict,
@@ -1094,6 +1185,9 @@ a {
 }
 
 @media (min-width: 901px) and (max-width: 1060px) {
+  body[data-mode="thirds"] .layout,
+  body[data-mode="center"] .layout,
+  body[data-mode="diagonal"] .layout,
   body[data-mode="golden-ratio"] .layout,
   body[data-mode="golden-spiral"] .layout,
   body[data-mode="dynamic-symmetry"] .layout,
@@ -1102,6 +1196,9 @@ a {
     grid-template-columns: 1fr;
   }
 
+  body[data-mode="thirds"] .workspace-card,
+  body[data-mode="center"] .workspace-card,
+  body[data-mode="diagonal"] .workspace-card,
   body[data-mode="golden-ratio"] .workspace-card,
   body[data-mode="golden-spiral"] .workspace-card,
   body[data-mode="dynamic-symmetry"] .workspace-card,
@@ -1111,6 +1208,12 @@ a {
     grid-row: auto;
   }
 
+  body[data-mode="thirds"] .side-panel,
+  body[data-mode="center"] .side-panel,
+  body[data-mode="diagonal"] .side-panel,
+  body[data-mode="thirds"] #basicAnalysisPanel,
+  body[data-mode="center"] #basicAnalysisPanel,
+  body[data-mode="diagonal"] #basicAnalysisPanel,
   body[data-mode="golden-ratio"] .side-panel,
   body[data-mode="golden-spiral"] .side-panel,
   body[data-mode="dynamic-symmetry"] .side-panel,
@@ -1124,6 +1227,9 @@ a {
     display: block;
   }
 
+  body[data-mode="thirds"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="center"] .advanced-ai-card .advanced-ai-results,
+  body[data-mode="diagonal"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="golden-ratio"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="golden-spiral"] .advanced-ai-card .advanced-ai-results,
   body[data-mode="dynamic-symmetry"] .advanced-ai-card .advanced-ai-results,
@@ -1132,6 +1238,12 @@ a {
     gap: 14px;
   }
 
+  body[data-mode="thirds"] .advanced-ai-verdict,
+  body[data-mode="center"] .advanced-ai-verdict,
+  body[data-mode="diagonal"] .advanced-ai-verdict,
+  body[data-mode="thirds"] .advanced-ai-result-block:has(ol),
+  body[data-mode="center"] .advanced-ai-result-block:has(ol),
+  body[data-mode="diagonal"] .advanced-ai-result-block:has(ol),
   body[data-mode="golden-ratio"] .advanced-ai-verdict,
   body[data-mode="golden-spiral"] .advanced-ai-verdict,
   body[data-mode="dynamic-symmetry"] .advanced-ai-verdict,
@@ -2164,6 +2276,8 @@ html.mobile-light-mode .grid-overlay-info {
     margin-bottom: 8px;
   }
 
+  body[data-mode="thirds"] .composition-action-row,
+  body[data-mode="center"] .composition-action-row,
   body[data-mode="golden-ratio"] .composition-action-row,
   body[data-mode="notan"] .composition-action-row,
   body[data-mode="dynamic-symmetry"] .composition-action-row {
@@ -2172,6 +2286,10 @@ html.mobile-light-mode .grid-overlay-info {
 
   body[data-mode="golden-spiral"] .composition-action-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body[data-mode="diagonal"] .composition-action-row {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .composition-action-row .button,

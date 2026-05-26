@@ -91,6 +91,24 @@ const advancedStatusNote = document.getElementById("advancedStatusNote");
 const advancedUnlockCard = document.getElementById("advancedUnlockCard");
 const advancedUnlockCopy = document.getElementById("advancedUnlockCopy");
 const advancedUnlockButton = document.getElementById("advancedUnlockButton");
+const thirdsAiCard = document.getElementById("thirdsAiCard");
+const runThirdsAiButton = document.getElementById("runThirdsAiButton");
+const thirdsAiStatus = document.getElementById("thirdsAiStatus");
+const thirdsAiResults = document.getElementById("thirdsAiResults");
+const thirdsAiLockCard = document.getElementById("thirdsAiLockCard");
+const thirdsAiUnlockButton = document.getElementById("thirdsAiUnlockButton");
+const centerAiCard = document.getElementById("centerAiCard");
+const runCenterAiButton = document.getElementById("runCenterAiButton");
+const centerAiStatus = document.getElementById("centerAiStatus");
+const centerAiResults = document.getElementById("centerAiResults");
+const centerAiLockCard = document.getElementById("centerAiLockCard");
+const centerAiUnlockButton = document.getElementById("centerAiUnlockButton");
+const diagonalAiCard = document.getElementById("diagonalAiCard");
+const runDiagonalAiButton = document.getElementById("runDiagonalAiButton");
+const diagonalAiStatus = document.getElementById("diagonalAiStatus");
+const diagonalAiResults = document.getElementById("diagonalAiResults");
+const diagonalAiLockCard = document.getElementById("diagonalAiLockCard");
+const diagonalAiUnlockButton = document.getElementById("diagonalAiUnlockButton");
 const goldenRatioAiCard = document.getElementById("goldenRatioAiCard");
 const runGoldenRatioAiButton = document.getElementById("runGoldenRatioAiButton");
 const goldenRatioAiStatus = document.getElementById("goldenRatioAiStatus");
@@ -257,6 +275,14 @@ const OVERLAY_COLOR_NAMES = {
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
+const THIRDS_AI_FREE_CHECK_STORAGE_KEY = "m8_thirds_ai_last_free_check";
+const CENTER_AI_FREE_CHECK_STORAGE_KEY = "m8_center_ai_last_free_check";
+const DIAGONAL_AI_FREE_CHECK_STORAGE_KEY = "m8_diagonal_ai_last_free_check";
+const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
+  window.location.protocol === "file:"
+    ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
+    : "/.netlify/functions/composition-pro-analysis"
+);
 const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
@@ -300,6 +326,24 @@ const state = {
     tooltip: null
   },
   compositionAi: {
+    thirds: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: ""
+    },
+    center: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: ""
+    },
+    diagonal: {
+      isRunning: false,
+      result: null,
+      imageKey: "",
+      error: ""
+    },
     goldenRatio: {
       isRunning: false,
       result: null,
@@ -435,6 +479,18 @@ document.addEventListener("click", handleDocumentClick);
 advancedUnlockButton?.addEventListener("click", () => {
   window.location.href = advancedUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
 });
+thirdsAiUnlockButton?.addEventListener("click", () => {
+  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+});
+centerAiUnlockButton?.addEventListener("click", () => {
+  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+});
+diagonalAiUnlockButton?.addEventListener("click", () => {
+  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+});
+runThirdsAiButton?.addEventListener("click", runThirdsAiAnalysis);
+runCenterAiButton?.addEventListener("click", runCenterAiAnalysis);
+runDiagonalAiButton?.addEventListener("click", runDiagonalAiAnalysis);
 runGoldenRatioAiButton?.addEventListener("click", runGoldenRatioAiAnalysis);
 runNotanAiButton?.addEventListener("click", runNotanAiAnalysis);
 confirmSpiralPlacementButton?.addEventListener("click", confirmSpiralPlacement);
@@ -467,6 +523,54 @@ function applyInitialRoute() {
 
 function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
+}
+
+function getLastBasicAiFreeCheckTime(storageKey) {
+  const storedValue = Number(window.localStorage.getItem(storageKey) || "0");
+  return Number.isFinite(storedValue) ? storedValue : 0;
+}
+
+function getBasicAiFreeWaitMs(storageKey) {
+  if (isUnlocked()) {
+    return 0;
+  }
+  const elapsed = Date.now() - getLastBasicAiFreeCheckTime(storageKey);
+  return Math.max(0, (24 * 60 * 60 * 1000) - elapsed);
+}
+
+function hasUsedBasicAiFreeAnalysis(storageKey) {
+  return getBasicAiFreeWaitMs(storageKey) > 0;
+}
+
+function markBasicAiFreeAnalysisUsed(storageKey) {
+  if (!isUnlocked()) {
+    window.localStorage.setItem(storageKey, String(Date.now()));
+  }
+}
+
+function formatBasicAiFreeWait(storageKey) {
+  const waitMs = getBasicAiFreeWaitMs(storageKey);
+  if (!waitMs) {
+    return "now";
+  }
+  const hours = Math.floor(waitMs / (60 * 60 * 1000));
+  const minutes = Math.ceil((waitMs % (60 * 60 * 1000)) / (60 * 1000));
+  if (hours <= 0) {
+    return `${minutes} min`;
+  }
+  return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+}
+
+function hasUsedThirdsFreeAnalysis() {
+  return hasUsedBasicAiFreeAnalysis(THIRDS_AI_FREE_CHECK_STORAGE_KEY);
+}
+
+function markThirdsFreeAnalysisUsed() {
+  markBasicAiFreeAnalysisUsed(THIRDS_AI_FREE_CHECK_STORAGE_KEY);
+}
+
+function formatThirdsFreeWait() {
+  return formatBasicAiFreeWait(THIRDS_AI_FREE_CHECK_STORAGE_KEY);
 }
 
 function isAdvancedLocked() {
@@ -1077,6 +1181,9 @@ function resetCompositionWorkspace() {
   state.dynamicSymmetry.score = null;
   state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
   state.dynamicSymmetry.tooltip = null;
+  resetThirdsAi();
+  resetCenterAi();
+  resetDiagonalAi();
   resetGoldenRatioAi();
   resetNotanAi();
   resetSpiralAi();
@@ -2458,12 +2565,15 @@ function updateModeUI() {
   updateThirdsReadingUI();
   updateCenterReadingUI();
   updateDiagonalReadingUI();
+  updateThirdsAiUI(isThirdsMode);
+  updateCenterAiUI(isCenterMode);
+  updateDiagonalAiUI(isDiagonalMode);
   updateGoldenRatioAiUI(isGoldenRatio, advancedLocked);
   updateNotanAiUI(isNotan, advancedLocked);
   updateSpiralAiUI(isGoldenSpiral, advancedLocked);
   updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked);
   uploadLabels.forEach((label) => {
-    label.classList.toggle("is-action-cue", (isGoldenRatio || isNotan || isGoldenSpiral || isDynamicSymmetry) && !state.imageLoaded && !state.imageLoading && !advancedLocked);
+    label.classList.toggle("is-action-cue", (isThirdsMode || isCenterMode || isDiagonalMode || isGoldenRatio || isNotan || isGoldenSpiral || isDynamicSymmetry) && !state.imageLoaded && !state.imageLoading && !advancedLocked);
   });
   updateWorkspaceStageVisibility(advancedLocked);
   advancedUnlockCard?.classList.toggle("hidden", isBasic || isUnlocked() || !state.advancedUnlockVisible);
@@ -2636,6 +2746,131 @@ function updateModeUI() {
   });
 }
 
+function updateThirdsAiUI(isThirdsMode) {
+  const analysisState = state.compositionAi.thirds;
+  const lockedByLimit = isThirdsMode && hasUsedThirdsFreeAnalysis();
+  const canRun = isThirdsMode && state.imageLoaded && !analysisState.isRunning && (!lockedByLimit || isUnlocked());
+  const hasResult = Boolean(analysisState.result);
+  const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
+  const status = analysisState.isRunning
+    ? "Reading the image against the Rule of Thirds structure..."
+    : analysisState.error
+    ? analysisState.error
+    : hasResult
+    ? "Rule of Thirds read is ready."
+    : lockedByLimit
+    ? `Free Rule of Thirds AI read used. Unlock Pro or wait ${formatThirdsFreeWait()}.`
+    : state.imageLoaded
+    ? "Run the AI read for a deeper painter explanation of the thirds structure."
+    : "Upload an image to begin.";
+
+  thirdsAiCard?.classList.toggle("hidden", !isThirdsMode);
+  thirdsAiLockCard?.classList.toggle("hidden", !lockedByLimit || isUnlocked() || !isThirdsMode);
+
+  if (runThirdsAiButton) {
+    runThirdsAiButton.disabled = !state.imageLoaded || analysisState.isRunning || (!isUnlocked() && lockedByLimit);
+    runThirdsAiButton.classList.toggle("hidden", !isThirdsMode);
+    runThirdsAiButton.classList.toggle("is-running", analysisState.isRunning);
+    runThirdsAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
+    runThirdsAiButton.classList.toggle("is-result-ready", hasResult);
+    runThirdsAiButton.textContent = analysisState.isRunning
+      ? "Analyzing..."
+      : (!isUnlocked() && lockedByLimit)
+      ? "Pro Locked"
+      : hasResult
+      ? "Analyze Again"
+      : "Analyze";
+  }
+
+  if (thirdsAiStatus) {
+    thirdsAiStatus.textContent = status;
+  }
+
+  if (thirdsAiResults) {
+    thirdsAiResults.classList.toggle("hidden", !hasResult);
+    thirdsAiResults.classList.toggle("is-visible", hasResult);
+  }
+}
+
+function updateCenterAiUI(isCenterMode) {
+  updateBasicCompositionAiUI({
+    isMode: isCenterMode,
+    analysisState: state.compositionAi.center,
+    storageKey: CENTER_AI_FREE_CHECK_STORAGE_KEY,
+    card: centerAiCard,
+    lockCard: centerAiLockCard,
+    button: runCenterAiButton,
+    statusElement: centerAiStatus,
+    resultsElement: centerAiResults,
+    toolName: "Center Lines",
+    readyCopy: "Center Lines read is ready.",
+    runningCopy: "Reading the image against the center axes...",
+    promptCopy: "Run the AI read for a deeper painter explanation of center lock, symmetry, and visual weight."
+  });
+}
+
+function updateDiagonalAiUI(isDiagonalMode) {
+  updateBasicCompositionAiUI({
+    isMode: isDiagonalMode,
+    analysisState: state.compositionAi.diagonal,
+    storageKey: DIAGONAL_AI_FREE_CHECK_STORAGE_KEY,
+    card: diagonalAiCard,
+    lockCard: diagonalAiLockCard,
+    button: runDiagonalAiButton,
+    statusElement: diagonalAiStatus,
+    resultsElement: diagonalAiResults,
+    toolName: "Diagonal Flow",
+    readyCopy: "Diagonal Flow read is ready.",
+    runningCopy: "Reading the image against the diagonal flow...",
+    promptCopy: "Run the AI read for a deeper painter explanation of the eye path, counter movement, and rhythm."
+  });
+}
+
+function updateBasicCompositionAiUI(options) {
+  const lockedByLimit = options.isMode && hasUsedBasicAiFreeAnalysis(options.storageKey);
+  const canRun = options.isMode && state.imageLoaded && !options.analysisState.isRunning && (!lockedByLimit || isUnlocked());
+  const hasResult = Boolean(options.analysisState.result);
+  const shouldCueAnalyze = canRun && !hasResult && !options.analysisState.error;
+  const status = options.analysisState.isRunning
+    ? options.runningCopy
+    : options.analysisState.error
+    ? options.analysisState.error
+    : hasResult
+    ? options.readyCopy
+    : lockedByLimit
+    ? `Free ${options.toolName} AI read used. Unlock Pro or wait ${formatBasicAiFreeWait(options.storageKey)}.`
+    : state.imageLoaded
+    ? options.promptCopy
+    : "Upload an image to begin.";
+
+  options.card?.classList.toggle("hidden", !options.isMode);
+  options.lockCard?.classList.toggle("hidden", !lockedByLimit || isUnlocked() || !options.isMode);
+
+  if (options.button) {
+    options.button.disabled = !state.imageLoaded || options.analysisState.isRunning || (!isUnlocked() && lockedByLimit);
+    options.button.classList.toggle("hidden", !options.isMode);
+    options.button.classList.toggle("is-running", options.analysisState.isRunning);
+    options.button.classList.toggle("is-action-cue", shouldCueAnalyze);
+    options.button.classList.toggle("is-result-ready", hasResult);
+    options.button.textContent = options.analysisState.isRunning
+      ? "Analyzing..."
+      : (!isUnlocked() && lockedByLimit)
+      ? "Pro Locked"
+      : hasResult
+      ? "Analyze Again"
+      : "Analyze";
+  }
+
+  if (options.statusElement) {
+    options.statusElement.textContent = status;
+  }
+
+  if (options.resultsElement) {
+    options.resultsElement.classList.toggle("hidden", !hasResult);
+    options.resultsElement.classList.toggle("is-visible", hasResult);
+  }
+}
+
 function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
   const analysisState = state.compositionAi.goldenRatio;
   const canRun = isGoldenRatio && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
@@ -2800,6 +3035,42 @@ function updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked) {
   if (dynamicSymmetryAiResults) {
     dynamicSymmetryAiResults.classList.toggle("hidden", !hasResult);
     dynamicSymmetryAiResults.classList.toggle("is-visible", hasResult);
+  }
+}
+
+function resetThirdsAi() {
+  state.compositionAi.thirds.isRunning = false;
+  state.compositionAi.thirds.result = null;
+  state.compositionAi.thirds.imageKey = "";
+  state.compositionAi.thirds.error = "";
+  if (thirdsAiResults) {
+    thirdsAiResults.innerHTML = "";
+    thirdsAiResults.classList.add("hidden");
+    thirdsAiResults.classList.remove("is-visible");
+  }
+}
+
+function resetCenterAi() {
+  state.compositionAi.center.isRunning = false;
+  state.compositionAi.center.result = null;
+  state.compositionAi.center.imageKey = "";
+  state.compositionAi.center.error = "";
+  if (centerAiResults) {
+    centerAiResults.innerHTML = "";
+    centerAiResults.classList.add("hidden");
+    centerAiResults.classList.remove("is-visible");
+  }
+}
+
+function resetDiagonalAi() {
+  state.compositionAi.diagonal.isRunning = false;
+  state.compositionAi.diagonal.result = null;
+  state.compositionAi.diagonal.imageKey = "";
+  state.compositionAi.diagonal.error = "";
+  if (diagonalAiResults) {
+    diagonalAiResults.innerHTML = "";
+    diagonalAiResults.classList.add("hidden");
+    diagonalAiResults.classList.remove("is-visible");
   }
 }
 
@@ -3017,6 +3288,175 @@ function getDynamicSymmetryMetadata() {
   };
 }
 
+async function runThirdsAiAnalysis() {
+  const analysisState = state.compositionAi.thirds;
+  if (analysisState.isRunning || !state.imageLoaded || state.analysisMode !== "basic" || state.mode !== "thirds") {
+    return;
+  }
+
+  if (!isUnlocked() && hasUsedThirdsFreeAnalysis()) {
+    thirdsAiLockCard?.classList.remove("hidden");
+    showPremiumLimitToast(`Free Rule of Thirds read used. Unlock Pro or wait ${formatThirdsFreeWait()}.`);
+    scrollToThirdsAiResults();
+    updateModeUI();
+    return;
+  }
+
+  analysisState.isRunning = true;
+  analysisState.result = null;
+  analysisState.error = "";
+  analysisState.imageKey = getCurrentCompositionImageKey();
+  if (thirdsAiResults) {
+    thirdsAiResults.innerHTML = "";
+    thirdsAiResults.classList.add("hidden");
+    thirdsAiResults.classList.remove("is-visible");
+  }
+  updateModeUI();
+
+  try {
+    const imageDataUrl = getCompositionImageDataUrlForAi();
+    const reading = getThirdsReading();
+    const response = await fetch(COMPOSITION_AI_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "rule-of-thirds",
+        imageDataUrl,
+        imageName: state.imageName || "composition upload",
+        overlay: {
+          type: "rule-of-thirds",
+          verticalLines: [1 / 3, 2 / 3],
+          horizontalLines: [1 / 3, 2 / 3],
+          intersections: [
+            [1 / 3, 1 / 3],
+            [2 / 3, 1 / 3],
+            [1 / 3, 2 / 3],
+            [2 / 3, 2 / 3]
+          ],
+          measuredRead: reading
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Rule of Thirds analysis failed.");
+    }
+    analysisState.result = data.analysis || null;
+    renderThirdsAiResult(analysisState.result);
+    markThirdsFreeAnalysisUsed();
+    showStatusToast("Rule of Thirds read ready");
+    scrollToThirdsAiResults();
+  } catch (error) {
+    analysisState.error = error.message || "Rule of Thirds analysis failed. Try again in a moment.";
+    showStatusToast("Rule of Thirds read failed");
+  } finally {
+    analysisState.isRunning = false;
+    updateModeUI();
+  }
+}
+
+async function runCenterAiAnalysis() {
+  await runBasicCompositionAiAnalysis({
+    stateKey: "center",
+    modeName: "center",
+    requestMode: "center-lines",
+    storageKey: CENTER_AI_FREE_CHECK_STORAGE_KEY,
+    lockCard: centerAiLockCard,
+    resultsElement: centerAiResults,
+    read: () => getCenterReading(),
+    overlay: (reading) => ({
+      type: "center-lines",
+      verticalLine: 0.5,
+      horizontalLine: 0.5,
+      measuredRead: reading
+    }),
+    failedMessage: "Center Lines analysis failed.",
+    readyToast: "Center Lines read ready",
+    failedToast: "Center Lines read failed",
+    scroll: scrollToCenterAiResults,
+    render: (analysis) => renderBasicAiResult(centerAiResults, analysis, "CENTER VERDICT")
+  });
+}
+
+async function runDiagonalAiAnalysis() {
+  await runBasicCompositionAiAnalysis({
+    stateKey: "diagonal",
+    modeName: "diagonal",
+    requestMode: "diagonal-flow",
+    storageKey: DIAGONAL_AI_FREE_CHECK_STORAGE_KEY,
+    lockCard: diagonalAiLockCard,
+    resultsElement: diagonalAiResults,
+    read: () => getDiagonalReading(),
+    overlay: (reading) => ({
+      type: "diagonal-flow",
+      diagonals: ["top-left to bottom-right", "top-right to bottom-left"],
+      showCounterDiagonal: state.diagonalShowCounter,
+      measuredRead: reading
+    }),
+    failedMessage: "Diagonal Flow analysis failed.",
+    readyToast: "Diagonal Flow read ready",
+    failedToast: "Diagonal Flow read failed",
+    scroll: scrollToDiagonalAiResults,
+    render: (analysis) => renderBasicAiResult(diagonalAiResults, analysis, "DIAGONAL VERDICT")
+  });
+}
+
+async function runBasicCompositionAiAnalysis(options) {
+  const analysisState = state.compositionAi[options.stateKey];
+  if (analysisState.isRunning || !state.imageLoaded || state.analysisMode !== "basic" || state.mode !== options.modeName) {
+    return;
+  }
+
+  if (!isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey)) {
+    options.lockCard?.classList.remove("hidden");
+    showPremiumLimitToast(`Free AI read used. Unlock Pro or wait ${formatBasicAiFreeWait(options.storageKey)}.`);
+    options.scroll();
+    updateModeUI();
+    return;
+  }
+
+  analysisState.isRunning = true;
+  analysisState.result = null;
+  analysisState.error = "";
+  analysisState.imageKey = getCurrentCompositionImageKey();
+  if (options.resultsElement) {
+    options.resultsElement.innerHTML = "";
+    options.resultsElement.classList.add("hidden");
+    options.resultsElement.classList.remove("is-visible");
+  }
+  updateModeUI();
+
+  try {
+    const imageDataUrl = getCompositionImageDataUrlForAi();
+    const reading = options.read();
+    const response = await fetch(COMPOSITION_AI_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: options.requestMode,
+        imageDataUrl,
+        imageName: state.imageName || "composition upload",
+        overlay: options.overlay(reading)
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || options.failedMessage);
+    }
+    analysisState.result = data.analysis || null;
+    options.render(analysisState.result);
+    markBasicAiFreeAnalysisUsed(options.storageKey);
+    showStatusToast(options.readyToast);
+    options.scroll();
+  } catch (error) {
+    analysisState.error = error.message || `${options.failedMessage} Try again in a moment.`;
+    showStatusToast(options.failedToast);
+  } finally {
+    analysisState.isRunning = false;
+    updateModeUI();
+  }
+}
+
 async function runGoldenRatioAiAnalysis() {
   if (!requireUnlock("Golden Ratio AI analysis")) {
     return;
@@ -3040,7 +3480,7 @@ async function runGoldenRatioAiAnalysis() {
 
   try {
     const imageDataUrl = getCompositionImageDataUrlForAi();
-    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+    const response = await fetch(COMPOSITION_AI_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -3100,7 +3540,7 @@ async function runNotanAiAnalysis() {
 
   try {
     const imageDataUrl = getCompositionImageDataUrlForAi();
-    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+    const response = await fetch(COMPOSITION_AI_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -3184,7 +3624,7 @@ async function runSpiralAiAnalysis() {
 
   try {
     const imageDataUrl = getCompositionImageDataUrlWithSpiralForAi();
-    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+    const response = await fetch(COMPOSITION_AI_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -3238,7 +3678,7 @@ async function runDynamicSymmetryAiAnalysis() {
 
   try {
     const imageDataUrl = getCompositionImageDataUrlWithDynamicForAi();
-    const response = await fetch("/.netlify/functions/composition-pro-analysis", {
+    const response = await fetch(COMPOSITION_AI_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -3396,6 +3836,103 @@ function renderDynamicSymmetryAiResult(analysis) {
   });
 }
 
+function renderThirdsAiResult(analysis) {
+  if (!thirdsAiResults || !analysis) {
+    return;
+  }
+
+  const sections = [
+    ["WHAT YOU ARE LOOKING AT", analysis.overlayRead],
+    ["WHAT WORKS", analysis.whatWorks],
+    ["WHAT TO IMPROVE", analysis.problemAreas],
+    ["HOW TO ADJUST", analysis.whatToAdjust],
+    ["WHAT TO WATCH", analysis.watchFor]
+  ];
+  const sectionHtml = sections
+    .filter(([, value]) => value)
+    .map(([title, value]) => `<div class="advanced-ai-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+    .join("");
+  const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+  const fixesHtml = fixes.length
+    ? `<div class="advanced-ai-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.slice(0, 3).map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+    : "";
+  const verdictHtml = analysis.verdict
+    ? `<div class="advanced-ai-result-block advanced-ai-verdict"><h3>THIRDS VERDICT</h3><p>${escapeHtml(analysis.verdict)}</p></div>`
+    : "";
+
+  thirdsAiResults.innerHTML = sectionHtml + fixesHtml + verdictHtml;
+  thirdsAiResults.classList.toggle("hidden", !thirdsAiResults.innerHTML);
+  thirdsAiResults.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    thirdsAiResults.classList.add("is-visible");
+  });
+}
+
+function renderBasicAiResult(resultsElement, analysis, verdictTitle) {
+  if (!resultsElement || !analysis) {
+    return;
+  }
+
+  const sections = [
+    ["WHAT YOU ARE LOOKING AT", analysis.overlayRead],
+    ["WHAT WORKS", analysis.whatWorks],
+    ["WHAT TO IMPROVE", analysis.problemAreas],
+    ["HOW TO ADJUST", analysis.whatToAdjust],
+    ["WHAT TO WATCH", analysis.watchFor]
+  ];
+  const sectionHtml = sections
+    .filter(([, value]) => value)
+    .map(([title, value]) => `<div class="advanced-ai-result-block"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(value)}</p></div>`)
+    .join("");
+  const fixes = Array.isArray(analysis.practicalFixes) ? analysis.practicalFixes : [];
+  const fixesHtml = fixes.length
+    ? `<div class="advanced-ai-result-block"><h3>3 PRACTICAL FIXES</h3><ol>${fixes.slice(0, 3).map((fix) => `<li>${escapeHtml(fix)}</li>`).join("")}</ol></div>`
+    : "";
+  const verdictHtml = analysis.verdict
+    ? `<div class="advanced-ai-result-block advanced-ai-verdict"><h3>${escapeHtml(verdictTitle)}</h3><p>${escapeHtml(analysis.verdict)}</p></div>`
+    : "";
+
+  resultsElement.innerHTML = sectionHtml + fixesHtml + verdictHtml;
+  resultsElement.classList.toggle("hidden", !resultsElement.innerHTML);
+  resultsElement.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    resultsElement.classList.add("is-visible");
+  });
+}
+
+function scrollToThirdsAiResults() {
+  const target = thirdsAiResults && !thirdsAiResults.classList.contains("hidden")
+    ? thirdsAiResults
+    : thirdsAiLockCard && !thirdsAiLockCard.classList.contains("hidden")
+    ? thirdsAiLockCard
+    : thirdsAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
+function scrollToCenterAiResults() {
+  const target = centerAiResults && !centerAiResults.classList.contains("hidden")
+    ? centerAiResults
+    : centerAiLockCard && !centerAiLockCard.classList.contains("hidden")
+    ? centerAiLockCard
+    : centerAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
+function scrollToDiagonalAiResults() {
+  const target = diagonalAiResults && !diagonalAiResults.classList.contains("hidden")
+    ? diagonalAiResults
+    : diagonalAiLockCard && !diagonalAiLockCard.classList.contains("hidden")
+    ? diagonalAiLockCard
+    : diagonalAiCard;
+  window.setTimeout(() => {
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
 function scrollToGoldenRatioAiResults() {
   const target = goldenRatioAiResults && !goldenRatioAiResults.classList.contains("hidden")
     ? goldenRatioAiResults
@@ -3489,6 +4026,9 @@ function beginImageLoad() {
   state.dynamicSymmetry.score = null;
   state.dynamicSymmetry.feedback = "Upload an image to detect structural alignment.";
   state.dynamicSymmetry.tooltip = null;
+  resetThirdsAi();
+  resetCenterAi();
+  resetDiagonalAi();
   resetGoldenRatioAi();
   resetNotanAi();
   resetSpiralAi();
