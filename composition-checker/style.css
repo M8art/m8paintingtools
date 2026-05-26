@@ -1066,6 +1066,7 @@ a {
   body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel > .advanced-ai-card,
   body[data-mode="notan"] #advancedAnalysisPanel > .advanced-ai-card {
     grid-column: 1;
+    grid-row: 2;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
@@ -1076,6 +1077,7 @@ a {
   body[data-mode="center"] #centerAiLockCard:not(.hidden),
   body[data-mode="diagonal"] #diagonalAiLockCard:not(.hidden) {
     grid-column: 1;
+    grid-row: 2;
     display: grid;
     gap: 12px;
   }
