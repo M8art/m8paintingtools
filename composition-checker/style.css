@@ -1217,7 +1217,8 @@ a {
   body[data-mode="focal-balance"] .side-panel {
     grid-column: 2;
     grid-row: 1;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     align-self: start;
     min-width: 0;
   }
@@ -1225,12 +1226,16 @@ a {
   body[data-mode="thirds"] #basicAnalysisPanel,
   body[data-mode="center"] #basicAnalysisPanel,
   body[data-mode="diagonal"] #basicAnalysisPanel,
+  body[data-mode="grid"] #basicAnalysisPanel,
   body[data-mode="golden-ratio"] #advancedAnalysisPanel,
   body[data-mode="golden-spiral"] #advancedAnalysisPanel,
   body[data-mode="dynamic-symmetry"] #advancedAnalysisPanel,
   body[data-mode="notan"] #advancedAnalysisPanel,
   body[data-mode="focal-balance"] #advancedAnalysisPanel {
-    display: grid;
+    display: flex !important;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
   }
 
   body[data-mode="thirds"] .side-panel > .panel-heading,
@@ -1241,11 +1246,7 @@ a {
   body[data-mode="dynamic-symmetry"] .side-panel > .panel-heading,
   body[data-mode="notan"] .side-panel > .panel-heading,
   body[data-mode="focal-balance"] .side-panel > .panel-heading {
-    margin-bottom: 16px;
-    padding: 0;
-    border: 0;
-    background: none;
-    box-shadow: none;
+    display: none;
   }
 
   body[data-mode="thirds"] #basicAnalysisPanel > .placeholder-panel,
@@ -1312,7 +1313,8 @@ a {
   body[data-mode="dynamic-symmetry"] .side-panel .analysis-grid,
   body[data-mode="notan"] .side-panel .analysis-grid,
   body[data-mode="focal-balance"] .side-panel .analysis-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
+    display: flex !important;
+    flex-direction: column;
     width: 100%;
   }
 
