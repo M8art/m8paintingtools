@@ -806,6 +806,22 @@ html.mobile-light-mode .value-pro-scale-foot strong {
 }
 
 @media (max-width: 720px) {
+  #valueBasicLayout > .card:first-child > .panel-heading,
+  .value-pro-workspace-card > .panel-heading {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+  }
+
+  #valueBasicLayout > .card:first-child > .panel-heading > :first-child,
+  .value-pro-workspace-card > .panel-heading > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .value-tier-switcher {
     width: 118px;
     margin: 0;
@@ -813,13 +829,19 @@ html.mobile-light-mode .value-pro-scale-foot strong {
 
   .workspace-heading-actions,
   .value-pro-meta {
-    width: 100%;
-    justify-items: start;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 128px;
+    justify-items: end;
+    margin-left: auto;
   }
 
   .workspace-heading-actions .hint,
   .value-pro-meta .hint {
-    text-align: left;
+    text-align: right;
+    max-width: 128px;
+    font-size: 0.78rem;
+    line-height: 1.3;
   }
 
   .value-pro-toolbar {
