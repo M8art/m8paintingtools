@@ -279,6 +279,11 @@ const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw0
 const THIRDS_AI_FREE_CHECK_STORAGE_KEY = "m8_thirds_ai_last_free_check";
 const CENTER_AI_FREE_CHECK_STORAGE_KEY = "m8_center_ai_last_free_check";
 const DIAGONAL_AI_FREE_CHECK_STORAGE_KEY = "m8_diagonal_ai_last_free_check";
+const COMPOSITION_AI_SCAN_STAGES = [
+  { className: "stage-grid", line: "Preparing composition scan...", delay: 360 },
+  { className: "stage-values", line: "Reading value and balance...", delay: 620 },
+  { className: "stage-structure", line: "Finding focal structure...", delay: 720 }
+];
 const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
   window.location.protocol === "file:"
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
@@ -393,6 +398,7 @@ const state = {
 };
 let imageLoadRequestId = 0;
 let feedbackToastTimeoutId = null;
+let compositionAiScanTimers = [];
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -635,6 +641,8 @@ function handleUpload(event) {
   if (!file) {
     return;
   }
+
+  cancelCompositionAiScan();
 
   if (!requireUnlock("advanced image uploads")) {
     event.target.value = "";
@@ -1154,6 +1162,8 @@ function clearCompositionMarks() {
 }
 
 function resetCompositionWorkspace() {
+  cancelCompositionAiScan();
+
   if (state.objectUrl) {
     URL.revokeObjectURL(state.objectUrl);
     state.objectUrl = null;
@@ -2619,6 +2629,8 @@ function updateModeUI() {
     modeTip.textContent = config.tip;
     workspaceHint.textContent = state.imageLoading
       ? "Preparing analysis..."
+      : isCompositionAiScanRunning()
+      ? "AI analysis is scanning the image..."
       : state.loadErrorMessage || (state.imageLoaded
       ? (isThirdsMode
         ? "Click on the image to compare a placement with the nearest power point."
@@ -2646,6 +2658,8 @@ function updateModeUI() {
     analysisTitle.textContent = advancedConfig.title;
     workspaceHint.textContent = state.imageLoading
       ? "Preparing analysis..."
+      : isCompositionAiScanRunning()
+      ? "AI analysis is scanning the image..."
       : state.loadErrorMessage || (advancedLocked
       ? (state.imageLoaded
         ? "Advanced tools stay locked until payment. Uploads from Basic remain hidden here until full unlock."
@@ -3183,6 +3197,67 @@ function getCurrentCompositionImageKey() {
   ].join("|");
 }
 
+function clearCompositionAiScanTimers() {
+  compositionAiScanTimers.forEach((timerId) => window.clearTimeout(timerId));
+  compositionAiScanTimers = [];
+}
+
+function setCompositionAiScanStage(className) {
+  if (!compositionStage) {
+    return;
+  }
+
+  compositionStage.classList.remove("stage-grid", "stage-values", "stage-structure", "stage-final");
+  if (className) {
+    compositionStage.classList.add(className);
+  }
+}
+
+function startCompositionAiScan(message = "Analyzing composition...") {
+  clearCompositionAiScanTimers();
+  setCompositionAiScanStage("");
+  canvasWrap?.classList.add("is-analysis-running");
+  compositionStage?.classList.add("is-ai-analysis-running");
+  workspaceHint.textContent = message;
+
+  let elapsed = 0;
+  COMPOSITION_AI_SCAN_STAGES.forEach((stage) => {
+    elapsed += stage.delay;
+    const timerId = window.setTimeout(() => {
+      setCompositionAiScanStage(stage.className);
+      workspaceHint.textContent = stage.line;
+    }, elapsed);
+    compositionAiScanTimers.push(timerId);
+  });
+}
+
+function finishCompositionAiScan(message = "AI composition read ready.") {
+  clearCompositionAiScanTimers();
+  setCompositionAiScanStage("stage-final");
+  canvasWrap?.classList.remove("is-analysis-running");
+  compositionStage?.classList.remove("is-ai-analysis-running");
+  workspaceHint.textContent = message;
+
+  const timerId = window.setTimeout(() => {
+    setCompositionAiScanStage("");
+  }, 720);
+  compositionAiScanTimers.push(timerId);
+}
+
+function cancelCompositionAiScan(message) {
+  clearCompositionAiScanTimers();
+  setCompositionAiScanStage("");
+  canvasWrap?.classList.remove("is-analysis-running");
+  compositionStage?.classList.remove("is-ai-analysis-running");
+  if (message) {
+    workspaceHint.textContent = message;
+  }
+}
+
+function isCompositionAiScanRunning() {
+  return Object.values(state.compositionAi).some((analysisState) => analysisState.isRunning);
+}
+
 function getCompositionImageDataUrlForAi(maxSide = 1500, quality = 0.84) {
   if (!state.imageLoaded || !compositionImage.naturalWidth || !compositionImage.naturalHeight) {
     throw new Error("Upload an image before running the composition read.");
@@ -3345,6 +3420,7 @@ async function runThirdsAiAnalysis() {
     thirdsAiResults.classList.add("hidden");
     thirdsAiResults.classList.remove("is-visible");
   }
+  startCompositionAiScan("Analyzing rule of thirds structure...");
   updateModeUI();
 
   try {
@@ -3385,6 +3461,11 @@ async function runThirdsAiAnalysis() {
     showStatusToast("Rule of Thirds read failed");
   } finally {
     analysisState.isRunning = false;
+    if (analysisState.result) {
+      finishCompositionAiScan("Rule of Thirds AI read ready.");
+    } else {
+      cancelCompositionAiScan(analysisState.error || "Rule of Thirds read stopped.");
+    }
     updateModeUI();
   }
 }
@@ -3458,6 +3539,7 @@ async function runBasicCompositionAiAnalysis(options) {
     options.resultsElement.classList.add("hidden");
     options.resultsElement.classList.remove("is-visible");
   }
+  startCompositionAiScan("Analyzing composition structure...");
   updateModeUI();
 
   try {
@@ -3487,6 +3569,11 @@ async function runBasicCompositionAiAnalysis(options) {
     showStatusToast(options.failedToast);
   } finally {
     analysisState.isRunning = false;
+    if (analysisState.result) {
+      finishCompositionAiScan("AI composition read ready.");
+    } else {
+      cancelCompositionAiScan(analysisState.error || "Composition read stopped.");
+    }
     updateModeUI();
   }
 }
@@ -3510,6 +3597,7 @@ async function runGoldenRatioAiAnalysis() {
     goldenRatioAiResults.classList.add("hidden");
     goldenRatioAiResults.classList.remove("is-visible");
   }
+  startCompositionAiScan("Analyzing golden ratio structure...");
   updateModeUI();
 
   try {
@@ -3547,6 +3635,11 @@ async function runGoldenRatioAiAnalysis() {
     showStatusToast("Golden Ratio read failed");
   } finally {
     analysisState.isRunning = false;
+    if (analysisState.result) {
+      finishCompositionAiScan("Golden Ratio AI read ready.");
+    } else {
+      cancelCompositionAiScan(analysisState.error || "Golden Ratio read stopped.");
+    }
     updateModeUI();
   }
 }
@@ -3570,6 +3663,7 @@ async function runNotanAiAnalysis() {
     notanAiResults.classList.add("hidden");
     notanAiResults.classList.remove("is-visible");
   }
+  startCompositionAiScan("Analyzing notan value structure...");
   updateModeUI();
 
   try {
@@ -3600,6 +3694,11 @@ async function runNotanAiAnalysis() {
     showStatusToast("Notan read failed");
   } finally {
     analysisState.isRunning = false;
+    if (analysisState.result) {
+      finishCompositionAiScan("Notan AI read ready.");
+    } else {
+      cancelCompositionAiScan(analysisState.error || "Notan read stopped.");
+    }
     updateModeUI();
   }
 }
@@ -3654,6 +3753,7 @@ async function runSpiralAiAnalysis() {
     spiralAiResults.classList.add("hidden");
     spiralAiResults.classList.remove("is-visible");
   }
+  startCompositionAiScan("Analyzing golden spiral placement...");
   updateModeUI();
 
   try {
@@ -3684,6 +3784,11 @@ async function runSpiralAiAnalysis() {
     showStatusToast("Golden Spiral read failed");
   } finally {
     analysisState.isRunning = false;
+    if (analysisState.result) {
+      finishCompositionAiScan("Golden Spiral AI read ready.");
+    } else {
+      cancelCompositionAiScan(analysisState.error || "Golden Spiral read stopped.");
+    }
     updateModeUI();
   }
 }
@@ -3708,6 +3813,7 @@ async function runDynamicSymmetryAiAnalysis() {
     dynamicSymmetryAiResults.classList.add("hidden");
     dynamicSymmetryAiResults.classList.remove("is-visible");
   }
+  startCompositionAiScan("Analyzing dynamic symmetry structure...");
   updateModeUI();
 
   try {
@@ -3738,6 +3844,11 @@ async function runDynamicSymmetryAiAnalysis() {
     showStatusToast("Dynamic Symmetry read failed");
   } finally {
     analysisState.isRunning = false;
+    if (analysisState.result) {
+      finishCompositionAiScan("Dynamic Symmetry AI read ready.");
+    } else {
+      cancelCompositionAiScan(analysisState.error || "Dynamic Symmetry read stopped.");
+    }
     updateModeUI();
   }
 }

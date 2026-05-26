@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #e8e3d8;
   --panel: rgba(252, 250, 246, 0.92);
   --panel-soft: #f3efe6;
@@ -4105,5 +4105,84 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
     font-weight: 600 !important;
     letter-spacing: 0 !important;
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42) !important;
+  }
+}
+@media (max-width: 720px) {
+  html.mobile-light-mode {
+    --bg: #e8e3d8;
+    --panel: rgba(252, 250, 246, 0.92);
+    --panel-soft: #f3efe6;
+    --ink: #1f1c18;
+    --muted: #69635d;
+    --line: rgba(50, 44, 38, 0.14);
+    --shadow: 0 22px 55px rgba(50, 39, 28, 0.12);
+    --accent: #c96a3d;
+  }
+
+  html.mobile-light-mode body {
+    background:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
+      linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%) !important;
+    color: #1f1c18 !important;
+  }
+
+  html.mobile-light-mode .topbar,
+  html.mobile-light-mode .card,
+  html.mobile-light-mode .workspace-card,
+  html.mobile-light-mode .side-panel,
+  html.mobile-light-mode .detail-card,
+  html.mobile-light-mode .result-block,
+  html.mobile-light-mode .result-suggestion,
+  html.mobile-light-mode .premium-fix-preview,
+  html.mobile-light-mode .painter-ai-analysis,
+  html.mobile-light-mode .premium-fix-item,
+  html.mobile-light-mode .quick-check-deep-report,
+  html.mobile-light-mode .quick-check-details,
+  html.mobile-light-mode .painting-breakdown-result,
+  html.mobile-light-mode .status-toast {
+    border-color: rgba(61, 51, 40, 0.12) !important;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+      #fffaf4 !important;
+    color: #1f1c18 !important;
+    box-shadow: 0 16px 32px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+  }
+
+  html.mobile-light-mode h1,
+  html.mobile-light-mode h2,
+  html.mobile-light-mode h3,
+  html.mobile-light-mode .panel-heading h2,
+  html.mobile-light-mode .quick-check-score,
+  html.mobile-light-mode .quick-check-verdict,
+  html.mobile-light-mode .result-block-title,
+  html.mobile-light-mode .premium-fix-item strong {
+    color: #1f1c18 !important;
+    text-shadow: none !important;
+  }
+
+  html.mobile-light-mode .intro,
+  html.mobile-light-mode .hint,
+  html.mobile-light-mode .status,
+  html.mobile-light-mode .summary,
+  html.mobile-light-mode .detail-copy,
+  html.mobile-light-mode .result-copy,
+  html.mobile-light-mode .panel-heading p,
+  html.mobile-light-mode .premium-fix-note,
+  html.mobile-light-mode .premium-fix-item p,
+  html.mobile-light-mode .painter-ai-analysis .premium-fix-item p,
+  html.mobile-light-mode .painter-ai-analysis .detail-copy,
+  html.mobile-light-mode .score-breakdown-list,
+  html.mobile-light-mode .result-note {
+    color: #69635d !important;
+  }
+
+  html.mobile-light-mode .eyebrow,
+  html.mobile-light-mode .section-label,
+  html.mobile-light-mode .premium-fix-label,
+  html.mobile-light-mode .confidence-badge,
+  html.mobile-light-mode .result-tag {
+    border-color: rgba(201, 106, 61, 0.22) !important;
+    background: rgba(201, 106, 61, 0.1) !important;
+    color: #8c3f22 !important;
   }
 }

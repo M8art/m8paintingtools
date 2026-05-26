@@ -224,6 +224,7 @@ let currentAnalysisUsesFreeSlot = false;
 let currentNotanReading = null;
 let paintingBreakdownRequestId = 0;
 let isPaintingBreakdownLoading = false;
+let paintingBreakdownScanTimers = [];
 let workspaceZoom = 1;
 let workspacePanX = 0;
 let workspacePanY = 0;
@@ -2371,6 +2372,64 @@ function resetAnalysisSequence() {
   updateAnalysisAccessUI();
 }
 
+function clearPaintingBreakdownScan() {
+  paintingBreakdownScanTimers.forEach((timeoutId) => {
+    window.clearTimeout(timeoutId);
+  });
+  paintingBreakdownScanTimers = [];
+  uploadZone.classList.remove("is-analysis-running");
+  analysisSurface.classList.remove("is-analysis-running");
+  statusHelper.classList.remove("is-analysis-running");
+  statusHelper.classList.add("hidden");
+  setAnalysisStage("");
+}
+
+function startPaintingBreakdownScan() {
+  clearPaintingBreakdownScan();
+  uploadZone.classList.add("is-analysis-running");
+  analysisSurface.classList.add("is-analysis-running");
+  statusHelper.classList.add("is-analysis-running");
+  statusHelper.classList.remove("hidden");
+  updateStatusMessage("Creating advanced painting breakdown...");
+  statusHelper.textContent = "Scanning the painting for the full fix plan...";
+
+  let elapsed = 0;
+  ANALYSIS_SEQUENCE.forEach((step) => {
+    const timeoutId = window.setTimeout(() => {
+      setAnalysisStage(step.className);
+      statusHelper.textContent = step.helper;
+      updateStatusMessage(step.message);
+    }, elapsed);
+    paintingBreakdownScanTimers.push(timeoutId);
+    elapsed += step.delay;
+  });
+
+  const loopTimeoutId = window.setTimeout(() => {
+    if (isPaintingBreakdownLoading) {
+      startPaintingBreakdownScan();
+    }
+  }, Math.max(elapsed, 1200));
+  paintingBreakdownScanTimers.push(loopTimeoutId);
+}
+
+function finishPaintingBreakdownScan(message = "Advanced painting breakdown ready.") {
+  paintingBreakdownScanTimers.forEach((timeoutId) => {
+    window.clearTimeout(timeoutId);
+  });
+  paintingBreakdownScanTimers = [];
+  setAnalysisStage("stage-final");
+  uploadZone.classList.remove("is-analysis-running");
+  analysisSurface.classList.remove("is-analysis-running");
+  statusHelper.classList.remove("is-analysis-running");
+  statusHelper.classList.add("hidden");
+  updateStatusMessage(message);
+
+  const timeoutId = window.setTimeout(() => {
+    setAnalysisStage("");
+  }, 720);
+  paintingBreakdownScanTimers.push(timeoutId);
+}
+
 function resetEmptyState() {
   if (emptyStateLabel) {
     emptyStateLabel.textContent = "Click to upload your image";
@@ -2803,6 +2862,7 @@ async function requestFullPaintingBreakdown() {
   isPaintingBreakdownLoading = true;
   setPaintingBreakdownButtonLoading(true);
   showPaintingBreakdownMessage("Creating painting breakdown...");
+  startPaintingBreakdownScan();
 
   try {
     const response = await fetch(PAINTING_BREAKDOWN_ENDPOINT, {
@@ -2823,11 +2883,13 @@ async function requestFullPaintingBreakdown() {
     }
 
     renderPaintingBreakdown(data.breakdown);
+    finishPaintingBreakdownScan("Advanced painting breakdown ready.");
   } catch (error) {
     if (requestId !== paintingBreakdownRequestId) {
       return;
     }
     showPaintingBreakdownMessage(error.message || "The painting breakdown could not be created right now. Try again in a moment.");
+    finishPaintingBreakdownScan("Advanced painting breakdown failed.");
   } finally {
     if (requestId === paintingBreakdownRequestId) {
       isPaintingBreakdownLoading = false;
@@ -2867,6 +2929,7 @@ function showPaintingBreakdownMessage(message) {
 }
 
 function resetPaintingBreakdown() {
+  clearPaintingBreakdownScan();
   paintingBreakdownRequestId += 1;
   isPaintingBreakdownLoading = false;
   setPaintingBreakdownButtonLoading(false);

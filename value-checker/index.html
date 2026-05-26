@@ -1765,6 +1765,164 @@
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
     }
 
+    .value-pro-surface {
+      position: relative;
+      display: inline-block;
+      line-height: 0;
+      max-width: 100%;
+    }
+
+    .value-pro-scan-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 4;
+      transition: opacity 260ms ease, transform 420ms ease;
+    }
+
+    .value-pro-scan-sweep {
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.16) 34%, rgba(255, 255, 255, 0.72) 50%, rgba(255, 255, 255, 0.16) 66%, rgba(255, 255, 255, 0) 100%),
+        linear-gradient(90deg, rgba(31, 28, 24, 0) 0%, rgba(31, 28, 24, 0.08) 38%, rgba(31, 28, 24, 0.28) 50%, rgba(31, 28, 24, 0.08) 62%, rgba(31, 28, 24, 0) 100%),
+        repeating-linear-gradient(0deg, rgba(31, 28, 24, 0.08) 0 1px, transparent 1px 10px);
+      background-size: 42% 100%, 42% 100%, 100% 100%;
+      background-repeat: no-repeat;
+      background-position: -42% 0, -42% 0, 0 0;
+      mix-blend-mode: screen;
+    }
+
+    .value-pro-scan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, max-content);
+      align-content: start;
+      justify-content: center;
+      gap: 6px;
+      padding-top: 10px;
+    }
+
+    .value-pro-scan-grid span {
+      padding: 5px 7px;
+      border-radius: 999px;
+      background: rgba(31, 28, 24, 0.78);
+      color: #fff8ed;
+      box-shadow: 0 8px 18px rgba(31, 28, 24, 0.2);
+      font-size: 0.58rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+    }
+
+    .value-pro-scan-target {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 9%, rgba(255, 255, 255, 0.86) 9.5% 10.5%, rgba(255, 255, 255, 0) 11%),
+        radial-gradient(circle at 50% 50%, rgba(31, 28, 24, 0.28) 0 16%, rgba(31, 28, 24, 0.08) 17% 28%, transparent 29%),
+        linear-gradient(to right, transparent 0, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+        linear-gradient(to bottom, transparent 0, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+      mix-blend-mode: screen;
+    }
+
+    .value-pro-surface.is-running {
+      animation: valueProScanSurfacePulse 1.35s ease-in-out infinite;
+    }
+
+    .value-pro-surface.is-running::before,
+    .value-pro-surface.is-running::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 3;
+    }
+
+    .value-pro-surface.is-running::before {
+      background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.28) 0, rgba(255, 255, 255, 0.08) 18%, rgba(42, 36, 31, 0.08) 54%, rgba(42, 36, 31, 0.18) 100%);
+      opacity: 1;
+      animation: valueProScanVignette 1.7s ease-in-out infinite;
+    }
+
+    .value-pro-surface.is-running::after {
+      background: linear-gradient(180deg, rgba(245, 240, 232, 0.12), rgba(35, 31, 28, 0.14));
+      mix-blend-mode: multiply;
+      opacity: 0.7;
+      animation: valueProScanTone 1.2s ease-in-out infinite alternate;
+    }
+
+    .value-pro-surface.stage-grid .value-pro-scan-sweep,
+    .value-pro-surface.stage-values .value-pro-scan-sweep,
+    .value-pro-surface.stage-structure .value-pro-scan-sweep {
+      opacity: 0.95;
+      animation: valueProScanSweep 0.9s cubic-bezier(0.25, 0.78, 0.35, 1) 1 forwards;
+    }
+
+    .value-pro-surface.stage-grid .value-pro-scan-grid,
+    .value-pro-surface.stage-values .value-pro-scan-grid,
+    .value-pro-surface.stage-structure .value-pro-scan-grid {
+      opacity: 1;
+      animation: valueProScanReadout 0.72s ease-out both;
+    }
+
+    .value-pro-surface.stage-values .value-pro-image {
+      filter: grayscale(1) contrast(1.1) brightness(1.02);
+    }
+
+    .value-pro-surface.stage-structure .value-pro-image {
+      filter: grayscale(0.78) contrast(1.18) brightness(1.02);
+    }
+
+    .value-pro-surface.stage-structure .value-pro-scan-target {
+      opacity: 1;
+      animation: valueProScanTargetLock 1.05s ease-in-out infinite;
+    }
+
+    .value-pro-surface.stage-final .value-pro-scan-overlay {
+      opacity: 0;
+    }
+
+    @keyframes valueProScanSweep {
+      from { background-position: -42% 0, -42% 0, 0 0; }
+      to { background-position: 142% 0, 142% 0, 0 0; }
+    }
+
+    @keyframes valueProScanReadout {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes valueProScanSurfacePulse {
+      0%, 100% { filter: saturate(1); }
+      50% { filter: saturate(0.92) contrast(1.03); }
+    }
+
+    @keyframes valueProScanVignette {
+      0%, 100% { opacity: 0.82; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes valueProScanTone {
+      from { opacity: 0.48; }
+      to { opacity: 0.76; }
+    }
+
+    @keyframes valueProScanTargetLock {
+      0%, 100% { transform: scale(0.985); opacity: 0.76; }
+      50% { transform: scale(1.015); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .value-pro-surface.is-running,
+      .value-pro-surface.is-running::before,
+      .value-pro-surface.is-running::after,
+      .value-pro-surface.stage-grid .value-pro-scan-sweep,
+      .value-pro-surface.stage-values .value-pro-scan-sweep,
+      .value-pro-surface.stage-structure .value-pro-scan-sweep,
+      .value-pro-surface.stage-grid .value-pro-scan-grid,
+      .value-pro-surface.stage-values .value-pro-scan-grid,
+      .value-pro-surface.stage-structure .value-pro-scan-grid,
+      .value-pro-surface.stage-structure .value-pro-scan-target {
+        animation: none !important;
+      }
+    }
     @media (max-width: 1060px) {
       .layout {
         grid-template-columns: 1fr;
@@ -3398,6 +3556,143 @@
         opacity: 1 !important;
       }
     }
+
+    @media (max-width: 720px) {
+      html.mobile-light-mode {
+        --bg: #e8e3d8;
+        --panel: rgba(252, 250, 246, 0.92);
+        --panel-soft: #f3efe6;
+        --ink: #1f1c18;
+        --muted: #69635d;
+        --line: rgba(50, 44, 38, 0.14);
+        --shadow: 0 22px 55px rgba(50, 39, 28, 0.12);
+        --accent: #c96a3d;
+      }
+
+      html.mobile-light-mode body {
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 25%),
+          linear-gradient(180deg, #f2ede4 0%, #e4dccf 100%) !important;
+        color: #1f1c18 !important;
+      }
+
+      html.mobile-light-mode .topbar,
+      html.mobile-light-mode .card,
+      html.mobile-light-mode .workspace-card,
+      html.mobile-light-mode .analysis-grid,
+      html.mobile-light-mode .detail-card,
+      html.mobile-light-mode .placeholder-card,
+      html.mobile-light-mode .feedback-cta,
+      html.mobile-light-mode .mobile-value-result-card,
+      html.mobile-light-mode .mobile-scale-details,
+      html.mobile-light-mode .value-scale-card,
+      html.mobile-light-mode .compare-preview-card,
+      html.mobile-light-mode .compare-overlay-card,
+      html.mobile-light-mode .challenge-summary,
+      html.mobile-light-mode .value-pro-result-block,
+      html.mobile-light-mode .value-pro-status,
+      html.mobile-light-mode .value-pro-lock {
+        border-color: rgba(61, 51, 40, 0.12) !important;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+          #fffaf4 !important;
+        color: #1f1c18 !important;
+        box-shadow: 0 16px 32px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+      }
+
+      html.mobile-light-mode h1,
+      html.mobile-light-mode h2,
+      html.mobile-light-mode h3,
+      html.mobile-light-mode .panel-heading h2,
+      html.mobile-light-mode .feedback-title,
+      html.mobile-light-mode .value-pro-status-line,
+      html.mobile-light-mode .value-pro-result-block h3,
+      html.mobile-light-mode .value-pro-scale-head strong,
+      html.mobile-light-mode .value-pro-scale-tick {
+        color: #1f1c18 !important;
+        text-shadow: none !important;
+      }
+
+      html.mobile-light-mode .intro,
+      html.mobile-light-mode .hint,
+      html.mobile-light-mode .status,
+      html.mobile-light-mode .summary,
+      html.mobile-light-mode .detail-copy,
+      html.mobile-light-mode .feedback-description,
+      html.mobile-light-mode .panel-copy,
+      html.mobile-light-mode .result-copy,
+      html.mobile-light-mode .workspace-meta,
+      html.mobile-light-mode .panel-heading p,
+      html.mobile-light-mode .value-pro-status-detail,
+      html.mobile-light-mode .value-pro-result-block p,
+      html.mobile-light-mode .value-pro-result-block li,
+      html.mobile-light-mode .value-pro-scale-foot,
+      html.mobile-light-mode .value-pro-lock-note {
+        color: #69635d !important;
+      }
+
+      html.mobile-light-mode .eyebrow,
+      html.mobile-light-mode .section-label,
+      html.mobile-light-mode .panel-heading .eyebrow,
+      html.mobile-light-mode .value-pro-result-block h3 {
+        border-color: rgba(201, 106, 61, 0.22) !important;
+        background: rgba(201, 106, 61, 0.1) !important;
+        color: #8c3f22 !important;
+      }
+
+      html.mobile-light-mode .top-nav-link,
+      html.mobile-light-mode .support-link,
+      html.mobile-light-mode .mobile-toolbar-button,
+      html.mobile-light-mode .button-secondary,
+      html.mobile-light-mode .tab-button:not(.active):not(.home-tab-button),
+      html.mobile-light-mode .value-map-option:not(.active),
+      html.mobile-light-mode .sample-chip {
+        border-color: rgba(61, 51, 40, 0.12) !important;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 231, 0.92)),
+          #fffaf4 !important;
+        color: #1f1c18 !important;
+        box-shadow: 0 10px 18px rgba(50, 39, 28, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+      }
+
+      html.mobile-light-mode .top-nav-link.is-current,
+      html.mobile-light-mode .tab-button.active,
+      html.mobile-light-mode .value-map-option.active,
+      html.mobile-light-mode .button:not([disabled]),
+      html.mobile-light-mode .feedback-cta-button,
+      html.mobile-light-mode .cta-button,
+      html.mobile-light-mode .mobile-toolbar-button:not(:disabled):first-child {
+        border-color: rgba(201, 106, 61, 0.36) !important;
+        background: linear-gradient(135deg, rgba(224, 137, 82, 0.96), rgba(185, 82, 43, 0.98)) !important;
+        color: #fffaf4 !important;
+        box-shadow: 0 14px 24px rgba(201, 106, 61, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+      }
+
+      html.mobile-light-mode .button[disabled],
+      html.mobile-light-mode .button-secondary[disabled],
+      html.mobile-light-mode .mobile-toolbar-button:disabled,
+      html.mobile-light-mode .tab-button[disabled],
+      html.mobile-light-mode .value-map-option[disabled] {
+        border-color: rgba(50, 44, 38, 0.1) !important;
+        background: #f0ebe2 !important;
+        color: rgba(105, 99, 93, 0.68) !important;
+        opacity: 1 !important;
+        box-shadow: none !important;
+      }
+
+      html.mobile-light-mode .canvas-wrap,
+      html.mobile-light-mode .image-stage,
+      html.mobile-light-mode .upload-empty-state,
+      html.mobile-light-mode .compare-preview-wrap,
+      html.mobile-light-mode .compare-overlay-card {
+        border-color: rgba(61, 51, 40, 0.14) !important;
+        background:
+          radial-gradient(circle at 50% 35%, rgba(217, 173, 92, 0.12), transparent 34%),
+          repeating-linear-gradient(95deg, rgba(61, 51, 40, 0.026) 0 1px, transparent 1px 8px),
+          linear-gradient(145deg, rgba(250, 246, 238, 0.96), rgba(236, 229, 217, 0.92)) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 18px 36px rgba(50, 39, 28, 0.14) !important;
+      }
+    }
   
     @media (max-width: 720px) {
       body[data-mode="compare-values"] .compare-workspace {
@@ -4106,6 +4401,13 @@
           <div id="aiValueImageStage" class="image-stage hidden">
             <div id="aiValueSurface" class="value-pro-surface">
               <img id="aiValuePreview" class="workspace-image value-pro-image" alt="Uploaded value analysis preview">
+              <div class="value-pro-scan-overlay value-pro-scan-sweep" aria-hidden="true"></div>
+              <div class="value-pro-scan-overlay value-pro-scan-grid" aria-hidden="true">
+                <span>VALUE</span>
+                <span>LIGHT</span>
+                <span>SHADOW</span>
+              </div>
+              <div class="value-pro-scan-overlay value-pro-scan-target" aria-hidden="true"></div>
             </div>
           </div>
           <div id="aiValueEmptyState" class="empty-state upload-empty-state value-pro-empty">

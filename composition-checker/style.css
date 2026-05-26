@@ -663,6 +663,172 @@ a {
   cursor: grabbing;
 }
 
+.composition-scan-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  transition: opacity 260ms ease, transform 420ms ease;
+}
+
+.composition-scan-sweep {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.16) 34%,
+      rgba(255, 255, 255, 0.72) 50%,
+      rgba(255, 255, 255, 0.16) 66%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(31, 28, 24, 0) 0%,
+      rgba(31, 28, 24, 0.08) 38%,
+      rgba(31, 28, 24, 0.28) 50%,
+      rgba(31, 28, 24, 0.08) 62%,
+      rgba(31, 28, 24, 0) 100%
+    ),
+    repeating-linear-gradient(0deg, rgba(31, 28, 24, 0.08) 0 1px, transparent 1px 10px);
+  background-size: 42% 100%, 42% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: -42% 0, -42% 0, 0 0;
+  mix-blend-mode: screen;
+}
+
+.composition-scan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  align-content: start;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.composition-scan-grid span {
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: rgba(31, 28, 24, 0.78);
+  color: #fff8ed;
+  box-shadow: 0 8px 18px rgba(31, 28, 24, 0.2);
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.composition-scan-target {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 9%, rgba(255, 255, 255, 0.86) 9.5% 10.5%, rgba(255, 255, 255, 0) 11%),
+    radial-gradient(circle at 50% 50%, rgba(31, 28, 24, 0.28) 0 16%, rgba(31, 28, 24, 0.08) 17% 28%, transparent 29%),
+    linear-gradient(to right, transparent 0, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom, transparent 0, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% - 0.5px), rgba(255, 255, 255, 0.58) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  mix-blend-mode: screen;
+}
+
+.composition-stage.is-ai-analysis-running {
+  animation: compositionScanSurfacePulse 1.35s ease-in-out infinite;
+}
+
+.composition-stage.is-ai-analysis-running::before,
+.composition-stage.is-ai-analysis-running::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.composition-stage.is-ai-analysis-running::before {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.28) 0, rgba(255, 255, 255, 0.08) 18%, rgba(42, 36, 31, 0.08) 54%, rgba(42, 36, 31, 0.18) 100%);
+  opacity: 1;
+  animation: compositionScanVignette 1.7s ease-in-out infinite;
+}
+
+.composition-stage.is-ai-analysis-running::after {
+  background: linear-gradient(180deg, rgba(245, 240, 232, 0.12), rgba(35, 31, 28, 0.14));
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  animation: compositionScanTone 1.2s ease-in-out infinite alternate;
+}
+
+.composition-stage.stage-grid .composition-scan-sweep,
+.composition-stage.stage-values .composition-scan-sweep,
+.composition-stage.stage-structure .composition-scan-sweep {
+  opacity: 0.95;
+  animation: compositionScanSweep 0.9s cubic-bezier(0.25, 0.78, 0.35, 1) 1 forwards;
+}
+
+.composition-stage.stage-grid .composition-scan-grid,
+.composition-stage.stage-values .composition-scan-grid,
+.composition-stage.stage-structure .composition-scan-grid {
+  opacity: 1;
+  animation: compositionScanReadout 0.72s ease-out both;
+}
+
+.composition-stage.stage-values .workspace-image {
+  filter: grayscale(1) contrast(1.08) brightness(1.02);
+}
+
+.composition-stage.stage-structure .workspace-image {
+  filter: grayscale(0.35) contrast(1.08) brightness(1.01);
+}
+
+.composition-stage.stage-structure .composition-scan-target {
+  opacity: 1;
+  animation: compositionScanTargetLock 1.05s ease-in-out infinite;
+}
+
+.composition-stage.stage-final .composition-scan-overlay {
+  opacity: 0;
+}
+
+@keyframes compositionScanSweep {
+  from { background-position: -42% 0, -42% 0, 0 0; }
+  to { background-position: 142% 0, 142% 0, 0 0; }
+}
+
+@keyframes compositionScanReadout {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes compositionScanSurfacePulse {
+  0%, 100% { filter: saturate(1); }
+  50% { filter: saturate(0.92) contrast(1.03); }
+}
+
+@keyframes compositionScanVignette {
+  0%, 100% { opacity: 0.82; }
+  50% { opacity: 1; }
+}
+
+@keyframes compositionScanTone {
+  from { opacity: 0.48; }
+  to { opacity: 0.76; }
+}
+
+@keyframes compositionScanTargetLock {
+  0%, 100% { transform: scale(0.985); opacity: 0.76; }
+  50% { transform: scale(1.015); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composition-stage.is-ai-analysis-running,
+  .composition-stage.is-ai-analysis-running::before,
+  .composition-stage.is-ai-analysis-running::after,
+  .composition-stage.stage-grid .composition-scan-sweep,
+  .composition-stage.stage-values .composition-scan-sweep,
+  .composition-stage.stage-structure .composition-scan-sweep,
+  .composition-stage.stage-grid .composition-scan-grid,
+  .composition-stage.stage-values .composition-scan-grid,
+  .composition-stage.stage-structure .composition-scan-grid,
+  .composition-stage.stage-structure .composition-scan-target {
+    animation: none !important;
+  }
+}
+
 .image-loading-overlay {
   position: absolute;
   inset: 18px;
@@ -3681,6 +3847,23 @@ html.mobile-light-mode .grid-overlay-info {
     font-weight: 600 !important;
     letter-spacing: 0 !important;
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  html.mobile-light-mode .advanced-ai-status,
+  html.mobile-light-mode .advanced-ai-result-block p,
+  html.mobile-light-mode .advanced-ai-result-block li,
+  html.mobile-light-mode .advanced-ai-card .detail-copy,
+  html.mobile-light-mode .advanced-ai-card .panel-copy,
+  html.mobile-light-mode .advanced-ai-card .result-copy {
+    color: #69635d !important;
+  }
+
+  html.mobile-light-mode .advanced-ai-result-block h3,
+  html.mobile-light-mode .advanced-ai-card h3 {
+    color: #8c3f22 !important;
+    text-shadow: none !important;
   }
 }
 
