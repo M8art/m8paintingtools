@@ -13,9 +13,10 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260508-mobile-app">
+  <link rel="stylesheet" href="./style.css?v=20260527-ai-color-coach">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
+  <link rel="stylesheet" href="../assets/desktop-nav.css">
 </head>
 <body>
   <div class="app">
@@ -84,7 +85,11 @@
           <button id="undoButton" class="button-secondary mobile-toolbar-button" type="button">Undo</button>
           <button id="clearButton" class="button-secondary mobile-toolbar-button" type="button">Clear</button>
           <button id="resetButton" class="button-secondary mobile-toolbar-button" type="button">Reset</button>
-          <button id="exportButton" class="button-secondary mobile-toolbar-button" type="button">Export</button>
+        </div>
+
+        <div id="mobileWorkspaceHow" class="mobile-workspace-how" aria-live="polite">
+          <p class="section-label">How It Works</p>
+          <p id="mobileWorkspaceHowCopy" class="detail-copy">Upload an image to study the dominant color families, harmony, temperature, and focal color.</p>
         </div>
 
         <div class="image-wrap upload-enabled" id="imageWrap" tabindex="0" role="button" aria-label="Click to upload your image">
@@ -101,6 +106,18 @@
             </div>
           </div>
           <button id="sampleMarker" class="sample-marker hidden" type="button" tabindex="-1" aria-hidden="true"></button>
+        </div>
+        <div id="paletteCoachDesk" class="detail-card mixer-coach-desk palette-coach-desk hidden">
+          <div class="trainer-section-head">
+            <div>
+              <p class="section-label">AI Palette Coach</p>
+              <h3>Painter Palette Plan</h3>
+            </div>
+            <span id="paletteCoachStatus" class="trainer-limit">Upload first</span>
+          </div>
+          <p class="detail-copy">Turn the M8 color read into a practical painting plan for harmony, temperature, focal color, and saturation control.</p>
+          <button id="paletteCoachButton" class="button mixer-coach-button palette-coach-button" type="button" disabled>Build Palette Plan</button>
+          <div id="paletteCoachResult" class="mixer-coach-result palette-coach-result hidden"></div>
         </div>
         <div id="mixerCoachDesk" class="detail-card mixer-coach-desk hidden">
           <div class="trainer-section-head">
@@ -524,7 +541,7 @@
 
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
-  <script src="./script.js?v=paywall-20260505"></script>
+  <script src="./script.js?v=20260527-ai-color-coach"></script>
 </body>
 </html>
 

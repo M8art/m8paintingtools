@@ -164,19 +164,38 @@ a {
   display: none;
 }
 
-.button {
+.button,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border-radius: 999px;
-  padding: 13px 18px;
+  min-height: 44px;
+  padding: 0 18px;
   border: 1px solid var(--line);
   cursor: pointer;
   font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.button {
   background: linear-gradient(135deg, #25211c 0%, #15120f 100%);
   color: #f7f4ee;
   box-shadow: 0 10px 22px rgba(31, 28, 24, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.button:hover {
+.button-secondary {
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+}
+
+.button:hover,
+.button-secondary:hover {
   transform: translateY(-1px);
   border-color: rgba(30, 25, 20, 0.28);
 }
@@ -332,6 +351,10 @@ a {
 }
 
 .mobile-workspace-toolbar {
+  display: none;
+}
+
+.mobile-workspace-how {
   display: none;
 }
 
@@ -834,6 +857,10 @@ a {
 }
 
 .mixer-coach-desk .mixer-coach-steps {
+  grid-column: 1 / -1;
+}
+
+.palette-coach-note {
   grid-column: 1 / -1;
 }
 
@@ -1979,9 +2006,20 @@ a {
     min-width: 0;
     min-height: 38px;
     padding: 9px 8px;
+    border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 700;
     text-align: center;
+  }
+
+  .mobile-workspace-how {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 12px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(59, 52, 45, 0.08);
+    background: rgba(255, 255, 255, 0.5);
   }
 
   .side-panel {
@@ -2032,6 +2070,13 @@ a {
   .mixer-coach-button {
     width: 100%;
     justify-content: center;
+  }
+
+  .mixer-coach-verdict,
+  .mixer-coach-card,
+  .mixer-coach-steps,
+  .mixer-coach-loading {
+    border-radius: 14px;
   }
 
   .harmony-scheme-head,
@@ -2464,6 +2509,7 @@ a {
   .side-panel .placeholder-card,
   .side-panel .detail-card,
   .harmony-scheme-card,
+  .mobile-workspace-how,
   .feedback-cta {
     padding: 11px 12px;
   }
@@ -2564,6 +2610,7 @@ a {
   .analysis-grid,
   .feedback-cta,
   .detail-card,
+  .mobile-workspace-how,
   .placeholder-card {
     border: 1px solid rgba(185, 141, 66, 0.38);
     border-radius: 4px;
@@ -2715,6 +2762,10 @@ a {
   .card,
   .analysis-grid,
   .detail-card,
+  .mixer-coach-verdict,
+  .mixer-coach-card,
+  .mixer-coach-steps,
+  .mixer-coach-loading,
   .placeholder-card {
     border-color: rgba(185, 141, 66, 0.38) !important;
     background:
@@ -2778,6 +2829,11 @@ a {
     background: rgba(42, 34, 24, 0.62) !important;
     color: rgba(242, 231, 207, 0.48) !important;
     opacity: 1 !important;
+  }
+
+  .mobile-workspace-toolbar .button,
+  .mobile-workspace-toolbar .button-secondary {
+    border-radius: 999px !important;
   }
 }
 /* Shared mobile tool heading polish */

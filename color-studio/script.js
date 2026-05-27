@@ -16,6 +16,11 @@ const legacySwatchGridCard = swatchGrid.closest(".detail-card");
 const paletteSummary = document.getElementById("paletteSummary");
 const panelTitle = document.getElementById("panelTitle");
 const panelDescription = document.getElementById("panelDescription");
+const mobileWorkspaceHowCopy = document.getElementById("mobileWorkspaceHowCopy");
+const paletteCoachDesk = document.getElementById("paletteCoachDesk");
+const paletteCoachButton = document.getElementById("paletteCoachButton");
+const paletteCoachStatus = document.getElementById("paletteCoachStatus");
+const paletteCoachResult = document.getElementById("paletteCoachResult");
 const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
@@ -185,10 +190,18 @@ const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
+const PALETTE_COACH_FREE_CHECK_STORAGE_KEY = "m8_palette_coach_last_free_check";
+const MIX_COACH_FREE_CHECK_STORAGE_KEY = "m8_mix_coach_last_free_check";
+const IS_LOCAL_PREVIEW = ["127.0.0.1", "localhost"].includes(window.location.hostname);
 const COLOR_MIX_COACH_ENDPOINT = window.M8_COLOR_MIX_COACH_ENDPOINT || (
-  window.location.protocol === "file:"
+  window.location.protocol === "file:" || IS_LOCAL_PREVIEW
     ? "https://m8paintingtools.com/.netlify/functions/color-mix-coach"
     : "/.netlify/functions/color-mix-coach"
+);
+const COLOR_PALETTE_COACH_ENDPOINT = window.M8_COLOR_PALETTE_COACH_ENDPOINT || (
+  window.location.protocol === "file:" || IS_LOCAL_PREVIEW
+    ? "https://m8paintingtools.com/.netlify/functions/color-palette-coach"
+    : "/.netlify/functions/color-palette-coach"
 );
 const COLOR_MIX_COACH_IMAGE_MAX_SIZE = 960;
 const COLOR_MIX_COACH_IMAGE_QUALITY = 0.72;
@@ -247,6 +260,10 @@ const state = {
   technicalOpenByIndex: {},
   harmony: null,
   analysisResult: null,
+  paletteCoachResult: null,
+  paletteCoachLoading: false,
+  paletteCoachError: "",
+  paletteCoachRequestId: 0,
   breakdownExpanded: false,
   mixerLogicExpanded: false,
   premiumUnlockVisible: false,
@@ -341,6 +358,9 @@ if (trainerCheckButton) {
 if (mixerCoachButton) {
   mixerCoachButton.addEventListener("click", requestMixerCoach);
 }
+if (paletteCoachButton) {
+  paletteCoachButton.addEventListener("click", requestPaletteCoach);
+}
 
 undoButton?.addEventListener("click", handleUndoWorkspace);
 clearButton?.addEventListener("click", handleClearWorkspace);
@@ -363,6 +383,51 @@ function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
 }
 
+function getLastColorAiFreeCheckTime(storageKey) {
+  const storedValue = Number(window.localStorage.getItem(storageKey) || "0");
+  return Number.isFinite(storedValue) ? storedValue : 0;
+}
+
+function getColorAiFreeWaitMs(storageKey) {
+  if (isUnlocked()) {
+    return 0;
+  }
+  const elapsed = Date.now() - getLastColorAiFreeCheckTime(storageKey);
+  return Math.max(0, (24 * 60 * 60 * 1000) - elapsed);
+}
+
+function hasUsedColorAiFreeAnalysis(storageKey) {
+  return getColorAiFreeWaitMs(storageKey) > 0;
+}
+
+function markColorAiFreeAnalysisUsed(storageKey) {
+  if (!isUnlocked()) {
+    window.localStorage.setItem(storageKey, String(Date.now()));
+  }
+}
+
+function formatColorAiFreeWait(storageKey) {
+  const waitMs = getColorAiFreeWaitMs(storageKey);
+  if (!waitMs) {
+    return "now";
+  }
+  const hours = Math.floor(waitMs / (60 * 60 * 1000));
+  const minutes = Math.ceil((waitMs % (60 * 60 * 1000)) / (60 * 1000));
+  if (hours <= 0) {
+    return `${minutes} min`;
+  }
+  return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+}
+
+function showColorAiLimitPaywall(toolName, storageKey) {
+  showUnlockPaywall({
+    title: "Unlock Color Checker",
+    note: "One-time unlock - $5",
+    status: `Free ${toolName} check used. Unlock all tools or wait ${formatColorAiFreeWait(storageKey)}.`,
+    toast: `Free ${toolName} check used.`
+  });
+}
+
 function getInitialColorTab() {
   const params = new URLSearchParams(window.location.search);
   const requestedTab = params.get("tool") || params.get("tab") || window.location.hash.replace("#", "");
@@ -374,12 +439,15 @@ function showInitialColorPaywall(tab) {
   if (!params.has("tool") && !params.has("tab") && !window.location.hash) {
     return;
   }
+  if (tab === "palette" || tab === "mixer") {
+    return;
+  }
   if (isUnlocked()) {
     return;
   }
   showUnlockPaywall(getUploadLockContext() || {
     title: "Unlock Color Checker",
-    note: "One-time unlock — $5",
+    note: "One-time unlock - $5",
     status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
     toast: "Paid unlock required."
   });
@@ -387,7 +455,7 @@ function showInitialColorPaywall(tab) {
 }
 
 function canUseColorMixer() {
-  return isUnlocked();
+  return true;
 }
 
 function hidePremiumUnlockCard() {
@@ -404,7 +472,7 @@ function showUnlockPaywall(context = {}) {
     premiumUnlockText.textContent = GLOBAL_UNLOCK_BODY;
   }
   if (premiumUnlockNote) {
-    premiumUnlockNote.textContent = context.note || "One-time unlock — $5";
+    premiumUnlockNote.textContent = context.note || "One-time unlock - $5";
   }
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
@@ -450,6 +518,8 @@ function getActionSnapshot() {
     mixerResult: cloneColorState(state.mixerResult),
     mixerCoachResult: cloneColorState(state.mixerCoachResult),
     mixerCoachError: state.mixerCoachError,
+    paletteCoachResult: cloneColorState(state.paletteCoachResult),
+    paletteCoachError: state.paletteCoachError,
     trainerSelection: [...state.trainerSelection],
     trainerEvaluation: cloneColorState(state.trainerEvaluation),
     activeTab: state.activeTab
@@ -475,9 +545,13 @@ function restoreActionSnapshot(snapshot) {
   state.mixerCoachResult = cloneColorState(snapshot.mixerCoachResult);
   state.mixerCoachLoading = false;
   state.mixerCoachError = snapshot.mixerCoachError || "";
+  state.paletteCoachResult = cloneColorState(snapshot.paletteCoachResult);
+  state.paletteCoachLoading = false;
+  state.paletteCoachError = snapshot.paletteCoachError || "";
   state.trainerSelection = [...(snapshot.trainerSelection || [])];
   state.trainerEvaluation = cloneColorState(snapshot.trainerEvaluation);
   renderM8ColorMixer(state.mixerResult);
+  renderPaletteCoach();
   renderMixerCoach();
   renderMixTrainer();
   if (state.activeTab === "mixer") {
@@ -491,7 +565,7 @@ function restoreActionSnapshot(snapshot) {
 
 function updateWorkspaceActionState() {
   const hasImage = hasLoadedImage();
-  const hasSample = !!state.sampledColor || !!state.sampledPoint || state.trainerSelection.length > 0 || !!state.trainerEvaluation;
+  const hasSample = !!state.sampledColor || !!state.sampledPoint || !!state.mixerCoachResult || !!state.paletteCoachResult || state.trainerSelection.length > 0 || !!state.trainerEvaluation;
   if (undoButton) {
     undoButton.disabled = !state.actionHistory.length;
   }
@@ -546,6 +620,10 @@ function handleClearWorkspace() {
   state.technicalOpenByIndex = {};
   state.harmony = null;
   state.analysisResult = null;
+  state.paletteCoachResult = null;
+  state.paletteCoachLoading = false;
+  state.paletteCoachError = "";
+  state.paletteCoachRequestId += 1;
   state.actionHistory = [];
   state.loadErrorMessage = "";
   state.imageLoading = false;
@@ -566,6 +644,7 @@ function handleClearWorkspace() {
   }
   renderPaletteSummary();
   renderHarmonyAnalysis(null);
+  renderPaletteCoach();
   setTab(state.activeTab);
   showStatusToast("Workspace cleared");
   updateWorkspaceActionState();
@@ -586,7 +665,7 @@ function handleExportWorkspace() {
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1200);
   showStatusToast("Color report exported");
 }
 
@@ -874,10 +953,6 @@ async function consumeLandingHandoff() {
 
     window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
     window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
-    if (!isUnlocked()) {
-      showUnlockPaywall(getUploadLockContext());
-      return;
-    }
 
     loadPaletteFromDataUrl(imageData);
   } catch (error) {
@@ -909,11 +984,11 @@ function handleImageWrapClick(event) {
 }
 
 function getUploadLockContext() {
-  if (!isUnlocked()) {
+  if (!isUnlocked() && !["palette", "mixer"].includes(state.activeTab)) {
     return {
       title: "Unlock Color Checker",
-      note: "One-time unlock — $5",
-      status: "Color Checker is a paid tool. Unlock all premium tools to analyze palette, mixer, and training modes.",
+      note: "One-time unlock - $5",
+      status: "Mix Trainer is a paid tool. Palette Coach and Color Mix Coach include one free check every 24 hours.",
       toast: "Color Checker needs paid unlock."
     };
   }
@@ -921,7 +996,7 @@ function getUploadLockContext() {
   if (state.activeTab === "trainer" && !isUnlocked()) {
     return {
       title: "Unlock All Tools",
-      note: "One-time unlock — $5",
+      note: "One-time unlock - $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "Paid unlock required."
     };
@@ -930,7 +1005,7 @@ function getUploadLockContext() {
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     return {
       title: "Unlock Color Checker",
-      note: "One-time unlock — $5",
+      note: "One-time unlock - $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "Paid unlock required."
     };
@@ -952,6 +1027,7 @@ function setTab(tab) {
   }
   updateSampleMarkerPosition();
   updateWorkspaceCursor();
+  updateMobileWorkspaceHow(tab);
 
   if (tab === "palette") {
     hidePremiumUnlockCard();
@@ -977,6 +1053,7 @@ function setTab(tab) {
       trainerCard.classList.add("hidden");
     }
     mixerCoachDesk?.classList.add("hidden");
+    renderPaletteCoach();
     setMixerSupportMode(false);
     setTrainerSupportMode(false);
     renderPaletteSummary();
@@ -1012,6 +1089,7 @@ function setTab(tab) {
       trainerCard.classList.add("hidden");
     }
     premiumUnlockCard?.classList.toggle("hidden", !state.premiumUnlockVisible);
+    paletteCoachDesk?.classList.add("hidden");
     setMixerSupportMode(true);
     setTrainerSupportMode(false);
     renderM8ColorMixer(state.mixerResult);
@@ -1043,6 +1121,7 @@ function setTab(tab) {
       trainerCard.classList.remove("hidden");
     }
     premiumUnlockCard?.classList.toggle("hidden", !state.premiumUnlockVisible);
+    paletteCoachDesk?.classList.add("hidden");
     setMixerSupportMode(false);
     setTrainerSupportMode(true);
     mixerCoachDesk?.classList.add("hidden");
@@ -1079,6 +1158,10 @@ function setTab(tab) {
 function beginImageLoad() {
   state.imageLoading = true;
   state.loadErrorMessage = "";
+  state.paletteCoachResult = null;
+  state.paletteCoachLoading = false;
+  state.paletteCoachError = "";
+  state.paletteCoachRequestId += 1;
   resetWorkspaceZoom();
   previewImage.classList.remove("is-loaded");
   previewImage.style.display = "none";
@@ -1088,6 +1171,7 @@ function beginImageLoad() {
   workspaceHint.textContent = "Preparing analysis...";
   statusNote.textContent = "Preparing analysis...";
   imageWrap.classList.remove("sampling-enabled");
+  renderPaletteCoach();
   updateWorkspaceActionState();
 }
 
@@ -1223,6 +1307,7 @@ function analyzeHarmony() {
   state.harmony = analysisResult;
   state.analysisResult = analysisResult;
   renderHarmonyAnalysis(analysisResult);
+  renderPaletteCoach();
 }
 
 function renderHarmonyAnalysis(result) {
@@ -1240,6 +1325,7 @@ function renderHarmonyAnalysis(result) {
     renderValueStructure(null);
     renderFocalColor(null);
     renderHarmonySchemePanel(null);
+    renderPaletteCoach();
     return;
   }
 
@@ -1376,7 +1462,7 @@ function sampleMixerPoint(event) {
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
       title: "Unlock All Tools",
-      note: "One-time unlock — $5",
+      note: "One-time unlock - $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "Paid unlock required."
     });
@@ -1386,7 +1472,7 @@ function sampleMixerPoint(event) {
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     showUnlockPaywall({
       title: "Unlock Color Checker",
-      note: "One-time unlock — $5",
+      note: "One-time unlock - $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "Paid unlock required."
     });
@@ -2047,6 +2133,184 @@ function renderM8ColorMixer(result) {
   renderMixerSupportPanel(result);
 }
 
+function renderPaletteCoach() {
+  if (!paletteCoachDesk || !paletteCoachButton || !paletteCoachStatus || !paletteCoachResult) {
+    return;
+  }
+
+  const isPaletteVisible = state.activeTab === "palette";
+  paletteCoachDesk.classList.toggle("hidden", !isPaletteVisible);
+  if (!isPaletteVisible) {
+    return;
+  }
+
+  const hasAnalysis = !!state.analysisResult && hasLoadedImage();
+  const lockedByLimit = hasUsedColorAiFreeAnalysis(PALETTE_COACH_FREE_CHECK_STORAGE_KEY);
+  paletteCoachButton.disabled = !hasAnalysis || state.paletteCoachLoading;
+  paletteCoachButton.classList.toggle("is-disabled", paletteCoachButton.disabled);
+  paletteCoachButton.classList.toggle("is-unlock-cta", !isUnlocked() && lockedByLimit);
+  paletteCoachButton.textContent = state.paletteCoachLoading
+    ? "Building Palette Plan..."
+    : (!isUnlocked() && lockedByLimit)
+    ? "Unlock All Tools"
+    : "Build Palette Plan";
+
+  if (state.paletteCoachLoading) {
+    paletteCoachStatus.textContent = "Reading palette";
+    paletteCoachResult.classList.remove("hidden");
+    paletteCoachResult.innerHTML = `
+      <div class="mixer-coach-loading">
+        <span aria-hidden="true"></span>
+        <p>Reading harmony, temperature balance, focal color, saturation, and paint order...</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (!hasAnalysis) {
+    paletteCoachStatus.textContent = state.imageLoading ? "Preparing" : "Upload first";
+    paletteCoachResult.classList.add("hidden");
+    paletteCoachResult.innerHTML = "";
+    return;
+  }
+
+  if (state.paletteCoachError) {
+    paletteCoachStatus.textContent = "Try again";
+    paletteCoachResult.classList.remove("hidden");
+    paletteCoachResult.innerHTML = `<p class="detail-copy">${escapeHtml(state.paletteCoachError)}</p>`;
+    return;
+  }
+
+  if (!state.paletteCoachResult) {
+    paletteCoachStatus.textContent = (!isUnlocked() && lockedByLimit)
+      ? `Free used - wait ${formatColorAiFreeWait(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)}`
+      : isUnlocked()
+      ? "Unlimited"
+      : "Free check ready";
+    paletteCoachResult.classList.add("hidden");
+    paletteCoachResult.innerHTML = "";
+    return;
+  }
+
+  const result = state.paletteCoachResult;
+  paletteCoachStatus.textContent = "Coach ready";
+  paletteCoachResult.classList.remove("hidden");
+  paletteCoachResult.innerHTML = "";
+
+  const verdict = document.createElement("div");
+  verdict.className = "mixer-coach-verdict";
+  verdict.innerHTML = `
+    <span class="meta-label">Palette Verdict</span>
+    <p>${escapeHtml(result.verdict)}</p>
+  `;
+  paletteCoachResult.appendChild(verdict);
+
+  const grid = document.createElement("div");
+  grid.className = "mixer-coach-grid";
+  [
+    ["Biggest Color Problem", result.biggestColorProblem],
+    ["Harmony Read", result.harmonyRead],
+    ["Fix This First", result.fixThisFirst],
+    ["Avoid", result.avoid]
+  ].forEach(([label, copy]) => {
+    const card = document.createElement("div");
+    card.className = "mixer-coach-card";
+    card.innerHTML = `<span class="meta-label">${escapeHtml(label)}</span><p>${escapeHtml(copy)}</p>`;
+    grid.appendChild(card);
+  });
+  paletteCoachResult.appendChild(grid);
+
+  const steps = document.createElement("div");
+  steps.className = "mixer-coach-steps";
+  steps.innerHTML = '<span class="meta-label">3-Step Palette Plan</span>';
+  const list = document.createElement("ol");
+  (result.palettePlan || []).slice(0, 5).forEach((step) => {
+    const item = document.createElement("li");
+    item.textContent = step;
+    list.appendChild(item);
+  });
+  steps.appendChild(list);
+  paletteCoachResult.appendChild(steps);
+
+  const note = document.createElement("div");
+  note.className = "mixer-coach-card palette-coach-note";
+  note.innerHTML = `<span class="meta-label">Studio Note</span><p>${escapeHtml(result.studioNote)}</p>`;
+  paletteCoachResult.appendChild(note);
+}
+
+async function requestPaletteCoach() {
+  if (state.paletteCoachLoading) {
+    return;
+  }
+
+  if (!isUnlocked() && hasUsedColorAiFreeAnalysis(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)) {
+    showUnlockPaywall({
+      title: "Unlock Color Checker",
+      note: "One-time unlock - $5",
+      status: `Free Palette Coach check used. Unlock all tools or wait ${formatColorAiFreeWait(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)}.`,
+      toast: "Free Palette Coach check used."
+    });
+    return;
+  }
+
+  if (!state.analysisResult || !hasLoadedImage()) {
+    showStatusToast("Upload an image first");
+    return;
+  }
+
+  const requestId = state.paletteCoachRequestId + 1;
+  state.paletteCoachRequestId = requestId;
+  state.paletteCoachLoading = true;
+  state.paletteCoachResult = null;
+  state.paletteCoachError = "";
+  renderPaletteCoach();
+  statusNote.textContent = "Building painter palette plan...";
+
+  try {
+    const imageDataUrl = createColorMixCoachImageDataUrl();
+    const response = await fetch(COLOR_PALETTE_COACH_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        imageDataUrl,
+        analysis: sanitizePaletteAnalysisForCoach(state.analysisResult),
+        palette: state.palette.slice(0, 8).map(sanitizePaletteColorForCoach),
+        rules: MIXER_LOGIC_RULES,
+        m8Palette: MIXER_PALETTE_REFERENCE.map(({ name, role }) => ({ name, role }))
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || "Palette Coach failed. Try again in a moment.");
+    }
+    if (requestId !== state.paletteCoachRequestId) {
+      return;
+    }
+
+    pushActionSnapshot();
+    state.paletteCoachResult = normalizePaletteCoachResult(data.paletteCoach);
+    state.paletteCoachError = "";
+    markColorAiFreeAnalysisUsed(PALETTE_COACH_FREE_CHECK_STORAGE_KEY);
+    statusNote.textContent = "AI Palette Coach ready.";
+    showStatusToast("Palette plan ready");
+  } catch (error) {
+    if (requestId !== state.paletteCoachRequestId) {
+      return;
+    }
+    state.paletteCoachError = error.message || "Palette Coach failed. Try again in a moment.";
+    statusNote.textContent = "Palette Coach failed.";
+  } finally {
+    if (requestId === state.paletteCoachRequestId) {
+      state.paletteCoachLoading = false;
+      renderPaletteCoach();
+      updateWorkspaceActionState();
+    }
+  }
+}
+
 function renderMixerCoach() {
   if (!mixerCoachButton || !mixerCoachStatus || !mixerCoachResult) {
     return;
@@ -2059,9 +2323,15 @@ function renderMixerCoach() {
   }
 
   const hasMix = !!state.mixerResult;
+  const lockedByLimit = hasUsedColorAiFreeAnalysis(MIX_COACH_FREE_CHECK_STORAGE_KEY);
   mixerCoachButton.disabled = !hasMix || state.mixerCoachLoading;
   mixerCoachButton.classList.toggle("is-disabled", mixerCoachButton.disabled);
-  mixerCoachButton.textContent = state.mixerCoachLoading ? "Building Mix Plan..." : "Build Mix Plan";
+  mixerCoachButton.classList.toggle("is-unlock-cta", !isUnlocked() && lockedByLimit);
+  mixerCoachButton.textContent = state.mixerCoachLoading
+    ? "Building Mix Plan..."
+    : (!isUnlocked() && lockedByLimit)
+    ? "Unlock All Tools"
+    : "Build Mix Plan";
 
   if (state.mixerCoachLoading) {
     mixerCoachStatus.textContent = "Reading mix";
@@ -2090,7 +2360,11 @@ function renderMixerCoach() {
   }
 
   if (!state.mixerCoachResult) {
-    mixerCoachStatus.textContent = "Ready";
+    mixerCoachStatus.textContent = (!isUnlocked() && lockedByLimit)
+      ? `Free used - wait ${formatColorAiFreeWait(MIX_COACH_FREE_CHECK_STORAGE_KEY)}`
+      : isUnlocked()
+      ? "Unlimited"
+      : "Free check ready";
     mixerCoachResult.classList.add("hidden");
     mixerCoachResult.innerHTML = "";
     return;
@@ -2142,12 +2416,12 @@ async function requestMixerCoach() {
     return;
   }
 
-  if (!isUnlocked()) {
+  if (!isUnlocked() && hasUsedColorAiFreeAnalysis(MIX_COACH_FREE_CHECK_STORAGE_KEY)) {
     showUnlockPaywall({
       title: "Unlock Color Checker",
-      note: "One-time unlock â€” $5",
-      status: "Unlock Color Checker to use the AI Mix Coach.",
-      toast: "Paid unlock required."
+      note: "One-time unlock - $5",
+      status: `Free Mix Coach check used. Unlock all tools or wait ${formatColorAiFreeWait(MIX_COACH_FREE_CHECK_STORAGE_KEY)}.`,
+      toast: "Free Mix Coach check used."
     });
     return;
   }
@@ -2195,6 +2469,7 @@ async function requestMixerCoach() {
     pushActionSnapshot();
     state.mixerCoachResult = normalizeMixerCoachResult(data.mixCoach);
     state.mixerCoachError = "";
+    markColorAiFreeAnalysisUsed(MIX_COACH_FREE_CHECK_STORAGE_KEY);
     statusNote.textContent = "AI Mix Coach ready.";
     showStatusToast("Mix plan ready");
   } catch (error) {
@@ -2210,6 +2485,85 @@ async function requestMixerCoach() {
       updateWorkspaceActionState();
     }
   }
+}
+
+function updateMobileWorkspaceHow(tab) {
+  if (!mobileWorkspaceHowCopy) {
+    return;
+  }
+
+  if (tab === "mixer") {
+    mobileWorkspaceHowCopy.textContent = "Tap a color in the image. M8 shows the likely paint mix, then the Mix Coach can build a practical mixing plan below the image.";
+    return;
+  }
+
+  if (tab === "trainer") {
+    mobileWorkspaceHowCopy.textContent = "Tap a color, choose up to four pigments, then compare your choice with the M8 mixing logic.";
+    return;
+  }
+
+  mobileWorkspaceHowCopy.textContent = "Upload an image to study the dominant color families, harmony, temperature, and focal color.";
+}
+
+function sanitizePaletteAnalysisForCoach(result) {
+  return {
+    summary: result.summary,
+    primary: result.primary,
+    secondary: result.secondary,
+    confidence: Math.round((Number(result.confidence) || 0) * 100),
+    explanation: result.explanation,
+    hint: result.hint,
+    valueStructure: {
+      contrastLevel: result.valueStructure?.contrastLevel,
+      tonalKey: result.valueStructure?.tonalKey,
+      dominantBand: result.valueStructure?.dominantBand,
+      notes: (result.valueStructure?.notes || []).slice(0, 5)
+    },
+    focalColor: result.focalColor ? {
+      name: result.focalColor.name,
+      reason: result.focalColor.reason,
+      distribution: result.focalColor.distribution,
+      advice: result.focalColor.advice
+    } : null,
+    painterInterpretation: (result.painterInterpretation || []).slice(0, 6),
+    howToPaint: (result.howToPaint || []).slice(0, 6),
+    dominantColors: (result.dominantColors || []).slice(0, 8).map(sanitizePaletteColorForCoach)
+  };
+}
+
+function sanitizePaletteColorForCoach(color) {
+  return {
+    hex: color.hex,
+    rgb: color.rgb,
+    painterHueName: color.painterHueName,
+    painterName: color.painterName,
+    role: color.role,
+    temperature: color.temperature,
+    valueLabel: color.valueLabel,
+    chroma: color.chroma,
+    coverage: Math.round(Number(color.coverage) || 0),
+    saturation: Math.round(Number(color.saturation) || 0),
+    brightness: Math.round(Number(color.brightness) || 0)
+  };
+}
+
+function normalizePaletteCoachResult(result) {
+  const plan = Array.isArray(result?.palettePlan)
+    ? result.palettePlan.map(cleanMixerCoachLine).filter(Boolean).slice(0, 5)
+    : [];
+  return {
+    verdict: cleanMixerCoachLine(result?.verdict || "The palette should be organized around one dominant family before accents are pushed."),
+    biggestColorProblem: cleanMixerCoachLine(result?.biggestColorProblem || "The main risk is letting too many color notes compete before the value pattern is settled."),
+    harmonyRead: cleanMixerCoachLine(result?.harmonyRead || "Keep the detected harmony simple and let value structure carry the first read."),
+    fixThisFirst: cleanMixerCoachLine(result?.fixThisFirst || "Separate the main light and shadow color families before adding small accents."),
+    palettePlan: plan.length ? plan : [
+      "Choose one dominant color family for the large masses.",
+      "Control warm/cool shifts inside that family before adding accents.",
+      "Reserve the strongest chroma for the focal passage."
+    ],
+    avoid: cleanMixerCoachLine(result?.avoid || "Avoid increasing saturation everywhere at once."),
+    studioNote: cleanMixerCoachLine(result?.studioNote || "Paint the palette as a hierarchy, not as a collection of separate color matches.")
+  };
 }
 
 function sanitizeMixerSampleForCoach(sample) {
@@ -2406,7 +2760,7 @@ function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
       title: "Unlock All Tools",
-      note: "One-time unlock — $5",
+      note: "One-time unlock - $5",
       status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
       toast: "Paid unlock required."
     });
