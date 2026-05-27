@@ -783,6 +783,87 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
 }
 
+.mixer-coach-section {
+  gap: 14px;
+}
+
+.mixer-coach-button {
+  width: fit-content;
+}
+
+.mixer-coach-result {
+  display: grid;
+  gap: 12px;
+}
+
+.mixer-coach-verdict,
+.mixer-coach-card,
+.mixer-coach-steps {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(59, 52, 45, 0.08);
+}
+
+.mixer-coach-verdict {
+  background:
+    radial-gradient(circle at 10% 15%, rgba(217, 173, 92, 0.14), transparent 34%),
+    rgba(255, 255, 255, 0.5);
+}
+
+.mixer-coach-verdict p,
+.mixer-coach-card p {
+  line-height: 1.6;
+}
+
+.mixer-coach-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mixer-coach-steps ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  line-height: 1.6;
+}
+
+.mixer-coach-loading {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(59, 52, 45, 0.08);
+}
+
+.mixer-coach-loading span {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid rgba(201, 106, 61, 0.22);
+  border-top-color: rgba(201, 106, 61, 0.86);
+  animation: mixerCoachSpin 900ms linear infinite;
+}
+
+@keyframes mixerCoachSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mixer-coach-loading span {
+    animation: none;
+  }
+}
+
 .mixer-tag {
   width: fit-content;
   padding: 6px 10px;
@@ -1928,10 +2009,16 @@ a {
   .focal-color-row,
   .dominant-palette-head,
   .mixer-target,
+  .mixer-coach-grid,
   .trainer-section-head,
   .trainer-score-head,
   .trainer-result-grid {
     grid-template-columns: 1fr;
+  }
+
+  .mixer-coach-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .harmony-scheme-head,

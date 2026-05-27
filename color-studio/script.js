@@ -133,6 +133,9 @@ const mixerHex = document.getElementById("mixerHex");
 const mixerMixList = document.getElementById("mixerMixList");
 const mixerNotes = document.getElementById("mixerNotes");
 const mixerNotesSection = document.getElementById("mixerNotesSection");
+const mixerCoachStatus = document.getElementById("mixerCoachStatus");
+const mixerCoachButton = document.getElementById("mixerCoachButton");
+const mixerCoachResult = document.getElementById("mixerCoachResult");
 const mixerAltSection = document.getElementById("mixerAltSection");
 const mixerAltList = document.getElementById("mixerAltList");
 const mixerTags = document.getElementById("mixerTags");
@@ -181,6 +184,13 @@ const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
+const COLOR_MIX_COACH_ENDPOINT = window.M8_COLOR_MIX_COACH_ENDPOINT || (
+  window.location.protocol === "file:"
+    ? "https://m8paintingtools.com/.netlify/functions/color-mix-coach"
+    : "/.netlify/functions/color-mix-coach"
+);
+const COLOR_MIX_COACH_IMAGE_MAX_SIZE = 960;
+const COLOR_MIX_COACH_IMAGE_QUALITY = 0.72;
 const M8_PALETTE = {
   whites: ["Titanium White", "Lead White"],
   yellows: ["Cadmium Yellow Deep", "Cadmium Yellow Medium", "Yellow Ochre", "Raw Sienna", "Naples Yellow Light"],
@@ -243,6 +253,10 @@ const state = {
   sampledPoint: null,
   sampledColor: null,
   mixerResult: null,
+  mixerCoachResult: null,
+  mixerCoachLoading: false,
+  mixerCoachError: "",
+  mixerCoachRequestId: 0,
   trainerSelection: [],
   trainerEvaluation: null,
   actionHistory: [],
@@ -321,6 +335,10 @@ if (mixerLogicToggle) {
 
 if (trainerCheckButton) {
   trainerCheckButton.addEventListener("click", checkTrainerMix);
+}
+
+if (mixerCoachButton) {
+  mixerCoachButton.addEventListener("click", requestMixerCoach);
 }
 
 undoButton?.addEventListener("click", handleUndoWorkspace);
@@ -429,6 +447,8 @@ function getActionSnapshot() {
     sampledPoint: cloneColorState(state.sampledPoint),
     sampledColor: cloneColorState(state.sampledColor),
     mixerResult: cloneColorState(state.mixerResult),
+    mixerCoachResult: cloneColorState(state.mixerCoachResult),
+    mixerCoachError: state.mixerCoachError,
     trainerSelection: [...state.trainerSelection],
     trainerEvaluation: cloneColorState(state.trainerEvaluation),
     activeTab: state.activeTab
@@ -451,9 +471,13 @@ function restoreActionSnapshot(snapshot) {
   state.sampledPoint = cloneColorState(snapshot.sampledPoint);
   state.sampledColor = cloneColorState(snapshot.sampledColor);
   state.mixerResult = cloneColorState(snapshot.mixerResult);
+  state.mixerCoachResult = cloneColorState(snapshot.mixerCoachResult);
+  state.mixerCoachLoading = false;
+  state.mixerCoachError = snapshot.mixerCoachError || "";
   state.trainerSelection = [...(snapshot.trainerSelection || [])];
   state.trainerEvaluation = cloneColorState(snapshot.trainerEvaluation);
   renderM8ColorMixer(state.mixerResult);
+  renderMixerCoach();
   renderMixTrainer();
   if (state.activeTab === "mixer") {
     renderMixerSupportPanel(state.mixerResult);
@@ -593,6 +617,16 @@ function buildColorExportReport() {
     lines.push("", "SAMPLED MIX");
     lines.push(`Color: ${state.mixerResult.sample.hex} / ${state.mixerResult.sample.family}`);
     state.mixerResult.mix.forEach((item) => lines.push(`- ${item.pigment}: ${item.percent}%`));
+  }
+
+  if (state.mixerCoachResult) {
+    lines.push("", "AI MIX COACH");
+    lines.push(state.mixerCoachResult.verdict);
+    lines.push(`Start: ${state.mixerCoachResult.startingPile}`);
+    lines.push(`Adjust: ${state.mixerCoachResult.adjustment}`);
+    (state.mixerCoachResult.mixingSteps || []).forEach((item, index) => lines.push(`${index + 1}. ${item}`));
+    lines.push(`Avoid: ${state.mixerCoachResult.avoid}`);
+    lines.push(`Check: ${state.mixerCoachResult.finishCheck}`);
   }
 
   if (state.trainerEvaluation) {
@@ -1249,6 +1283,10 @@ function resetMixerSampling() {
   state.sampledPoint = null;
   state.sampledColor = null;
   state.mixerResult = null;
+  state.mixerCoachResult = null;
+  state.mixerCoachLoading = false;
+  state.mixerCoachError = "";
+  state.mixerCoachRequestId += 1;
   state.trainerSelection = [];
   state.trainerEvaluation = null;
   if (sampleMarker) {
@@ -1256,6 +1294,7 @@ function resetMixerSampling() {
   }
   updateSampleMarkerPosition();
   renderM8ColorMixer(null);
+  renderMixerCoach();
   renderMixTrainer();
   if (state.activeTab === "trainer") {
     renderTrainerSupportPanel();
@@ -1360,6 +1399,10 @@ function sampleMixerPoint(event) {
 
   state.sampledColor = sampleTargetColor(previewImage, relativeX, relativeY);
   state.mixerResult = buildM8MixerResult(state.sampledColor);
+  state.mixerCoachResult = null;
+  state.mixerCoachLoading = false;
+  state.mixerCoachError = "";
+  state.mixerCoachRequestId += 1;
   state.trainerSelection = [];
   state.trainerEvaluation = null;
   hidePremiumUnlockCard();
@@ -1369,6 +1412,7 @@ function sampleMixerPoint(event) {
     statusNote.textContent = "Choose up to 4 pigments, then check your mix.";
   } else {
     renderM8ColorMixer(state.mixerResult);
+    renderMixerCoach();
     if (isUnlocked()) {
       statusNote.textContent = "Mixer suggestion ready.";
     } else {
@@ -1945,6 +1989,7 @@ function renderM8ColorMixer(result) {
     mixerAltSection.classList.add("hidden");
     mixerAltList.innerHTML = "";
     mixerTags.innerHTML = '<span class="detail-copy">No behavior tags yet.</span>';
+    renderMixerCoach();
     renderMixerSupportPanel(null);
     return;
   }
@@ -1994,7 +2039,232 @@ function renderM8ColorMixer(result) {
     mixerTags.appendChild(item);
   });
 
+  renderMixerCoach();
   renderMixerSupportPanel(result);
+}
+
+function renderMixerCoach() {
+  if (!mixerCoachButton || !mixerCoachStatus || !mixerCoachResult) {
+    return;
+  }
+
+  const hasMix = !!state.mixerResult;
+  mixerCoachButton.disabled = !hasMix || state.mixerCoachLoading;
+  mixerCoachButton.classList.toggle("is-disabled", mixerCoachButton.disabled);
+  mixerCoachButton.textContent = state.mixerCoachLoading ? "Building Mix Plan..." : "Build Mix Plan";
+
+  if (state.mixerCoachLoading) {
+    mixerCoachStatus.textContent = "Reading mix";
+    mixerCoachResult.classList.remove("hidden");
+    mixerCoachResult.innerHTML = `
+      <div class="mixer-coach-loading">
+        <span aria-hidden="true"></span>
+        <p>Reading value, temperature, pigment order, and adjustment path...</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (!hasMix) {
+    mixerCoachStatus.textContent = "Sample first";
+    mixerCoachResult.classList.add("hidden");
+    mixerCoachResult.innerHTML = "";
+    return;
+  }
+
+  if (state.mixerCoachError) {
+    mixerCoachStatus.textContent = "Try again";
+    mixerCoachResult.classList.remove("hidden");
+    mixerCoachResult.innerHTML = `<p class="detail-copy">${escapeHtml(state.mixerCoachError)}</p>`;
+    return;
+  }
+
+  if (!state.mixerCoachResult) {
+    mixerCoachStatus.textContent = "Ready";
+    mixerCoachResult.classList.add("hidden");
+    mixerCoachResult.innerHTML = "";
+    return;
+  }
+
+  const result = state.mixerCoachResult;
+  mixerCoachStatus.textContent = "Coach ready";
+  mixerCoachResult.classList.remove("hidden");
+  mixerCoachResult.innerHTML = "";
+
+  const verdict = document.createElement("div");
+  verdict.className = "mixer-coach-verdict";
+  verdict.innerHTML = `
+    <span class="meta-label">Mix Verdict</span>
+    <p>${escapeHtml(result.verdict)}</p>
+  `;
+  mixerCoachResult.appendChild(verdict);
+
+  const grid = document.createElement("div");
+  grid.className = "mixer-coach-grid";
+  [
+    ["Start Here", result.startingPile],
+    ["Adjust", result.adjustment],
+    ["Avoid", result.avoid],
+    ["Finish Check", result.finishCheck]
+  ].forEach(([label, copy]) => {
+    const card = document.createElement("div");
+    card.className = "mixer-coach-card";
+    card.innerHTML = `<span class="meta-label">${escapeHtml(label)}</span><p>${escapeHtml(copy)}</p>`;
+    grid.appendChild(card);
+  });
+  mixerCoachResult.appendChild(grid);
+
+  const steps = document.createElement("div");
+  steps.className = "mixer-coach-steps";
+  steps.innerHTML = '<span class="meta-label">Mixing Order</span>';
+  const list = document.createElement("ol");
+  (result.mixingSteps || []).slice(0, 5).forEach((step) => {
+    const item = document.createElement("li");
+    item.textContent = step;
+    list.appendChild(item);
+  });
+  steps.appendChild(list);
+  mixerCoachResult.appendChild(steps);
+}
+
+async function requestMixerCoach() {
+  if (state.mixerCoachLoading) {
+    return;
+  }
+
+  if (!isUnlocked()) {
+    showUnlockPaywall({
+      title: "Unlock Color Checker",
+      note: "One-time unlock â€” $5",
+      status: "Unlock Color Checker to use the AI Mix Coach.",
+      toast: "Paid unlock required."
+    });
+    return;
+  }
+
+  if (!state.mixerResult || !state.sampledColor) {
+    showStatusToast("Sample a color first");
+    return;
+  }
+
+  const requestId = state.mixerCoachRequestId + 1;
+  state.mixerCoachRequestId = requestId;
+  state.mixerCoachLoading = true;
+  state.mixerCoachResult = null;
+  state.mixerCoachError = "";
+  renderMixerCoach();
+  statusNote.textContent = "Building painter mixing plan...";
+
+  try {
+    const imageDataUrl = createColorMixCoachImageDataUrl();
+    const response = await fetch(COLOR_MIX_COACH_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        imageDataUrl,
+        sample: sanitizeMixerSampleForCoach(state.sampledColor),
+        m8Mix: state.mixerResult.mix,
+        alternateMix: state.mixerResult.alternateMix,
+        notes: state.mixerResult.notes,
+        tags: state.mixerResult.tags,
+        rules: MIXER_LOGIC_RULES,
+        palette: MIXER_PALETTE_REFERENCE.map(({ name, role }) => ({ name, role }))
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || "Mix Coach failed. Try again in a moment.");
+    }
+    if (requestId !== state.mixerCoachRequestId) {
+      return;
+    }
+
+    pushActionSnapshot();
+    state.mixerCoachResult = normalizeMixerCoachResult(data.mixCoach);
+    state.mixerCoachError = "";
+    statusNote.textContent = "AI Mix Coach ready.";
+    showStatusToast("Mix plan ready");
+  } catch (error) {
+    if (requestId !== state.mixerCoachRequestId) {
+      return;
+    }
+    state.mixerCoachError = error.message || "Mix Coach failed. Try again in a moment.";
+    statusNote.textContent = "Mix Coach failed.";
+  } finally {
+    if (requestId === state.mixerCoachRequestId) {
+      state.mixerCoachLoading = false;
+      renderMixerCoach();
+      updateWorkspaceActionState();
+    }
+  }
+}
+
+function sanitizeMixerSampleForCoach(sample) {
+  return {
+    hex: sample.hex,
+    rgb: sample.rgb,
+    valueStep: sample.valueStep,
+    temperature: sample.temperature,
+    chromaLevel: sample.chromaLevel,
+    formRole: sample.formRole,
+    family: sample.family,
+    saturation: Math.round(sample.saturation),
+    brightness: Math.round(sample.brightness)
+  };
+}
+
+function createColorMixCoachImageDataUrl() {
+  if (!previewImage?.naturalWidth || !previewImage?.naturalHeight) {
+    return "";
+  }
+
+  const scale = Math.min(1, COLOR_MIX_COACH_IMAGE_MAX_SIZE / Math.max(previewImage.naturalWidth, previewImage.naturalHeight));
+  const width = Math.max(1, Math.round(previewImage.naturalWidth * scale));
+  const height = Math.max(1, Math.round(previewImage.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(previewImage, 0, 0, width, height);
+  try {
+    return canvas.toDataURL("image/jpeg", COLOR_MIX_COACH_IMAGE_QUALITY);
+  } catch (error) {
+    return "";
+  }
+}
+
+function normalizeMixerCoachResult(result) {
+  const steps = Array.isArray(result?.mixingSteps)
+    ? result.mixingSteps.map(cleanMixerCoachLine).filter(Boolean).slice(0, 5)
+    : [];
+  return {
+    verdict: cleanMixerCoachLine(result?.verdict || "This mixture should be built from value and temperature first, then tuned gently."),
+    startingPile: cleanMixerCoachLine(result?.startingPile || "Start from the dominant M8 pigments before adding small correction notes."),
+    adjustment: cleanMixerCoachLine(result?.adjustment || "Adjust one direction at a time: value first, then temperature, then chroma."),
+    mixingSteps: steps.length ? steps : [
+      "Set the main value first.",
+      "Tune the temperature with the smallest useful pigment shift.",
+      "Quiet or brighten the chroma only after the value reads."
+    ],
+    avoid: cleanMixerCoachLine(result?.avoid || "Avoid adding too many pigments before the main value reads correctly."),
+    finishCheck: cleanMixerCoachLine(result?.finishCheck || "Check the note against the surrounding value family before painting detail.")
+  };
+}
+
+function cleanMixerCoachLine(value) {
+  return String(value || "").replace(/\bAI\b/gi, "").replace(/\s+/g, " ").trim();
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function renderMixTrainer() {
