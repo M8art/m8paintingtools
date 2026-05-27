@@ -3827,6 +3827,52 @@ html.mobile-light-mode .grid-overlay-info {
     border-radius: 16px;
   }
 }
+
+@media (max-width: 720px) {
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .detail-card,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .placeholder-panel,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .control-stack,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-card,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-result-block,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-verdict {
+    border-color: rgba(185, 141, 66, 0.38) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.024) 0 1px, transparent 1px 7px),
+      radial-gradient(circle at 16% 0%, rgba(201, 118, 61, 0.12), transparent 34%),
+      linear-gradient(180deg, rgba(31, 25, 18, 0.98), rgba(12, 10, 8, 0.98)) !important;
+    color: #f2e7cf !important;
+    box-shadow:
+      0 16px 30px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(242, 231, 207, 0.05) !important;
+  }
+
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel h2,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel h3,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .feedback-title {
+    color: #f2e7cf !important;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.44) !important;
+  }
+
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .detail-copy,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-status,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-result-block p,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-result-block li,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .panel-copy,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .result-copy,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .control-hint {
+    color: rgba(242, 231, 207, 0.78) !important;
+  }
+
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .section-label,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .control-label,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .control-value,
+  html:not(.mobile-light-mode) body[data-mode="notan"] #advancedAnalysisPanel .advanced-ai-result-block h3 {
+    border-color: rgba(185, 141, 66, 0.32) !important;
+    background: rgba(185, 141, 66, 0.12) !important;
+    color: #caa24d !important;
+  }
+}
 /* Shared mobile tool heading polish */
 @media (max-width: 720px) {
   html:not(.mobile-light-mode) .topbar .eyebrow {
