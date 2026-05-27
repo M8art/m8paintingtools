@@ -102,6 +102,18 @@
           </div>
           <button id="sampleMarker" class="sample-marker hidden" type="button" tabindex="-1" aria-hidden="true"></button>
         </div>
+        <div id="mixerCoachDesk" class="detail-card mixer-coach-desk hidden">
+          <div class="trainer-section-head">
+            <div>
+              <p class="section-label">AI Mix Coach</p>
+              <h3>Painter Mixing Plan</h3>
+            </div>
+            <span id="mixerCoachStatus" class="trainer-limit">Sample first</span>
+          </div>
+          <p class="detail-copy">Build a practical mixing process from the sampled note using the M8 palette logic.</p>
+          <button id="mixerCoachButton" class="button mixer-coach-button" type="button" disabled>Build Mix Plan</button>
+          <div id="mixerCoachResult" class="mixer-coach-result hidden"></div>
+        </div>
         <div id="harmonySchemeCard" class="detail-card harmony-scheme-card">
           <p id="harmonySchemeTitle" class="section-label">Color Harmony Scheme</p>
           <div class="harmony-scheme-layout">
@@ -291,16 +303,6 @@
                 <div id="mixerNotes" class="scheme-list compact">
                   <p class="detail-copy">Painter notes will appear here after sampling.</p>
                 </div>
-              </div>
-
-              <div id="mixerCoachSection" class="mixer-section mixer-coach-section">
-                <div class="trainer-section-head">
-                  <p class="section-label">AI Mix Coach</p>
-                  <span id="mixerCoachStatus" class="trainer-limit">Sample first</span>
-                </div>
-                <p class="detail-copy">Let M8 turn the sampled note into a practical studio mixing process based on the M8 palette logic.</p>
-                <button id="mixerCoachButton" class="button mixer-coach-button" type="button" disabled>Build Mix Plan</button>
-                <div id="mixerCoachResult" class="mixer-coach-result hidden"></div>
               </div>
 
               <div id="mixerAltSection" class="mixer-section hidden">

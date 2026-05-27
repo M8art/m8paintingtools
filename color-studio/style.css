@@ -783,8 +783,13 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
 }
 
-.mixer-coach-section {
+.mixer-coach-section,
+.mixer-coach-desk {
   gap: 14px;
+}
+
+.mixer-coach-desk {
+  margin-top: 16px;
 }
 
 .mixer-coach-button {
@@ -820,8 +825,16 @@ a {
 
 .mixer-coach-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+}
+
+.mixer-coach-desk .mixer-coach-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mixer-coach-desk .mixer-coach-steps {
+  grid-column: 1 / -1;
 }
 
 .mixer-coach-steps ol {

@@ -133,6 +133,7 @@ const mixerHex = document.getElementById("mixerHex");
 const mixerMixList = document.getElementById("mixerMixList");
 const mixerNotes = document.getElementById("mixerNotes");
 const mixerNotesSection = document.getElementById("mixerNotesSection");
+const mixerCoachDesk = document.getElementById("mixerCoachDesk");
 const mixerCoachStatus = document.getElementById("mixerCoachStatus");
 const mixerCoachButton = document.getElementById("mixerCoachButton");
 const mixerCoachResult = document.getElementById("mixerCoachResult");
@@ -975,6 +976,7 @@ function setTab(tab) {
     if (trainerCard) {
       trainerCard.classList.add("hidden");
     }
+    mixerCoachDesk?.classList.add("hidden");
     setMixerSupportMode(false);
     setTrainerSupportMode(false);
     renderPaletteSummary();
@@ -1013,6 +1015,7 @@ function setTab(tab) {
     setMixerSupportMode(true);
     setTrainerSupportMode(false);
     renderM8ColorMixer(state.mixerResult);
+    renderMixerCoach();
     statusNote.textContent = state.imageLoading
       ? "Preparing analysis..."
       : state.loadErrorMessage || (state.mixerResult
@@ -1042,6 +1045,7 @@ function setTab(tab) {
     premiumUnlockCard?.classList.toggle("hidden", !state.premiumUnlockVisible);
     setMixerSupportMode(false);
     setTrainerSupportMode(true);
+    mixerCoachDesk?.classList.add("hidden");
     renderMixTrainer();
     statusNote.textContent = state.imageLoading
       ? "Preparing analysis..."
@@ -2045,6 +2049,12 @@ function renderM8ColorMixer(result) {
 
 function renderMixerCoach() {
   if (!mixerCoachButton || !mixerCoachStatus || !mixerCoachResult) {
+    return;
+  }
+
+  const isMixerVisible = state.activeTab === "mixer";
+  mixerCoachDesk?.classList.toggle("hidden", !isMixerVisible);
+  if (!isMixerVisible) {
     return;
   }
 
