@@ -218,6 +218,7 @@ let statusMessageTimeoutId = null;
 let justUnlockedFromStripe = false;
 let premiumToastTimeoutId = null;
 let imageLoadRequestId = 0;
+let filePickerOpenGuard = false;
 let feedbackToastTimeoutId = null;
 let scoreAnimationFrameId = null;
 let currentAnalysisUsesFreeSlot = false;
@@ -342,6 +343,9 @@ function readNativeUploadBlob(source) {
 
 analysisUploadLabels.forEach((label) => {
   label.addEventListener("click", (event) => {
+    if (label.classList.contains("upload-input-hitbox")) {
+      return;
+    }
     event.preventDefault();
     if (shouldBlockAnalysisUpload()) {
       showLockedAnalysisState();
@@ -916,11 +920,27 @@ function completeQuickCheck() {
     metrics: { ...result.metrics }
   };
   markMobileResultsReady();
+  scrollToQuickCheckAiAnalysisOnMobile();
 
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
   analysisTimeoutIds = [];
   updateAnalysisAccessUI();
+}
+
+function scrollToQuickCheckAiAnalysisOnMobile() {
+  if (!isMobileLayout()) {
+    return;
+  }
+
+  const target = quickCheckResult || document.getElementById("quickCheckResultPanel");
+  if (!target) {
+    return;
+  }
+
+  window.setTimeout(() => {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 180);
 }
 
 function buildQuickCheckResult() {
@@ -2449,6 +2469,14 @@ function clearAnalysisFileInput() {
 }
 
 function openAnalysisFilePicker() {
+  if (filePickerOpenGuard) {
+    return;
+  }
+  filePickerOpenGuard = true;
+  window.setTimeout(() => {
+    filePickerOpenGuard = false;
+  }, 450);
+
   clearAnalysisFileInput();
   if (typeof window.M8PickImageForInput === "function" && window.M8PickImageForInput(analysisFileInput)) {
     return;
