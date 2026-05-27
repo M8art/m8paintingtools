@@ -2067,6 +2067,25 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .mixer-coach-desk .mixer-coach-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .mixer-coach-result,
+  .palette-coach-result {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mixer-coach-card,
+  .mixer-coach-verdict,
+  .mixer-coach-steps {
+    min-width: 0;
+    width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
   .mixer-coach-button {
     width: 100%;
     justify-content: center;
@@ -2772,6 +2791,14 @@ a {
       repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
       linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
     color: #f2e7cf !important;
+  }
+
+  .mixer-coach-card p,
+  .mixer-coach-verdict p,
+  .mixer-coach-steps li {
+    max-width: 100%;
+    color: rgba(242, 231, 207, 0.9) !important;
+    line-height: 1.55;
   }
 }
 
