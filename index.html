@@ -1965,6 +1965,34 @@
       gap: 12px;
     }
 
+    .landing-hero-copy .button-row {
+      align-items: flex-start;
+    }
+
+    .hero-cta-stack {
+      position: relative;
+      display: grid;
+      gap: 7px;
+      justify-items: start;
+      width: fit-content;
+      padding-bottom: 28px;
+    }
+
+    .hero-cta-note {
+      position: absolute;
+      left: 0;
+      top: calc(100% - 21px);
+      width: max-content;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .landing-hero-copy .button-secondary {
+      min-height: 52px;
+    }
+
     .button,
     .button-secondary {
       border-radius: 999px;
@@ -4636,7 +4664,7 @@
       }
 
       .landing-hero.desktop-landing-only .button-row {
-        align-items: center;
+        align-items: flex-start;
       }
 
       .landing-hero.desktop-landing-only .button {
@@ -7444,8 +7472,8 @@ html,
                   <path d="M12 15v2"></path>
                 </svg>
               </span>
-              <h2 class="onboarding-access-title">Choose your <span>studio access</span></h2>
-              <p class="onboarding-access-copy">Start free, or unlock the full painting toolkit when you want deeper checks.</p>
+              <h2 class="onboarding-access-title">Choose your <span>fix plan</span></h2>
+              <p class="onboarding-access-copy">Start free, then reveal the full painting fix plan when you want deeper checks.</p>
             </div>
 
             <div class="onboarding-plan-grid">
@@ -7462,11 +7490,11 @@ html,
                 </ul>
               </section>
 
-              <section class="onboarding-plan-card is-paid" aria-label="Full unlock">
-                <span class="onboarding-best-value">Full Unlock</span>
+              <section class="onboarding-plan-card is-paid" aria-label="Full fix plan">
+                <span class="onboarding-best-value">Full Fix Plan</span>
                 <div class="onboarding-plan-head">
                   <div class="onboarding-paid-title-row">
-                    <strong>Unlock All</strong>
+                    <strong>Show My Fix Plan</strong>
                     <span class="onboarding-price-pill">$5</span>
                   </div>
                   <span>$5 one-time payment. Yours forever.</span>
@@ -7481,7 +7509,7 @@ html,
             </div>
 
             <div class="onboarding-access-actions">
-              <button id="onboardingUnlockButton" class="onboarding-unlock-button" type="button">Unlock All Tools for $5</button>
+              <button id="onboardingUnlockButton" class="onboarding-unlock-button" type="button">Show My Painting Fix Plan for $5</button>
               <button id="onboardingFreeButton" class="onboarding-free-button" type="button">Continue with Free</button>
             </div>
 
@@ -7599,12 +7627,15 @@ html,
       <div class="landing-hero-grid">
         <div class="landing-hero-copy">
           <p class="eyebrow">Painting Tools System</p>
-          <h2 class="landing-hero-title">Stop Guessing. Start Painting With Confidence.</h2>
-          <p class="landing-hero-explainer">Most paintings fail before the first brushstroke - this shows you exactly why.</p>
-          <p class="landing-hero-subheadline">Instantly check your values, composition, color, and drawing structure before you waste hours on a painting that doesn&rsquo;t work.</p>
+          <h2 class="landing-hero-title">Upload Your Painting. See What To Fix First.</h2>
+          <p class="landing-hero-explainer">M8 checks your values, composition, color, and drawing structure before you waste hours painting in the wrong direction.</p>
+          <p class="landing-hero-subheadline">Get a clear first read on why the image feels off, then reveal the painter fix plan before you commit to the canvas.</p>
           <div class="button-row">
-            <button id="desktopHeroUploadButton" class="button cta-glow" type="button">Upload Painting</button>
-            <a class="button-secondary cta-glow" href="./analysis/index.html">Open Quick Check</a>
+            <div class="hero-cta-stack">
+              <button id="desktopHeroUploadButton" class="button cta-glow" type="button">Analyze My Painting Free</button>
+              <p class="hero-cta-note">First quick scan free. Full fix plan $5. No subscription.</p>
+            </div>
+            <a class="button-secondary cta-glow" href="#sampleResult">See sample result</a>
           </div>
           <div class="landing-hero-meta" aria-label="Tool highlights">
             <span class="landing-hero-note">Built from real studio practice - not theory</span>
@@ -7618,7 +7649,7 @@ html,
             <button id="desktopUploadTrigger" class="hero-upload-mock desktop-landing-upload cta-glow" type="button">
               <span class="hero-upload-icon" aria-hidden="true">+</span>
               <span class="hero-upload-title">Upload your painting</span>
-              <span class="hero-upload-copy">Instantly reveal what&rsquo;s wrong with your values, composition, color, and drawing structure before you touch the canvas.</span>
+              <span class="hero-upload-copy">See what to fix first across value, composition, color, and drawing structure before you touch the canvas.</span>
             </button>
             <div class="hero-preview-grid" aria-label="Tool previews">
               <a class="hero-preview-card" href="./value-checker/index.html" onclick="gtag('event', 'open_value_tool', { page_location: window.location.href })">
@@ -7652,7 +7683,7 @@ html,
       </div>
     </section>
 
-    <section class="conversion-demo-section desktop-landing-only" aria-label="See what M8 finds before you paint">
+    <section id="sampleResult" class="conversion-demo-section desktop-landing-only" aria-label="See what M8 finds before you paint">
       <div class="conversion-demo-head">
         <div>
           <p class="eyebrow">Atelier Analysis Desk</p>
@@ -7702,13 +7733,13 @@ html,
             </div>
 
             <div class="conversion-actions">
-              <button id="conversionTryButton" class="button cta-glow" type="button">Try It On Your Painting</button>
+              <button id="conversionTryButton" class="button cta-glow" type="button">Analyze My Painting Free</button>
             </div>
           </article>
 
           <aside class="premium-preview-card" aria-label="Locked premium preview">
-            <span>Full Unlock</span>
-            <h3>Unlock the full painter fix plan</h3>
+            <span>Full Fix Plan</span>
+            <h3>Show My Painting Fix Plan</h3>
             <ul>
               <li>Unlimited Quick Checks</li>
               <li>Full value, composition, color, and drawing tools</li>
@@ -7716,8 +7747,8 @@ html,
               <li>Lifetime access, no subscription</li>
             </ul>
             <div class="conversion-actions">
-              <button id="conversionUnlockButton" class="button paid-cta" type="button">Unlock Lifetime Access &mdash; $5</button>
-              <button id="conversionTrySecondaryButton" class="button-secondary" type="button">Try It On Your Painting</button>
+              <button id="conversionUnlockButton" class="button paid-cta" type="button">Show My Painting Fix Plan &mdash; $5</button>
+              <button id="conversionTrySecondaryButton" class="button-secondary" type="button">Analyze My Painting Free</button>
             </div>
           </aside>
         </div>
@@ -7735,7 +7766,7 @@ html,
         </section>
 
         <section class="unlock-compare-card" aria-label="Free versus full unlock comparison">
-          <h3>Free vs Full Unlock</h3>
+          <h3>Free vs Full Fix Plan</h3>
           <div class="unlock-compare-grid">
             <div class="compare-plan">
               <span>Free</span>
@@ -7746,7 +7777,7 @@ html,
               </ul>
             </div>
             <div class="compare-plan is-full">
-              <span>Full Unlock</span>
+              <span>Full Fix Plan</span>
               <ul>
                 <li>Unlimited Quick Checks</li>
                 <li>Full painter fix plans</li>
@@ -8130,7 +8161,7 @@ html,
       <h2>Quick Check</h2>
       <p class="quick-check-banner-copy">Upload once, get the biggest issue first, then go deeper into Value, Composition, Color, or Drawing.</p>
       <div class="button-row">
-        <a class="button cta-glow" href="./analysis/index.html">Open Quick Check</a>
+        <a class="button cta-glow" href="./analysis/index.html">Analyze My Painting Free</a>
       </div>
       <div class="quick-check-banner-meta">
         <span>Quick gives you the full read.</span>
