@@ -105,8 +105,18 @@ const paintingBreakdownEdges = document.getElementById("paintingBreakdownEdges")
 const paintingBreakdownFix = document.getElementById("paintingBreakdownFix");
 const paintingBreakdownPlan = document.getElementById("paintingBreakdownPlan");
 const paintingBreakdownBefore = document.getElementById("paintingBreakdownBefore");
+const reportAiResultButton = document.getElementById("reportAiResultButton");
+const aiReportDialog = document.getElementById("aiReportDialog");
+const aiReportForm = document.getElementById("aiReportForm");
+const aiReportReason = document.getElementById("aiReportReason");
+const aiReportEmail = document.getElementById("aiReportEmail");
+const aiReportMessage = document.getElementById("aiReportMessage");
+const aiReportResultSummary = document.getElementById("aiReportResultSummary");
+const aiReportMailto = document.getElementById("aiReportMailto");
+const aiReportStatus = document.getElementById("aiReportStatus");
 
 const params = new URLSearchParams(window.location.search);
+const APP_VERSION_NAME = "1.0.50";
 const DEV_MODE = params.get("dev") === "true";
 const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
 const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
@@ -392,10 +402,7 @@ runAnalysisButton.addEventListener("click", () => {
     return;
   }
 
-  currentAnalysisUsesFreeSlot = !DEV_MODE && !hasUnlockedAccess();
-  if (currentAnalysisUsesFreeSlot) {
-    markFreeAnalysisUsedToday();
-  }
+  currentAnalysisUsesFreeSlot = false;
 
   runQuickCheck();
 });
@@ -430,6 +437,20 @@ notanUnlockButton?.addEventListener("click", () => {
 });
 
 premiumFixUnlockButton?.addEventListener("click", openFullUnlock);
+paintingBreakdownButton?.addEventListener("click", requestFullPaintingBreakdown);
+reportAiResultButton?.addEventListener("click", openAiReportDialog);
+aiReportForm?.addEventListener("submit", handleAiReportSubmit);
+[aiReportReason, aiReportEmail, aiReportMessage].filter(Boolean).forEach((field) => {
+  field.addEventListener("input", updateAiReportMailto);
+});
+document.querySelectorAll("[data-ai-report-close]").forEach((button) => {
+  button.addEventListener("click", closeAiReportDialog);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && aiReportDialog && !aiReportDialog.classList.contains("hidden")) {
+    closeAiReportDialog();
+  }
+});
 
 function preparePlayQuickDirectImageForAnalysis(imageSource) {
   return new Promise((resolve) => {
@@ -758,16 +779,6 @@ function updateAnalysisAccessUI() {
     return;
   }
 
-  if (!DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis()) {
-    runAnalysisButton.textContent = "Unlock All Tools";
-    runAnalysisButton.disabled = false;
-    runAnalysisButton.classList.add("is-unlock-cta");
-    freeLimitHelper.classList.remove("hidden");
-    syncMobileRunAnalysisButton();
-    syncMobileResetWorkspaceButton();
-    return;
-  }
-
   runAnalysisButton.textContent = "Run Analysis";
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
   syncMobileRunAnalysisButton();
@@ -775,7 +786,7 @@ function updateAnalysisAccessUI() {
 }
 
 function isQuickCheckLockedByLimit() {
-  return !DEV_MODE && !hasUnlockedAccess() && hasUsedFullAnalysis();
+  return false;
 }
 
 function openFullUnlock() {
@@ -880,6 +891,7 @@ function completeQuickCheck() {
   renderScoreBreakdown(result.scoreBreakdown);
   renderComparison(comparison, result.score);
   applyResultComposition(result.composition);
+  syncQuickCheckResultAccess(result);
   quickCheckTags.innerHTML = "";
   result.tags.forEach((tag) => {
     const tagElement = document.createElement("span");
@@ -900,13 +912,11 @@ function completeQuickCheck() {
     freeDailyNote.classList.add("hidden");
     streakNote.classList.add("hidden");
   } else {
-    if (currentAnalysisUsesFreeSlot) {
-      markStreakForCompletedFreeAnalysis();
-    }
-    freeCheckNote.classList.add("hidden");
+    freeCheckNote.textContent = "Your free scan is ready. Unlock the full fix plan for exact painting steps.";
+    freeCheckNote.classList.remove("hidden");
     freeDailyNote.classList.remove("hidden");
-    streakNote.textContent = getStreakMessage();
-    streakNote.classList.remove("hidden");
+    freeDailyNote.textContent = "Free preview shows the diagnosis. The exact first fix and 3-step paint plan are inside the full unlock.";
+    streakNote.classList.add("hidden");
   }
   quickCheckResult.classList.remove("hidden");
   quickCheckDeepReport?.classList.remove("hidden");
@@ -1653,6 +1663,47 @@ function applyResultComposition(composition) {
     quickCheckDetails.insertBefore(quickCheckSuggestion, quickCheckBlocks);
   } else {
     quickCheckDetails.insertBefore(quickCheckBlocks, quickCheckSuggestion);
+  }
+}
+
+function hasFullQuickCheckResultAccess(result) {
+  return hasUnlockedAccess() || DEV_MODE || Boolean(result?.metrics?.referenceIssue);
+}
+
+function setResultBlockTitle(block, title) {
+  const titleElement = block?.querySelector(".result-block-title");
+  if (titleElement) {
+    titleElement.textContent = title;
+  }
+}
+
+function syncQuickCheckResultAccess(result) {
+  const hasFullResult = hasFullQuickCheckResultAccess(result);
+
+  quickCheckResult?.classList.toggle("is-free-preview", !hasFullResult);
+  setResultBlockTitle(quickCheckKeyInsightBlock, hasFullResult ? "Key Insight" : "Biggest Issue");
+
+  if (!hasFullResult) {
+    quickCheckKeyInsightText.textContent = result?.weakness || result?.keyInsight || "M8 found one main issue in this painting.";
+  }
+
+  [
+    quickCheckStrengthBlock,
+    quickCheckWeaknessBlock,
+    quickCheckWhyScore,
+    quickCheckFastestFix,
+    quickCheckScoreBreakdown,
+    quickCheckDetails,
+    breakdownToggleButton
+  ].forEach((element) => {
+    element?.classList.toggle("hidden", !hasFullResult);
+  });
+
+  if (!hasFullResult) {
+    quickCheckComparison?.classList.add("hidden");
+    isBreakdownExpanded = false;
+    quickCheckDetails?.setAttribute("aria-hidden", "true");
+    breakdownToggleButton?.setAttribute("aria-expanded", "false");
   }
 }
 
@@ -2631,8 +2682,17 @@ function selectPainterFixLines(pool, priorityLines = []) {
 
 function renderPaintersFix(lines) {
   paintersFixList.innerHTML = "";
-  paintersFix.classList.toggle("is-locked", !hasUnlockedAccess());
-  paintersFixLock.classList.toggle("hidden", hasUnlockedAccess());
+  const isUnlocked = hasUnlockedAccess() || DEV_MODE;
+  paintersFix.classList.toggle("is-locked", !isUnlocked);
+  paintersFixLock.classList.toggle("hidden", isUnlocked);
+
+  if (!isUnlocked) {
+    const item = document.createElement("p");
+    item.className = "painters-fix-line";
+    item.textContent = "Unlock the full plan to see the exact painting moves in order.";
+    paintersFixList.appendChild(item);
+    return;
+  }
 
   lines.forEach((line) => {
     const item = document.createElement("p");
@@ -2650,7 +2710,7 @@ function renderPremiumFixPreview(result) {
   const plan = buildPremiumFixPlan(result);
   const isUnlocked = hasUnlockedAccess() || DEV_MODE;
   const isReferenceIssue = Boolean(result?.metrics?.referenceIssue);
-  const hasFullPainterReport = isUnlocked || currentAnalysisUsesFreeSlot || isReferenceIssue;
+  const hasFullPainterReport = isUnlocked || isReferenceIssue;
 
   quickCheckPremiumFix.classList.remove("hidden", "is-locked", "is-unlocked", "is-reference-warning");
   quickCheckPremiumFix.classList.add(isUnlocked ? "is-unlocked" : "is-locked");
@@ -2662,7 +2722,7 @@ function renderPremiumFixPreview(result) {
       ? "Bad reference detected"
       : hasFullPainterReport
         ? "Full painter read"
-        : `${plan.fixes.length} fixes detected`;
+        : `${plan.fixes.length} issues found`;
   }
   if (premiumFixTitle) {
     premiumFixTitle.textContent = isUnlocked ? plan.unlockedTitle : plan.lockedTitle;
@@ -2672,14 +2732,14 @@ function renderPremiumFixPreview(result) {
   }
   if (premiumFixUnlockButton) {
     premiumFixUnlockButton.classList.toggle("hidden", isUnlocked || isReferenceIssue);
-    premiumFixUnlockButton.textContent = hasFullPainterReport ? "Unlock Unlimited Checks" : "Unlock Full Painter Report";
+    premiumFixUnlockButton.textContent = "Show My Painting Fix Plan - $5";
   }
   if (premiumFixNote) {
     premiumFixNote.textContent = isUnlocked
       ? "Use this as your first painting pass before details."
       : hasFullPainterReport
-        ? "This is your free full check for today. Unlock for unlimited painter reports and deeper tool access."
-        : "Unlock to see the exact painting moves behind the detected fixes.";
+        ? "Use this as your first painting pass before details."
+        : "Locked inside the full plan: exact first fix, 3-step paint plan, full breakdown, and future checks.";
     premiumFixNote.classList.toggle("hidden", isReferenceIssue);
   }
 
@@ -2695,7 +2755,7 @@ function renderPremiumFixPreview(result) {
     ]
     : plan.fixes.map((fix, index) => ({
       ...fix,
-      label: isReferenceIssue ? "Source" : `Fix ${index + 1}`
+      label: isReferenceIssue ? "Source" : `Issue ${index + 1}`
     }));
 
   reportItems.forEach((fix) => {
@@ -2817,9 +2877,9 @@ function buildPremiumFixPlan(result) {
   }
 
   return {
-    lockedTitle: "AI Analysis for Painters",
+    lockedTitle: "Your scan is ready.",
     unlockedTitle: "AI Analysis for Painters",
-    lockedSummary: "Quick Check found the weak spots. Unlock shows the full painter diagnosis, priorities, and first-pass plan.",
+    lockedSummary: "M8 found the main issues. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
     unlockedSummary: "This is a painter-first read: what is working, what is costing the image, and what to change before details.",
     sections: [
       {
@@ -2992,14 +3052,19 @@ function setupQuickCheckDeepReport() {
   quickCheckPremiumFix?.classList.add("painter-ai-analysis");
   quickCheckDeepReportContent.append(...[quickCheckPremiumFix].filter(Boolean));
 
-  [
+  const initiallyHiddenDeepReportElements = [
     quickCheckScoreBreakdown,
     quickCheckComparison,
     quickCheckDetails,
     breakdownToggleButton,
-    paintingBreakdownButton,
     paintingBreakdownResult
-  ].filter(Boolean).forEach((element) => {
+  ];
+
+  if (!window.M8_GOOGLE_PLAY_BUILD) {
+    initiallyHiddenDeepReportElements.push(paintingBreakdownButton);
+  }
+
+  initiallyHiddenDeepReportElements.filter(Boolean).forEach((element) => {
     element.classList.add("hidden");
   });
 }
@@ -3164,6 +3229,88 @@ function renderPlayQuickAiAnalysis(analysis) {
   block.classList.remove("hidden");
   quickCheckDeepReport?.classList.remove("hidden");
   block.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function openAiReportDialog() {
+  if (!aiReportDialog || !aiReportForm) {
+    window.location.href = "../contact/index.html?report=ai";
+    return;
+  }
+
+  const summary = buildAiReportSummary();
+  if (aiReportResultSummary) {
+    aiReportResultSummary.value = summary;
+  }
+  if (aiReportStatus) {
+    aiReportStatus.textContent = "";
+  }
+  updateAiReportMailto();
+  aiReportDialog.classList.remove("hidden");
+  window.setTimeout(() => aiReportMessage?.focus(), 40);
+}
+
+function closeAiReportDialog() {
+  aiReportDialog?.classList.add("hidden");
+}
+
+function handleAiReportSubmit(event) {
+  const summary = buildAiReportSummary();
+  if (aiReportResultSummary) {
+    aiReportResultSummary.value = summary;
+  }
+  updateAiReportMailto();
+
+  if (window.location.protocol === "file:" || window.M8_GOOGLE_PLAY_BUILD) {
+    event.preventDefault();
+    if (aiReportStatus) {
+      aiReportStatus.textContent = "Opening your email app with the report details.";
+    }
+    window.location.href = buildAiReportMailtoHref(summary);
+  }
+}
+
+function updateAiReportMailto() {
+  if (!aiReportMailto) {
+    return;
+  }
+  aiReportMailto.href = buildAiReportMailtoHref(buildAiReportSummary());
+}
+
+function buildAiReportMailtoHref(summary) {
+  const reason = aiReportReason?.value || "AI result report";
+  const message = aiReportMessage?.value || "";
+  const email = aiReportEmail?.value || "";
+  const body = [
+    "M8 Painting Tools AI result report",
+    `Version: ${APP_VERSION_NAME}`,
+    `Reason: ${reason}`,
+    email ? `Reporter email: ${email}` : "",
+    "",
+    "Message:",
+    message || "(Please describe the problem.)",
+    "",
+    "Result summary:",
+    summary || "(No result summary available.)"
+  ].filter((line) => line !== "").join("\n");
+
+  return `mailto:matejakjan@gmail.com?subject=${encodeURIComponent("AI result report from M8 Painting Tools")}&body=${encodeURIComponent(body)}`;
+}
+
+function buildAiReportSummary() {
+  const result = latestQuickCheckResult || lastCompletedQuickCheckResult || {};
+  const aiBlock = document.getElementById("playQuickAiResult");
+  const parts = [
+    `Version: ${APP_VERSION_NAME}`,
+    result.score ? `Quick Check score: ${result.score}/100` : "",
+    result.verdict ? `Verdict: ${result.verdict}` : "",
+    result.keyInsight ? `Key insight: ${result.keyInsight}` : "",
+    result.strength ? `Strength: ${result.strength}` : "",
+    result.weakness ? `Weakness: ${result.weakness}` : "",
+    result.fastestFix ? `Fix first: ${result.fastestFix}` : "",
+    aiBlock?.textContent ? `AI output: ${aiBlock.textContent.trim().replace(/\s+/g, " ")}` : ""
+  ].filter(Boolean);
+
+  return parts.join("\n").slice(0, 4000);
 }
 
 function escapeHtml(value) {
@@ -3449,12 +3596,12 @@ function revealResultPanel() {
   const revealSteps = [
     { element: quickScoreHeader || quickCheckScore, delay: 80 },
     { element: quickCheckVerdict, delay: 150 },
-    { element: quickCheckWhyScore, delay: 230 },
+    { element: quickCheckWhyScore, delay: 230, skip: quickCheckWhyScore?.classList.contains("hidden") },
     { element: quickCheckTopSections, delay: 340 },
-    { element: quickCheckFastestFix, delay: 460 },
+    { element: quickCheckFastestFix, delay: 460, skip: quickCheckFastestFix?.classList.contains("hidden") },
     { element: quickCheckPremiumFix, delay: 560, skip: quickCheckPremiumFix?.classList.contains("hidden") },
-    { element: quickCheckScoreBreakdown, delay: 660 },
-    { element: quickCheckComparison, delay: 760, skip: quickCheckComparison.classList.contains("hidden") },
+    { element: quickCheckScoreBreakdown, delay: 660, skip: quickCheckScoreBreakdown?.classList.contains("hidden") },
+    { element: quickCheckComparison, delay: 760, skip: quickCheckComparison?.classList.contains("hidden") },
     { element: quickCheckTags, delay: 860 },
     { element: freeCheckNote, delay: 940, skip: freeCheckNote.classList.contains("hidden") },
     { element: freeDailyNote, delay: 940, skip: freeDailyNote.classList.contains("hidden") },
@@ -3481,9 +3628,9 @@ function showLockedAnalysisState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  updateStatusMessage("Youâ€™ve reached your free analysis limit.");
-  workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
-  showPremiumLimitToast("Youâ€™ve reached your free analysis limit.");
+  updateStatusMessage("Your scan is ready.");
+  workspaceHint.textContent = "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
+  showPremiumLimitToast("Unlock the full painter fix plan.");
 }
 
 function showFreeLimitReachedState() {
@@ -3491,12 +3638,12 @@ function showFreeLimitReachedState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  runAnalysisButton.textContent = "Unlock All Tools";
+  runAnalysisButton.textContent = "Show My Fix Plan";
   runAnalysisButton.disabled = false;
   runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
-  updateStatusMessage("Youâ€™ve reached your free analysis limit.");
-  workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
+  updateStatusMessage("Your scan is ready.");
+  workspaceHint.textContent = "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
   syncMobileRunAnalysisButton();
 }
 

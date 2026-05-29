@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #e8e3d8;
   --panel: rgba(252, 250, 246, 0.92);
   --panel-soft: #f3efe6;
@@ -811,6 +811,17 @@ a {
   display: grid;
   place-items: center;
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.quick-analysis-privacy-notice {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(201, 106, 61, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 250, 244, 0.72);
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .upload-input-hitbox {
@@ -2495,6 +2506,112 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   line-height: 1.5;
 }
 
+.report-ai-result-button {
+  justify-self: start;
+}
+
+.bot-field {
+  display: none;
+}
+
+.ai-report-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.ai-report-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 11, 8, 0.64);
+  backdrop-filter: blur(8px);
+}
+
+.ai-report-panel {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  max-height: min(720px, calc(100vh - 32px));
+  overflow: auto;
+  display: grid;
+  gap: 16px;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid rgba(185, 141, 66, 0.38);
+  border-radius: 22px;
+  background:
+    repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, rgba(29, 24, 18, 0.98), rgba(12, 10, 8, 0.98));
+  color: #f2e7cf;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(242, 231, 207, 0.05);
+}
+
+.ai-report-panel h2 {
+  color: #f2e7cf;
+}
+
+.ai-report-panel .detail-copy,
+.ai-report-panel .result-note {
+  color: rgba(242, 231, 207, 0.72);
+}
+
+.ai-report-form {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-report-field {
+  display: grid;
+  gap: 7px;
+  color: #b98d42;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ai-report-field input,
+.ai-report-field select,
+.ai-report-field textarea {
+  width: 100%;
+  border: 1px solid rgba(185, 141, 66, 0.34);
+  border-radius: 14px;
+  background: rgba(13, 11, 8, 0.62);
+  color: #f2e7cf;
+  font: inherit;
+  padding: 12px 13px;
+}
+
+.ai-report-field textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.ai-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .quick-analysis-privacy-notice {
+    border-color: rgba(185, 141, 66, 0.34);
+    border-radius: 4px;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96));
+    color: rgba(242, 231, 207, 0.72);
+  }
+
+  .ai-report-panel {
+    border-radius: 4px;
+  }
+
+  .ai-report-actions > * {
+    flex: 1 1 100%;
+  }
+}
+
 #freeCheckNote,
 #freeDailyNote,
 #streakNote {
@@ -4107,6 +4224,7 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42) !important;
   }
 }
+
 @media (max-width: 720px) {
   html.mobile-light-mode {
     --bg: #e8e3d8;
