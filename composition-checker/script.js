@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = "Unlock lifetime access for $5 to keep analyzing now. Includes the full value, composition, color, and drawing tools. No subscription.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Unlock the exact first fix, 3-step paint plan, and full painter breakdown. One-time payment, no subscription.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -596,9 +596,9 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = "This tool is locked. Unlock lifetime access for $5 or use the free Basic tools.";
-  workspaceHint.textContent = "Unlock lifetime access for $5 to keep analyzing now. You can still use the free Basic overlays.";
-  showPremiumLimitToast("Unlock lifetime access for $5.");
+  advancedStatusNote.textContent = "Unlock the full painter fix plan to use this advanced read.";
+  workspaceHint.textContent = "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
+  showPremiumLimitToast("Show My Painting Fix Plan - $5.");
 }
 
 function requireUnlock(actionName = "advanced composition tools") {
@@ -2806,8 +2806,7 @@ function updateModeUI() {
 
 function updateThirdsAiUI(isThirdsMode) {
   const analysisState = state.compositionAi.thirds;
-  const lockedByLimit = isThirdsMode && hasUsedThirdsFreeAnalysis();
-  const canRun = isThirdsMode && state.imageLoaded && !analysisState.isRunning && (!lockedByLimit || isUnlocked());
+  const canRun = isThirdsMode && state.imageLoaded && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
   const status = analysisState.isRunning
@@ -2816,14 +2815,12 @@ function updateThirdsAiUI(isThirdsMode) {
     ? analysisState.error
     : hasResult
     ? "Rule of Thirds read is ready."
-    : lockedByLimit
-    ? `Free Rule of Thirds AI read used. Unlock for $5 or wait ${formatThirdsFreeWait()}.`
     : state.imageLoaded
     ? "Run the AI read for a deeper painter explanation of the thirds structure."
     : "Upload an image to begin.";
 
   thirdsAiCard?.classList.toggle("hidden", !isThirdsMode);
-  thirdsAiLockCard?.classList.toggle("hidden", !lockedByLimit || isUnlocked() || !isThirdsMode);
+  thirdsAiLockCard?.classList.add("hidden");
 
   if (runThirdsAiButton) {
     runThirdsAiButton.disabled = !state.imageLoaded || analysisState.isRunning;
@@ -2831,11 +2828,9 @@ function updateThirdsAiUI(isThirdsMode) {
     runThirdsAiButton.classList.toggle("is-running", analysisState.isRunning);
     runThirdsAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
     runThirdsAiButton.classList.toggle("is-result-ready", hasResult);
-    runThirdsAiButton.classList.toggle("is-unlock-cta", !isUnlocked() && lockedByLimit);
+    runThirdsAiButton.classList.remove("is-unlock-cta");
     runThirdsAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
-      : (!isUnlocked() && lockedByLimit)
-      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -2886,8 +2881,7 @@ function updateDiagonalAiUI(isDiagonalMode) {
 }
 
 function updateBasicCompositionAiUI(options) {
-  const lockedByLimit = options.isMode && hasUsedBasicAiFreeAnalysis(options.storageKey);
-  const canRun = options.isMode && state.imageLoaded && !options.analysisState.isRunning && (!lockedByLimit || isUnlocked());
+  const canRun = options.isMode && state.imageLoaded && !options.analysisState.isRunning;
   const hasResult = Boolean(options.analysisState.result);
   const shouldCueAnalyze = canRun && !hasResult && !options.analysisState.error;
   const status = options.analysisState.isRunning
@@ -2896,14 +2890,12 @@ function updateBasicCompositionAiUI(options) {
     ? options.analysisState.error
     : hasResult
     ? options.readyCopy
-    : lockedByLimit
-    ? `Free ${options.toolName} AI read used. Unlock for $5 or wait ${formatBasicAiFreeWait(options.storageKey)}.`
     : state.imageLoaded
     ? options.promptCopy
     : "Upload an image to begin.";
 
   options.card?.classList.toggle("hidden", !options.isMode);
-  options.lockCard?.classList.toggle("hidden", !lockedByLimit || isUnlocked() || !options.isMode);
+  options.lockCard?.classList.add("hidden");
 
   if (options.button) {
     options.button.disabled = !state.imageLoaded || options.analysisState.isRunning;
@@ -2911,11 +2903,9 @@ function updateBasicCompositionAiUI(options) {
     options.button.classList.toggle("is-running", options.analysisState.isRunning);
     options.button.classList.toggle("is-action-cue", shouldCueAnalyze);
     options.button.classList.toggle("is-result-ready", hasResult);
-    options.button.classList.toggle("is-unlock-cta", !isUnlocked() && lockedByLimit);
+    options.button.classList.remove("is-unlock-cta");
     options.button.textContent = options.analysisState.isRunning
       ? "Analyzing..."
-      : (!isUnlocked() && lockedByLimit)
-      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -3429,15 +3419,6 @@ async function runThirdsAiAnalysis() {
     return;
   }
 
-  if (!isUnlocked() && hasUsedThirdsFreeAnalysis()) {
-    thirdsAiLockCard?.classList.remove("hidden");
-    showPremiumLimitToast(`Free Rule of Thirds read used. Unlock for $5 or wait ${formatThirdsFreeWait()}.`);
-    scrollToThirdsAiResults();
-    updateModeUI();
-    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
-    return;
-  }
-
   analysisState.isRunning = true;
   analysisState.result = null;
   analysisState.error = "";
@@ -3546,15 +3527,6 @@ async function runDiagonalAiAnalysis() {
 async function runBasicCompositionAiAnalysis(options) {
   const analysisState = state.compositionAi[options.stateKey];
   if (analysisState.isRunning || !state.imageLoaded || state.analysisMode !== "basic" || state.mode !== options.modeName) {
-    return;
-  }
-
-  if (!isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey)) {
-    options.lockCard?.classList.remove("hidden");
-    showPremiumLimitToast(`Free AI read used. Unlock for $5 or wait ${formatBasicAiFreeWait(options.storageKey)}.`);
-    options.scroll();
-    updateModeUI();
-    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     return;
   }
 
@@ -4029,8 +4001,50 @@ function renderDynamicSymmetryAiResult(analysis) {
   });
 }
 
+function renderCompositionAiUnlockTeaser(resultsElement, title, analysis) {
+  const issue = analysis.problemAreas ||
+    analysis.overlayRead ||
+    analysis.verdict ||
+    analysis.whatWorks ||
+    "M8 found composition issues in this painting.";
+
+  if (window.M8_UNLOCK?.renderInlineCard) {
+    resultsElement.innerHTML = window.M8_UNLOCK.renderInlineCard({
+      title,
+      issue,
+      body: "M8 found the composition problem. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
+    });
+  } else {
+    resultsElement.innerHTML = [
+      `<div class="advanced-ai-result-block advanced-ai-verdict">`,
+      `<h3>${escapeHtml(title)}</h3>`,
+      `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
+      `<p>Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
+      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Show My Painting Fix Plan - $5</button>`,
+      `</div>`
+    ].join("");
+  }
+  window.M8_UNLOCK?.bind?.(resultsElement, () => {
+    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+  });
+}
+
+function revealCompositionAiResults(resultsElement) {
+  resultsElement.classList.toggle("hidden", !resultsElement.innerHTML);
+  resultsElement.classList.remove("is-visible");
+  window.requestAnimationFrame(() => {
+    resultsElement.classList.add("is-visible");
+  });
+}
+
 function renderThirdsAiResult(analysis) {
   if (!thirdsAiResults || !analysis) {
+    return;
+  }
+
+  if (!isUnlocked()) {
+    renderCompositionAiUnlockTeaser(thirdsAiResults, "Your thirds scan is ready", analysis);
+    revealCompositionAiResults(thirdsAiResults);
     return;
   }
 
@@ -4054,15 +4068,17 @@ function renderThirdsAiResult(analysis) {
     : "";
 
   thirdsAiResults.innerHTML = sectionHtml + fixesHtml + verdictHtml;
-  thirdsAiResults.classList.toggle("hidden", !thirdsAiResults.innerHTML);
-  thirdsAiResults.classList.remove("is-visible");
-  window.requestAnimationFrame(() => {
-    thirdsAiResults.classList.add("is-visible");
-  });
+  revealCompositionAiResults(thirdsAiResults);
 }
 
 function renderBasicAiResult(resultsElement, analysis, verdictTitle) {
   if (!resultsElement || !analysis) {
+    return;
+  }
+
+  if (!isUnlocked()) {
+    renderCompositionAiUnlockTeaser(resultsElement, `${verdictTitle.replace(" VERDICT", "")} scan is ready`, analysis);
+    revealCompositionAiResults(resultsElement);
     return;
   }
 
@@ -4086,11 +4102,7 @@ function renderBasicAiResult(resultsElement, analysis, verdictTitle) {
     : "";
 
   resultsElement.innerHTML = sectionHtml + fixesHtml + verdictHtml;
-  resultsElement.classList.toggle("hidden", !resultsElement.innerHTML);
-  resultsElement.classList.remove("is-visible");
-  window.requestAnimationFrame(() => {
-    resultsElement.classList.add("is-visible");
-  });
+  revealCompositionAiResults(resultsElement);
 }
 
 function scrollToThirdsAiResults() {

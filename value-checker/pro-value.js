@@ -247,7 +247,7 @@
     const cleanedUrl = new URL(window.location.href);
     cleanedUrl.searchParams.delete("unlocked");
     window.history.replaceState({}, "", `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`);
-    setStatus("Unlocked forever.", "AI Value Analysis is now available without the daily free limit.");
+    setStatus("Unlocked forever.", "Full AI Value Analysis is now available without locked fix-plan previews.");
   }
 
   function openFullUnlock() {
@@ -255,7 +255,7 @@
   }
 
   function isLockedByLimit() {
-    return !DEV_MODE && !hasUnlockedAccess() && hasUsedFreeAnalysisToday();
+    return false;
   }
 
   function updateAccessUI() {
@@ -269,10 +269,7 @@
       button.disabled = locked ? false : (!imageDataUrl || isRunning);
     });
 
-    if (locked && !isRunning) {
-      setAnalyzeButtonState("");
-      setStatus("Free Pro analysis used.", "Unlock lifetime access for $5 to keep using AI Value Analysis now, or use the free value tools.");
-    }
+    proLockPanel?.classList.add("hidden");
   }
 
   function resetProValue() {
@@ -433,9 +430,13 @@
     const verdictHtml = analysis.painterValueVerdict
       ? `<div class="value-pro-result-block value-pro-verdict"><h3>PAINTER'S VALUE VERDICT</h3><p>${escapeHtml(analysis.painterValueVerdict)}</p></div>`
       : "";
+    const isFullResult = DEV_MODE || hasUnlockedAccess();
 
     if (proResults) {
-      proResults.innerHTML = valueScaleHtml + html + fixesHtml + verdictHtml;
+      proResults.innerHTML = isFullResult
+        ? valueScaleHtml + html + fixesHtml + verdictHtml
+        : valueScaleHtml + renderValueUnlockTeaser(analysis);
+      bindValueUnlockButtons(proResults);
       proResults.classList.toggle("hidden", !proResults.innerHTML);
       proResults.classList.remove("is-visible");
       window.requestAnimationFrame(() => {
@@ -447,6 +448,42 @@
         scrollResultsIntoView();
       }, 920);
     }
+  }
+
+  function renderValueUnlockTeaser(analysis) {
+    const issue = analysis.valueRange ||
+      analysis.lightShadowStructure ||
+      analysis.focalContrast ||
+      analysis.valueGrouping ||
+      analysis.valueKey ||
+      "M8 found value structure issues in this painting.";
+
+    if (window.M8_UNLOCK?.renderInlineCard) {
+      return window.M8_UNLOCK.renderInlineCard({
+        title: "Your AI value scan is ready",
+        issue,
+        body: "M8 found the value problem. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
+      });
+    }
+
+    return [
+      `<div class="value-pro-result-block value-pro-verdict">`,
+      `<h3>Your AI value scan is ready</h3>`,
+      `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
+      `<p>Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
+      `<button class="button" type="button" data-m8-unlock>Show My Painting Fix Plan - $5</button>`,
+      `</div>`
+    ].join("");
+  }
+
+  function bindValueUnlockButtons(root) {
+    if (window.M8_UNLOCK?.bind) {
+      window.M8_UNLOCK.bind(root, openFullUnlock);
+      return;
+    }
+    root?.querySelectorAll("[data-m8-unlock]").forEach((button) => {
+      button.addEventListener("click", openFullUnlock);
+    });
   }
 
   function renderValueScale(scale) {
@@ -504,11 +541,6 @@
   }
 
   async function runAiValueAnalysis(event) {
-    if (isLockedByLimit()) {
-      openFullUnlock();
-      return;
-    }
-
     if (!imageDataUrl || isRunning) return;
 
     const isMobileRun = isMobileAiValueRun(event);

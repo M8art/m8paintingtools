@@ -2732,7 +2732,7 @@ function renderPremiumFixPreview(result) {
   }
   if (premiumFixUnlockButton) {
     premiumFixUnlockButton.classList.toggle("hidden", isUnlocked || isReferenceIssue);
-    premiumFixUnlockButton.textContent = "Show My Painting Fix Plan - $5";
+    premiumFixUnlockButton.textContent = window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5";
   }
   if (premiumFixNote) {
     premiumFixNote.textContent = isUnlocked
@@ -3005,7 +3005,7 @@ function syncPaintingBreakdownAccessUI() {
 }
 
 function getPaintingBreakdownButtonLabel() {
-  return hasUnlockedAccess() || DEV_MODE ? "Advanced Painting Breakdown" : "Unlock Advanced Breakdown";
+  return hasUnlockedAccess() || DEV_MODE ? "Advanced Painting Breakdown" : "Unlock - $5";
 }
 
 function showPaintingBreakdownMessage(message) {
