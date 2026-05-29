@@ -3284,11 +3284,17 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
 
   .mobile-workspace-toolbar {
     display: grid;
-    grid-template-columns: repeat(3, max-content);
+    grid-template-columns: repeat(4, max-content);
     gap: 8px;
     margin-bottom: 8px;
     justify-content: start;
     align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mobile-workspace-toolbar::-webkit-scrollbar {
+    display: none;
   }
 
   .mobile-toolbar-button {
@@ -3348,6 +3354,62 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
     color: #ffffff;
     box-shadow: 0 12px 26px rgba(201, 106, 61, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.22);
     animation: mobileResultsReadyPulse 1.4s ease-in-out infinite;
+  }
+
+  .mobile-workspace-toolbar .mobile-chat-button {
+    border-color: rgba(201, 106, 61, 0.34);
+  }
+
+  .mobile-workspace-toolbar .mobile-chat-button.hidden {
+    display: none;
+  }
+
+  .quick-ai-chat-panel {
+    margin: 0 0 10px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .quick-ai-chat-panel:not(.is-mobile-open) {
+    padding: 12px;
+  }
+
+  .quick-ai-chat-head {
+    align-items: center;
+  }
+
+  .quick-ai-chat-head h3 {
+    font-size: 1.08rem;
+    line-height: 1.1;
+  }
+
+  .quick-ai-chat-limit {
+    min-height: 28px;
+    padding-inline: 8px;
+    font-size: 0.68rem;
+  }
+
+  .quick-ai-chat-messages {
+    max-height: 240px;
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  .quick-ai-chat-message {
+    width: 100%;
+    padding: 10px 11px;
+    border-radius: 13px;
+    font-size: 0.9rem;
+  }
+
+  .quick-ai-chat-form {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .quick-ai-chat-send {
+    width: 100%;
+    min-height: 42px;
   }
 
   .quick-check-deep-report-content .breakdown-toggle,

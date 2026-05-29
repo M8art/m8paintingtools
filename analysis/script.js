@@ -16,6 +16,7 @@ const runAnalysisButton = document.getElementById("runAnalysisButton");
 const mobileRunAnalysisButton = document.getElementById("mobileRunAnalysisButton");
 const mobileResetWorkspaceButton = document.getElementById("mobileResetWorkspaceButton");
 const mobileResultsButton = document.getElementById("mobileResultsButton");
+const mobileChatButton = document.getElementById("mobileChatButton");
 const quickCheckDeepReport = document.getElementById("quickCheckDeepReport");
 const quickCheckDeepReportContent = document.getElementById("quickCheckDeepReportContent");
 const quickAiChatPanel = document.getElementById("quickAiChatPanel");
@@ -442,6 +443,7 @@ mobileRunAnalysisButton?.addEventListener("click", () => {
 mobileResetWorkspaceButton?.addEventListener("click", resetUploadedImage);
 mobileResultsButton?.addEventListener("click", clearMobileResultsReady);
 mobileResultsButton?.addEventListener("click", completeQuickCheckOnboarding);
+mobileChatButton?.addEventListener("click", openMobileQuickAiChat);
 
 window.addEventListener("resize", () => {
   if (!hasUploadedImage) {
@@ -1111,6 +1113,9 @@ function resetQuickAiChat() {
   quickAiChatRequestId += 1;
   isQuickAiChatLoading = false;
   quickAiChatPanel?.classList.add("hidden");
+  quickAiChatPanel?.classList.remove("is-mobile-open");
+  mobileChatButton?.classList.add("hidden");
+  mobileChatButton?.classList.remove("is-result-ready");
   if (quickAiChatMessages) {
     quickAiChatMessages.innerHTML = "";
     appendQuickAiChatMessage("assistant", "Run Quick Check first. Then ask about values, composition, color, drawing structure, or what the result means.");
@@ -1130,6 +1135,9 @@ function openQuickAiChat(result) {
   quickAiChatFreeCount = 0;
   isQuickAiChatLoading = false;
   quickAiChatPanel.classList.remove("hidden");
+  quickAiChatPanel.classList.remove("is-mobile-open");
+  mobileChatButton?.classList.remove("hidden");
+  mobileChatButton?.classList.add("is-result-ready");
   if (quickAiChatMessages) {
     quickAiChatMessages.innerHTML = "";
     const issue = quickAiChatContext.biggestIssue || quickAiChatContext.verdict || "M8 found the main structure issue.";
@@ -1142,6 +1150,19 @@ function openQuickAiChat(result) {
     }
   }
   updateQuickAiChatUI();
+}
+
+function openMobileQuickAiChat() {
+  if (!quickAiChatPanel || !quickAiChatContext) {
+    return;
+  }
+  quickAiChatPanel.classList.remove("hidden");
+  quickAiChatPanel.classList.add("is-mobile-open");
+  clearMobileResultsReady();
+  quickAiChatPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.setTimeout(() => {
+    quickAiChatInput?.focus({ preventScroll: true });
+  }, 260);
 }
 
 function sanitizeQuickAiChatContext(result) {
