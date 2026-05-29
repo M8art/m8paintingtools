@@ -136,6 +136,7 @@ const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
 const LANDING_HANDOFF_STORE = "uploads";
 const LANDING_HANDOFF_RECORD = "latest";
+const QUICK_UNLOCK_PENDING_ANALYSIS_KEY = "m8_quick_unlock_pending_analysis";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
@@ -451,7 +452,7 @@ window.addEventListener("resize", () => {
 });
 
 unlockFullAccessButton.addEventListener("click", () => {
-  window.location.href = unlockFullAccessButton.dataset.unlockLink || STRIPE_PAYMENT_LINK;
+  openFullUnlock(unlockFullAccessButton.dataset.unlockLink || STRIPE_PAYMENT_LINK);
 });
 
 breakdownToggleButton.addEventListener("click", () => {
@@ -460,7 +461,7 @@ breakdownToggleButton.addEventListener("click", () => {
 });
 
 notanUnlockButton?.addEventListener("click", () => {
-  window.location.href = notanUnlockButton.dataset.unlockLink || STRIPE_PAYMENT_LINK;
+  openFullUnlock(notanUnlockButton.dataset.unlockLink || STRIPE_PAYMENT_LINK);
 });
 
 premiumFixUnlockButton?.addEventListener("click", openFullUnlock);
@@ -703,6 +704,7 @@ function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
     updateNotanReading();
     resetWorkspaceViewport();
     showStatusToast("Image loaded");
+    maybeRunPendingUnlockAnalysis();
     if (window.M8_GOOGLE_PLAY_BUILD) {
       window.dispatchEvent(new CustomEvent("m8:quick-image-ready", { detail: { source: currentObjectUrl } }));
     }
@@ -725,6 +727,26 @@ function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
     resetWorkspaceViewport(true);
   };
   analysisPreview.src = currentObjectUrl;
+}
+
+function maybeRunPendingUnlockAnalysis() {
+  let shouldRun = false;
+  try {
+    shouldRun = window.sessionStorage.getItem(QUICK_UNLOCK_PENDING_ANALYSIS_KEY) === "true";
+    window.sessionStorage.removeItem(QUICK_UNLOCK_PENDING_ANALYSIS_KEY);
+  } catch {
+    shouldRun = false;
+  }
+
+  if (!shouldRun || !hasUnlockedAccess() || isAnalysisRunning || !hasUploadedImage) {
+    return;
+  }
+
+  window.setTimeout(() => {
+    if (!isAnalysisRunning && hasUploadedImage) {
+      runQuickCheck();
+    }
+  }, 180);
 }
 
 function toggleOverlayColorMenu(event) {
@@ -894,8 +916,29 @@ function isQuickCheckLockedByLimit() {
   return false;
 }
 
-function openFullUnlock() {
-  window.location.href = STRIPE_PAYMENT_LINK;
+function openFullUnlock(url = STRIPE_PAYMENT_LINK) {
+  if (typeof url !== "string") {
+    url = STRIPE_PAYMENT_LINK;
+  }
+  cacheCurrentQuickImageForUnlock();
+  window.location.href = url || STRIPE_PAYMENT_LINK;
+}
+
+function cacheCurrentQuickImageForUnlock() {
+  if (!hasUploadedImage) {
+    return;
+  }
+  try {
+    const imageData = createAiAnalysisImageDataUrl();
+    if (!imageData) {
+      return;
+    }
+    window.sessionStorage.setItem(LANDING_HANDOFF_TARGET_KEY, "quick");
+    window.sessionStorage.setItem(LANDING_HANDOFF_IMAGE_KEY, imageData);
+    window.sessionStorage.setItem(QUICK_UNLOCK_PENDING_ANALYSIS_KEY, "true");
+  } catch {
+    // If storage is full, payment still continues; the user can upload again.
+  }
 }
 
 function shouldBlockAnalysisUpload() {
@@ -1043,6 +1086,7 @@ function completeQuickCheck() {
   currentAnalysisUsesFreeSlot = false;
   analysisTimeoutIds = [];
   updateAnalysisAccessUI();
+  maybeRequestUnlockedPaintingBreakdown(result);
 }
 
 function scrollToQuickCheckAiAnalysisOnMobile() {
@@ -3230,7 +3274,7 @@ function buildPremiumFixPlan(result) {
     lockedTitle: "Your scan is ready.",
     unlockedTitle: "AI Analysis for Painters",
     lockedSummary: "M8 found the main issues. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
-    unlockedSummary: "This is a painter-first read: what is working, what is costing the image, and what to change before details.",
+    unlockedSummary: "This measured read starts the diagnosis. The AI fix plan below is generated from this specific painting.",
     sections: [
       {
         label: "Studio verdict",
@@ -3273,7 +3317,24 @@ function buildPremiumFixPlan(result) {
   };
 }
 
-async function requestFullPaintingBreakdown() {
+function maybeRequestUnlockedPaintingBreakdown(result) {
+  if (window.M8_GOOGLE_PLAY_BUILD || isPaintingBreakdownLoading) {
+    return;
+  }
+  if (!hasUploadedImage || (!hasUnlockedAccess() && !DEV_MODE)) {
+    return;
+  }
+  if (result?.metrics?.referenceIssue) {
+    return;
+  }
+
+  requestFullPaintingBreakdown({
+    automatic: true,
+    loadingMessage: "Creating your full AI fix plan from this painting..."
+  });
+}
+
+async function requestFullPaintingBreakdown(options = {}) {
   if (isPaintingBreakdownLoading) {
     return;
   }
@@ -3299,7 +3360,7 @@ async function requestFullPaintingBreakdown() {
   paintingBreakdownRequestId = requestId;
   isPaintingBreakdownLoading = true;
   setPaintingBreakdownButtonLoading(true);
-  showPaintingBreakdownMessage("Creating painting breakdown...");
+  showPaintingBreakdownMessage(options.loadingMessage || "Creating painting breakdown...");
   startPaintingBreakdownScan();
 
   try {
@@ -3355,7 +3416,7 @@ function syncPaintingBreakdownAccessUI() {
 }
 
 function getPaintingBreakdownButtonLabel() {
-  return hasUnlockedAccess() || DEV_MODE ? "Advanced Painting Breakdown" : "Unlock - $5";
+  return hasUnlockedAccess() || DEV_MODE ? "Create AI Fix Plan" : "Unlock - $5";
 }
 
 function showPaintingBreakdownMessage(message) {

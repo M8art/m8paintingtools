@@ -76,6 +76,8 @@ exports.handler = async (event) => {
               text: [
                 "You are a direct, practical classical oil painting teacher.",
                 "Critique the uploaded painting or reference image in painterly terms.",
+                "Base every recommendation on visible evidence in this specific image.",
+                "Avoid generic advice. If a problem is not visible, do not invent it.",
                 "No hype. No generic chatbot language. Do not mention artificial intelligence, models, prompts, or software.",
                 "Return only structured JSON matching the provided schema.",
                 "Each section except fixFirst must be no more than 3 short sentences.",
