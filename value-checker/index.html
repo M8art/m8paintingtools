@@ -1725,6 +1725,63 @@
       min-height: 42px;
       padding-inline: 16px;
     }
+    .value-upload-limit-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: rgba(35, 30, 24, 0.38);
+      backdrop-filter: blur(8px);
+    }
+    .value-upload-limit-backdrop.hidden {
+      display: none;
+    }
+    .value-upload-limit-card {
+      width: min(460px, 100%);
+      padding: 24px;
+      border: 1px solid rgba(209, 128, 82, 0.28);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(255, 252, 246, 0.98), rgba(246, 239, 229, 0.96));
+      box-shadow: 0 24px 70px rgba(42, 31, 22, 0.28);
+      color: var(--ink);
+    }
+    .value-upload-limit-card h3 {
+      margin: 8px 0 10px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      line-height: 1;
+    }
+    .value-upload-limit-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .value-upload-limit-card .paywall-actions {
+      align-items: stretch;
+    }
+    .value-upload-limit-card .button,
+    .value-upload-limit-card .button-secondary {
+      justify-content: center;
+    }
+    .value-upload-limit-note {
+      margin-top: 10px !important;
+      font-size: 0.86rem;
+    }
+    @media (max-width: 720px) {
+      html:not(.mobile-light-mode) .value-upload-limit-backdrop {
+        background: rgba(0, 0, 0, 0.62);
+      }
+      html:not(.mobile-light-mode) .value-upload-limit-card {
+        border-color: rgba(218, 151, 74, 0.48);
+        background: linear-gradient(145deg, rgba(27, 22, 15, 0.98), rgba(12, 10, 7, 0.98));
+        color: #fff4dd;
+      }
+      html:not(.mobile-light-mode) .value-upload-limit-card p {
+        color: rgba(255, 244, 221, 0.76);
+      }
+    }
     .footer {
       margin-top: 28px;
       padding: 20px 24px;
@@ -4703,6 +4760,10 @@
     const CHALLENGE_BEST_SCORE_KEY = "m8_value_challenge_best_score";
     const CHALLENGE_SESSIONS_PLAYED_KEY = "m8_value_challenge_sessions_played";
     const CHALLENGE_SOUND_KEY = "m8_value_challenge_sound";
+    const BASIC_VALUE_FREE_UPLOAD_DAY_KEY = "m8_value_basic_free_upload_day";
+    const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+    const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
+    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 
     const state = {
       mode: "value-picker",
@@ -4786,6 +4847,7 @@
     ]);
     const statusToast = createStatusToast();
     let statusToastTimeoutId = null;
+    let valueUploadLimitDialog = null;
 
     singleImageCanvases.forEach((canvasEl) => {
       canvasEl.classList.add("canvas-visual");
@@ -4841,6 +4903,103 @@
         statusToast.classList.remove("is-visible");
         statusToastTimeoutId = null;
       }, 1800);
+    }
+
+    function getTodayValueUploadStamp() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function hasUnlockedAccess() {
+      try {
+        const hasStorageUnlock = window.localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true";
+        const hasCookieUnlock = document.cookie
+          .split(";")
+          .some((item) => item.trim() === `${UNLOCKED_ACCESS_COOKIE_NAME}=true`);
+        return hasStorageUnlock || hasCookieUnlock;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function hasUsedBasicValueUploadToday() {
+      try {
+        return window.localStorage.getItem(BASIC_VALUE_FREE_UPLOAD_DAY_KEY) === getTodayValueUploadStamp();
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function markBasicValueUploadUsed() {
+      if (window.M8_GOOGLE_PLAY_BUILD || hasUnlockedAccess()) {
+        return;
+      }
+
+      try {
+        window.localStorage.setItem(BASIC_VALUE_FREE_UPLOAD_DAY_KEY, getTodayValueUploadStamp());
+      } catch (error) {
+        // Ignore storage failures and keep the tool usable.
+      }
+    }
+
+    function canUseBasicValueUpload() {
+      return window.M8_GOOGLE_PLAY_BUILD || hasUnlockedAccess() || !hasUsedBasicValueUploadToday();
+    }
+
+    function openBasicValueUnlock() {
+      if (window.M8_UNLOCK?.open) {
+        window.M8_UNLOCK.open();
+        return;
+      }
+
+      window.location.href = STRIPE_PAYMENT_LINK;
+    }
+
+    function closeValueUploadLimitDialog() {
+      if (!valueUploadLimitDialog) {
+        return;
+      }
+      valueUploadLimitDialog.classList.add("hidden");
+      valueUploadLimitDialog.setAttribute("aria-hidden", "true");
+    }
+
+    function showValueUploadLimitDialog() {
+      showStatusToast("Unlock to check another painting");
+      workspaceHint.textContent = "Keep working on this image free, or unlock lifetime access to upload another painting.";
+      statusNote.textContent = "Today's free Value Checker painting is already active.";
+
+      if (!valueUploadLimitDialog) {
+        valueUploadLimitDialog = document.createElement("div");
+        valueUploadLimitDialog.className = "value-upload-limit-backdrop hidden";
+        valueUploadLimitDialog.setAttribute("aria-hidden", "true");
+        valueUploadLimitDialog.innerHTML = `
+          <div class="value-upload-limit-card" role="dialog" aria-modal="true" aria-labelledby="valueUploadLimitTitle">
+            <p class="section-label">Today's Free Painting Is Active</p>
+            <h3 id="valueUploadLimitTitle">Want to check another painting?</h3>
+            <p>You can keep working on the current image for free. Unlock lifetime access to upload and analyze more paintings.</p>
+            <div class="paywall-actions">
+              <button class="button" type="button" data-value-upload-limit-unlock>Show My Painting Fix Plan - $5</button>
+              <button class="button-secondary" type="button" data-value-upload-limit-close>Keep Working Free</button>
+            </div>
+            <p class="value-upload-limit-note">One-time payment. Lifetime access. No subscription.</p>
+          </div>
+        `;
+        valueUploadLimitDialog.addEventListener("click", (event) => {
+          if (event.target === valueUploadLimitDialog) {
+            closeValueUploadLimitDialog();
+          }
+        });
+        valueUploadLimitDialog.querySelector("[data-value-upload-limit-close]")?.addEventListener("click", closeValueUploadLimitDialog);
+        valueUploadLimitDialog.querySelector("[data-value-upload-limit-unlock]")?.addEventListener("click", openBasicValueUnlock);
+        document.body.appendChild(valueUploadLimitDialog);
+      }
+
+      valueUploadLimitDialog.classList.remove("hidden");
+      valueUploadLimitDialog.setAttribute("aria-hidden", "false");
+      valueUploadLimitDialog.querySelector("[data-value-upload-limit-unlock]")?.focus({ preventScroll: true });
     }
 
     function resetUploadMessages() {
@@ -5338,6 +5497,12 @@
         return;
       }
 
+      if (!canUseBasicValueUpload()) {
+        event.target.value = "";
+        showValueUploadLimitDialog();
+        return;
+      }
+
       loadSingleImageFile(file);
     }
 
@@ -5414,6 +5579,12 @@
         return;
       }
 
+      if (!canUseBasicValueUpload()) {
+        fileInput.value = "";
+        showValueUploadLimitDialog();
+        return;
+      }
+
       fileInput.value = "";
       loadSingleImageFile(file);
     }
@@ -5471,6 +5642,7 @@
       bufferCtx.putImageData(imageData, 0, 0);
       state.imageData = imageData;
       state.imageLoaded = true;
+      markBasicValueUploadUsed();
       state.imageLoading = false;
       state.loadingTarget = "";
       state.loadErrorMessage = "";
@@ -5508,6 +5680,12 @@
         return;
       }
 
+      if (!canUseBasicValueUpload()) {
+        event.target.value = "";
+        showValueUploadLimitDialog();
+        return;
+      }
+
       resetUploadMessages();
       setCompareLoadingState(type, true);
       compareStatus.textContent = "Preparing comparison...";
@@ -5519,6 +5697,7 @@
           } else {
             state.paintingImage = image;
           }
+          markBasicValueUploadUsed();
 
           buildCompareBuffers();
           drawCompareCanvases();
@@ -5603,6 +5782,10 @@
       });
 
       db.close();
+      if (!canUseBasicValueUpload()) {
+        showValueUploadLimitDialog();
+        return true;
+      }
       setMode("value-picker");
       const image = await loadImageFromFile(record.file);
       prepareGrayscaleImage(image);
@@ -5629,6 +5812,10 @@
 
         window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
         window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+        if (!canUseBasicValueUpload()) {
+          showValueUploadLimitDialog();
+          return;
+        }
         setMode("value-picker");
         loadImageFromDataUrl(imageData)
           .then((image) => prepareGrayscaleImage(image))
