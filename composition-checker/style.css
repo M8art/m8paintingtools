@@ -252,6 +252,14 @@ a {
   padding-inline: 16px;
 }
 
+#advancedUnlockCard {
+  grid-column: 1 / -1;
+  border-color: rgba(201, 106, 61, 0.28);
+  background:
+    radial-gradient(circle at top left, rgba(201, 106, 61, 0.08), transparent 30%),
+    rgba(255, 250, 244, 0.94);
+}
+
 .button[disabled],
 .button-secondary[disabled] {
   cursor: not-allowed;

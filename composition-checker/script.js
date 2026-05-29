@@ -610,6 +610,16 @@ function requireUnlock(actionName = "advanced composition tools") {
   return false;
 }
 
+function openAdvancedUnlockFromAction(actionName = "advanced composition tools") {
+  if (!isAdvancedLocked()) {
+    return false;
+  }
+
+  showUnlockPaywall(actionName);
+  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+  return true;
+}
+
 function showPremiumLimitToast(message) {
   if (!premiumToast) {
     return;
@@ -2923,6 +2933,7 @@ function updateBasicCompositionAiUI(options) {
 
 function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
   const analysisState = state.compositionAi.goldenRatio;
+  const lockedAction = isGoldenRatio && advancedLocked;
   const canRun = isGoldenRatio && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
@@ -2938,13 +2949,16 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
 
   goldenRatioAiCard?.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
   if (runGoldenRatioAiButton) {
-    runGoldenRatioAiButton.disabled = !canRun;
-    runGoldenRatioAiButton.classList.toggle("hidden", !isGoldenRatio || advancedLocked);
+    runGoldenRatioAiButton.disabled = analysisState.isRunning || (!lockedAction && !canRun);
+    runGoldenRatioAiButton.classList.toggle("hidden", !isGoldenRatio);
     runGoldenRatioAiButton.classList.toggle("is-running", analysisState.isRunning);
     runGoldenRatioAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
     runGoldenRatioAiButton.classList.toggle("is-result-ready", hasResult);
+    runGoldenRatioAiButton.classList.toggle("is-unlock-cta", lockedAction);
     runGoldenRatioAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
+      : lockedAction
+      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -2962,6 +2976,7 @@ function updateGoldenRatioAiUI(isGoldenRatio, advancedLocked) {
 
 function updateNotanAiUI(isNotan, advancedLocked) {
   const analysisState = state.compositionAi.notan;
+  const lockedAction = isNotan && advancedLocked;
   const canRun = isNotan && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
@@ -2977,13 +2992,16 @@ function updateNotanAiUI(isNotan, advancedLocked) {
 
   notanAiCard?.classList.toggle("hidden", !isNotan || advancedLocked);
   if (runNotanAiButton) {
-    runNotanAiButton.disabled = !canRun;
-    runNotanAiButton.classList.toggle("hidden", !isNotan || advancedLocked);
+    runNotanAiButton.disabled = analysisState.isRunning || (!lockedAction && !canRun);
+    runNotanAiButton.classList.toggle("hidden", !isNotan);
     runNotanAiButton.classList.toggle("is-running", analysisState.isRunning);
     runNotanAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
     runNotanAiButton.classList.toggle("is-result-ready", hasResult);
+    runNotanAiButton.classList.toggle("is-unlock-cta", lockedAction);
     runNotanAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
+      : lockedAction
+      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -3001,6 +3019,7 @@ function updateNotanAiUI(isNotan, advancedLocked) {
 
 function updateSpiralAiUI(isGoldenSpiral, advancedLocked) {
   const analysisState = state.compositionAi.spiral;
+  const lockedAction = isGoldenSpiral && advancedLocked;
   const canConfirm = isGoldenSpiral && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
   const canRun = canConfirm && analysisState.confirmed;
   const hasResult = Boolean(analysisState.result);
@@ -3020,11 +3039,12 @@ function updateSpiralAiUI(isGoldenSpiral, advancedLocked) {
 
   spiralAiCard?.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
   if (confirmSpiralPlacementButton) {
-    confirmSpiralPlacementButton.disabled = !canConfirm;
-    confirmSpiralPlacementButton.classList.toggle("hidden", !isGoldenSpiral || advancedLocked);
+    confirmSpiralPlacementButton.disabled = analysisState.isRunning || (!lockedAction && !canConfirm);
+    confirmSpiralPlacementButton.classList.toggle("hidden", !isGoldenSpiral);
     confirmSpiralPlacementButton.classList.toggle("is-action-cue", shouldCueConfirm);
     confirmSpiralPlacementButton.classList.remove("is-result-ready");
-    confirmSpiralPlacementButton.textContent = analysisState.confirmed ? "Spiral Set" : "Set Spiral";
+    confirmSpiralPlacementButton.classList.toggle("is-unlock-cta", lockedAction);
+    confirmSpiralPlacementButton.textContent = lockedAction ? "Unlock - $5" : analysisState.confirmed ? "Spiral Set" : "Set Spiral";
   }
   if (runSpiralAiButton) {
     runSpiralAiButton.disabled = !canRun || analysisState.isRunning;
@@ -3051,6 +3071,7 @@ function updateSpiralAiUI(isGoldenSpiral, advancedLocked) {
 
 function updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked) {
   const analysisState = state.compositionAi.dynamicSymmetry;
+  const lockedAction = isDynamicSymmetry && advancedLocked;
   const canRun = isDynamicSymmetry && state.imageLoaded && !advancedLocked && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
@@ -3066,13 +3087,16 @@ function updateDynamicSymmetryAiUI(isDynamicSymmetry, advancedLocked) {
 
   dynamicSymmetryAiCard?.classList.toggle("hidden", !isDynamicSymmetry || advancedLocked);
   if (runDynamicSymmetryAiButton) {
-    runDynamicSymmetryAiButton.disabled = !canRun;
-    runDynamicSymmetryAiButton.classList.toggle("hidden", !isDynamicSymmetry || advancedLocked);
+    runDynamicSymmetryAiButton.disabled = analysisState.isRunning || (!lockedAction && !canRun);
+    runDynamicSymmetryAiButton.classList.toggle("hidden", !isDynamicSymmetry);
     runDynamicSymmetryAiButton.classList.toggle("is-running", analysisState.isRunning);
     runDynamicSymmetryAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
     runDynamicSymmetryAiButton.classList.toggle("is-result-ready", hasResult);
+    runDynamicSymmetryAiButton.classList.toggle("is-unlock-cta", lockedAction);
     runDynamicSymmetryAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
+      : lockedAction
+      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -3583,6 +3607,10 @@ async function runBasicCompositionAiAnalysis(options) {
 }
 
 async function runGoldenRatioAiAnalysis() {
+  if (openAdvancedUnlockFromAction("Golden Ratio AI analysis")) {
+    return;
+  }
+
   if (!requireUnlock("Golden Ratio AI analysis")) {
     return;
   }
@@ -3649,6 +3677,10 @@ async function runGoldenRatioAiAnalysis() {
 }
 
 async function runNotanAiAnalysis() {
+  if (openAdvancedUnlockFromAction("Notan AI analysis")) {
+    return;
+  }
+
   if (!requireUnlock("Notan AI analysis")) {
     return;
   }
@@ -3708,6 +3740,10 @@ async function runNotanAiAnalysis() {
 }
 
 function confirmSpiralPlacement() {
+  if (openAdvancedUnlockFromAction("Golden Spiral AI analysis")) {
+    return;
+  }
+
   if (!requireUnlock("Golden Spiral AI analysis")) {
     return;
   }
@@ -3737,6 +3773,10 @@ function confirmSpiralPlacement() {
 }
 
 async function runSpiralAiAnalysis() {
+  if (openAdvancedUnlockFromAction("Golden Spiral AI analysis")) {
+    return;
+  }
+
   if (!requireUnlock("Golden Spiral AI analysis")) {
     return;
   }
@@ -3798,6 +3838,10 @@ async function runSpiralAiAnalysis() {
 }
 
 async function runDynamicSymmetryAiAnalysis() {
+  if (openAdvancedUnlockFromAction("Dynamic Symmetry AI analysis")) {
+    return;
+  }
+
   if (!requireUnlock("Dynamic Symmetry AI analysis")) {
     return;
   }
