@@ -3294,7 +3294,7 @@ function buildPremiumFixPlan(result) {
   return {
     lockedTitle: "Your scan is ready.",
     unlockedTitle: "AI Analysis for Painters",
-    lockedSummary: "M8 found the main issues. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
+    lockedSummary: "Your free scan found the main issues. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
     unlockedSummary: "This measured read starts the diagnosis. The AI fix plan below is generated from this specific painting.",
     sections: [
       {
@@ -4061,8 +4061,8 @@ function showLockedAnalysisState() {
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
   updateStatusMessage("Your scan is ready.");
-  workspaceHint.textContent = "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
-  showPremiumLimitToast("Unlock the full painter fix plan.");
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.body || "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
+  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5.");
 }
 
 function showFreeLimitReachedState() {
@@ -4075,7 +4075,7 @@ function showFreeLimitReachedState() {
   runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
   updateStatusMessage("Your scan is ready.");
-  workspaceHint.textContent = "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Unlock the full painter fix plan now, or come back tomorrow for another free preview.";
   syncMobileRunAnalysisButton();
 }
 

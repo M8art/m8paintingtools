@@ -247,7 +247,7 @@
     const cleanedUrl = new URL(window.location.href);
     cleanedUrl.searchParams.delete("unlocked");
     window.history.replaceState({}, "", `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`);
-    setStatus("Unlocked forever.", "Full AI Value Analysis is now available without locked fix-plan previews.");
+    setStatus("Unlocked forever.", "Your full painting fix plan is now available without locked previews.");
   }
 
   function openFullUnlock() {
@@ -462,7 +462,7 @@
       return window.M8_UNLOCK.renderInlineCard({
         title: "Your AI value scan is ready",
         issue,
-        body: "M8 found the value problem. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
+        body: "Your free value scan found the main value issue. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
       });
     }
 
@@ -470,7 +470,7 @@
       `<div class="value-pro-result-block value-pro-verdict">`,
       `<h3>Your AI value scan is ready</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
+      `<p>Your free value scan found the main value issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
       `<button class="button" type="button" data-m8-unlock>Show My Painting Fix Plan - $5</button>`,
       `</div>`
     ].join("");

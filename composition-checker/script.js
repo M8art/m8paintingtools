@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Unlock the exact first fix, 3-step paint plan, and full painter breakdown. One-time payment, no subscription.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown. One-time payment, no subscription.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -596,9 +596,9 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = "Unlock the full painter fix plan to use this advanced read.";
-  workspaceHint.textContent = "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
-  showPremiumLimitToast("Show My Painting Fix Plan - $5.");
+  advancedStatusNote.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Unlock the full painter fix plan now, or come back tomorrow for another free preview.";
+  workspaceHint.textContent = GLOBAL_UNLOCK_BODY;
+  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5.");
 }
 
 function requireUnlock(actionName = "advanced composition tools") {
@@ -644,6 +644,13 @@ function showPremiumLimitToast(message) {
       state.premiumToastTimeout = null;
     }, 180);
   }, 2000);
+}
+
+function showBasicAiLimitPaywall(lockCard, toolName, waitText) {
+  lockCard?.classList.remove("hidden");
+  advancedStatusNote.textContent = `Today's free ${toolName} scan is used. Unlock the full painter fix plan now, or come back in ${waitText}.`;
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Unlock the full painter fix plan now, or come back tomorrow for another free preview.";
+  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5.");
 }
 
 function handleUpload(event) {
@@ -2808,6 +2815,7 @@ function updateThirdsAiUI(isThirdsMode) {
   const analysisState = state.compositionAi.thirds;
   const canRun = isThirdsMode && state.imageLoaded && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
+  const limitReached = isThirdsMode && !isUnlocked() && hasUsedThirdsFreeAnalysis();
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
   const status = analysisState.isRunning
     ? "Reading the image against the Rule of Thirds structure..."
@@ -2815,22 +2823,26 @@ function updateThirdsAiUI(isThirdsMode) {
     ? analysisState.error
     : hasResult
     ? "Rule of Thirds read is ready."
+    : limitReached
+    ? `Today's free Rule of Thirds scan is used. Unlock now or come back in ${formatThirdsFreeWait()}.`
     : state.imageLoaded
     ? "Run the AI read for a deeper painter explanation of the thirds structure."
     : "Upload an image to begin.";
 
   thirdsAiCard?.classList.toggle("hidden", !isThirdsMode);
-  thirdsAiLockCard?.classList.add("hidden");
+  thirdsAiLockCard?.classList.toggle("hidden", !limitReached);
 
   if (runThirdsAiButton) {
     runThirdsAiButton.disabled = !state.imageLoaded || analysisState.isRunning;
     runThirdsAiButton.classList.toggle("hidden", !isThirdsMode);
     runThirdsAiButton.classList.toggle("is-running", analysisState.isRunning);
-    runThirdsAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
+    runThirdsAiButton.classList.toggle("is-action-cue", shouldCueAnalyze && !limitReached);
     runThirdsAiButton.classList.toggle("is-result-ready", hasResult);
-    runThirdsAiButton.classList.remove("is-unlock-cta");
+    runThirdsAiButton.classList.toggle("is-unlock-cta", limitReached);
     runThirdsAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
+      : limitReached
+      ? window.M8_UNLOCK?.COPY?.shortButton || "Show Fix Plan - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -2883,6 +2895,7 @@ function updateDiagonalAiUI(isDiagonalMode) {
 function updateBasicCompositionAiUI(options) {
   const canRun = options.isMode && state.imageLoaded && !options.analysisState.isRunning;
   const hasResult = Boolean(options.analysisState.result);
+  const limitReached = options.isMode && !isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey);
   const shouldCueAnalyze = canRun && !hasResult && !options.analysisState.error;
   const status = options.analysisState.isRunning
     ? options.runningCopy
@@ -2890,22 +2903,26 @@ function updateBasicCompositionAiUI(options) {
     ? options.analysisState.error
     : hasResult
     ? options.readyCopy
+    : limitReached
+    ? `Today's free ${options.toolName} scan is used. Unlock now or come back in ${formatBasicAiFreeWait(options.storageKey)}.`
     : state.imageLoaded
     ? options.promptCopy
     : "Upload an image to begin.";
 
   options.card?.classList.toggle("hidden", !options.isMode);
-  options.lockCard?.classList.add("hidden");
+  options.lockCard?.classList.toggle("hidden", !limitReached);
 
   if (options.button) {
     options.button.disabled = !state.imageLoaded || options.analysisState.isRunning;
     options.button.classList.toggle("hidden", !options.isMode);
     options.button.classList.toggle("is-running", options.analysisState.isRunning);
-    options.button.classList.toggle("is-action-cue", shouldCueAnalyze);
+    options.button.classList.toggle("is-action-cue", shouldCueAnalyze && !limitReached);
     options.button.classList.toggle("is-result-ready", hasResult);
-    options.button.classList.remove("is-unlock-cta");
+    options.button.classList.toggle("is-unlock-cta", limitReached);
     options.button.textContent = options.analysisState.isRunning
       ? "Analyzing..."
+      : limitReached
+      ? window.M8_UNLOCK?.COPY?.shortButton || "Show Fix Plan - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -3419,6 +3436,12 @@ async function runThirdsAiAnalysis() {
     return;
   }
 
+  if (!isUnlocked() && hasUsedThirdsFreeAnalysis()) {
+    showBasicAiLimitPaywall(thirdsAiLockCard, "Rule of Thirds", formatThirdsFreeWait());
+    updateModeUI();
+    return;
+  }
+
   analysisState.isRunning = true;
   analysisState.result = null;
   analysisState.error = "";
@@ -3527,6 +3550,12 @@ async function runDiagonalAiAnalysis() {
 async function runBasicCompositionAiAnalysis(options) {
   const analysisState = state.compositionAi[options.stateKey];
   if (analysisState.isRunning || !state.imageLoaded || state.analysisMode !== "basic" || state.mode !== options.modeName) {
+    return;
+  }
+
+  if (!isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey)) {
+    showBasicAiLimitPaywall(options.lockCard, options.toolName, formatBasicAiFreeWait(options.storageKey));
+    updateModeUI();
     return;
   }
 
@@ -4012,14 +4041,14 @@ function renderCompositionAiUnlockTeaser(resultsElement, title, analysis) {
     resultsElement.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
       issue,
-      body: "M8 found the composition problem. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
+      body: "Your free composition scan found the main issue. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
     });
   } else {
     resultsElement.innerHTML = [
       `<div class="advanced-ai-result-block advanced-ai-verdict">`,
       `<h3>${escapeHtml(title)}</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
+      `<p>Your free composition scan found the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
       `<button class="button premium-unlock-button" type="button" data-m8-unlock>Show My Painting Fix Plan - $5</button>`,
       `</div>`
     ].join("");

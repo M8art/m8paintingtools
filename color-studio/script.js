@@ -189,7 +189,7 @@ const HARMONY_CLUSTER_COUNT = 8;
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Unlock the exact first fix, 3-step paint plan, and full painter breakdown. One-time payment, no subscription.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free color scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown. One-time payment, no subscription.";
 const PALETTE_COACH_FREE_CHECK_STORAGE_KEY = "m8_palette_coach_last_free_check";
 const MIX_COACH_FREE_CHECK_STORAGE_KEY = "m8_mix_coach_last_free_check";
 const IS_LOCAL_PREVIEW = ["127.0.0.1", "localhost"].includes(window.location.hostname);
@@ -423,8 +423,8 @@ function showColorAiLimitPaywall(toolName, storageKey) {
   showUnlockPaywall({
     title: "Show My Painting Fix Plan",
     note: "One-time payment. Lifetime access. No subscription.",
-    status: `Unlock the full ${toolName} fix plan for the exact first move and repair order.`,
-    toast: "Show My Painting Fix Plan - $5."
+    status: `Today's free ${toolName} scan is used. Unlock the full painter fix plan now, or come back in ${formatColorAiFreeWait(storageKey)}.`,
+    toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
   });
 }
 
@@ -448,8 +448,8 @@ function showInitialColorPaywall(tab) {
   showUnlockPaywall(getUploadLockContext() || {
     title: "Show My Painting Fix Plan",
     note: "One-time payment. Lifetime access. No subscription.",
-    status: "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
-    toast: "Show My Painting Fix Plan - $5."
+    status: window.M8_UNLOCK?.COPY?.body || "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
+    toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
   });
   setTab(tab);
 }
@@ -637,8 +637,8 @@ function handleClearWorkspace() {
   resetWorkspaceEmptyState();
   setWorkspaceLoadingState(false);
   hidePremiumUnlockCard();
-  workspaceHint.textContent = isUnlocked() ? "Upload an image to study the dominant color families." : "Unlock Color Checker to upload and analyze color.";
-  statusNote.textContent = isUnlocked() ? "Upload an image to start." : "Unlock Color Checker to upload and analyze color.";
+  workspaceHint.textContent = "Upload an image to study the dominant color families.";
+  statusNote.textContent = "Upload an image to start.";
   if (fileInput) {
     fileInput.value = "";
   }
@@ -781,8 +781,9 @@ function loadPaletteFromDataUrl(dataUrl) {
     return;
   }
 
-  if (!isUnlocked()) {
-    showUnlockPaywall(getUploadLockContext());
+  const uploadLockContext = getUploadLockContext();
+  if (uploadLockContext) {
+    showUnlockPaywall(uploadLockContext);
     return;
   }
 
@@ -871,8 +872,9 @@ async function consumeIndexedLandingHandoff() {
   });
 
   db.close();
-  if (!isUnlocked()) {
-    showUnlockPaywall(getUploadLockContext());
+  const uploadLockContext = getUploadLockContext();
+  if (uploadLockContext) {
+    showUnlockPaywall(uploadLockContext);
     return true;
   }
 
@@ -885,8 +887,9 @@ function loadPaletteFromObjectFile(file) {
     return;
   }
 
-  if (!isUnlocked()) {
-    showUnlockPaywall(getUploadLockContext());
+  const uploadLockContext = getUploadLockContext();
+  if (uploadLockContext) {
+    showUnlockPaywall(uploadLockContext);
     return;
   }
 
@@ -986,28 +989,28 @@ function handleImageWrapClick(event) {
 function getUploadLockContext() {
   if (!isUnlocked() && !["palette", "mixer"].includes(state.activeTab)) {
     return {
-      title: "Unlock Color Checker",
+      title: "Show My Painting Fix Plan",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Mix Trainer is a paid tool. Palette Coach and Color Mix Coach include one free check every 24 hours.",
-      toast: "Unlock Color Checker for $5."
+      status: "Palette Coach and Color Mix Coach include one free AI preview every 24 hours. Unlock the full painter fix plan for all color tools.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
     };
   }
 
   if (state.activeTab === "trainer" && !isUnlocked()) {
     return {
-      title: "Unlock Mix Trainer",
+      title: "Show My Painting Fix Plan",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access for $5 to use Mix Trainer now.",
-      toast: "Unlock lifetime access for $5."
+      status: "Unlock the full painter fix plan to use Mix Trainer now.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
     };
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     return {
-      title: "Unlock Color Checker",
+      title: "Show My Painting Fix Plan",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access for $5 to use this color tool now.",
-      toast: "Unlock lifetime access for $5."
+      status: "Unlock the full painter fix plan to use this color tool now.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
     };
   }
 
@@ -1035,7 +1038,7 @@ function setTab(tab) {
     panelDescription.textContent = "Sample the main color families in your image and see which hues dominate the overall painting.";
     statusNote.textContent = state.imageLoading
       ? "Preparing analysis..."
-      : state.loadErrorMessage || (state.palette.length ? "Palette analysis ready." : (isUnlocked() ? "Upload an image to start." : "Unlock Color Checker to upload and analyze color."));
+      : state.loadErrorMessage || (state.palette.length ? "Palette analysis ready." : "Upload an image to start.");
     if (colorHarmonyCard) {
       colorHarmonyCard.classList.remove("hidden");
     }
@@ -1100,7 +1103,7 @@ function setTab(tab) {
         ? "Mixer suggestion ready."
         : (isUnlocked()
           ? "Click a point in the image to build a mix."
-          : "Unlock Color Checker to sample and mix colors."));
+          : "Sample a point to preview the mix. Unlock the full fix plan for unlimited color coaching."));
     return;
   }
 
@@ -1454,27 +1457,22 @@ function sampleMixerPoint(event) {
     return;
   }
 
-  if (!isUnlocked()) {
-    showUnlockPaywall(getUploadLockContext());
-    return;
-  }
-
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock Mix Trainer",
+      title: "Show My Painting Fix Plan",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access for $5 to use Mix Trainer now.",
-      toast: "Unlock lifetime access for $5."
+      status: "Unlock the full painter fix plan to use Mix Trainer now.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
     });
     return;
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     showUnlockPaywall({
-      title: "Unlock Color Checker",
+      title: "Show My Painting Fix Plan",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access for $5 to use this color tool now.",
-      toast: "Unlock lifetime access for $5."
+      status: "Unlock the full painter fix plan to use this color tool now.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
     });
     return;
   }
@@ -1506,7 +1504,7 @@ function sampleMixerPoint(event) {
     if (isUnlocked()) {
       statusNote.textContent = "Mixer suggestion ready.";
     } else {
-      statusNote.textContent = "Unlock Color Checker to continue using the mixer.";
+      statusNote.textContent = "Sample a point to preview the mix. Unlock the full fix plan for unlimited color coaching.";
     }
   }
   updateWorkspaceActionState();
@@ -2061,7 +2059,7 @@ function renderM8ColorMixer(result) {
 
   if (!result) {
     if (state.activeTab === "mixer" && !isUnlocked()) {
-      mixerIntro.textContent = "Unlock Color Checker to sample and mix colors from your painting.";
+      mixerIntro.textContent = "Sample one passage for a free mix preview. Unlock the full fix plan for unlimited color coaching.";
     } else {
       mixerIntro.textContent = state.activeTab === "mixer"
         ? "Upload an image, then click the exact passage you want to mix."
@@ -2134,7 +2132,7 @@ function renderM8ColorMixer(result) {
 }
 
 function renderColorCoachUnlockTeaser(container, title, issue) {
-  const copy = "M8 found the color problem. Unlock the painter fix plan to see the exact first move and the practical paint order.";
+  const copy = "Your free color scan found the main issue. Unlock the painter fix plan to see the exact first move and the practical paint order.";
   if (window.M8_UNLOCK?.renderInlineCard) {
     container.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
@@ -2169,11 +2167,14 @@ function renderPaletteCoach() {
   }
 
   const hasAnalysis = !!state.analysisResult && hasLoadedImage();
+  const limitReached = !isUnlocked() && hasUsedColorAiFreeAnalysis(PALETTE_COACH_FREE_CHECK_STORAGE_KEY);
   paletteCoachButton.disabled = !hasAnalysis || state.paletteCoachLoading;
   paletteCoachButton.classList.toggle("is-disabled", paletteCoachButton.disabled);
-  paletteCoachButton.classList.remove("is-unlock-cta");
+  paletteCoachButton.classList.toggle("is-unlock-cta", limitReached);
   paletteCoachButton.textContent = state.paletteCoachLoading
     ? "Building Palette Plan..."
+    : limitReached
+    ? "Show Fix Plan"
     : "Build Palette Plan";
 
   if (state.paletteCoachLoading) {
@@ -2205,6 +2206,8 @@ function renderPaletteCoach() {
   if (!state.paletteCoachResult) {
     paletteCoachStatus.textContent = isUnlocked()
       ? "Unlimited"
+      : limitReached
+      ? `Free used - ${formatColorAiFreeWait(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)} left`
       : "Free scan ready";
     paletteCoachResult.classList.add("hidden");
     paletteCoachResult.innerHTML = "";
@@ -2276,6 +2279,12 @@ async function requestPaletteCoach() {
     return;
   }
 
+  if (!isUnlocked() && hasUsedColorAiFreeAnalysis(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)) {
+    showColorAiLimitPaywall("Palette Coach", PALETTE_COACH_FREE_CHECK_STORAGE_KEY);
+    renderPaletteCoach();
+    return;
+  }
+
   const requestId = state.paletteCoachRequestId + 1;
   state.paletteCoachRequestId = requestId;
   state.paletteCoachLoading = true;
@@ -2341,11 +2350,14 @@ function renderMixerCoach() {
   }
 
   const hasMix = !!state.mixerResult;
+  const limitReached = !isUnlocked() && hasUsedColorAiFreeAnalysis(MIX_COACH_FREE_CHECK_STORAGE_KEY);
   mixerCoachButton.disabled = !hasMix || state.mixerCoachLoading;
   mixerCoachButton.classList.toggle("is-disabled", mixerCoachButton.disabled);
-  mixerCoachButton.classList.remove("is-unlock-cta");
+  mixerCoachButton.classList.toggle("is-unlock-cta", limitReached);
   mixerCoachButton.textContent = state.mixerCoachLoading
     ? "Building Mix Plan..."
+    : limitReached
+    ? "Show Fix Plan"
     : "Build Mix Plan";
 
   if (state.mixerCoachLoading) {
@@ -2377,6 +2389,8 @@ function renderMixerCoach() {
   if (!state.mixerCoachResult) {
     mixerCoachStatus.textContent = isUnlocked()
       ? "Unlimited"
+      : limitReached
+      ? `Free used - ${formatColorAiFreeWait(MIX_COACH_FREE_CHECK_STORAGE_KEY)} left`
       : "Free scan ready";
     mixerCoachResult.classList.add("hidden");
     mixerCoachResult.innerHTML = "";
@@ -2440,6 +2454,12 @@ async function requestMixerCoach() {
 
   if (!state.mixerResult || !state.sampledColor) {
     showStatusToast("Sample a color first");
+    return;
+  }
+
+  if (!isUnlocked() && hasUsedColorAiFreeAnalysis(MIX_COACH_FREE_CHECK_STORAGE_KEY)) {
+    showColorAiLimitPaywall("Mix Coach", MIX_COACH_FREE_CHECK_STORAGE_KEY);
+    renderMixerCoach();
     return;
   }
 
@@ -2771,10 +2791,10 @@ function toggleTrainerPigment(name) {
 function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock Mix Trainer",
+      title: "Show My Painting Fix Plan",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access for $5 to use Mix Trainer now.",
-      toast: "Unlock lifetime access for $5."
+      status: "Unlock the full painter fix plan to use Mix Trainer now.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5."
     });
     return;
   }

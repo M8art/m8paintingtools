@@ -4,9 +4,11 @@
   const COPY = {
     title: "Show My Painting Fix Plan",
     button: "Show My Painting Fix Plan - $5",
-    shortButton: "Unlock - $5",
+    shortButton: "Show Fix Plan - $5",
     note: "One-time payment. Lifetime access. No subscription.",
-    body: "Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
+    body: "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown for this painting.",
+    limitTitle: "Today's free AI scan is used",
+    limitBody: "Unlock the full painter fix plan now, or come back tomorrow for another free preview.",
     lockedList: [
       "Exact first fix",
       "3-step paint plan",
