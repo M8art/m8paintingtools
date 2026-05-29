@@ -4440,6 +4440,53 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
 }
 
 @media (max-width: 720px) {
+  html:not(.mobile-light-mode) .quick-ai-chat-panel {
+    border-color: rgba(185, 141, 66, 0.38) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+    color: #f2e7cf !important;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(242, 231, 207, 0.04) !important;
+  }
+
+  html:not(.mobile-light-mode) .quick-ai-chat-head h3,
+  html:not(.mobile-light-mode) .quick-ai-chat-status,
+  html:not(.mobile-light-mode) .quick-ai-chat-message,
+  html:not(.mobile-light-mode) .quick-ai-chat-form textarea {
+    color: #f2e7cf !important;
+  }
+
+  html:not(.mobile-light-mode) .quick-ai-chat-messages,
+  html:not(.mobile-light-mode) .quick-ai-chat-form textarea {
+    border-color: rgba(185, 141, 66, 0.34) !important;
+    background: rgba(13, 11, 8, 0.58) !important;
+  }
+
+  html:not(.mobile-light-mode) .quick-ai-chat-form textarea::placeholder {
+    color: rgba(242, 231, 207, 0.48) !important;
+  }
+
+  html:not(.mobile-light-mode) .quick-ai-chat-message {
+    border-color: rgba(185, 141, 66, 0.34) !important;
+    background:
+      repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96)) !important;
+  }
+
+  html:not(.mobile-light-mode) .quick-ai-chat-message.user {
+    border-color: rgba(185, 141, 66, 0.58) !important;
+    background: linear-gradient(135deg, #c9763d, #9f4f28) !important;
+    color: #fff4df !important;
+  }
+
+  html:not(.mobile-light-mode) .quick-ai-chat-message.system,
+  html:not(.mobile-light-mode) .quick-ai-chat-message.locked {
+    border-color: rgba(201, 106, 61, 0.3) !important;
+    background: rgba(42, 34, 24, 0.94) !important;
+  }
+}
+
+@media (max-width: 720px) {
   html.mobile-light-mode {
     --bg: #e8e3d8;
     --panel: rgba(252, 250, 246, 0.92);
