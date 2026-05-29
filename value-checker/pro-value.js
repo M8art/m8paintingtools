@@ -18,6 +18,7 @@
   const proSurface = document.getElementById("aiValueSurface");
   const proLockPanel = document.getElementById("aiValueLockPanel");
   const proUnlockButton = document.getElementById("aiValueUnlockButton");
+  const proUseBasicButton = document.getElementById("aiValueUseBasicButton");
   const proUploadButtons = Array.from(document.querySelectorAll('label[for="aiValueFileInput"]'));
   const proAnalyzeButtons = [proAnalyzeButton, proMobileAnalyzeButton].filter(Boolean);
   const proResultLinks = Array.from(document.querySelectorAll('a[href="#aiValueResultPanel"]'));
@@ -264,13 +265,13 @@
     proAnalyzeButtons.forEach((button) => {
       if (!button) return;
       button.classList.toggle("is-unlock-cta", locked);
-      button.textContent = locked ? "Unlock All Tools" : "Analyze";
+      button.textContent = locked ? "Unlock - $5" : "Analyze";
       button.disabled = locked ? false : (!imageDataUrl || isRunning);
     });
 
     if (locked && !isRunning) {
       setAnalyzeButtonState("");
-      setStatus("Daily free AI analysis used.", "Unlock all tools for $5 to keep using AI Value Analysis today.");
+      setStatus("Free Pro analysis used.", "Unlock lifetime access for $5 to keep using AI Value Analysis now, or use the free value tools.");
     }
   }
 
@@ -594,6 +595,10 @@
     link.addEventListener("click", scrollToResults);
   });
   proUnlockButton?.addEventListener("click", openFullUnlock);
+  proUseBasicButton?.addEventListener("click", () => {
+    setTier("basic");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   handleUnlockReturn();
   resetProValue();

@@ -189,7 +189,7 @@ const HARMONY_CLUSTER_COUNT = 8;
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
-const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
+const GLOBAL_UNLOCK_BODY = "Unlock lifetime access for $5 to keep analyzing now. Includes the full value, composition, color, and drawing tools. No subscription.";
 const PALETTE_COACH_FREE_CHECK_STORAGE_KEY = "m8_palette_coach_last_free_check";
 const MIX_COACH_FREE_CHECK_STORAGE_KEY = "m8_mix_coach_last_free_check";
 const IS_LOCAL_PREVIEW = ["127.0.0.1", "localhost"].includes(window.location.hostname);
@@ -421,10 +421,10 @@ function formatColorAiFreeWait(storageKey) {
 
 function showColorAiLimitPaywall(toolName, storageKey) {
   showUnlockPaywall({
-    title: "Unlock Color Checker",
-    note: "One-time unlock - $5",
-    status: `Free ${toolName} check used. Unlock all tools or wait ${formatColorAiFreeWait(storageKey)}.`,
-    toast: `Free ${toolName} check used.`
+    title: `Unlock ${toolName}`,
+    note: "One-time payment. Lifetime access. No subscription.",
+    status: `Free ${toolName} check used. Unlock lifetime access for $5 or wait ${formatColorAiFreeWait(storageKey)}.`,
+    toast: `Free ${toolName} check used. Unlock for $5.`
   });
 }
 
@@ -447,9 +447,9 @@ function showInitialColorPaywall(tab) {
   }
   showUnlockPaywall(getUploadLockContext() || {
     title: "Unlock Color Checker",
-    note: "One-time unlock - $5",
-    status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-    toast: "Paid unlock required."
+    note: "One-time payment. Lifetime access. No subscription.",
+    status: "Unlock lifetime access for $5 to use this color tool now.",
+    toast: "Unlock lifetime access for $5."
   });
   setTab(tab);
 }
@@ -466,19 +466,19 @@ function hidePremiumUnlockCard() {
 function showUnlockPaywall(context = {}) {
   state.premiumUnlockVisible = true;
   if (premiumUnlockTitle) {
-    premiumUnlockTitle.textContent = context.title || "Unlock All Tools";
+    premiumUnlockTitle.textContent = context.title || "Unlock Lifetime Access";
   }
   if (premiumUnlockText) {
     premiumUnlockText.textContent = GLOBAL_UNLOCK_BODY;
   }
   if (premiumUnlockNote) {
-    premiumUnlockNote.textContent = context.note || "One-time unlock - $5";
+    premiumUnlockNote.textContent = context.note || "One-time payment. Lifetime access. No subscription.";
   }
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
     statusNote.textContent = context.status;
   }
-  showPremiumLimitToast(context.toast || "Paid unlock required.");
+  showPremiumLimitToast(context.toast || "Unlock lifetime access for $5.");
 }
 
 function showPremiumLimitToast(message) {
@@ -987,27 +987,27 @@ function getUploadLockContext() {
   if (!isUnlocked() && !["palette", "mixer"].includes(state.activeTab)) {
     return {
       title: "Unlock Color Checker",
-      note: "One-time unlock - $5",
+      note: "One-time payment. Lifetime access. No subscription.",
       status: "Mix Trainer is a paid tool. Palette Coach and Color Mix Coach include one free check every 24 hours.",
-      toast: "Color Checker needs paid unlock."
+      toast: "Unlock Color Checker for $5."
     };
   }
 
   if (state.activeTab === "trainer" && !isUnlocked()) {
     return {
-      title: "Unlock All Tools",
-      note: "One-time unlock - $5",
-      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "Paid unlock required."
+      title: "Unlock Mix Trainer",
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: "Unlock lifetime access for $5 to use Mix Trainer now.",
+      toast: "Unlock lifetime access for $5."
     };
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     return {
       title: "Unlock Color Checker",
-      note: "One-time unlock - $5",
-      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "Paid unlock required."
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: "Unlock lifetime access for $5 to use this color tool now.",
+      toast: "Unlock lifetime access for $5."
     };
   }
 
@@ -1461,10 +1461,10 @@ function sampleMixerPoint(event) {
 
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock All Tools",
-      note: "One-time unlock - $5",
-      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "Paid unlock required."
+      title: "Unlock Mix Trainer",
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: "Unlock lifetime access for $5 to use Mix Trainer now.",
+      toast: "Unlock lifetime access for $5."
     });
     return;
   }
@@ -1472,9 +1472,9 @@ function sampleMixerPoint(event) {
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     showUnlockPaywall({
       title: "Unlock Color Checker",
-      note: "One-time unlock - $5",
-      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "Paid unlock required."
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: "Unlock lifetime access for $5 to use this color tool now.",
+      toast: "Unlock lifetime access for $5."
     });
     return;
   }
@@ -2152,7 +2152,7 @@ function renderPaletteCoach() {
   paletteCoachButton.textContent = state.paletteCoachLoading
     ? "Building Palette Plan..."
     : (!isUnlocked() && lockedByLimit)
-    ? "Unlock All Tools"
+    ? "Unlock - $5"
     : "Build Palette Plan";
 
   if (state.paletteCoachLoading) {
@@ -2245,11 +2245,12 @@ async function requestPaletteCoach() {
 
   if (!isUnlocked() && hasUsedColorAiFreeAnalysis(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)) {
     showUnlockPaywall({
-      title: "Unlock Color Checker",
-      note: "One-time unlock - $5",
-      status: `Free Palette Coach check used. Unlock all tools or wait ${formatColorAiFreeWait(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)}.`,
-      toast: "Free Palette Coach check used."
+      title: "Unlock Palette Coach",
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: `Free Palette Coach check used. Unlock lifetime access for $5 or wait ${formatColorAiFreeWait(PALETTE_COACH_FREE_CHECK_STORAGE_KEY)}.`,
+      toast: "Free Palette Coach check used. Unlock for $5."
     });
+    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     return;
   }
 
@@ -2330,7 +2331,7 @@ function renderMixerCoach() {
   mixerCoachButton.textContent = state.mixerCoachLoading
     ? "Building Mix Plan..."
     : (!isUnlocked() && lockedByLimit)
-    ? "Unlock All Tools"
+    ? "Unlock - $5"
     : "Build Mix Plan";
 
   if (state.mixerCoachLoading) {
@@ -2418,11 +2419,12 @@ async function requestMixerCoach() {
 
   if (!isUnlocked() && hasUsedColorAiFreeAnalysis(MIX_COACH_FREE_CHECK_STORAGE_KEY)) {
     showUnlockPaywall({
-      title: "Unlock Color Checker",
-      note: "One-time unlock - $5",
-      status: `Free Mix Coach check used. Unlock all tools or wait ${formatColorAiFreeWait(MIX_COACH_FREE_CHECK_STORAGE_KEY)}.`,
-      toast: "Free Mix Coach check used."
+      title: "Unlock Mix Coach",
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: `Free Mix Coach check used. Unlock lifetime access for $5 or wait ${formatColorAiFreeWait(MIX_COACH_FREE_CHECK_STORAGE_KEY)}.`,
+      toast: "Free Mix Coach check used. Unlock for $5."
     });
+    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     return;
   }
 
@@ -2759,10 +2761,10 @@ function toggleTrainerPigment(name) {
 function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock All Tools",
-      note: "One-time unlock - $5",
-      status: "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.",
-      toast: "Paid unlock required."
+      title: "Unlock Mix Trainer",
+      note: "One-time payment. Lifetime access. No subscription.",
+      status: "Unlock lifetime access for $5 to use Mix Trainer now.",
+      toast: "Unlock lifetime access for $5."
     });
     return;
   }

@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = "Unlock the full analysis to see what is weakening your values, composition, and color — before you waste hours painting the wrong thing.";
+const GLOBAL_UNLOCK_BODY = "Unlock lifetime access for $5 to keep analyzing now. Includes the full value, composition, color, and drawing tools. No subscription.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -596,9 +596,9 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = "You’ve reached your free analysis limit.";
-  workspaceHint.textContent = "Get full access to value, composition, and color analysis tools. Analyze any painting in seconds and improve your results faster.";
-  showPremiumLimitToast("You’ve reached your free analysis limit.");
+  advancedStatusNote.textContent = "This tool is locked. Unlock lifetime access for $5 or use the free Basic tools.";
+  workspaceHint.textContent = "Unlock lifetime access for $5 to keep analyzing now. You can still use the free Basic overlays.";
+  showPremiumLimitToast("Unlock lifetime access for $5.");
 }
 
 function requireUnlock(actionName = "advanced composition tools") {
@@ -2807,7 +2807,7 @@ function updateThirdsAiUI(isThirdsMode) {
     : hasResult
     ? "Rule of Thirds read is ready."
     : lockedByLimit
-    ? `Free Rule of Thirds AI read used. Unlock Pro or wait ${formatThirdsFreeWait()}.`
+    ? `Free Rule of Thirds AI read used. Unlock for $5 or wait ${formatThirdsFreeWait()}.`
     : state.imageLoaded
     ? "Run the AI read for a deeper painter explanation of the thirds structure."
     : "Upload an image to begin.";
@@ -2816,15 +2816,16 @@ function updateThirdsAiUI(isThirdsMode) {
   thirdsAiLockCard?.classList.toggle("hidden", !lockedByLimit || isUnlocked() || !isThirdsMode);
 
   if (runThirdsAiButton) {
-    runThirdsAiButton.disabled = !state.imageLoaded || analysisState.isRunning || (!isUnlocked() && lockedByLimit);
+    runThirdsAiButton.disabled = !state.imageLoaded || analysisState.isRunning;
     runThirdsAiButton.classList.toggle("hidden", !isThirdsMode);
     runThirdsAiButton.classList.toggle("is-running", analysisState.isRunning);
     runThirdsAiButton.classList.toggle("is-action-cue", shouldCueAnalyze);
     runThirdsAiButton.classList.toggle("is-result-ready", hasResult);
+    runThirdsAiButton.classList.toggle("is-unlock-cta", !isUnlocked() && lockedByLimit);
     runThirdsAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
       : (!isUnlocked() && lockedByLimit)
-      ? "Pro Locked"
+      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -2886,7 +2887,7 @@ function updateBasicCompositionAiUI(options) {
     : hasResult
     ? options.readyCopy
     : lockedByLimit
-    ? `Free ${options.toolName} AI read used. Unlock Pro or wait ${formatBasicAiFreeWait(options.storageKey)}.`
+    ? `Free ${options.toolName} AI read used. Unlock for $5 or wait ${formatBasicAiFreeWait(options.storageKey)}.`
     : state.imageLoaded
     ? options.promptCopy
     : "Upload an image to begin.";
@@ -2895,15 +2896,16 @@ function updateBasicCompositionAiUI(options) {
   options.lockCard?.classList.toggle("hidden", !lockedByLimit || isUnlocked() || !options.isMode);
 
   if (options.button) {
-    options.button.disabled = !state.imageLoaded || options.analysisState.isRunning || (!isUnlocked() && lockedByLimit);
+    options.button.disabled = !state.imageLoaded || options.analysisState.isRunning;
     options.button.classList.toggle("hidden", !options.isMode);
     options.button.classList.toggle("is-running", options.analysisState.isRunning);
     options.button.classList.toggle("is-action-cue", shouldCueAnalyze);
     options.button.classList.toggle("is-result-ready", hasResult);
+    options.button.classList.toggle("is-unlock-cta", !isUnlocked() && lockedByLimit);
     options.button.textContent = options.analysisState.isRunning
       ? "Analyzing..."
       : (!isUnlocked() && lockedByLimit)
-      ? "Pro Locked"
+      ? "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -3405,9 +3407,10 @@ async function runThirdsAiAnalysis() {
 
   if (!isUnlocked() && hasUsedThirdsFreeAnalysis()) {
     thirdsAiLockCard?.classList.remove("hidden");
-    showPremiumLimitToast(`Free Rule of Thirds read used. Unlock Pro or wait ${formatThirdsFreeWait()}.`);
+    showPremiumLimitToast(`Free Rule of Thirds read used. Unlock for $5 or wait ${formatThirdsFreeWait()}.`);
     scrollToThirdsAiResults();
     updateModeUI();
+    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     return;
   }
 
@@ -3524,9 +3527,10 @@ async function runBasicCompositionAiAnalysis(options) {
 
   if (!isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey)) {
     options.lockCard?.classList.remove("hidden");
-    showPremiumLimitToast(`Free AI read used. Unlock Pro or wait ${formatBasicAiFreeWait(options.storageKey)}.`);
+    showPremiumLimitToast(`Free AI read used. Unlock for $5 or wait ${formatBasicAiFreeWait(options.storageKey)}.`);
     options.scroll();
     updateModeUI();
+    window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     return;
   }
 

@@ -1713,6 +1713,18 @@
     .feedback-button-note {
       font-size: 0.84rem;
     }
+    .paywall-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .paywall-actions .button,
+    .paywall-actions .button-secondary {
+      min-height: 42px;
+      padding-inline: 16px;
+    }
     .footer {
       margin-top: 28px;
       padding: 20px 24px;
@@ -4444,10 +4456,14 @@
             <p id="aiValueStatusDetail" class="value-pro-status-detail">Upload a painting or reference image, then run AI Value Analysis.</p>
           </div>
           <div id="aiValueLockPanel" class="value-pro-lock hidden">
-            <h3>Unlock All Tools</h3>
-            <p>You have used today&apos;s free AI analysis. Unlock full access to keep using Pro tools without the daily limit.</p>
-            <button id="aiValueUnlockButton" class="button" type="button">Unlock All Tools</button>
-            <p class="value-pro-lock-note">One-time unlock &mdash; $5. Lifetime access. No subscription.</p>
+            <p class="section-label">Free Limit Reached</p>
+            <h3>Unlock AI Value Analysis</h3>
+            <p>You have used today&apos;s free Pro analysis. Unlock lifetime access for $5 to keep analyzing now, or switch back to the free value tools.</p>
+            <div class="paywall-actions">
+              <button id="aiValueUnlockButton" class="button" type="button">Unlock Lifetime Access - $5</button>
+              <button id="aiValueUseBasicButton" class="button-secondary" type="button">Use Free Value Tools</button>
+            </div>
+            <p class="value-pro-lock-note">One-time payment. Lifetime access. No subscription.</p>
             <p class="value-pro-lock-note"><a href="../access/index.html">Already paid? Restore access</a></p>
           </div>
           <div id="aiValueResults" class="value-pro-results hidden"></div>

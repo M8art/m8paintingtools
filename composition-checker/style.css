@@ -239,6 +239,19 @@ a {
   box-shadow: 0 16px 30px rgba(201, 106, 61, 0.26);
 }
 
+.paywall-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.paywall-actions .button,
+.paywall-actions .button-secondary {
+  min-height: 42px;
+  padding-inline: 16px;
+}
+
 .button[disabled],
 .button-secondary[disabled] {
   cursor: not-allowed;
