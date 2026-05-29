@@ -70,6 +70,41 @@
         open();
       });
     });
+    ensurePaymentNotes(scope);
+  }
+
+  function buttonHasNearbyPaymentNote(button) {
+    const next = button.nextElementSibling;
+    if (next?.classList?.contains("m8-payment-note")) {
+      return true;
+    }
+    const nextText = next?.textContent || "";
+    if (/One-time payment\. Lifetime access\. No subscription\./.test(nextText)) {
+      return true;
+    }
+    const parentText = button.parentElement?.nextElementSibling?.textContent || "";
+    const parentPreviousText = button.parentElement?.previousElementSibling?.textContent || "";
+    return /One-time payment\. Lifetime access\. No subscription\./.test(parentText) ||
+      /One-time payment\. Lifetime access\. No subscription\./.test(parentPreviousText);
+  }
+
+  function ensurePaymentNotes(root = document) {
+    const scope = root || document;
+    const buttons = Array.from(scope.querySelectorAll("button, a")).filter((button) => {
+      const text = button.textContent || "";
+      const href = button.getAttribute("href") || button.dataset.unlockLink || "";
+      return text.includes("$5") || href.includes("buy.stripe.com/4gMfZh9jNb2P2A32u8gw002");
+    });
+
+    buttons.forEach((button) => {
+      if (buttonHasNearbyPaymentNote(button)) {
+        return;
+      }
+      const note = document.createElement("p");
+      note.className = "m8-payment-note";
+      note.textContent = COPY.note;
+      button.insertAdjacentElement("afterend", note);
+    });
   }
 
   window.M8_UNLOCK = {
@@ -78,6 +113,13 @@
     COPY,
     open,
     renderInlineCard,
-    bind
+    bind,
+    ensurePaymentNotes
   };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => ensurePaymentNotes(document));
+  } else {
+    ensurePaymentNotes(document);
+  }
 })();

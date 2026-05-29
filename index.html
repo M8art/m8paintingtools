@@ -1642,6 +1642,15 @@
       line-height: 1.4;
     }
 
+    .landing-payment-note {
+      width: 100%;
+      margin: 8px 0 0;
+      color: rgba(248, 239, 229, 0.7);
+      font-size: 0.82rem;
+      line-height: 1.35;
+      text-align: center;
+    }
+
     @keyframes onboardingFrameFloat {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
@@ -2665,6 +2674,10 @@
       background: linear-gradient(135deg, #d9ad5c, #b76a34);
       color: #fffaf0;
       box-shadow: 0 16px 30px rgba(185, 106, 52, 0.24);
+    }
+
+    .premium-preview-card .landing-payment-note {
+      color: rgba(255, 247, 237, 0.72);
     }
 
     .conversion-support-grid {
@@ -7512,6 +7525,7 @@ html,
               <button id="onboardingUnlockButton" class="onboarding-unlock-button" type="button">Show My Painting Fix Plan - $5</button>
               <button id="onboardingFreeButton" class="onboarding-free-button" type="button">Continue with Free</button>
             </div>
+            <p class="landing-payment-note">One-time payment. Lifetime access. No subscription.</p>
 
             <p class="onboarding-access-note">Personal painting feedback is separate. You can upgrade anytime.</p>
           </div>
@@ -7750,6 +7764,7 @@ html,
               <button id="conversionUnlockButton" class="button paid-cta" type="button">Show My Painting Fix Plan - $5</button>
               <button id="conversionTrySecondaryButton" class="button-secondary" type="button">Analyze My Painting Free</button>
             </div>
+            <p class="landing-payment-note">One-time payment. Lifetime access. No subscription.</p>
           </aside>
         </div>
       </div>
