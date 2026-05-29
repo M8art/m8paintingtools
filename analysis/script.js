@@ -18,6 +18,13 @@ const mobileResetWorkspaceButton = document.getElementById("mobileResetWorkspace
 const mobileResultsButton = document.getElementById("mobileResultsButton");
 const quickCheckDeepReport = document.getElementById("quickCheckDeepReport");
 const quickCheckDeepReportContent = document.getElementById("quickCheckDeepReportContent");
+const quickAiChatPanel = document.getElementById("quickAiChatPanel");
+const quickAiChatMessages = document.getElementById("quickAiChatMessages");
+const quickAiChatForm = document.getElementById("quickAiChatForm");
+const quickAiChatInput = document.getElementById("quickAiChatInput");
+const quickAiChatSend = document.getElementById("quickAiChatSend");
+const quickAiChatStatus = document.getElementById("quickAiChatStatus");
+const quickAiChatLimit = document.getElementById("quickAiChatLimit");
 const quickCheckResult = document.getElementById("quickCheckResult");
 const quickCheckTopSections = document.getElementById("quickCheckTopSections");
 const quickCheckKeyInsightBlock = document.getElementById("quickCheckKeyInsightBlock");
@@ -124,6 +131,11 @@ const LAST_STREAK_DAY_STORAGE_KEY = "m8_last_streak_day";
 const RECENT_BREAKDOWN_LINES_STORAGE_KEY = "m8_recent_lines";
 const RECENT_PAINTOVER_ACTIONS_STORAGE_KEY = "m8_recent_paintover_actions";
 const QUICK_CHECK_ONBOARDING_STORAGE_KEY = "m8_quick_check_onboarding_seen";
+const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
+const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
+const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
+const LANDING_HANDOFF_STORE = "uploads";
+const LANDING_HANDOFF_RECORD = "latest";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
@@ -138,6 +150,14 @@ const QUICK_AI_ENDPOINT = window.M8_QUICK_AI_ENDPOINT || (
     ? "http://localhost:8888/.netlify/functions/analyze-painting"
     : "/.netlify/functions/analyze-painting"
 );
+const QUICK_CHAT_ENDPOINT = window.M8_QUICK_CHAT_ENDPOINT || (
+  window.location.protocol === "file:"
+    ? "http://localhost:8888/.netlify/functions/quick-chat"
+    : "/.netlify/functions/quick-chat"
+);
+const QUICK_CHAT_FREE_LIMIT = 2;
+const QUICK_CHAT_UNLOCKED_DAILY_LIMIT = 20;
+const QUICK_CHAT_DAILY_STORAGE_KEY = "m8_quick_chat_daily_count";
 const AI_IMAGE_MAX_DIMENSION = 1024;
 const AI_IMAGE_QUALITY = 0.82;
 const NOTAN_SAMPLE_SIZE = 68;
@@ -244,18 +264,25 @@ let suppressSurfaceClick = false;
 let lastTapTimestamp = 0;
 let quickCheckOnboardingLabel = null;
 let quickCheckOnboardingTimers = [];
+let quickAiChatContext = null;
+let quickAiChatHistory = [];
+let quickAiChatFreeCount = 0;
+let quickAiChatRequestId = 0;
+let isQuickAiChatLoading = false;
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
 
 setupQuickCheckDeepReport();
 resetEmptyState();
+resetQuickAiChat();
 
 handleUnlockReturn();
 
 updateAnalysisAccessUI();
 updateOverlayColorUI();
 scheduleQuickCheckOnboarding();
+void consumeLandingHandoff();
 
 if (justUnlockedFromStripe) {
   updateStatusMessage("Unlocked forever. You now have full access.", true);
@@ -439,6 +466,13 @@ notanUnlockButton?.addEventListener("click", () => {
 premiumFixUnlockButton?.addEventListener("click", openFullUnlock);
 paintingBreakdownButton?.addEventListener("click", requestFullPaintingBreakdown);
 reportAiResultButton?.addEventListener("click", openAiReportDialog);
+quickAiChatForm?.addEventListener("submit", handleQuickAiChatSubmit);
+quickAiChatInput?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    quickAiChatForm?.requestSubmit();
+  }
+});
 aiReportForm?.addEventListener("submit", handleAiReportSubmit);
 [aiReportReason, aiReportEmail, aiReportMessage].filter(Boolean).forEach((field) => {
   field.addEventListener("input", updateAiReportMailto);
@@ -544,6 +578,76 @@ function showPreview(file) {
   showPreviewFromSource(objectUrl, true);
 }
 
+function openLandingHandoffDb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) {
+      reject(new Error("IndexedDB is not available."));
+      return;
+    }
+    const request = window.indexedDB.open(LANDING_HANDOFF_DB, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(LANDING_HANDOFF_STORE)) {
+        db.createObjectStore(LANDING_HANDOFF_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Failed to open handoff database."));
+  });
+}
+
+async function consumeIndexedLandingHandoff() {
+  const db = await openLandingHandoffDb();
+  const record = await new Promise((resolve, reject) => {
+    const transaction = db.transaction(LANDING_HANDOFF_STORE, "readonly");
+    const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+    const request = store.get(LANDING_HANDOFF_RECORD);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error || new Error("Failed to read image handoff."));
+  });
+
+  if (!record || record.target !== "quick" || !record.file) {
+    return false;
+  }
+
+  await new Promise((resolve, reject) => {
+    const transaction = db.transaction(LANDING_HANDOFF_STORE, "readwrite");
+    const store = transaction.objectStore(LANDING_HANDOFF_STORE);
+    store.delete(LANDING_HANDOFF_RECORD);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error("Failed to clear image handoff."));
+    transaction.onabort = () => reject(transaction.error || new Error("Image handoff clear was aborted."));
+  });
+
+  showPreview(record.file);
+  return true;
+}
+
+async function consumeLandingHandoff() {
+  try {
+    const consumedIndexed = await consumeIndexedLandingHandoff();
+    if (consumedIndexed) {
+      return;
+    }
+  } catch {
+    // Fall back to sessionStorage handoff below.
+  }
+
+  try {
+    const target = window.sessionStorage.getItem(LANDING_HANDOFF_TARGET_KEY);
+    const imageData = window.sessionStorage.getItem(LANDING_HANDOFF_IMAGE_KEY);
+    if (target !== "quick" || !imageData) {
+      return;
+    }
+
+    window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
+    window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+    showPreviewFromSource(imageData, false);
+  } catch {
+    // Ignore handoff failures and let the user upload normally.
+  }
+}
+
 function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
   resetAnalysisSequence();
   resetNotanReading();
@@ -559,6 +663,7 @@ function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
   imageStage.classList.add("hidden");
   quickCheckResult.classList.add("hidden");
   quickCheckDeepReport?.classList.add("hidden");
+  resetQuickAiChat();
   lockedAnalysisState.classList.add("hidden");
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
@@ -829,6 +934,7 @@ function runQuickCheck() {
   statusHelper.classList.add("is-analysis-running");
   resetResultRevealState();
   resetPaintingBreakdown();
+  resetQuickAiChat();
   quickCheckResult.classList.add("hidden");
   quickCheckDeepReport?.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
@@ -930,6 +1036,7 @@ function completeQuickCheck() {
     metrics: { ...result.metrics }
   };
   markMobileResultsReady();
+  openQuickAiChat(result);
   scrollToQuickCheckAiAnalysisOnMobile();
 
   isAnalysisRunning = false;
@@ -951,6 +1058,248 @@ function scrollToQuickCheckAiAnalysisOnMobile() {
   window.setTimeout(() => {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 180);
+}
+
+function resetQuickAiChat() {
+  quickAiChatContext = null;
+  quickAiChatHistory = [];
+  quickAiChatFreeCount = 0;
+  quickAiChatRequestId += 1;
+  isQuickAiChatLoading = false;
+  quickAiChatPanel?.classList.add("hidden");
+  if (quickAiChatMessages) {
+    quickAiChatMessages.innerHTML = "";
+    appendQuickAiChatMessage("assistant", "Run Quick Check first. Then ask about values, composition, color, drawing structure, or what the result means.");
+  }
+  if (quickAiChatInput) {
+    quickAiChatInput.value = "";
+  }
+  updateQuickAiChatUI("Chat opens after Quick Check.");
+}
+
+function openQuickAiChat(result) {
+  if (window.M8_GOOGLE_PLAY_BUILD || !quickAiChatPanel || !result) {
+    return;
+  }
+  quickAiChatContext = sanitizeQuickAiChatContext(result);
+  quickAiChatHistory = [];
+  quickAiChatFreeCount = 0;
+  isQuickAiChatLoading = false;
+  quickAiChatPanel.classList.remove("hidden");
+  if (quickAiChatMessages) {
+    quickAiChatMessages.innerHTML = "";
+    const issue = quickAiChatContext.biggestIssue || quickAiChatContext.verdict || "M8 found the main structure issue.";
+    appendQuickAiChatMessage("assistant", `Quick Check is ready. I can explain this result and answer painting questions about it. Biggest issue: ${issue}`);
+  }
+  if (quickAiChatInput) {
+    quickAiChatInput.value = "";
+    if (!isMobileLayout()) {
+      quickAiChatInput.focus({ preventScroll: true });
+    }
+  }
+  updateQuickAiChatUI();
+}
+
+function sanitizeQuickAiChatContext(result) {
+  const metrics = result?.metrics || {};
+  return {
+    score: result?.score,
+    verdict: result?.verdict,
+    biggestIssue: result?.weakness || result?.keyInsight,
+    keyInsight: result?.keyInsight,
+    strength: result?.strength,
+    weakness: result?.weakness,
+    whyPositive: result?.whyThisScore?.positive,
+    whyLimiting: result?.whyThisScore?.limiting,
+    tags: Array.isArray(result?.tags) ? result.tags.slice(0, 6) : [],
+    metrics: {
+      valueSpread: metrics.valueSpread,
+      focalClarity: metrics.focalClarity,
+      flowStrength: metrics.flowStrength,
+      balanceQuality: metrics.balanceQuality,
+      centerQuality: metrics.centerQuality
+    }
+  };
+}
+
+async function handleQuickAiChatSubmit(event) {
+  event.preventDefault();
+  if (!quickAiChatContext || isQuickAiChatLoading) {
+    return;
+  }
+
+  const message = (quickAiChatInput?.value || "").trim();
+  if (!message) {
+    updateQuickAiChatUI("Ask a short question about this painting.");
+    return;
+  }
+
+  if (!canSendQuickAiChatMessage()) {
+    showQuickAiChatLimitMessage();
+    return;
+  }
+
+  const requestId = quickAiChatRequestId + 1;
+  quickAiChatRequestId = requestId;
+  isQuickAiChatLoading = true;
+  const historyForRequest = quickAiChatHistory.slice(-6);
+  quickAiChatHistory.push({ role: "user", content: message });
+  appendQuickAiChatMessage("user", message);
+  if (quickAiChatInput) {
+    quickAiChatInput.value = "";
+  }
+  updateQuickAiChatUI("M8 is reading the Quick Check context...");
+
+  try {
+    const response = await fetch(QUICK_CHAT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        quickCheck: quickAiChatContext,
+        history: historyForRequest,
+        unlocked: hasUnlockedAccess() || DEV_MODE
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (requestId !== quickAiChatRequestId) {
+      return;
+    }
+    if (!response.ok) {
+      throw new Error(data.error || "Painter chat failed.");
+    }
+
+    const answer = data.answer || "I can help explain this Quick Check in painting terms.";
+    quickAiChatHistory.push({ role: "assistant", content: answer });
+    appendQuickAiChatMessage(data.offTopic ? "system" : "assistant", answer);
+    incrementQuickAiChatUsage();
+    if (data.unlockSuggested) {
+      appendQuickAiChatUnlockCard();
+    }
+    updateQuickAiChatUI();
+  } catch (error) {
+    if (requestId !== quickAiChatRequestId) {
+      return;
+    }
+    appendQuickAiChatMessage("system", error.message || "Painter chat failed. Try again in a moment.");
+    if (!hasUnlockedAccess() && !DEV_MODE) {
+      appendQuickAiChatUnlockCard();
+    }
+    updateQuickAiChatUI("Chat paused.");
+  } finally {
+    if (requestId === quickAiChatRequestId) {
+      isQuickAiChatLoading = false;
+      updateQuickAiChatUI();
+    }
+  }
+}
+
+function appendQuickAiChatMessage(type, text) {
+  if (!quickAiChatMessages) {
+    return;
+  }
+  const message = document.createElement("div");
+  message.className = `quick-ai-chat-message ${type}`;
+  const paragraph = document.createElement("p");
+  paragraph.textContent = text;
+  message.appendChild(paragraph);
+  quickAiChatMessages.appendChild(message);
+  quickAiChatMessages.scrollTop = quickAiChatMessages.scrollHeight;
+}
+
+function appendQuickAiChatUnlockCard() {
+  if (!quickAiChatMessages) {
+    return;
+  }
+  const existing = quickAiChatMessages.querySelector(".quick-ai-chat-message.locked");
+  if (existing) {
+    existing.remove();
+  }
+  const card = document.createElement("div");
+  card.className = "quick-ai-chat-message locked";
+  const text = document.createElement("p");
+  text.textContent = "The diagnosis is visible. Unlock the full painter fix plan to see the exact first fix and ordered paint steps.";
+  const button = document.createElement("button");
+  button.className = "button premium-unlock-button";
+  button.type = "button";
+  button.textContent = window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5";
+  button.addEventListener("click", openFullUnlock);
+  card.append(text, button);
+  quickAiChatMessages.appendChild(card);
+  quickAiChatMessages.scrollTop = quickAiChatMessages.scrollHeight;
+}
+
+function canSendQuickAiChatMessage() {
+  if (hasUnlockedAccess() || DEV_MODE) {
+    return getQuickAiChatDailyCount() < QUICK_CHAT_UNLOCKED_DAILY_LIMIT;
+  }
+  return quickAiChatFreeCount < QUICK_CHAT_FREE_LIMIT;
+}
+
+function incrementQuickAiChatUsage() {
+  if (hasUnlockedAccess() || DEV_MODE) {
+    setQuickAiChatDailyCount(getQuickAiChatDailyCount() + 1);
+    return;
+  }
+  quickAiChatFreeCount += 1;
+}
+
+function showQuickAiChatLimitMessage() {
+  if (hasUnlockedAccess() || DEV_MODE) {
+    appendQuickAiChatMessage("system", "Daily painter chat limit reached. Try again tomorrow.");
+    updateQuickAiChatUI("Daily chat limit reached.");
+    return;
+  }
+  appendQuickAiChatMessage("system", "Free chat preview used. Unlock the full painter fix plan for more follow-up questions.");
+  appendQuickAiChatUnlockCard();
+  updateQuickAiChatUI("Free chat preview used.");
+}
+
+function updateQuickAiChatUI(statusText) {
+  const unlocked = hasUnlockedAccess() || DEV_MODE;
+  const used = unlocked ? getQuickAiChatDailyCount() : quickAiChatFreeCount;
+  const limit = unlocked ? QUICK_CHAT_UNLOCKED_DAILY_LIMIT : QUICK_CHAT_FREE_LIMIT;
+  const hasContext = Boolean(quickAiChatContext);
+  const canSend = hasContext && !isQuickAiChatLoading && used < limit;
+
+  if (quickAiChatInput) {
+    quickAiChatInput.disabled = !canSend;
+    quickAiChatInput.placeholder = hasContext
+      ? "Ask about values, focal point, color, or what the result means..."
+      : "Run Quick Check first...";
+  }
+  if (quickAiChatSend) {
+    quickAiChatSend.disabled = !canSend;
+    quickAiChatSend.textContent = isQuickAiChatLoading ? "Reading..." : "Ask";
+  }
+  if (quickAiChatLimit) {
+    quickAiChatLimit.textContent = unlocked
+      ? `${Math.max(0, limit - used)} left today`
+      : `${Math.max(0, limit - used)} free`;
+  }
+  if (quickAiChatStatus) {
+    quickAiChatStatus.textContent = statusText || (hasContext
+      ? (unlocked ? "Full chat active for this painting." : "Free chat preview: diagnosis only, full fix plan locked.")
+      : "Chat opens after Quick Check.");
+  }
+}
+
+function getQuickAiChatDailyCount() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const record = JSON.parse(localStorage.getItem(QUICK_CHAT_DAILY_STORAGE_KEY) || "{}");
+    return record.date === today ? Number(record.count) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function setQuickAiChatDailyCount(count) {
+  const today = new Date().toISOString().slice(0, 10);
+  localStorage.setItem(QUICK_CHAT_DAILY_STORAGE_KEY, JSON.stringify({
+    date: today,
+    count: Math.max(0, Number(count) || 0)
+  }));
 }
 
 function buildQuickCheckResult() {
@@ -2569,6 +2918,7 @@ function resetUploadedImage() {
   lockedAnalysisState.classList.add("hidden");
   quickCheckDeepReport?.classList.add("hidden");
   resetPaintingBreakdown();
+  resetQuickAiChat();
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");

@@ -264,6 +264,27 @@
           </div>
         </div>
 
+        <section id="quickAiChatPanel" class="quick-ai-chat-panel hidden" aria-label="Painter AI chat">
+          <div class="quick-ai-chat-head">
+            <div>
+              <p class="section-label">Painter Chat</p>
+              <h3>Ask M8 about this painting</h3>
+            </div>
+            <span id="quickAiChatLimit" class="quick-ai-chat-limit">2 free</span>
+          </div>
+          <div id="quickAiChatMessages" class="quick-ai-chat-messages" aria-live="polite">
+            <div class="quick-ai-chat-message assistant">
+              <p>Run Quick Check first. Then ask about values, composition, color, drawing structure, or what the result means.</p>
+            </div>
+          </div>
+          <form id="quickAiChatForm" class="quick-ai-chat-form">
+            <label class="sr-only" for="quickAiChatInput">Ask about this painting</label>
+            <textarea id="quickAiChatInput" rows="2" maxlength="520" placeholder="Ask why the painting feels off..." disabled></textarea>
+            <button id="quickAiChatSend" class="button quick-ai-chat-send" type="submit" disabled>Ask</button>
+          </form>
+          <p id="quickAiChatStatus" class="quick-ai-chat-status">Chat opens after Quick Check.</p>
+        </section>
+
         <div class="analysis-grid">
           <div class="placeholder-panel">
             <p class="section-label">How It Works</p>
