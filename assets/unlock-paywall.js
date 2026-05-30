@@ -17,9 +17,53 @@
       "Future updates included"
     ]
   };
+  let lastUnlockTrackAt = 0;
 
   function open() {
+    trackUnlockClicked("m8_unlock_open");
     window.location.href = PAYMENT_LINK;
+  }
+
+  function trackUnlockClicked(source = "unknown") {
+    const now = Date.now();
+    if (now - lastUnlockTrackAt < 750) {
+      return;
+    }
+    lastUnlockTrackAt = now;
+
+    const payload = {
+      event_category: "monetization",
+      event_label: source,
+      page_location: window.location.href,
+      transport_type: "beacon",
+      value: 5
+    };
+
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "unlock_clicked", payload);
+      return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "unlock_clicked",
+      ...payload
+    });
+  }
+
+  function getUnlockSource(element) {
+    return element.id || element.dataset.unlockSource || element.dataset.unlockLink || "unlock_button";
+  }
+
+  function isUnlockClickElement(element) {
+    if (!element) {
+      return false;
+    }
+    const text = element.textContent || "";
+    const href = element.getAttribute("href") || element.dataset.unlockLink || "";
+    return element.hasAttribute("data-m8-unlock") ||
+      text.includes("$5") ||
+      href.includes(PAYMENT_LINK);
   }
 
   function escapeHtml(value) {
@@ -64,6 +108,7 @@
       button.dataset.m8UnlockBound = "true";
       button.addEventListener("click", (event) => {
         event.preventDefault();
+        trackUnlockClicked(getUnlockSource(button));
         if (typeof fallback === "function") {
           fallback();
           return;
@@ -108,11 +153,20 @@
     });
   }
 
+  document.addEventListener("click", (event) => {
+    const element = event.target?.closest?.("button, a");
+    if (!isUnlockClickElement(element)) {
+      return;
+    }
+    trackUnlockClicked(getUnlockSource(element));
+  }, true);
+
   window.M8_UNLOCK = {
     PAYMENT_LINK,
     ACCESS_LINK,
     COPY,
     open,
+    trackUnlockClicked,
     renderInlineCard,
     bind,
     ensurePaymentNotes

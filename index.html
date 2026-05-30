@@ -8406,6 +8406,34 @@ html,
     let onboardingTouchStartY = 0;
     let suppressOnboardingTapAdvance = false;
     let onboardingCanSkip = true;
+    let lastUnlockTrackAt = 0;
+
+    function trackUnlockClicked(source = "landing_unlock") {
+      const now = Date.now();
+      if (now - lastUnlockTrackAt < 750) {
+        return;
+      }
+      lastUnlockTrackAt = now;
+
+      const payload = {
+        event_category: "monetization",
+        event_label: source,
+        page_location: window.location.href,
+        transport_type: "beacon",
+        value: 5
+      };
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "unlock_clicked", payload);
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "unlock_clicked",
+        ...payload
+      });
+    }
 
     function isUnlocked() {
       return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
@@ -8538,6 +8566,7 @@ html,
     function startPaidUnlockFromOnboarding() {
       clearOnboardingAutoAdvance();
       markOnboardingSeen();
+      trackUnlockClicked("landing_unlock_button");
       window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     }
 
