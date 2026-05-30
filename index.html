@@ -7697,7 +7697,8 @@ html,
       </div>
     </section>
 
-    <section id="sampleResult" class="card quick-check-banner landing-long-form" aria-label="Quick Check">
+    <div id="sampleResult" class="desktop-demo-check-row landing-long-form">
+    <section class="card quick-check-banner landing-long-form" aria-label="Quick Check">
       <h2>Quick Check</h2>
       <p class="quick-check-banner-copy">Upload once, get the biggest issue first, then go deeper into Value, Composition, Color, or Drawing.</p>
       <div class="button-row">
@@ -7708,6 +7709,74 @@ html,
         <span>Then go deeper with 7-value map, layout check, or palette read.</span>
       </div>
     </section>
+    <section class="hidden-structure-demo" aria-label="The hidden structure of a painting">
+      <div class="hidden-structure-demo-frame">
+        <img class="hidden-structure-img" src="./assets/images/hidden-structure-demo.jpg" alt="Still life painting demo">
+        <img class="hidden-structure-img hidden-structure-img-gray" src="./assets/images/hidden-structure-demo.jpg" alt="" aria-hidden="true">
+        <div class="hidden-value-wash" aria-hidden="true"></div>
+
+        <span class="hidden-sample-point hidden-sample-highlight">Highlight</span>
+        <span class="hidden-sample-point hidden-sample-halftone">Halftone</span>
+        <span class="hidden-sample-point hidden-sample-shadow">Shadow</span>
+
+        <div class="hidden-value-bar" aria-label="20 step value scale">
+          <span class="hidden-value-step" style="--value-step: 0"></span>
+          <span class="hidden-value-step" style="--value-step: 1"></span>
+          <span class="hidden-value-step" style="--value-step: 2"></span>
+          <span class="hidden-value-step" style="--value-step: 3"></span>
+          <span class="hidden-value-step" style="--value-step: 4"></span>
+          <span class="hidden-value-step" style="--value-step: 5"></span>
+          <span class="hidden-value-step" style="--value-step: 6"></span>
+          <span class="hidden-value-step" style="--value-step: 7"></span>
+          <span class="hidden-value-step" style="--value-step: 8"></span>
+          <span class="hidden-value-step" style="--value-step: 9"></span>
+          <span class="hidden-value-step" style="--value-step: 10"></span>
+          <span class="hidden-value-step" style="--value-step: 11"></span>
+          <span class="hidden-value-step" style="--value-step: 12"></span>
+          <span class="hidden-value-step" style="--value-step: 13"></span>
+          <span class="hidden-value-step" style="--value-step: 14"></span>
+          <span class="hidden-value-step" style="--value-step: 15"></span>
+          <span class="hidden-value-step" style="--value-step: 16"></span>
+          <span class="hidden-value-step" style="--value-step: 17"></span>
+          <span class="hidden-value-step" style="--value-step: 18"></span>
+          <span class="hidden-value-step" style="--value-step: 19"></span>
+        </div>
+
+        <div class="hidden-composition-lines" aria-hidden="true"></div>
+        <div class="hidden-spiral-lines" aria-hidden="true">
+          <svg viewBox="0 0 100 100" focusable="false">
+            <rect x="8" y="8" width="84" height="84" rx="1"></rect>
+            <rect x="8" y="8" width="52" height="52"></rect>
+            <rect x="60" y="8" width="32" height="32"></rect>
+            <rect x="72" y="40" width="20" height="20"></rect>
+            <rect x="60" y="48" width="12" height="12"></rect>
+            <rect x="60" y="40" width="8" height="8"></rect>
+            <path d="M8 60 C8 31.3 31.3 8 60 8 C77.7 8 92 22.3 92 40 C92 51 83 60 72 60 C65.4 60 60 54.6 60 48 C60 43.6 63.6 40 68 40"></path>
+          </svg>
+        </div>
+        <div class="hidden-grid-lines" aria-hidden="true"></div>
+
+        <div class="hidden-color-swatches" aria-label="Extracted color harmony">
+          <span class="hidden-color-swatch"></span>
+          <span class="hidden-color-swatch"></span>
+          <span class="hidden-color-swatch"></span>
+          <span class="hidden-color-swatch"></span>
+          <span class="hidden-color-swatch"></span>
+        </div>
+
+        <div class="hidden-demo-copy">
+          <h2 class="hidden-demo-title">Every painting has a hidden structure.</h2>
+          <p class="hidden-demo-subtitle">M8 Painting Tools helps you see it.</p>
+        </div>
+
+        <button id="hiddenDemoUploadTrigger" class="button hidden-demo-cta" type="button">Analyze Your Image</button>
+      </div>
+      <p class="hidden-structure-demo-caption">
+        <strong>Hidden Structure Demo</strong>
+        <span>Values, composition, color, and drawing structure revealed from one reference before you paint.</span>
+      </p>
+    </section>
+    </div>
     <section class="app-home" aria-label="Painting Studio app home">
       <div class="app-home-top">
         <div>
@@ -7824,74 +7893,6 @@ html,
       <p class="app-signal"><strong>Paint</strong>Work with more clarity.</p>
     </div>
 
-    <div class="desktop-demo-check-row">
-    <section class="hidden-structure-demo" aria-label="The hidden structure of a painting">
-      <div class="hidden-structure-demo-frame">
-        <img class="hidden-structure-img" src="./assets/images/hidden-structure-demo.jpg" alt="Still life painting demo">
-        <img class="hidden-structure-img hidden-structure-img-gray" src="./assets/images/hidden-structure-demo.jpg" alt="" aria-hidden="true">
-        <div class="hidden-value-wash" aria-hidden="true"></div>
-
-        <span class="hidden-sample-point hidden-sample-highlight">Highlight</span>
-        <span class="hidden-sample-point hidden-sample-halftone">Halftone</span>
-        <span class="hidden-sample-point hidden-sample-shadow">Shadow</span>
-
-        <div class="hidden-value-bar" aria-label="20 step value scale">
-          <span class="hidden-value-step" style="--value-step: 0"></span>
-          <span class="hidden-value-step" style="--value-step: 1"></span>
-          <span class="hidden-value-step" style="--value-step: 2"></span>
-          <span class="hidden-value-step" style="--value-step: 3"></span>
-          <span class="hidden-value-step" style="--value-step: 4"></span>
-          <span class="hidden-value-step" style="--value-step: 5"></span>
-          <span class="hidden-value-step" style="--value-step: 6"></span>
-          <span class="hidden-value-step" style="--value-step: 7"></span>
-          <span class="hidden-value-step" style="--value-step: 8"></span>
-          <span class="hidden-value-step" style="--value-step: 9"></span>
-          <span class="hidden-value-step" style="--value-step: 10"></span>
-          <span class="hidden-value-step" style="--value-step: 11"></span>
-          <span class="hidden-value-step" style="--value-step: 12"></span>
-          <span class="hidden-value-step" style="--value-step: 13"></span>
-          <span class="hidden-value-step" style="--value-step: 14"></span>
-          <span class="hidden-value-step" style="--value-step: 15"></span>
-          <span class="hidden-value-step" style="--value-step: 16"></span>
-          <span class="hidden-value-step" style="--value-step: 17"></span>
-          <span class="hidden-value-step" style="--value-step: 18"></span>
-          <span class="hidden-value-step" style="--value-step: 19"></span>
-        </div>
-
-        <div class="hidden-composition-lines" aria-hidden="true"></div>
-        <div class="hidden-spiral-lines" aria-hidden="true">
-          <svg viewBox="0 0 100 100" focusable="false">
-            <rect x="8" y="8" width="84" height="84" rx="1"></rect>
-            <rect x="8" y="8" width="52" height="52"></rect>
-            <rect x="60" y="8" width="32" height="32"></rect>
-            <rect x="72" y="40" width="20" height="20"></rect>
-            <rect x="60" y="48" width="12" height="12"></rect>
-            <rect x="60" y="40" width="8" height="8"></rect>
-            <path d="M8 60 C8 31.3 31.3 8 60 8 C77.7 8 92 22.3 92 40 C92 51 83 60 72 60 C65.4 60 60 54.6 60 48 C60 43.6 63.6 40 68 40"></path>
-          </svg>
-        </div>
-        <div class="hidden-grid-lines" aria-hidden="true"></div>
-
-        <div class="hidden-color-swatches" aria-label="Extracted color harmony">
-          <span class="hidden-color-swatch"></span>
-          <span class="hidden-color-swatch"></span>
-          <span class="hidden-color-swatch"></span>
-          <span class="hidden-color-swatch"></span>
-          <span class="hidden-color-swatch"></span>
-        </div>
-
-        <div class="hidden-demo-copy">
-          <h2 class="hidden-demo-title">Every painting has a hidden structure.</h2>
-          <p class="hidden-demo-subtitle">M8 Painting Tools helps you see it.</p>
-        </div>
-
-        <button id="hiddenDemoUploadTrigger" class="button hidden-demo-cta" type="button">Analyze Your Image</button>
-      </div>
-      <p class="hidden-structure-demo-caption">
-        <strong>Hidden Structure Demo</strong>
-        <span>Values, composition, color, and drawing structure revealed from one reference before you paint.</span>
-      </p>
-    </section>
 
     <section class="favorite-tools-card free-tools-card" aria-label="Free tools">
       <div class="favorite-tools-head">
@@ -8077,7 +8078,6 @@ html,
       </div>
     </section>
 
-    </div>
     <section class="product-story landing-long-form" aria-label="Product overview">
       <div class="card section-card">
         <div class="section-intro">
