@@ -62,8 +62,7 @@
   margin-top: 14px;
 }
 
-.m8-paywall-button,
-.m8-paywall-secondary {
+.m8-paywall-button {
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -84,15 +83,21 @@
   box-shadow: 0 14px 26px rgba(171, 83, 42, 0.24);
 }
 
-.m8-paywall-secondary {
-  border: 1px solid rgba(50, 44, 38, 0.12);
-  background: rgba(255, 255, 255, 0.82);
-  color: #2b2621;
-}
-
 .m8-paywall-note {
   margin: 10px 0 0;
   font-size: 0.86rem;
+}
+
+.m8-paywall-restore {
+  margin: 6px 0 0;
+  font-size: 0.86rem;
+}
+
+.m8-paywall-restore a {
+  color: #7a4a2b;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .m8-payment-note {
@@ -113,8 +118,7 @@
     flex-direction: column;
   }
 
-  .m8-paywall-button,
-  .m8-paywall-secondary {
+  .m8-paywall-button {
     width: 100%;
   }
 }
@@ -150,4 +154,9 @@ body[data-mobile-theme="dark"] .m8-paywall-issue {
 body.mobile-dark .m8-payment-note,
 body[data-mobile-theme="dark"] .m8-payment-note {
   color: rgba(255, 244, 223, 0.72);
+}
+
+body.mobile-dark .m8-paywall-restore a,
+body[data-mobile-theme="dark"] .m8-paywall-restore a {
+  color: #f4c26f;
 }

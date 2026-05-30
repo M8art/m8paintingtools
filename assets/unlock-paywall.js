@@ -6,6 +6,7 @@
     button: "Unlock Lifetime Access - $5",
     shortButton: "Unlock - $5",
     note: "One-time payment. Lifetime access. No subscription.",
+    restore: "Already paid? Restore access",
     body: "Your free full check is available once every 24 hours. If you want to keep testing paintings today, unlock lifetime access.",
     limitTitle: "Today's free full check is used",
     limitBody: "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.",
@@ -47,9 +48,9 @@
       `<ul>${list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`,
       `<div class="m8-paywall-actions">`,
       `<button class="m8-paywall-button" type="button" data-m8-unlock>${escapeHtml(options.button || COPY.button)}</button>`,
-      `<a class="m8-paywall-secondary" href="${ACCESS_LINK}">Restore access</a>`,
       `</div>`,
       `<p class="m8-paywall-note">${escapeHtml(options.note || COPY.note)}</p>`,
+      `<p class="m8-paywall-restore"><a href="${ACCESS_LINK}">${escapeHtml(options.restore || COPY.restore)}</a></p>`,
       `</div>`
     ].join("");
   }

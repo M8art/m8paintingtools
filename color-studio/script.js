@@ -450,7 +450,7 @@ function hidePremiumUnlockCard() {
 function showUnlockPaywall(context = {}) {
   state.premiumUnlockVisible = true;
   if (premiumUnlockTitle) {
-    premiumUnlockTitle.textContent = context.title || window.M8_UNLOCK?.COPY?.title || "Unlock Unlimited Checks";
+    premiumUnlockTitle.textContent = context.title || window.M8_UNLOCK?.COPY?.title || "Want more checks today?";
   }
   if (premiumUnlockText) {
     premiumUnlockText.textContent = context.body || GLOBAL_UNLOCK_BODY;
@@ -459,13 +459,13 @@ function showUnlockPaywall(context = {}) {
     premiumUnlockNote.textContent = context.note || window.M8_UNLOCK?.COPY?.note || "One-time payment. Lifetime access. No subscription.";
   }
   if (premiumUnlockButton) {
-    premiumUnlockButton.textContent = context.buttonText || window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5";
+    premiumUnlockButton.textContent = context.buttonText || window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5";
   }
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
     statusNote.textContent = context.status;
   }
-  showPremiumLimitToast(context.toast || window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5.");
+  showPremiumLimitToast(context.toast || window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
 }
 
 function showPremiumLimitToast(message) {
@@ -1419,20 +1419,20 @@ function sampleMixerPoint(event) {
 
   if (state.activeTab === "trainer" && !isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock Mix Trainer",
+      title: "Want more checks today?",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access to use Mix Trainer.",
-      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
+      status: "Unlock lifetime access to keep using Mix Trainer today.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5."
     });
     return;
   }
 
   if (state.activeTab === "mixer" && !canUseColorMixer()) {
     showUnlockPaywall({
-      title: "Unlock Color Tools",
+      title: "Want more checks today?",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access to use this color tool.",
-      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
+      status: "Unlock lifetime access to keep using this color tool today.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5."
     });
     return;
   }
@@ -2733,10 +2733,10 @@ function toggleTrainerPigment(name) {
 function checkTrainerMix() {
   if (!isUnlocked()) {
     showUnlockPaywall({
-      title: "Unlock Mix Trainer",
+      title: "Want more checks today?",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access to use Mix Trainer.",
-      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
+      status: "Unlock lifetime access to keep using Mix Trainer today.",
+      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5."
     });
     return;
   }
