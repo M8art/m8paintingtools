@@ -423,7 +423,8 @@ analysisSurface.addEventListener("touchcancel", handleWorkspaceTouchCancel, { pa
 runAnalysisButton.addEventListener("click", () => {
   completeQuickCheckOnboarding();
   if (isQuickCheckLockedByLimit()) {
-    openFullUnlock();
+    showLockedAnalysisState();
+    document.getElementById("quickCheckResultPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });
     return;
   }
 
@@ -1078,7 +1079,7 @@ function completeQuickCheck() {
     freeCheckNote.textContent = "Your full free Quick Check is ready.";
     freeCheckNote.classList.remove("hidden");
     freeDailyNote.classList.remove("hidden");
-    freeDailyNote.textContent = "You can run another free full check tomorrow, or unlock if you want unlimited checks today.";
+    freeDailyNote.textContent = "You can run another free full check tomorrow, or unlock lifetime access to keep working today.";
     streakNote.textContent = getStreakMessage();
     streakNote.classList.remove("hidden");
   }
@@ -1300,7 +1301,7 @@ function appendQuickAiChatUnlockCard() {
   const button = document.createElement("button");
   button.className = "button premium-unlock-button";
   button.type = "button";
-  button.textContent = window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5";
+  button.textContent = window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5";
   button.addEventListener("click", openFullUnlock);
   card.append(text, button);
   quickAiChatMessages.appendChild(card);
@@ -1357,7 +1358,7 @@ function updateQuickAiChatUI(statusText) {
   }
   if (quickAiChatStatus) {
     quickAiChatStatus.textContent = statusText || (hasContext
-      ? (unlocked ? "Full chat active for this painting." : "Free chat preview: diagnosis only, full fix plan locked.")
+      ? (unlocked ? "Full chat active for this painting." : "Free chat preview: ask up to two follow-up questions.")
       : "Chat opens after Quick Check.");
   }
 }
@@ -3151,7 +3152,7 @@ function renderPremiumFixPreview(result) {
   }
   if (premiumFixUnlockButton) {
     premiumFixUnlockButton.classList.add("hidden");
-    premiumFixUnlockButton.textContent = window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5";
+    premiumFixUnlockButton.textContent = window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5";
   }
   if (premiumFixNote) {
     premiumFixNote.textContent = "Use this as your first painting pass before details.";
@@ -3294,7 +3295,7 @@ function buildPremiumFixPlan(result) {
   return {
     lockedTitle: "Your scan is ready.",
     unlockedTitle: "AI Analysis for Painters",
-    lockedSummary: "Today's free full scan is already used. Come back tomorrow, or unlock unlimited checks today.",
+    lockedSummary: "Today's free full scan is already used. Come back tomorrow, or unlock lifetime access to keep working today.",
     unlockedSummary: "This measured read starts the diagnosis. The AI fix plan below is generated from this specific painting.",
     sections: [
       {
@@ -4061,7 +4062,7 @@ function showLockedAnalysisState() {
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
   updateStatusMessage("Today's free full check is already used.");
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   showPremiumLimitToast("Today's free full check is used.");
 }
 
@@ -4075,7 +4076,7 @@ function showFreeLimitReachedState() {
   runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
   updateStatusMessage("Today's free full check is already used.");
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   syncMobileRunAnalysisButton();
 }
 

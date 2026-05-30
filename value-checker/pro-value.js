@@ -457,7 +457,7 @@
       return window.M8_UNLOCK.renderInlineCard({
         title: "Today's free value scan is used",
         issue,
-        body: "Come back tomorrow for another free full value scan, or unlock unlimited checks today."
+        body: "Come back tomorrow for another free full value scan, or unlock lifetime access to keep working today."
       });
     }
 
@@ -465,8 +465,8 @@
       `<div class="value-pro-result-block value-pro-verdict">`,
       `<h3>Today's free value scan is used</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Come back tomorrow for another free full value scan, or unlock unlimited checks today.</p>`,
-      `<button class="button" type="button" data-m8-unlock>Unlock Unlimited Checks - $5</button>`,
+      `<p>Come back tomorrow for another free full value scan, or unlock lifetime access to keep working today.</p>`,
+      `<button class="button" type="button" data-m8-unlock>Unlock Lifetime Access - $5</button>`,
       `</div>`
     ].join("");
   }
@@ -538,7 +538,9 @@
   async function runAiValueAnalysis(event) {
     if (!imageDataUrl || isRunning) return;
     if (isLockedByLimit()) {
-      openFullUnlock();
+      updateAccessUI();
+      setStatus("Today's free value check is already used.", "Come back tomorrow for another full AI Value Analysis, or unlock lifetime access to keep working today.");
+      proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 

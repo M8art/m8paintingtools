@@ -189,7 +189,7 @@ const HARMONY_CLUSTER_COUNT = 8;
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "You can preview Color Checker for free. Uploading your own painting is included in the full lifetime unlock.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free full color check is available once every 24 hours. Unlock lifetime access if you want to keep working today.";
 const PALETTE_COACH_FREE_CHECK_STORAGE_KEY = "m8_palette_coach_last_free_check";
 const MIX_COACH_FREE_CHECK_STORAGE_KEY = "m8_mix_coach_last_free_check";
 const IS_LOCAL_PREVIEW = ["127.0.0.1", "localhost"].includes(window.location.hostname);
@@ -421,9 +421,9 @@ function formatColorAiFreeWait(storageKey) {
 
 function showColorAiLimitPaywall(toolName, storageKey) {
   showUnlockPaywall({
-    title: "Unlock Unlimited Checks",
+    title: "Want more color checks today?",
     note: "One-time payment. Lifetime access. No subscription.",
-    status: `Today's free full ${toolName} check is used. Come back in ${formatColorAiFreeWait(storageKey)}, or unlock unlimited checks.`,
+    status: `Today's free full ${toolName} check is used. Come back in ${formatColorAiFreeWait(storageKey)}, or unlock lifetime access to keep working today.`,
     toast: "Today's free full check is used."
   });
 }
@@ -440,10 +440,6 @@ function showInitialColorPaywall() {
 
 function canUseColorMixer() {
   return true;
-}
-
-function isColorUploadLocked() {
-  return !window.M8_GOOGLE_PLAY_BUILD && !isUnlocked();
 }
 
 function hidePremiumUnlockCard() {
@@ -468,11 +464,6 @@ function showUnlockPaywall(context = {}) {
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
     statusNote.textContent = context.status;
-  }
-  if (context.focusCard && premiumUnlockCard) {
-    window.requestAnimationFrame(() => {
-      premiumUnlockCard.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
   }
   showPremiumLimitToast(context.toast || window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5.");
 }
@@ -983,18 +974,6 @@ function handleImageWrapClick(event) {
 }
 
 function getUploadLockContext() {
-  if (isColorUploadLocked()) {
-    return {
-      title: "Unlock Color Checker",
-      body: "You can look around the color tools for free. To upload and analyze your own painting, unlock lifetime access.",
-      note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock Color Checker to upload your painting and get palette analysis, color mixing guidance, and color relationships.",
-      toast: "Unlock Color Checker - $5.",
-      buttonText: "Unlock Color Checker - $5",
-      focusCard: true
-    };
-  }
-
   return null;
 }
 
@@ -2113,7 +2092,7 @@ function renderM8ColorMixer(result) {
 }
 
 function renderColorCoachUnlockTeaser(container, title, issue) {
-  const copy = "Today's free full color check is already used. Come back tomorrow, or unlock unlimited checks today.";
+  const copy = "Today's free full color check is already used. Come back tomorrow, or unlock lifetime access to keep working today.";
   if (window.M8_UNLOCK?.renderInlineCard) {
     container.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
@@ -2127,7 +2106,7 @@ function renderColorCoachUnlockTeaser(container, title, issue) {
       `<h3>${escapeHtml(title)}</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
       `<p>${copy}</p>`,
-      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Unlimited Checks - $5</button>`,
+      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Lifetime Access - $5</button>`,
       `</div>`
     ].join("");
   }

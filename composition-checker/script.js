@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free full AI read is available once every 24 hours. Unlock lifetime access if you want unlimited checks today.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free full AI read is available once every 24 hours. Unlock lifetime access if you want to keep working today.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -596,9 +596,9 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
+  advancedStatusNote.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   workspaceHint.textContent = GLOBAL_UNLOCK_BODY;
-  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5.");
+  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
 }
 
 function requireUnlock(actionName = "advanced composition tools") {
@@ -648,8 +648,8 @@ function showPremiumLimitToast(message) {
 
 function showBasicAiLimitPaywall(lockCard, toolName, waitText) {
   lockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = `Today's free full ${toolName} scan is used. Come back in ${waitText}, or unlock unlimited checks.`;
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
+  advancedStatusNote.textContent = `Today's free full ${toolName} scan is used. Come back in ${waitText}, or unlock lifetime access to keep working today.`;
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   showPremiumLimitToast("Today's free full check is used.");
 }
 
@@ -4041,15 +4041,15 @@ function renderCompositionAiUnlockTeaser(resultsElement, title, analysis) {
     resultsElement.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
       issue,
-      body: "Today's free full composition scan is already used. Come back tomorrow, or unlock unlimited checks today."
+      body: "Today's free full composition scan is already used. Come back tomorrow, or unlock lifetime access to keep working today."
     });
   } else {
     resultsElement.innerHTML = [
       `<div class="advanced-ai-result-block advanced-ai-verdict">`,
       `<h3>${escapeHtml(title)}</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Today's free full composition scan is already used. Come back tomorrow, or unlock unlimited checks today.</p>`,
-      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Unlimited Checks - $5</button>`,
+      `<p>Today's free full composition scan is already used. Come back tomorrow, or unlock lifetime access to keep working today.</p>`,
+      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Lifetime Access - $5</button>`,
       `</div>`
     ].join("");
   }

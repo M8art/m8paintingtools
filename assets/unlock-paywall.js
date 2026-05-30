@@ -2,18 +2,18 @@
   const PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
   const ACCESS_LINK = "../access/index.html";
   const COPY = {
-    title: "Unlock Unlimited Checks",
-    button: "Unlock Unlimited Checks - $5",
+    title: "Want more checks today?",
+    button: "Unlock Lifetime Access - $5",
     shortButton: "Unlock - $5",
     note: "One-time payment. Lifetime access. No subscription.",
-    body: "Your free full check is available once every 24 hours. Unlock lifetime access if you want unlimited checks today.",
+    body: "Your free full check is available once every 24 hours. If you want to keep testing paintings today, unlock lifetime access.",
     limitTitle: "Today's free full check is used",
-    limitBody: "Come back tomorrow for another free full check, or unlock unlimited checks today.",
+    limitBody: "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.",
     lockedList: [
-      "Exact first fix",
-      "3-step paint plan",
-      "Value, composition, color, and drawing breakdown",
-      "Unlimited future checks"
+      "Unlimited checks",
+      "Full painter fix plans",
+      "Value, composition, color, and drawing tools",
+      "Future updates included"
     ]
   };
 
