@@ -4064,6 +4064,7 @@ function showLockedAnalysisState() {
   updateStatusMessage("Today's free full check is already used.");
   workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   showPremiumLimitToast("Today's free full check is used.");
+  scrollToQuickCheckAiAnalysisOnMobile();
 }
 
 function showFreeLimitReachedState() {
@@ -4078,6 +4079,7 @@ function showFreeLimitReachedState() {
   updateStatusMessage("Today's free full check is already used.");
   workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   syncMobileRunAnalysisButton();
+  scrollToQuickCheckAiAnalysisOnMobile();
 }
 
 function renderScoreBreakdown(items) {
@@ -4811,7 +4813,7 @@ function syncMobileRunAnalysisButton() {
 
   const desktopLabel = runAnalysisButton.textContent.trim();
   const isLimitState = isQuickCheckLockedByLimit() || runAnalysisButton.classList.contains("is-unlock-cta");
-  mobileRunAnalysisButton.textContent = isLimitState ? "Unlock" : desktopLabel;
+  mobileRunAnalysisButton.textContent = desktopLabel;
   mobileRunAnalysisButton.disabled = isLimitState ? false : runAnalysisButton.disabled;
   mobileRunAnalysisButton.classList.toggle("is-unlock-cta", isLimitState);
 }

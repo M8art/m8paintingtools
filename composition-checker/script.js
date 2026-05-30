@@ -651,6 +651,9 @@ function showBasicAiLimitPaywall(lockCard, toolName, waitText) {
   advancedStatusNote.textContent = `Today's free full ${toolName} scan is used. Come back in ${waitText}, or unlock lifetime access to keep working today.`;
   workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
   showPremiumLimitToast("Today's free full check is used.");
+  window.setTimeout(() => {
+    lockCard?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
 }
 
 function handleUpload(event) {
@@ -2680,7 +2683,7 @@ function updateModeUI() {
       : state.loadErrorMessage || (advancedLocked
       ? (state.imageLoaded
         ? "Advanced tools stay locked until payment. Uploads from Basic remain hidden here until full unlock."
-        : "Preview the advanced layout here. Unlock full access to upload and use advanced composition tools.")
+        : "Preview the advanced layout here. Unlock lifetime access to upload and use advanced composition tools.")
       : (state.imageLoaded
         ? "Study the image with the selected advanced composition guide."
         : "Upload an image to begin your composition study."));
@@ -2691,7 +2694,7 @@ function updateModeUI() {
       : state.loadErrorMessage || (advancedLocked
       ? (state.imageLoaded
         ? "Advanced workspace is locked. The uploaded image is hidden here until full unlock."
-        : "Advanced tools are visible for preview. Unlock full access when you're ready to upload, use overlays, controls, and export.")
+        : "Advanced tools are visible for preview. Unlock lifetime access when you're ready to upload, use overlays, controls, and export.")
       : (state.imageLoaded
         ? getAdvancedStatusCopy(advancedConfig.status)
         : advancedConfig.status));
@@ -2824,7 +2827,7 @@ function updateThirdsAiUI(isThirdsMode) {
     : hasResult
     ? "Rule of Thirds read is ready."
     : limitReached
-    ? `Today's free Rule of Thirds scan is used. Unlock now or come back in ${formatThirdsFreeWait()}.`
+    ? `Today's free Rule of Thirds scan is used. Come back in ${formatThirdsFreeWait()}, or unlock lifetime access to keep working today.`
     : state.imageLoaded
     ? "Run the AI read for a deeper painter explanation of the thirds structure."
     : "Upload an image to begin.";
@@ -2842,7 +2845,7 @@ function updateThirdsAiUI(isThirdsMode) {
     runThirdsAiButton.textContent = analysisState.isRunning
       ? "Analyzing..."
       : limitReached
-      ? window.M8_UNLOCK?.COPY?.shortButton || "Show Fix Plan - $5"
+      ? window.M8_UNLOCK?.COPY?.shortButton || "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";
@@ -2904,7 +2907,7 @@ function updateBasicCompositionAiUI(options) {
     : hasResult
     ? options.readyCopy
     : limitReached
-    ? `Today's free ${options.toolName} scan is used. Unlock now or come back in ${formatBasicAiFreeWait(options.storageKey)}.`
+    ? `Today's free ${options.toolName} scan is used. Come back in ${formatBasicAiFreeWait(options.storageKey)}, or unlock lifetime access to keep working today.`
     : state.imageLoaded
     ? options.promptCopy
     : "Upload an image to begin.";
@@ -2922,7 +2925,7 @@ function updateBasicCompositionAiUI(options) {
     options.button.textContent = options.analysisState.isRunning
       ? "Analyzing..."
       : limitReached
-      ? window.M8_UNLOCK?.COPY?.shortButton || "Show Fix Plan - $5"
+      ? window.M8_UNLOCK?.COPY?.shortButton || "Unlock - $5"
       : hasResult
       ? "Analyze Again"
       : "Analyze";

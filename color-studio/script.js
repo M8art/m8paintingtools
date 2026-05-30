@@ -465,6 +465,11 @@ function showUnlockPaywall(context = {}) {
   if (context.status) {
     statusNote.textContent = context.status;
   }
+  if (window.matchMedia("(max-width: 720px)").matches && premiumUnlockCard) {
+    window.setTimeout(() => {
+      premiumUnlockCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+  }
   showPremiumLimitToast(context.toast || window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
 }
 
@@ -2134,7 +2139,7 @@ function renderPaletteCoach() {
   paletteCoachButton.textContent = state.paletteCoachLoading
     ? "Building Palette Plan..."
     : limitReached
-    ? "Show Fix Plan"
+    ? window.M8_UNLOCK?.COPY?.shortButton || "Unlock - $5"
     : "Build Palette Plan";
 
   if (state.paletteCoachLoading) {
@@ -2308,7 +2313,7 @@ function renderMixerCoach() {
   mixerCoachButton.textContent = state.mixerCoachLoading
     ? "Building Mix Plan..."
     : limitReached
-    ? "Show Fix Plan"
+    ? window.M8_UNLOCK?.COPY?.shortButton || "Unlock - $5"
     : "Build Mix Plan";
 
   if (state.mixerCoachLoading) {
