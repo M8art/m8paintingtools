@@ -189,7 +189,7 @@ const HARMONY_CLUSTER_COUNT = 8;
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free full color check is available once every 24 hours. Unlock lifetime access if you want unlimited checks today.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "You can preview Color Checker for free. Uploading your own painting is included in the full lifetime unlock.";
 const PALETTE_COACH_FREE_CHECK_STORAGE_KEY = "m8_palette_coach_last_free_check";
 const MIX_COACH_FREE_CHECK_STORAGE_KEY = "m8_mix_coach_last_free_check";
 const IS_LOCAL_PREVIEW = ["127.0.0.1", "localhost"].includes(window.location.hostname);
@@ -376,7 +376,7 @@ setMixerLogicExpanded(false);
 renderMixerLogicReference();
 const initialColorTab = getInitialColorTab();
 setTab(initialColorTab);
-showInitialColorPaywall(initialColorTab);
+showInitialColorPaywall();
 updateWorkspaceActionState();
 
 function isUnlocked() {
@@ -434,28 +434,16 @@ function getInitialColorTab() {
   return tabButtons.some((button) => button.dataset.tab === requestedTab) ? requestedTab : "palette";
 }
 
-function showInitialColorPaywall(tab) {
-  const params = new URLSearchParams(window.location.search);
-  if (!params.has("tool") && !params.has("tab") && !window.location.hash) {
-    return;
-  }
-  if (tab === "palette" || tab === "mixer") {
-    return;
-  }
-  if (isUnlocked()) {
-    return;
-  }
-  showUnlockPaywall(getUploadLockContext() || {
-    title: "Unlock Unlimited Checks",
-    note: "One-time payment. Lifetime access. No subscription.",
-    status: window.M8_UNLOCK?.COPY?.body || "Your free full color check is available once every 24 hours.",
-    toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
-  });
-  setTab(tab);
+function showInitialColorPaywall() {
+  // Color tools stay browsable; payment starts when the user tries to upload.
 }
 
 function canUseColorMixer() {
   return true;
+}
+
+function isColorUploadLocked() {
+  return !window.M8_GOOGLE_PLAY_BUILD && !isUnlocked();
 }
 
 function hidePremiumUnlockCard() {
@@ -469,14 +457,22 @@ function showUnlockPaywall(context = {}) {
     premiumUnlockTitle.textContent = context.title || window.M8_UNLOCK?.COPY?.title || "Unlock Unlimited Checks";
   }
   if (premiumUnlockText) {
-    premiumUnlockText.textContent = GLOBAL_UNLOCK_BODY;
+    premiumUnlockText.textContent = context.body || GLOBAL_UNLOCK_BODY;
   }
   if (premiumUnlockNote) {
     premiumUnlockNote.textContent = context.note || window.M8_UNLOCK?.COPY?.note || "One-time payment. Lifetime access. No subscription.";
   }
+  if (premiumUnlockButton) {
+    premiumUnlockButton.textContent = context.buttonText || window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5";
+  }
   premiumUnlockCard?.classList.remove("hidden");
   if (context.status) {
     statusNote.textContent = context.status;
+  }
+  if (context.focusCard && premiumUnlockCard) {
+    window.requestAnimationFrame(() => {
+      premiumUnlockCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
   }
   showPremiumLimitToast(context.toast || window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5.");
 }
@@ -987,30 +983,15 @@ function handleImageWrapClick(event) {
 }
 
 function getUploadLockContext() {
-  if (!isUnlocked() && !["palette", "mixer"].includes(state.activeTab)) {
+  if (isColorUploadLocked()) {
     return {
-      title: "Unlock Color Tools",
+      title: "Unlock Color Checker",
+      body: "You can look around the color tools for free. To upload and analyze your own painting, unlock lifetime access.",
       note: "One-time payment. Lifetime access. No subscription.",
-      status: "Palette Coach and Color Mix Coach include one free full AI check every 24 hours. Unlock lifetime access for all color tools.",
-      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
-    };
-  }
-
-  if (state.activeTab === "trainer" && !isUnlocked()) {
-    return {
-      title: "Unlock Mix Trainer",
-      note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access to use Mix Trainer.",
-      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
-    };
-  }
-
-  if (state.activeTab === "mixer" && !canUseColorMixer()) {
-    return {
-      title: "Unlock Color Tools",
-      note: "One-time payment. Lifetime access. No subscription.",
-      status: "Unlock lifetime access to use this color tool.",
-      toast: window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5."
+      status: "Unlock Color Checker to upload your painting and get palette analysis, color mixing guidance, and color relationships.",
+      toast: "Unlock Color Checker - $5.",
+      buttonText: "Unlock Color Checker - $5",
+      focusCard: true
     };
   }
 
