@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown. One-time payment, no subscription.";
+const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free full AI read is available once every 24 hours. Unlock lifetime access if you want unlimited checks today.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -596,9 +596,9 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Unlock the full painter fix plan now, or come back tomorrow for another free preview.";
+  advancedStatusNote.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
   workspaceHint.textContent = GLOBAL_UNLOCK_BODY;
-  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5.");
+  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5.");
 }
 
 function requireUnlock(actionName = "advanced composition tools") {
@@ -648,9 +648,9 @@ function showPremiumLimitToast(message) {
 
 function showBasicAiLimitPaywall(lockCard, toolName, waitText) {
   lockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = `Today's free ${toolName} scan is used. Unlock the full painter fix plan now, or come back in ${waitText}.`;
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Unlock the full painter fix plan now, or come back tomorrow for another free preview.";
-  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5.");
+  advancedStatusNote.textContent = `Today's free full ${toolName} scan is used. Come back in ${waitText}, or unlock unlimited checks.`;
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
+  showPremiumLimitToast("Today's free full check is used.");
 }
 
 function handleUpload(event) {
@@ -4041,15 +4041,15 @@ function renderCompositionAiUnlockTeaser(resultsElement, title, analysis) {
     resultsElement.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
       issue,
-      body: "Your free composition scan found the main issue. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
+      body: "Today's free full composition scan is already used. Come back tomorrow, or unlock unlimited checks today."
     });
   } else {
     resultsElement.innerHTML = [
       `<div class="advanced-ai-result-block advanced-ai-verdict">`,
       `<h3>${escapeHtml(title)}</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Your free composition scan found the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
-      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Show My Painting Fix Plan - $5</button>`,
+      `<p>Today's free full composition scan is already used. Come back tomorrow, or unlock unlimited checks today.</p>`,
+      `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Unlimited Checks - $5</button>`,
       `</div>`
     ].join("");
   }
@@ -4068,12 +4068,6 @@ function revealCompositionAiResults(resultsElement) {
 
 function renderThirdsAiResult(analysis) {
   if (!thirdsAiResults || !analysis) {
-    return;
-  }
-
-  if (!isUnlocked()) {
-    renderCompositionAiUnlockTeaser(thirdsAiResults, "Your thirds scan is ready", analysis);
-    revealCompositionAiResults(thirdsAiResults);
     return;
   }
 
@@ -4102,12 +4096,6 @@ function renderThirdsAiResult(analysis) {
 
 function renderBasicAiResult(resultsElement, analysis, verdictTitle) {
   if (!resultsElement || !analysis) {
-    return;
-  }
-
-  if (!isUnlocked()) {
-    renderCompositionAiUnlockTeaser(resultsElement, `${verdictTitle.replace(" VERDICT", "")} scan is ready`, analysis);
-    revealCompositionAiResults(resultsElement);
     return;
   }
 

@@ -2,13 +2,13 @@
   const PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
   const ACCESS_LINK = "../access/index.html";
   const COPY = {
-    title: "Show My Painting Fix Plan",
-    button: "Show My Painting Fix Plan - $5",
-    shortButton: "Show Fix Plan - $5",
+    title: "Unlock Unlimited Checks",
+    button: "Unlock Unlimited Checks - $5",
+    shortButton: "Unlock - $5",
     note: "One-time payment. Lifetime access. No subscription.",
-    body: "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown for this painting.",
-    limitTitle: "Today's free AI scan is used",
-    limitBody: "Unlock the full painter fix plan now, or come back tomorrow for another free preview.",
+    body: "Your free full check is available once every 24 hours. Unlock lifetime access if you want unlimited checks today.",
+    limitTitle: "Today's free full check is used",
+    limitBody: "Come back tomorrow for another free full check, or unlock unlimited checks today.",
     lockedList: [
       "Exact first fix",
       "3-step paint plan",
@@ -40,7 +40,7 @@
 
     return [
       `<div class="m8-paywall-card">`,
-      `<span class="m8-paywall-kicker">Full fix plan locked</span>`,
+      `<span class="m8-paywall-kicker">Daily free check used</span>`,
       `<h3>${escapeHtml(title)}</h3>`,
       issue ? `<p class="m8-paywall-issue"><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>` : "",
       `<p>${escapeHtml(body)}</p>`,

@@ -255,7 +255,7 @@
   }
 
   function isLockedByLimit() {
-    return false;
+    return hasUsedFreeAnalysisToday();
   }
 
   function updateAccessUI() {
@@ -269,7 +269,6 @@
       button.disabled = locked ? false : (!imageDataUrl || isRunning);
     });
 
-    proLockPanel?.classList.add("hidden");
   }
 
   function resetProValue() {
@@ -430,12 +429,8 @@
     const verdictHtml = analysis.painterValueVerdict
       ? `<div class="value-pro-result-block value-pro-verdict"><h3>PAINTER'S VALUE VERDICT</h3><p>${escapeHtml(analysis.painterValueVerdict)}</p></div>`
       : "";
-    const isFullResult = DEV_MODE || hasUnlockedAccess();
-
     if (proResults) {
-      proResults.innerHTML = isFullResult
-        ? valueScaleHtml + html + fixesHtml + verdictHtml
-        : valueScaleHtml + renderValueUnlockTeaser(analysis);
+      proResults.innerHTML = valueScaleHtml + html + fixesHtml + verdictHtml;
       bindValueUnlockButtons(proResults);
       proResults.classList.toggle("hidden", !proResults.innerHTML);
       proResults.classList.remove("is-visible");
@@ -460,18 +455,18 @@
 
     if (window.M8_UNLOCK?.renderInlineCard) {
       return window.M8_UNLOCK.renderInlineCard({
-        title: "Your AI value scan is ready",
+        title: "Today's free value scan is used",
         issue,
-        body: "Your free value scan found the main value issue. Unlock the painter fix plan to see the exact first move and the 3-step repair order."
+        body: "Come back tomorrow for another free full value scan, or unlock unlimited checks today."
       });
     }
 
     return [
       `<div class="value-pro-result-block value-pro-verdict">`,
-      `<h3>Your AI value scan is ready</h3>`,
+      `<h3>Today's free value scan is used</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Your free value scan found the main value issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.</p>`,
-      `<button class="button" type="button" data-m8-unlock>Show My Painting Fix Plan - $5</button>`,
+      `<p>Come back tomorrow for another free full value scan, or unlock unlimited checks today.</p>`,
+      `<button class="button" type="button" data-m8-unlock>Unlock Unlimited Checks - $5</button>`,
       `</div>`
     ].join("");
   }
@@ -542,6 +537,10 @@
 
   async function runAiValueAnalysis(event) {
     if (!imageDataUrl || isRunning) return;
+    if (isLockedByLimit()) {
+      openFullUnlock();
+      return;
+    }
 
     const isMobileRun = isMobileAiValueRun(event);
     isRunning = true;

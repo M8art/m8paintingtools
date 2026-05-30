@@ -908,6 +908,16 @@ function updateAnalysisAccessUI() {
     return;
   }
 
+  if (isQuickCheckLockedByLimit()) {
+    runAnalysisButton.textContent = "Unlock - $5";
+    runAnalysisButton.disabled = false;
+    runAnalysisButton.classList.add("is-unlock-cta");
+    freeLimitHelper.classList.remove("hidden");
+    syncMobileRunAnalysisButton();
+    syncMobileResetWorkspaceButton();
+    return;
+  }
+
   runAnalysisButton.textContent = "Run Analysis";
   runAnalysisButton.disabled = isAnalysisRunning || !hasUploadedImage;
   syncMobileRunAnalysisButton();
@@ -915,7 +925,7 @@ function updateAnalysisAccessUI() {
 }
 
 function isQuickCheckLockedByLimit() {
-  return false;
+  return hasUsedFullAnalysis();
 }
 
 function openFullUnlock(url = STRIPE_PAYMENT_LINK) {
@@ -944,7 +954,7 @@ function cacheCurrentQuickImageForUnlock() {
 }
 
 function shouldBlockAnalysisUpload() {
-  return false;
+  return isQuickCheckLockedByLimit();
 }
 
 function updateOverlayColorUI() {
@@ -1063,11 +1073,14 @@ function completeQuickCheck() {
     freeDailyNote.classList.add("hidden");
     streakNote.classList.add("hidden");
   } else {
-    freeCheckNote.textContent = "Your free scan is ready. Unlock the full fix plan for exact painting steps.";
+    markFreeAnalysisUsedToday();
+    markStreakForCompletedFreeAnalysis();
+    freeCheckNote.textContent = "Your full free Quick Check is ready.";
     freeCheckNote.classList.remove("hidden");
     freeDailyNote.classList.remove("hidden");
-    freeDailyNote.textContent = "Free preview shows the diagnosis. The exact first fix and 3-step paint plan are inside the full unlock.";
-    streakNote.classList.add("hidden");
+    freeDailyNote.textContent = "You can run another free full check tomorrow, or unlock if you want unlimited checks today.";
+    streakNote.textContent = getStreakMessage();
+    streakNote.classList.remove("hidden");
   }
   quickCheckResult.classList.remove("hidden");
   quickCheckDeepReport?.classList.remove("hidden");
@@ -1283,11 +1296,11 @@ function appendQuickAiChatUnlockCard() {
   const card = document.createElement("div");
   card.className = "quick-ai-chat-message locked";
   const text = document.createElement("p");
-  text.textContent = "The diagnosis is visible. Unlock the full painter fix plan to see the exact first fix and ordered paint steps.";
+  text.textContent = "The diagnosis is visible. Unlock only if you want more checks and follow-up questions today.";
   const button = document.createElement("button");
   button.className = "button premium-unlock-button";
   button.type = "button";
-  button.textContent = window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5";
+  button.textContent = window.M8_UNLOCK?.COPY?.button || "Unlock Unlimited Checks - $5";
   button.addEventListener("click", openFullUnlock);
   card.append(text, button);
   quickAiChatMessages.appendChild(card);
@@ -1315,7 +1328,7 @@ function showQuickAiChatLimitMessage() {
     updateQuickAiChatUI("Daily chat limit reached.");
     return;
   }
-  appendQuickAiChatMessage("system", "Free chat preview used. Unlock the full painter fix plan for more follow-up questions.");
+  appendQuickAiChatMessage("system", "Free chat questions used. Unlock if you want more follow-up questions today.");
   appendQuickAiChatUnlockCard();
   updateQuickAiChatUI("Free chat preview used.");
 }
@@ -3097,17 +3110,8 @@ function selectPainterFixLines(pool, priorityLines = []) {
 
 function renderPaintersFix(lines) {
   paintersFixList.innerHTML = "";
-  const isUnlocked = hasUnlockedAccess() || DEV_MODE;
-  paintersFix.classList.toggle("is-locked", !isUnlocked);
-  paintersFixLock.classList.toggle("hidden", isUnlocked);
-
-  if (!isUnlocked) {
-    const item = document.createElement("p");
-    item.className = "painters-fix-line";
-    item.textContent = "Unlock the full plan to see the exact painting moves in order.";
-    paintersFixList.appendChild(item);
-    return;
-  }
+  paintersFix.classList.remove("is-locked");
+  paintersFixLock.classList.add("hidden");
 
   lines.forEach((line) => {
     const item = document.createElement("p");
@@ -3125,10 +3129,10 @@ function renderPremiumFixPreview(result) {
   const plan = buildPremiumFixPlan(result);
   const isUnlocked = hasUnlockedAccess() || DEV_MODE;
   const isReferenceIssue = Boolean(result?.metrics?.referenceIssue);
-  const hasFullPainterReport = isUnlocked || isReferenceIssue;
+  const hasFullPainterReport = true;
 
   quickCheckPremiumFix.classList.remove("hidden", "is-locked", "is-unlocked", "is-reference-warning");
-  quickCheckPremiumFix.classList.add(isUnlocked ? "is-unlocked" : "is-locked");
+  quickCheckPremiumFix.classList.add("is-unlocked");
   quickCheckPremiumFix.classList.toggle("is-reference-warning", isReferenceIssue);
   quickCheckPremiumFix.classList.toggle("is-full-report", hasFullPainterReport && !isReferenceIssue);
 
@@ -3140,21 +3144,17 @@ function renderPremiumFixPreview(result) {
         : `${plan.fixes.length} issues found`;
   }
   if (premiumFixTitle) {
-    premiumFixTitle.textContent = isUnlocked ? plan.unlockedTitle : plan.lockedTitle;
+    premiumFixTitle.textContent = plan.unlockedTitle;
   }
   if (premiumFixSummary) {
-    premiumFixSummary.textContent = hasFullPainterReport ? plan.unlockedSummary : plan.lockedSummary;
+    premiumFixSummary.textContent = plan.unlockedSummary;
   }
   if (premiumFixUnlockButton) {
-    premiumFixUnlockButton.classList.toggle("hidden", isUnlocked || isReferenceIssue);
+    premiumFixUnlockButton.classList.add("hidden");
     premiumFixUnlockButton.textContent = window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5";
   }
   if (premiumFixNote) {
-    premiumFixNote.textContent = isUnlocked
-      ? "Use this as your first painting pass before details."
-      : hasFullPainterReport
-        ? "Use this as your first painting pass before details."
-        : "Locked inside the full plan: exact first fix, 3-step paint plan, full breakdown, and future checks.";
+    premiumFixNote.textContent = "Use this as your first painting pass before details.";
     premiumFixNote.classList.toggle("hidden", isReferenceIssue);
   }
 
@@ -3294,7 +3294,7 @@ function buildPremiumFixPlan(result) {
   return {
     lockedTitle: "Your scan is ready.",
     unlockedTitle: "AI Analysis for Painters",
-    lockedSummary: "Your free scan found the main issues. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.",
+    lockedSummary: "Today's free full scan is already used. Come back tomorrow, or unlock unlimited checks today.",
     unlockedSummary: "This measured read starts the diagnosis. The AI fix plan below is generated from this specific painting.",
     sections: [
       {
@@ -4060,9 +4060,9 @@ function showLockedAnalysisState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  updateStatusMessage("Your scan is ready.");
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.body || "Your free scan shows the main issue. Unlock the exact first fix, 3-step paint plan, and full painter breakdown.";
-  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Show My Painting Fix Plan - $5.");
+  updateStatusMessage("Today's free full check is already used.");
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
+  showPremiumLimitToast("Today's free full check is used.");
 }
 
 function showFreeLimitReachedState() {
@@ -4070,12 +4070,12 @@ function showFreeLimitReachedState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  runAnalysisButton.textContent = "Show My Fix Plan";
+  runAnalysisButton.textContent = "Unlock - $5";
   runAnalysisButton.disabled = false;
   runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
-  updateStatusMessage("Your scan is ready.");
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Unlock the full painter fix plan now, or come back tomorrow for another free preview.";
+  updateStatusMessage("Today's free full check is already used.");
+  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock unlimited checks today.";
   syncMobileRunAnalysisButton();
 }
 

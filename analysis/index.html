@@ -438,11 +438,11 @@
               <button id="reportAiResultButton" class="button-secondary report-ai-result-button" type="button">Report AI Result</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
-              <p class="section-label result-label">Unlock</p>
-              <h3 class="locked-title">Show My Painting Fix Plan</h3>
-              <p class="detail-copy">Your free scan found the main issue. Unlock the exact first fix, 3-step paint plan, value, composition, and color breakdown for this painting.</p>
+              <p class="section-label result-label">Daily free check used</p>
+              <h3 class="locked-title">Run another full check today?</h3>
+              <p class="detail-copy">Your free full Quick Check is available once every 24 hours. Come back tomorrow, or unlock lifetime access if you want unlimited checks today.</p>
               <p class="result-note">One-time payment. Lifetime access. No subscription.</p>
-              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="event.stopImmediatePropagation(); window.location.href=this.dataset.unlockLink; return false;">Show My Painting Fix Plan - $5</button>
+              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="event.stopImmediatePropagation(); window.location.href=this.dataset.unlockLink; return false;">Unlock Unlimited Checks - $5</button>
               <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
               <p class="result-note"><a href="../access/index.html">Already paid? Restore access</a></p>
               <div class="notes-list">
@@ -455,7 +455,7 @@
           </div>
 
           <button id="runAnalysisButton" class="button-secondary analysis-button mobile-duplicate-action" type="button" disabled>Run Analysis</button>
-          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">Your free scan shows the main issue. Unlock the full painter fix plan for the exact next steps.</p>
+          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">Today's free full Quick Check is already used. Come back tomorrow, or unlock unlimited checks today.</p>
         </div>
       </aside>
 
@@ -520,7 +520,7 @@
       <form id="aiReportForm" class="ai-report-form" name="ai-result-report" method="POST" action="./?ai-report=sent" data-netlify="true" netlify-honeypot="ai-report-bot-field">
         <input type="hidden" name="form-name" value="ai-result-report">
         <input type="hidden" name="subject" value="AI result report from M8 Painting Tools">
-        <input type="hidden" name="appVersion" value="1.0.50">
+        <input type="hidden" name="appVersion" value="1.0.51">
         <input id="aiReportResultSummary" type="hidden" name="resultSummary">
         <p class="bot-field">
           <label>Do not fill this out if you are human: <input name="ai-report-bot-field"></label>
