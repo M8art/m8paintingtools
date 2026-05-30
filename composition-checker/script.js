@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = window.M8_UNLOCK?.COPY?.body || "Your free full AI read is available once every 24 hours. Unlock lifetime access if you want to keep working today.";
+const GLOBAL_UNLOCK_BODY = "Basic composition overlays are free. Unlock lifetime access for Pro analysis and AI painter reads.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -585,6 +585,10 @@ function isAdvancedLocked() {
   return state.analysisMode === "advanced" && !isUnlocked();
 }
 
+function isBasicAiLocked() {
+  return !window.M8_GOOGLE_PLAY_BUILD && !isUnlocked();
+}
+
 function hideUnlockPaywall() {
   state.advancedUnlockVisible = false;
   advancedUnlockCard?.classList.add("hidden");
@@ -596,7 +600,7 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
+  advancedStatusNote.textContent = "Composition Basic is free. Unlock lifetime access for Pro analysis and AI painter reads.";
   workspaceHint.textContent = GLOBAL_UNLOCK_BODY;
   showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
 }
@@ -646,11 +650,11 @@ function showPremiumLimitToast(message) {
   }, 2000);
 }
 
-function showBasicAiLimitPaywall(lockCard, toolName, waitText) {
+function showBasicAiLimitPaywall(lockCard, toolName) {
   lockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = `Today's free full ${toolName} scan is used. Come back in ${waitText}, or unlock lifetime access to keep working today.`;
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
-  showPremiumLimitToast("Today's free full check is used.");
+  advancedStatusNote.textContent = `${toolName} AI read is part of the full unlock. Basic overlay tools stay free.`;
+  workspaceHint.textContent = `${toolName} basic overlay is free. Unlock lifetime access to run the AI painter read.`;
+  showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
   window.setTimeout(() => {
     lockCard?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 120);
@@ -2818,7 +2822,7 @@ function updateThirdsAiUI(isThirdsMode) {
   const analysisState = state.compositionAi.thirds;
   const canRun = isThirdsMode && state.imageLoaded && !analysisState.isRunning;
   const hasResult = Boolean(analysisState.result);
-  const limitReached = isThirdsMode && !isUnlocked() && hasUsedThirdsFreeAnalysis();
+  const limitReached = isThirdsMode && isBasicAiLocked();
   const shouldCueAnalyze = canRun && !hasResult && !analysisState.error;
   const status = analysisState.isRunning
     ? "Reading the image against the Rule of Thirds structure..."
@@ -2827,7 +2831,7 @@ function updateThirdsAiUI(isThirdsMode) {
     : hasResult
     ? "Rule of Thirds read is ready."
     : limitReached
-    ? `Today's free Rule of Thirds scan is used. Come back in ${formatThirdsFreeWait()}, or unlock lifetime access to keep working today.`
+    ? "Rule of Thirds AI read is part of the full unlock. Basic overlay tools stay free."
     : state.imageLoaded
     ? "Run the AI read for a deeper painter explanation of the thirds structure."
     : "Upload an image to begin.";
@@ -2898,7 +2902,7 @@ function updateDiagonalAiUI(isDiagonalMode) {
 function updateBasicCompositionAiUI(options) {
   const canRun = options.isMode && state.imageLoaded && !options.analysisState.isRunning;
   const hasResult = Boolean(options.analysisState.result);
-  const limitReached = options.isMode && !isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey);
+  const limitReached = options.isMode && isBasicAiLocked();
   const shouldCueAnalyze = canRun && !hasResult && !options.analysisState.error;
   const status = options.analysisState.isRunning
     ? options.runningCopy
@@ -2907,7 +2911,7 @@ function updateBasicCompositionAiUI(options) {
     : hasResult
     ? options.readyCopy
     : limitReached
-    ? `Today's free ${options.toolName} scan is used. Come back in ${formatBasicAiFreeWait(options.storageKey)}, or unlock lifetime access to keep working today.`
+    ? `${options.toolName} AI read is part of the full unlock. Basic overlay tools stay free.`
     : state.imageLoaded
     ? options.promptCopy
     : "Upload an image to begin.";
@@ -3439,8 +3443,8 @@ async function runThirdsAiAnalysis() {
     return;
   }
 
-  if (!isUnlocked() && hasUsedThirdsFreeAnalysis()) {
-    showBasicAiLimitPaywall(thirdsAiLockCard, "Rule of Thirds", formatThirdsFreeWait());
+  if (isBasicAiLocked()) {
+    showBasicAiLimitPaywall(thirdsAiLockCard, "Rule of Thirds");
     updateModeUI();
     return;
   }
@@ -3487,7 +3491,6 @@ async function runThirdsAiAnalysis() {
     }
     analysisState.result = data.analysis || null;
     renderThirdsAiResult(analysisState.result);
-    markThirdsFreeAnalysisUsed();
     showStatusToast("Rule of Thirds read ready");
     scrollToThirdsAiResults();
   } catch (error) {
@@ -3556,8 +3559,8 @@ async function runBasicCompositionAiAnalysis(options) {
     return;
   }
 
-  if (!isUnlocked() && hasUsedBasicAiFreeAnalysis(options.storageKey)) {
-    showBasicAiLimitPaywall(options.lockCard, options.toolName, formatBasicAiFreeWait(options.storageKey));
+  if (isBasicAiLocked()) {
+    showBasicAiLimitPaywall(options.lockCard, options.toolName);
     updateModeUI();
     return;
   }
@@ -3593,7 +3596,6 @@ async function runBasicCompositionAiAnalysis(options) {
     }
     analysisState.result = data.analysis || null;
     options.render(analysisState.result);
-    markBasicAiFreeAnalysisUsed(options.storageKey);
     showStatusToast(options.readyToast);
     options.scroll();
   } catch (error) {
@@ -4044,14 +4046,14 @@ function renderCompositionAiUnlockTeaser(resultsElement, title, analysis) {
     resultsElement.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
       issue,
-      body: "Today's free full composition scan is already used. Come back tomorrow, or unlock lifetime access to keep working today."
+      body: "Basic composition overlays are free. Unlock lifetime access to reveal the AI painter read and full composition fix plan."
     });
   } else {
     resultsElement.innerHTML = [
       `<div class="advanced-ai-result-block advanced-ai-verdict">`,
       `<h3>${escapeHtml(title)}</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Today's free full composition scan is already used. Come back tomorrow, or unlock lifetime access to keep working today.</p>`,
+      `<p>Basic composition overlays are free. Unlock lifetime access to reveal the AI painter read and full composition fix plan.</p>`,
       `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Lifetime Access - $5</button>`,
       `</div>`
     ].join("");

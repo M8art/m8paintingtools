@@ -383,6 +383,10 @@ function isUnlocked() {
   return localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
 }
 
+function isColorUploadLocked() {
+  return !window.M8_GOOGLE_PLAY_BUILD && !isUnlocked();
+}
+
 function getLastColorAiFreeCheckTime(storageKey) {
   const storedValue = Number(window.localStorage.getItem(storageKey) || "0");
   return Number.isFinite(storedValue) ? storedValue : 0;
@@ -979,7 +983,18 @@ function handleImageWrapClick(event) {
 }
 
 function getUploadLockContext() {
-  return null;
+  if (!isColorUploadLocked()) {
+    return null;
+  }
+
+  return {
+    title: "Color Checker is locked",
+    body: "Unlock lifetime access to upload your painting and use the palette, mixer, and color analysis tools.",
+    note: window.M8_UNLOCK?.COPY?.note || "One-time payment. Lifetime access. No subscription.",
+    status: "Unlock lifetime access to use Color Checker with your own image.",
+    toast: window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.",
+    buttonText: window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5"
+  };
 }
 
 function setTab(tab) {

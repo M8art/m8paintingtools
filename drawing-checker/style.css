@@ -67,6 +67,10 @@ svg {
   display: block;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .app {
   width: min(1360px, calc(100% - 36px));
   margin: 0 auto;
@@ -1637,6 +1641,25 @@ html:not(.mobile-light-mode) .overlay-color-swatches {
 .canon3d-toolkit > * {
   position: relative;
   z-index: 1;
+}
+
+.drawing-unlock-card {
+  border-color: rgba(201, 106, 61, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(201, 106, 61, 0.1), transparent 36%),
+    rgba(255, 252, 246, 0.88);
+}
+
+.drawing-unlock-card .button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.drawing-unlock-card a {
+  color: var(--accent-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .app[data-mode="proportion"] .proportion-toolkit {

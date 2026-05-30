@@ -1,6 +1,7 @@
 const drawingFileInput = document.getElementById("drawingFileInput");
 const referenceFileInput = document.getElementById("referenceFileInput");
 const compareDrawingFileInput = document.getElementById("compareDrawingFileInput");
+const drawingUploadTriggers = Array.from(document.querySelectorAll('label[for="drawingFileInput"], label[for="referenceFileInput"], label[for="compareDrawingFileInput"]'));
 const drawingStage = document.getElementById("drawingStage");
 const drawingPreview = document.getElementById("drawingPreview");
 const drawingOverlay = document.getElementById("drawingOverlay");
@@ -42,6 +43,8 @@ const runButton = document.getElementById("runButton");
 const clearButton = document.getElementById("clearButton");
 const resetButton = document.getElementById("resetButton");
 const compareButton = document.getElementById("compareButton");
+const drawingUnlockCard = document.getElementById("drawingUnlockCard");
+const drawingUnlockButton = document.getElementById("drawingUnlockButton");
 const overlayToggleButton = document.getElementById("overlayToggleButton");
 const overlayToolControl = document.querySelector(".overlay-tool-control");
 const overlaySelectedDot = document.getElementById("overlaySelectedDot");
@@ -90,6 +93,9 @@ const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
 const LANDING_HANDOFF_STORE = "uploads";
 const LANDING_HANDOFF_RECORD = "latest";
+const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
+const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
+const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
 const AI_PERSPECTIVE_IMAGE_MAX_DIMENSION = 1024;
 const AI_PERSPECTIVE_IMAGE_QUALITY = 0.82;
 
@@ -243,8 +249,59 @@ const activeCanonPointers = new Map();
 let canonGesture = null;
 let activeCanonTarget = null;
 
+function isUnlocked() {
+  return window.localStorage.getItem(GLOBAL_UNLOCK_STORAGE_KEY) === "true" ||
+    document.cookie.split(";").some((item) => item.trim() === `${GLOBAL_UNLOCK_COOKIE_NAME}=true`);
+}
+
+function isDrawingLocked() {
+  return !window.M8_GOOGLE_PLAY_BUILD && !isUnlocked();
+}
+
+function showDrawingUnlockPaywall() {
+  drawingUnlockCard?.classList.remove("hidden");
+  workspaceHint.textContent = "Drawing Checker is locked. Unlock lifetime access to upload and check your drawing structure.";
+  structureVerdict.textContent = "Unlock lifetime access to use Drawing Checker with your own image.";
+  readinessBadge.textContent = "Locked";
+  if (window.matchMedia("(max-width: 720px)").matches && drawingUnlockCard) {
+    window.setTimeout(() => {
+      drawingUnlockCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }
+}
+
+function requireDrawingAccess() {
+  if (!isDrawingLocked()) {
+    return true;
+  }
+  showDrawingUnlockPaywall();
+  return false;
+}
+
+drawingUnlockButton?.addEventListener("click", () => {
+  window.location.href = drawingUnlockButton.dataset.unlockLink || GLOBAL_UNLOCK_PAYMENT_LINK;
+});
+
+window.M8_UNLOCK?.bind?.(drawingUnlockCard || document, () => {
+  window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
+});
+
+drawingUploadTriggers.forEach((trigger) => {
+  trigger.addEventListener("click", (event) => {
+    if (requireDrawingAccess()) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
+});
+
 drawingStage.addEventListener("click", (event) => {
   if (event.target.closest(".mobile-compare-controls, .compare-empty-state, button, label, input")) {
+    return;
+  }
+
+  if (!requireDrawingAccess()) {
     return;
   }
 
@@ -275,6 +332,10 @@ drawingStage.addEventListener("keydown", (event) => {
   }
 
   event.preventDefault();
+  if (!requireDrawingAccess()) {
+    return;
+  }
+
   if (activeMode === "compare") {
     if (!hasReferenceImage) {
       openFilePicker(referenceFileInput);
@@ -299,6 +360,10 @@ drawingStage.addEventListener("keydown", (event) => {
 drawingFileInput.addEventListener("change", (event) => {
   const [file] = event.target.files || [];
   if (file) {
+    if (!requireDrawingAccess()) {
+      event.target.value = "";
+      return;
+    }
     showDrawing(file);
     event.target.value = "";
   }
@@ -307,6 +372,10 @@ drawingFileInput.addEventListener("change", (event) => {
 referenceFileInput.addEventListener("change", (event) => {
   const [file] = event.target.files || [];
   if (file) {
+    if (!requireDrawingAccess()) {
+      event.target.value = "";
+      return;
+    }
     showCompareImage("reference", file);
     event.target.value = "";
   }
@@ -315,6 +384,10 @@ referenceFileInput.addEventListener("change", (event) => {
 compareDrawingFileInput.addEventListener("change", (event) => {
   const [file] = event.target.files || [];
   if (file) {
+    if (!requireDrawingAccess()) {
+      event.target.value = "";
+      return;
+    }
     showCompareImage("drawing", file);
     event.target.value = "";
   }
@@ -575,6 +648,9 @@ window.addEventListener("resize", () => {
 restoreLandingHandoff();
 
 function openFilePicker(input) {
+  if (!requireDrawingAccess()) {
+    return;
+  }
   input.value = "";
   input.click();
 }
@@ -633,6 +709,9 @@ async function restoreLandingHandoff() {
     const handoff = await readLandingHandoff();
     if (handoff?.target === "drawing" && handoff.file instanceof File) {
       await clearLandingHandoff();
+      if (!requireDrawingAccess()) {
+        return;
+      }
       showDrawing(handoff.file);
       return;
     }
@@ -649,6 +728,9 @@ async function restoreLandingHandoff() {
 
     window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
     window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+    if (!requireDrawingAccess()) {
+      return;
+    }
     const response = await fetch(imageData);
     const blob = await response.blob();
     showDrawing(new File([blob], "landing-drawing-upload.png", { type: blob.type || "image/png" }));
@@ -659,6 +741,10 @@ async function restoreLandingHandoff() {
 }
 
 function showDrawing(file) {
+  if (!requireDrawingAccess()) {
+    return;
+  }
+
   if (activeMode === "compare") {
     setMode(lastPreviewMode);
   }
@@ -692,6 +778,10 @@ function showDrawing(file) {
 }
 
 function showCompareImage(kind, file) {
+  if (!requireDrawingAccess()) {
+    return;
+  }
+
   const image = kind === "reference" ? referencePreview : compareDrawingPreview;
 
   if (kind === "reference" && referenceObjectUrl) {

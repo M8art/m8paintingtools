@@ -255,7 +255,7 @@
   }
 
   function isLockedByLimit() {
-    return hasUsedFreeAnalysisToday();
+    return !DEV_MODE && !window.M8_GOOGLE_PLAY_BUILD && !hasUnlockedAccess();
   }
 
   function updateAccessUI() {
@@ -304,6 +304,14 @@
   }
 
   async function loadProImage(file) {
+    if (isLockedByLimit()) {
+      if (proInput) proInput.value = "";
+      updateAccessUI();
+      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+      proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     if (!file || !file.type || !file.type.startsWith("image/")) {
       setStatus("Upload an image file.", "Use JPG, PNG, or WebP.");
       return;
@@ -536,13 +544,13 @@
   }
 
   async function runAiValueAnalysis(event) {
-    if (!imageDataUrl || isRunning) return;
     if (isLockedByLimit()) {
       updateAccessUI();
-      setStatus("Today's free value check is already used.", "Come back tomorrow for another full AI Value Analysis, or unlock lifetime access to keep working today.");
+      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to run the Pro AI value read.");
       proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    if (!imageDataUrl || isRunning) return;
 
     const isMobileRun = isMobileAiValueRun(event);
     isRunning = true;
@@ -607,13 +615,36 @@
     button.addEventListener("click", () => setTier(button.dataset.valueTier));
   });
 
+  proUploadButtons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      if (!isLockedByLimit()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      updateAccessUI();
+      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+      proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, true);
+  });
+
   proInput?.addEventListener("change", () => loadProImage(proInput.files?.[0]));
   proUploadZone?.addEventListener("click", () => {
+    if (isLockedByLimit()) {
+      updateAccessUI();
+      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+      proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     if (!imageDataUrl) proInput?.click();
   });
   proUploadZone?.addEventListener("keydown", (event) => {
     if ((event.key === "Enter" || event.key === " ") && !imageDataUrl) {
       event.preventDefault();
+      if (isLockedByLimit()) {
+        updateAccessUI();
+        setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+        proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
       proInput?.click();
     }
   });
