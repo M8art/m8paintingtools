@@ -2730,6 +2730,108 @@
       font-weight: 900;
     }
 
+    .creator-section {
+      margin: 0 0 28px;
+      padding: clamp(22px, 4vw, 34px);
+      border-radius: 30px;
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(217, 173, 92, 0.14), transparent 26%),
+        radial-gradient(circle at 92% 22%, rgba(81, 107, 102, 0.12), transparent 24%),
+        linear-gradient(180deg, rgba(255, 252, 246, 0.88), rgba(242, 236, 226, 0.94));
+      box-shadow: 0 26px 64px rgba(50, 39, 28, 0.13);
+    }
+
+    .creator-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.66fr);
+      gap: clamp(18px, 3vw, 32px);
+      align-items: center;
+    }
+
+    .creator-copy {
+      display: grid;
+      gap: 14px;
+    }
+
+    .creator-copy h2 {
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1;
+    }
+
+    .creator-copy p {
+      max-width: 68ch;
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    .creator-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .creator-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background: rgba(255, 255, 255, 0.58);
+      color: #5f564d;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .creator-portrait-card {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid rgba(61, 51, 40, 0.1);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(246, 239, 229, 0.9));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76), 0 18px 38px rgba(50, 39, 28, 0.1);
+      text-align: center;
+    }
+
+    .creator-mark {
+      width: 116px;
+      height: 116px;
+      display: grid;
+      place-items: center;
+      border-radius: 28px;
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background: rgba(255, 252, 246, 0.86);
+      box-shadow: 0 16px 30px rgba(50, 39, 28, 0.14);
+      overflow: hidden;
+    }
+
+    .creator-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .creator-mark-copy {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .creator-mark-copy strong {
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.24rem;
+      line-height: 1;
+    }
+
     @media (max-width: 1120px) {
       .conversion-demo-head,
       .conversion-demo-grid,
@@ -2744,6 +2846,10 @@
       }
 
       .unlock-compare-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .creator-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -5467,6 +5573,29 @@ html,
         font-size: 0.8rem;
       }
 
+      .creator-section {
+        margin: 16px 0 92px;
+        padding: 18px 16px;
+        border-radius: 24px;
+      }
+
+      .creator-copy h2 {
+        font-size: clamp(1.85rem, 9vw, 2.6rem);
+      }
+
+      .creator-badges {
+        gap: 7px;
+      }
+
+      .creator-badge {
+        min-height: 28px;
+        font-size: 0.76rem;
+      }
+
+      .creator-portrait-card {
+        padding: 16px;
+      }
+
       .footer {
         flex-direction: column;
         align-items: flex-start;
@@ -6662,6 +6791,7 @@ html,
       html:not(.mobile-light-mode) .hidden-structure-demo,
       html:not(.mobile-light-mode) .favorite-tools-card,
       html:not(.mobile-light-mode) .studio-brief,
+      html:not(.mobile-light-mode) .creator-section,
       html:not(.mobile-light-mode) .quick-check-banner,
       html:not(.mobile-light-mode) .section-card,
       html:not(.mobile-light-mode) .tool-card {
@@ -6692,6 +6822,24 @@ html,
 
       html:not(.mobile-light-mode) .favorite-tools-card {
         padding: 12px;
+      }
+
+      html:not(.mobile-light-mode) .creator-copy h2,
+      html:not(.mobile-light-mode) .creator-mark-copy strong {
+        color: var(--mobile-atelier-paper-strong);
+      }
+
+      html:not(.mobile-light-mode) .creator-copy p,
+      html:not(.mobile-light-mode) .creator-mark-copy {
+        color: rgba(242, 231, 207, 0.72);
+      }
+
+      html:not(.mobile-light-mode) .creator-badge,
+      html:not(.mobile-light-mode) .creator-portrait-card,
+      html:not(.mobile-light-mode) .creator-mark {
+        border-color: rgba(185, 141, 66, 0.34);
+        background: rgba(13, 11, 8, 0.58);
+        color: rgba(242, 231, 207, 0.82);
       }
 
       html:not(.mobile-light-mode) .favorite-tools-note,
@@ -7574,6 +7722,7 @@ html,
           <img class="brand-logo" src="./assets/images/m8-painting-tools-logo.png" alt="M8 Painting Tools logo">
           <span>Painting Studio</span>
         </h1>
+        <p class="studio-practice-note" style="margin: 8px 0 0; color: var(--muted); font-size: .86rem; font-weight: 700; letter-spacing: .02em;">Built from 25+ years of studio practice.</p>
       </div>
 
       <div class="header-actions desktop-support-stack">
@@ -8269,6 +8418,35 @@ html,
             <h3 class="feature-title">Reference Compare</h3>
             <p class="feature-copy">Overlay your drawing against a reference to see proportion drift fast.</p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="creator-section" aria-label="About the creator">
+      <div class="creator-grid">
+        <div class="creator-copy">
+          <div>
+            <p class="eyebrow">Painter Built</p>
+            <h2>About the Creator</h2>
+          </div>
+          <p>M8 Painting Tools was created by Jan Matěják, an oil painter, educator, author, and ARC Salon finalist specializing in classical oil painting techniques and the study of Old Master methods.</p>
+          <p>After years of teaching artists worldwide through books, workshops, YouTube videos, and Patreon, Jan created M8 Painting Tools to help artists analyze value, composition, and color using modern AI-assisted tools guided by traditional painting principles.</p>
+          <p>This is not just another AI image analyzer. It is a painter&rsquo;s tool - built from real studio experience, classical training, and years of helping artists improve their work.</p>
+          <div class="creator-badges" aria-label="Creator credentials">
+            <span class="creator-badge">ARC Salon finalist</span>
+            <span class="creator-badge">Oil painter &amp; educator</span>
+            <span class="creator-badge">Author of painting books</span>
+            <span class="creator-badge">Creator of M8 Painting Tools</span>
+          </div>
+          <div class="button-row">
+            <a class="button-secondary" href="https://www.mateartwork.com/bio" target="_blank" rel="noopener noreferrer">View Full Biography</a>
+          </div>
+        </div>
+        <div class="creator-portrait-card" aria-label="M8 creator mark">
+          <div class="creator-mark">
+            <img src="./assets/images/m8-painting-tools-logo.png" alt="M8 Painting Tools logo">
+          </div>
+          <p class="creator-mark-copy"><strong>Jan Matěják</strong><span>Classical oil painter, teacher, and creator of M8 Painting Tools.</span></p>
         </div>
       </div>
     </section>
