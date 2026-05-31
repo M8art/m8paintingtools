@@ -8407,6 +8407,7 @@ html,
     let suppressOnboardingTapAdvance = false;
     let onboardingCanSkip = true;
     let lastUnlockTrackAt = 0;
+    let lastStripeOutboundTrackAt = 0;
 
     function trackUnlockClicked(source = "landing_unlock") {
       const now = Date.now();
@@ -8431,6 +8432,34 @@ html,
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: "unlock_clicked",
+        ...payload
+      });
+    }
+
+    function trackStripeCheckoutOutbound(source = "landing_unlock", url = GLOBAL_UNLOCK_PAYMENT_LINK) {
+      const now = Date.now();
+      if (now - lastStripeOutboundTrackAt < 750) {
+        return;
+      }
+      lastStripeOutboundTrackAt = now;
+
+      const payload = {
+        event_category: "monetization",
+        event_label: source,
+        page_location: window.location.href,
+        checkout_url: url,
+        transport_type: "beacon",
+        value: 5
+      };
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "stripe_checkout_outbound", payload);
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "stripe_checkout_outbound",
         ...payload
       });
     }
@@ -8567,6 +8596,7 @@ html,
       clearOnboardingAutoAdvance();
       markOnboardingSeen();
       trackUnlockClicked("landing_unlock_button");
+      trackStripeCheckoutOutbound("landing_unlock_button", GLOBAL_UNLOCK_PAYMENT_LINK);
       window.location.href = GLOBAL_UNLOCK_PAYMENT_LINK;
     }
 

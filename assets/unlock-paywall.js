@@ -18,9 +18,11 @@
     ]
   };
   let lastUnlockTrackAt = 0;
+  let lastStripeOutboundTrackAt = 0;
 
   function open() {
     trackUnlockClicked("m8_unlock_open");
+    trackStripeCheckoutOutbound("m8_unlock_open", PAYMENT_LINK);
     window.location.href = PAYMENT_LINK;
   }
 
@@ -51,8 +53,48 @@
     });
   }
 
+  function trackStripeCheckoutOutbound(source = "unknown", url = PAYMENT_LINK) {
+    const now = Date.now();
+    if (now - lastStripeOutboundTrackAt < 750) {
+      return;
+    }
+    lastStripeOutboundTrackAt = now;
+
+    const payload = {
+      event_category: "monetization",
+      event_label: source,
+      page_location: window.location.href,
+      checkout_url: url || PAYMENT_LINK,
+      transport_type: "beacon",
+      value: 5
+    };
+
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "stripe_checkout_outbound", payload);
+      return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "stripe_checkout_outbound",
+      ...payload
+    });
+  }
+
   function getUnlockSource(element) {
     return element.id || element.dataset.unlockSource || element.dataset.unlockLink || "unlock_button";
+  }
+
+  function getStripeCheckoutUrl(element) {
+    const href = element?.getAttribute?.("href") || "";
+    const unlockLink = element?.dataset?.unlockLink || "";
+    if (href.includes("buy.stripe.com")) {
+      return href;
+    }
+    if (unlockLink.includes("buy.stripe.com")) {
+      return unlockLink;
+    }
+    return PAYMENT_LINK;
   }
 
   function isUnlockClickElement(element) {
@@ -64,6 +106,19 @@
     return element.hasAttribute("data-m8-unlock") ||
       text.includes("$5") ||
       href.includes(PAYMENT_LINK);
+  }
+
+  function isStripeCheckoutClickElement(element) {
+    if (!element) {
+      return false;
+    }
+    const text = element.textContent || "";
+    const href = element.getAttribute("href") || "";
+    const unlockLink = element.dataset.unlockLink || "";
+    return href.includes("buy.stripe.com") ||
+      unlockLink.includes("buy.stripe.com") ||
+      element.hasAttribute("data-m8-unlock") ||
+      text.includes("$5");
   }
 
   function escapeHtml(value) {
@@ -109,6 +164,7 @@
       button.addEventListener("click", (event) => {
         event.preventDefault();
         trackUnlockClicked(getUnlockSource(button));
+        trackStripeCheckoutOutbound(getUnlockSource(button), getStripeCheckoutUrl(button));
         if (typeof fallback === "function") {
           fallback();
           return;
@@ -155,10 +211,17 @@
 
   document.addEventListener("click", (event) => {
     const element = event.target?.closest?.("button, a");
-    if (!isUnlockClickElement(element)) {
+    const isUnlock = isUnlockClickElement(element);
+    const isStripeCheckout = isStripeCheckoutClickElement(element);
+    if (!isUnlock && !isStripeCheckout) {
       return;
     }
-    trackUnlockClicked(getUnlockSource(element));
+    if (isUnlock) {
+      trackUnlockClicked(getUnlockSource(element));
+    }
+    if (isStripeCheckout) {
+      trackStripeCheckoutOutbound(getUnlockSource(element), getStripeCheckoutUrl(element));
+    }
   }, true);
 
   window.M8_UNLOCK = {
@@ -167,6 +230,7 @@
     COPY,
     open,
     trackUnlockClicked,
+    trackStripeCheckoutOutbound,
     renderInlineCard,
     bind,
     ensurePaymentNotes
