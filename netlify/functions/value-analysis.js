@@ -78,7 +78,7 @@ exports.handler = async (event) => {
   }
 
   if (imageDataUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
-    return response(413, { error: "Image is too large for AI Value Analysis." });
+    return response(413, { error: "Image is too large for Pro Value Analysis." });
   }
 
   const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
@@ -156,7 +156,7 @@ exports.handler = async (event) => {
     });
   } catch (error) {
     console.error(error);
-    return response(502, { error: "AI Value Analysis failed." });
+    return response(502, { error: "Pro Value Analysis failed." });
   }
 };
 

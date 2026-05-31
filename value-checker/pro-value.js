@@ -299,7 +299,7 @@
       proResults.classList.add("hidden");
       proResults.classList.remove("is-visible");
     }
-    setStatus("Waiting for image upload.", "Upload a painting or reference image, then run AI Value Analysis.");
+    setStatus("Waiting for image upload.", "Upload a painting or reference image, then run Pro Value Analysis.");
     updateAccessUI();
   }
 
@@ -307,7 +307,7 @@
     if (isLockedByLimit()) {
       if (proInput) proInput.value = "";
       updateAccessUI();
-      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+      setStatus("Pro Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro value read.");
       proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -318,7 +318,7 @@
     }
 
     setAnalyzeEnabled(false);
-    setStatus("Loading image...", "Preparing a mobile-safe image for AI Value Analysis.");
+    setStatus("Loading image...", "Preparing a mobile-safe image for Pro Value Analysis.");
 
     try {
       const sourceDataUrl = await readFileAsDataUrl(file);
@@ -333,7 +333,7 @@
       pulseUploadButtons();
       setResultButtonState("");
       cueAnalyzeButtons();
-      setStatus("Image loaded.", "Ready for AI Value Analysis.");
+      setStatus("Image loaded.", "Ready for Pro Value Analysis.");
       if (proResults) {
         proResults.innerHTML = "";
         proResults.classList.add("hidden");
@@ -546,7 +546,7 @@
   async function runAiValueAnalysis(event) {
     if (isLockedByLimit()) {
       updateAccessUI();
-      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to run the Pro AI value read.");
+      setStatus("Pro Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to run the Pro value read.");
       proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -580,18 +580,18 @@
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || "AI Value Analysis failed.");
+        throw new Error(data.error || "Pro Value Analysis failed.");
       }
       if (currentAnalysisUsesFreeSlot && isMobileRun) {
         markFreeAnalysisUsedToday();
       }
       renderResults(data);
       finishScanAnimation();
-      setStatus("AI Value Analysis ready.", "Review the value key, grouping, light/shadow structure, and practical fixes before painting.");
+      setStatus("Pro Value Analysis ready.", "Review the value key, grouping, light/shadow structure, and practical fixes before painting.");
     } catch (error) {
       clearAnimationTimers();
       clearSurfaceStages();
-      setStatus("AI Value Analysis failed.", error.message || "Try again in a moment.");
+      setStatus("Pro Value Analysis failed.", error.message || "Try again in a moment.");
     } finally {
       isRunning = false;
       currentAnalysisUsesFreeSlot = false;
@@ -621,7 +621,7 @@
       event.preventDefault();
       event.stopPropagation();
       updateAccessUI();
-      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+      setStatus("Pro Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro value read.");
       proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, true);
   });
@@ -630,7 +630,7 @@
   proUploadZone?.addEventListener("click", () => {
     if (isLockedByLimit()) {
       updateAccessUI();
-      setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+      setStatus("Pro Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro value read.");
       proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -641,7 +641,7 @@
       event.preventDefault();
       if (isLockedByLimit()) {
         updateAccessUI();
-        setStatus("AI Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro AI value read.");
+        setStatus("Pro Value Analysis is locked.", "Value Checker basic tools are free. Unlock lifetime access to upload and run the Pro value read.");
         proLockPanel?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }

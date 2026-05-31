@@ -1526,7 +1526,7 @@ async function autoAlignPerspective() {
   perspectiveAutoRequestId = requestId;
   isPerspectiveAutoLoading = true;
   setPerspectiveAutoLoading(true);
-  workspaceHint.textContent = "AI perspective align is reading the main edge families...";
+  workspaceHint.textContent = "Auto perspective align is reading the main edge families...";
 
   try {
     const aiFit = await requestAiPerspectiveAlignment(localFit);
@@ -1536,8 +1536,8 @@ async function autoAlignPerspective() {
     if (aiFit) {
       applyPerspectiveFit(aiFit);
       workspaceHint.textContent = aiFit.confidence >= 0.68
-        ? "AI align set the perspective from the visible edge families. Fine tune only if needed."
-        : "AI align set a best-read start. Fine tune the left and right beams against the drawing edges.";
+        ? "Auto align set the perspective from the visible edge families. Fine tune only if needed."
+        : "Auto align set a best-read start. Fine tune the left and right beams against the drawing edges.";
       return;
     }
   } catch (error) {
@@ -1555,13 +1555,13 @@ async function autoAlignPerspective() {
 
   const fit = localFit;
   if (!fit) {
-    workspaceHint.textContent = "AI align is unavailable and offline auto needs clearer diagonal edges. Use the manual VP controls.";
+    workspaceHint.textContent = "Auto align is unavailable and offline mode needs clearer diagonal edges. Use the manual VP controls.";
     updatePerspectiveUI();
     return;
   }
 
   applyPerspectiveFit(fit);
-  workspaceHint.textContent = "AI align is unavailable, so offline auto set a conservative start. Fine tune the beams manually.";
+  workspaceHint.textContent = "Auto align is unavailable, so offline mode set a conservative start. Fine tune the beams manually.";
 }
 
 function applyPerspectiveFit(fit) {
@@ -1584,7 +1584,7 @@ function setPerspectiveAutoLoading(isLoading) {
     button.disabled = isLoading;
     const isMobileButton = button.classList.contains("mobile-perspective-auto");
     button.textContent = isLoading
-      ? (isMobileButton ? "AI..." : "AI aligning...")
+      ? (isMobileButton ? "Reading..." : "Auto aligning...")
       : (isMobileButton ? "Auto" : "Auto align");
   });
 }
@@ -1604,7 +1604,7 @@ async function requestAiPerspectiveAlignment(localEstimate) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "Perspective AI alignment failed.");
+    throw new Error(data.error || "Perspective alignment failed.");
   }
   return data.alignment || null;
 }
@@ -2624,7 +2624,7 @@ function getPerspectiveModeRead(read) {
     : "Detected edge families are weak. Use the overlay manually against the strongest object edges.";
   const vanishingCopy = perspectiveState.mode === "one"
     ? "One-point mode: place the horizon through eye level, then slide the center VP until depth edges converge cleanly."
-    : "Two-point mode: AI Auto align is the fastest start, then manually fine tune horizon, left VP, right VP, and spread until each side follows its own edge family.";
+    : "Two-point mode: Auto align is the fastest start, then manually fine tune horizon, left VP, right VP, and spread until each side follows its own edge family.";
 
   return {
     verdict: `${modeLabel} checker ready. Test long edges against the VP rays before details.`,

@@ -3294,9 +3294,9 @@ function buildPremiumFixPlan(result) {
 
   return {
     lockedTitle: "Your scan is ready.",
-    unlockedTitle: "AI Analysis for Painters",
+    unlockedTitle: "Painter Analysis",
     lockedSummary: "Today's free full scan is already used. Come back tomorrow, or unlock lifetime access to keep working today.",
-    unlockedSummary: "This measured read starts the diagnosis. The AI fix plan below is generated from this specific painting.",
+    unlockedSummary: "This measured read starts the diagnosis. The painter fix plan below is generated from this specific painting.",
     sections: [
       {
         label: "Studio verdict",
@@ -3352,7 +3352,7 @@ function maybeRequestUnlockedPaintingBreakdown(result) {
 
   requestFullPaintingBreakdown({
     automatic: true,
-    loadingMessage: "Creating your full AI fix plan from this painting..."
+    loadingMessage: "Creating your full painter fix plan from this painting..."
   });
 }
 
@@ -3438,7 +3438,7 @@ function syncPaintingBreakdownAccessUI() {
 }
 
 function getPaintingBreakdownButtonLabel() {
-  return hasUnlockedAccess() || DEV_MODE ? "Create AI Fix Plan" : "Unlock - $5";
+  return hasUnlockedAccess() || DEV_MODE ? "Create Painter Fix Plan" : "Unlock - $5";
 }
 
 function showPaintingBreakdownMessage(message) {
@@ -3555,7 +3555,7 @@ async function requestPlayQuickAiAnalysis(imageDataUrl, computedAnalysis) {
     return;
   }
 
-  showPlayQuickAiMessage("AI analysis is running...");
+  showPlayQuickAiMessage("analysis is running...");
   try {
     const response = await fetch(QUICK_AI_ENDPOINT, {
       method: "POST",
@@ -3570,12 +3570,12 @@ async function requestPlayQuickAiAnalysis(imageDataUrl, computedAnalysis) {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(data.error || "AI analysis failed.");
+      throw new Error(data.error || "analysis failed.");
     }
 
     renderPlayQuickAiAnalysis(data.analysis);
   } catch (error) {
-    showPlayQuickAiMessage(error.message || "AI analysis failed. The normal Quick Check result is still available.");
+    showPlayQuickAiMessage(error.message || "analysis failed. The normal Quick Check result is still available.");
   }
 }
 
@@ -3627,7 +3627,7 @@ function showPlayQuickAiMessage(message) {
   }
 
   block.innerHTML = `
-    <p class="result-block-title">AI Mentor Read</p>
+    <p class="result-block-title">Painter Mentor Read</p>
     <p class="detail-copy">${escapeHtml(message)}</p>
   `;
   block.classList.remove("hidden");
@@ -3636,7 +3636,7 @@ function showPlayQuickAiMessage(message) {
 
 function renderPlayQuickAiAnalysis(analysis) {
   if (!analysis) {
-    showPlayQuickAiMessage("AI analysis failed. The normal Quick Check result is still available.");
+    showPlayQuickAiMessage("analysis failed. The normal Quick Check result is still available.");
     return;
   }
 
@@ -3652,7 +3652,7 @@ function renderPlayQuickAiAnalysis(analysis) {
   }
 
   block.innerHTML = `
-    <p class="result-block-title">AI Mentor Read</p>
+    <p class="result-block-title">Painter Mentor Read</p>
     ${analysis.summary ? `<p class="detail-copy">${escapeHtml(analysis.summary)}</p>` : ""}
     ${analysis.mainPriority ? `<div class="breakdown-section"><p class="breakdown-section-title">Main Priority</p><p class="detail-copy">${escapeHtml(analysis.mainPriority)}</p></div>` : ""}
     ${analysis.valueStructure ? `<div class="breakdown-section"><p class="breakdown-section-title">Value Structure</p><p class="detail-copy">${escapeHtml(analysis.valueStructure)}</p></div>` : ""}
@@ -3710,11 +3710,11 @@ function updateAiReportMailto() {
 }
 
 function buildAiReportMailtoHref(summary) {
-  const reason = aiReportReason?.value || "AI result report";
+  const reason = aiReportReason?.value || "analysis result report";
   const message = aiReportMessage?.value || "";
   const email = aiReportEmail?.value || "";
   const body = [
-    "M8 Painting Tools AI result report",
+    "M8 Painting Tools analysis result report",
     `Version: ${APP_VERSION_NAME}`,
     `Reason: ${reason}`,
     email ? `Reporter email: ${email}` : "",
@@ -3726,7 +3726,7 @@ function buildAiReportMailtoHref(summary) {
     summary || "(No result summary available.)"
   ].filter((line) => line !== "").join("\n");
 
-  return `mailto:matejakjan@gmail.com?subject=${encodeURIComponent("AI result report from M8 Painting Tools")}&body=${encodeURIComponent(body)}`;
+  return `mailto:matejakjan@gmail.com?subject=${encodeURIComponent("Analysis result report from M8 Painting Tools")}&body=${encodeURIComponent(body)}`;
 }
 
 function buildAiReportSummary() {
@@ -3740,7 +3740,7 @@ function buildAiReportSummary() {
     result.strength ? `Strength: ${result.strength}` : "",
     result.weakness ? `Weakness: ${result.weakness}` : "",
     result.fastestFix ? `Fix first: ${result.fastestFix}` : "",
-    aiBlock?.textContent ? `AI output: ${aiBlock.textContent.trim().replace(/\s+/g, " ")}` : ""
+    aiBlock?.textContent ? `Analysis output: ${aiBlock.textContent.trim().replace(/\s+/g, " ")}` : ""
   ].filter(Boolean);
 
   return parts.join("\n").slice(0, 4000);

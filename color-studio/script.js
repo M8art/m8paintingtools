@@ -696,7 +696,7 @@ function buildColorExportReport() {
   }
 
   if (state.mixerCoachResult) {
-    lines.push("", "AI MIX COACH");
+    lines.push("", "MIX COACH");
     lines.push(state.mixerCoachResult.verdict);
     lines.push(`Start: ${state.mixerCoachResult.startingPile}`);
     lines.push(`Adjust: ${state.mixerCoachResult.adjustment}`);
@@ -2292,7 +2292,7 @@ async function requestPaletteCoach() {
     state.paletteCoachResult = normalizePaletteCoachResult(data.paletteCoach);
     state.paletteCoachError = "";
     markColorAiFreeAnalysisUsed(PALETTE_COACH_FREE_CHECK_STORAGE_KEY);
-    statusNote.textContent = "AI Palette Coach ready.";
+    statusNote.textContent = "Palette Coach ready.";
     showStatusToast("Palette plan ready");
   } catch (error) {
     if (requestId !== state.paletteCoachRequestId) {
@@ -2464,7 +2464,7 @@ async function requestMixerCoach() {
     state.mixerCoachResult = normalizeMixerCoachResult(data.mixCoach);
     state.mixerCoachError = "";
     markColorAiFreeAnalysisUsed(MIX_COACH_FREE_CHECK_STORAGE_KEY);
-    statusNote.textContent = "AI Mix Coach ready.";
+    statusNote.textContent = "Mix Coach ready.";
     showStatusToast("Mix plan ready");
   } catch (error) {
     if (requestId !== state.mixerCoachRequestId) {

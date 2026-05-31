@@ -289,7 +289,7 @@ const COMPOSITION_AI_ENDPOINT = window.M8_COMPOSITION_AI_ENDPOINT || (
     ? "https://m8paintingtools.com/.netlify/functions/composition-pro-analysis"
     : "/.netlify/functions/composition-pro-analysis"
 );
-const GLOBAL_UNLOCK_BODY = "Basic composition overlays are free. Unlock lifetime access for Pro analysis and AI painter reads.";
+const GLOBAL_UNLOCK_BODY = "Basic composition overlays are free. Unlock lifetime access for Pro analysis and painter reads.";
 const LANDING_HANDOFF_IMAGE_KEY = "m8_landing_handoff_image";
 const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
@@ -600,7 +600,7 @@ function showUnlockPaywall(actionName = "advanced composition tools") {
     advancedUnlockCopy.textContent = GLOBAL_UNLOCK_BODY;
   }
   advancedUnlockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = "Composition Basic is free. Unlock lifetime access for Pro analysis and AI painter reads.";
+  advancedStatusNote.textContent = "Composition Basic is free. Unlock lifetime access for Pro analysis and painter reads.";
   workspaceHint.textContent = GLOBAL_UNLOCK_BODY;
   showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
 }
@@ -652,8 +652,8 @@ function showPremiumLimitToast(message) {
 
 function showBasicAiLimitPaywall(lockCard, toolName) {
   lockCard?.classList.remove("hidden");
-  advancedStatusNote.textContent = `${toolName} AI read is part of the full unlock. Basic overlay tools stay free.`;
-  workspaceHint.textContent = `${toolName} basic overlay is free. Unlock lifetime access to run the AI painter read.`;
+  advancedStatusNote.textContent = `${toolName} painter read is part of the full unlock. Basic overlay tools stay free.`;
+  workspaceHint.textContent = `${toolName} basic overlay is free. Unlock lifetime access to run the painter read.`;
   showPremiumLimitToast(window.M8_UNLOCK?.COPY?.button || "Unlock Lifetime Access - $5.");
   window.setTimeout(() => {
     lockCard?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2654,7 +2654,7 @@ function updateModeUI() {
     workspaceHint.textContent = state.imageLoading
       ? "Preparing analysis..."
       : isCompositionAiScanRunning()
-      ? "AI analysis is scanning the image..."
+      ? "analysis is scanning the image..."
       : state.loadErrorMessage || (state.imageLoaded
       ? (isThirdsMode
         ? "Click on the image to compare a placement with the nearest power point."
@@ -2683,7 +2683,7 @@ function updateModeUI() {
     workspaceHint.textContent = state.imageLoading
       ? "Preparing analysis..."
       : isCompositionAiScanRunning()
-      ? "AI analysis is scanning the image..."
+      ? "analysis is scanning the image..."
       : state.loadErrorMessage || (advancedLocked
       ? (state.imageLoaded
         ? "Advanced tools stay locked until payment. Uploads from Basic remain hidden here until full unlock."
@@ -2831,9 +2831,9 @@ function updateThirdsAiUI(isThirdsMode) {
     : hasResult
     ? "Rule of Thirds read is ready."
     : limitReached
-    ? "Rule of Thirds AI read is part of the full unlock. Basic overlay tools stay free."
+    ? "Rule of Thirds painter read is part of the full unlock. Basic overlay tools stay free."
     : state.imageLoaded
-    ? "Run the AI read for a deeper painter explanation of the thirds structure."
+    ? "Run the painter read for a deeper painter explanation of the thirds structure."
     : "Upload an image to begin.";
 
   thirdsAiCard?.classList.toggle("hidden", !isThirdsMode);
@@ -2878,7 +2878,7 @@ function updateCenterAiUI(isCenterMode) {
     toolName: "Center Lines",
     readyCopy: "Center Lines read is ready.",
     runningCopy: "Reading the image against the center axes...",
-    promptCopy: "Run the AI read for a deeper painter explanation of center lock, symmetry, and visual weight."
+    promptCopy: "Run the painter read for a deeper painter explanation of center lock, symmetry, and visual weight."
   });
 }
 
@@ -2895,7 +2895,7 @@ function updateDiagonalAiUI(isDiagonalMode) {
     toolName: "Diagonal Flow",
     readyCopy: "Diagonal Flow read is ready.",
     runningCopy: "Reading the image against the diagonal flow...",
-    promptCopy: "Run the AI read for a deeper painter explanation of the eye path, counter movement, and rhythm."
+    promptCopy: "Run the painter read for a deeper painter explanation of the eye path, counter movement, and rhythm."
   });
 }
 
@@ -2911,7 +2911,7 @@ function updateBasicCompositionAiUI(options) {
     : hasResult
     ? options.readyCopy
     : limitReached
-    ? `${options.toolName} AI read is part of the full unlock. Basic overlay tools stay free.`
+    ? `${options.toolName} painter read is part of the full unlock. Basic overlay tools stay free.`
     : state.imageLoaded
     ? options.promptCopy
     : "Upload an image to begin.";
@@ -3271,7 +3271,7 @@ function startCompositionAiScan(message = "Analyzing composition...") {
   });
 }
 
-function finishCompositionAiScan(message = "AI composition read ready.") {
+function finishCompositionAiScan(message = "Composition read ready.") {
   clearCompositionAiScanTimers();
   setCompositionAiScanStage("stage-final");
   canvasWrap?.classList.remove("is-analysis-running");
@@ -3499,7 +3499,7 @@ async function runThirdsAiAnalysis() {
   } finally {
     analysisState.isRunning = false;
     if (analysisState.result) {
-      finishCompositionAiScan("Rule of Thirds AI read ready.");
+      finishCompositionAiScan("Rule of Thirds painter read ready.");
     } else {
       cancelCompositionAiScan(analysisState.error || "Rule of Thirds read stopped.");
     }
@@ -3604,7 +3604,7 @@ async function runBasicCompositionAiAnalysis(options) {
   } finally {
     analysisState.isRunning = false;
     if (analysisState.result) {
-      finishCompositionAiScan("AI composition read ready.");
+      finishCompositionAiScan("Composition read ready.");
     } else {
       cancelCompositionAiScan(analysisState.error || "Composition read stopped.");
     }
@@ -3613,11 +3613,11 @@ async function runBasicCompositionAiAnalysis(options) {
 }
 
 async function runGoldenRatioAiAnalysis() {
-  if (openAdvancedUnlockFromAction("Golden Ratio AI analysis")) {
+  if (openAdvancedUnlockFromAction("Golden Ratio analysis")) {
     return;
   }
 
-  if (!requireUnlock("Golden Ratio AI analysis")) {
+  if (!requireUnlock("Golden Ratio analysis")) {
     return;
   }
 
@@ -3674,7 +3674,7 @@ async function runGoldenRatioAiAnalysis() {
   } finally {
     analysisState.isRunning = false;
     if (analysisState.result) {
-      finishCompositionAiScan("Golden Ratio AI read ready.");
+      finishCompositionAiScan("Golden Ratio painter read ready.");
     } else {
       cancelCompositionAiScan(analysisState.error || "Golden Ratio read stopped.");
     }
@@ -3683,11 +3683,11 @@ async function runGoldenRatioAiAnalysis() {
 }
 
 async function runNotanAiAnalysis() {
-  if (openAdvancedUnlockFromAction("Notan AI analysis")) {
+  if (openAdvancedUnlockFromAction("Notan analysis")) {
     return;
   }
 
-  if (!requireUnlock("Notan AI analysis")) {
+  if (!requireUnlock("Notan analysis")) {
     return;
   }
 
@@ -3737,7 +3737,7 @@ async function runNotanAiAnalysis() {
   } finally {
     analysisState.isRunning = false;
     if (analysisState.result) {
-      finishCompositionAiScan("Notan AI read ready.");
+      finishCompositionAiScan("Notan painter read ready.");
     } else {
       cancelCompositionAiScan(analysisState.error || "Notan read stopped.");
     }
@@ -3746,11 +3746,11 @@ async function runNotanAiAnalysis() {
 }
 
 function confirmSpiralPlacement() {
-  if (openAdvancedUnlockFromAction("Golden Spiral AI analysis")) {
+  if (openAdvancedUnlockFromAction("Golden Spiral analysis")) {
     return;
   }
 
-  if (!requireUnlock("Golden Spiral AI analysis")) {
+  if (!requireUnlock("Golden Spiral analysis")) {
     return;
   }
   if (!state.imageLoaded) {
@@ -3779,11 +3779,11 @@ function confirmSpiralPlacement() {
 }
 
 async function runSpiralAiAnalysis() {
-  if (openAdvancedUnlockFromAction("Golden Spiral AI analysis")) {
+  if (openAdvancedUnlockFromAction("Golden Spiral analysis")) {
     return;
   }
 
-  if (!requireUnlock("Golden Spiral AI analysis")) {
+  if (!requireUnlock("Golden Spiral analysis")) {
     return;
   }
 
@@ -3835,7 +3835,7 @@ async function runSpiralAiAnalysis() {
   } finally {
     analysisState.isRunning = false;
     if (analysisState.result) {
-      finishCompositionAiScan("Golden Spiral AI read ready.");
+      finishCompositionAiScan("Golden Spiral painter read ready.");
     } else {
       cancelCompositionAiScan(analysisState.error || "Golden Spiral read stopped.");
     }
@@ -3844,11 +3844,11 @@ async function runSpiralAiAnalysis() {
 }
 
 async function runDynamicSymmetryAiAnalysis() {
-  if (openAdvancedUnlockFromAction("Dynamic Symmetry AI analysis")) {
+  if (openAdvancedUnlockFromAction("Dynamic Symmetry analysis")) {
     return;
   }
 
-  if (!requireUnlock("Dynamic Symmetry AI analysis")) {
+  if (!requireUnlock("Dynamic Symmetry analysis")) {
     return;
   }
 
@@ -3899,7 +3899,7 @@ async function runDynamicSymmetryAiAnalysis() {
   } finally {
     analysisState.isRunning = false;
     if (analysisState.result) {
-      finishCompositionAiScan("Dynamic Symmetry AI read ready.");
+      finishCompositionAiScan("Dynamic Symmetry painter read ready.");
     } else {
       cancelCompositionAiScan(analysisState.error || "Dynamic Symmetry read stopped.");
     }
@@ -4046,14 +4046,14 @@ function renderCompositionAiUnlockTeaser(resultsElement, title, analysis) {
     resultsElement.innerHTML = window.M8_UNLOCK.renderInlineCard({
       title,
       issue,
-      body: "Basic composition overlays are free. Unlock lifetime access to reveal the AI painter read and full composition fix plan."
+      body: "Basic composition overlays are free. Unlock lifetime access to reveal the painter read and full composition fix plan."
     });
   } else {
     resultsElement.innerHTML = [
       `<div class="advanced-ai-result-block advanced-ai-verdict">`,
       `<h3>${escapeHtml(title)}</h3>`,
       `<p><strong>Biggest issue:</strong> ${escapeHtml(issue)}</p>`,
-      `<p>Basic composition overlays are free. Unlock lifetime access to reveal the AI painter read and full composition fix plan.</p>`,
+      `<p>Basic composition overlays are free. Unlock lifetime access to reveal the painter read and full composition fix plan.</p>`,
       `<button class="button premium-unlock-button" type="button" data-m8-unlock>Unlock Lifetime Access - $5</button>`,
       `</div>`
     ].join("");

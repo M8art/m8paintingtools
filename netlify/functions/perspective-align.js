@@ -31,7 +31,7 @@ exports.handler = async (event) => {
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return jsonResponse(500, { error: "Perspective AI alignment is not configured yet." });
+    return jsonResponse(500, { error: "Perspective alignment is not configured yet." });
   }
 
   let body;
@@ -117,7 +117,7 @@ exports.handler = async (event) => {
     });
   } catch (error) {
     console.error(error);
-    return jsonResponse(502, { error: "Perspective AI alignment failed. Manual controls are still available." });
+    return jsonResponse(502, { error: "Perspective alignment failed. Manual controls are still available." });
   }
 };
 

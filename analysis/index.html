@@ -171,7 +171,7 @@
             </div>
           </div>
 
-          <p class="quick-analysis-privacy-notice">Images submitted for Quick Analysis are sent securely for AI analysis and are not stored permanently by M8 Painting Tools. AI feedback may be imperfect.</p>
+          <p class="quick-analysis-privacy-notice">Your image is processed securely and is not stored permanently. The analysis is based on the painter principles Mate uses for value, composition, color, and drawing.</p>
 
           <div id="notanReadingPanel" class="notan-reading-panel hidden">
             <div class="notan-reading-head">
@@ -230,8 +230,8 @@
         <section id="quickCheckDeepReport" class="card quick-check-deep-report hidden" aria-label="Quick Check detailed report">
           <div class="panel-heading">
             <div>
-              <p class="section-label">Painter AI</p>
-              <h2>AI Analysis for Painters</h2>
+              <p class="section-label">Painter Read</p>
+              <h2>Painter Analysis</h2>
             </div>
           </div>
           <div id="quickCheckDeepReportContent" class="quick-check-deep-report-content"></div>
@@ -264,7 +264,7 @@
           </div>
         </div>
 
-        <section id="quickAiChatPanel" class="quick-ai-chat-panel hidden" aria-label="Painter AI chat">
+        <section id="quickAiChatPanel" class="quick-ai-chat-panel hidden" aria-label="Painter Read chat">
           <div class="quick-ai-chat-head">
             <div>
               <p class="section-label">Painter Chat</p>
@@ -364,7 +364,7 @@
                 <span class="result-tag">Compressed Values</span>
               </div>
               <div id="paintingBreakdownResult" class="result-block painting-breakdown-result hidden" aria-live="polite">
-                <p class="result-block-title">AI Fix Plan From This Painting</p>
+                <p class="result-block-title">Painter Fix Plan From This Painting</p>
                 <p id="paintingBreakdownStatus" class="detail-copy">Upload an image first to create the breakdown.</p>
                 <div id="paintingBreakdownContent" class="painting-breakdown-content hidden">
                   <div class="breakdown-section painting-breakdown-verdict">
@@ -434,7 +434,7 @@
               </div>
               <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show free breakdown</button>
               <button id="paintingBreakdownButton" class="button-secondary painting-breakdown-button" type="button">Unlock - $5</button>
-              <button id="reportAiResultButton" class="button-secondary report-ai-result-button" type="button">Report AI Result</button>
+              <button id="reportAiResultButton" class="button-secondary report-ai-result-button" type="button">Report Result</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
               <p class="section-label result-label">Daily free check used</p>
@@ -498,6 +498,7 @@
           </svg>
         </a>
       </div>
+      <p class="footer-ai-note" style="font-size:.72rem; opacity:.62; margin-top:6px;">Your image is processed securely and is not stored permanently. The analysis is based on the painter principles Mate uses for value, composition, color, and drawing.</p>
       <div class="footer-links">
         <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
         <a class="footer-link" href="../terms/index.html">Terms of Use</a>
@@ -512,14 +513,14 @@
     <div class="ai-report-backdrop" data-ai-report-close></div>
     <section class="ai-report-panel">
       <div>
-        <p class="section-label">AI Safety</p>
-        <h2 id="aiReportTitle">Report AI Result</h2>
+        <p class="section-label">Result Safety</p>
+        <h2 id="aiReportTitle">Report Result</h2>
       </div>
-      <p class="detail-copy">Report offensive, wrong, unsafe, or otherwise problematic AI output. No login is required.</p>
+      <p class="detail-copy">Report offensive, wrong, unsafe, or otherwise problematic analysis output. No login is required.</p>
       <form id="aiReportForm" class="ai-report-form" name="ai-result-report" method="POST" action="./?ai-report=sent" data-netlify="true" netlify-honeypot="ai-report-bot-field">
         <input type="hidden" name="form-name" value="ai-result-report">
-        <input type="hidden" name="subject" value="AI result report from M8 Painting Tools">
-        <input type="hidden" name="appVersion" value="1.0.51">
+        <input type="hidden" name="subject" value="Analysis result report from M8 Painting Tools">
+        <input type="hidden" name="appVersion" value="1.0.52">
         <input id="aiReportResultSummary" type="hidden" name="resultSummary">
         <p class="bot-field">
           <label>Do not fill this out if you are human: <input name="ai-report-bot-field"></label>
@@ -527,7 +528,7 @@
         <label class="ai-report-field" for="aiReportReason">
           <span>Reason</span>
           <select id="aiReportReason" name="reason" required>
-            <option value="offensive">Offensive AI output</option>
+            <option value="offensive">Offensive output</option>
             <option value="wrong">Wrong or misleading result</option>
             <option value="unsafe">Unsafe or harmful guidance</option>
             <option value="other">Other problem</option>
@@ -539,12 +540,12 @@
         </label>
         <label class="ai-report-field" for="aiReportMessage">
           <span>What happened?</span>
-          <textarea id="aiReportMessage" name="message" required placeholder="Describe the AI result and what was problematic."></textarea>
+          <textarea id="aiReportMessage" name="message" required placeholder="Describe the result and what was problematic."></textarea>
         </label>
         <p id="aiReportStatus" class="result-note" aria-live="polite"></p>
         <div class="ai-report-actions">
           <button class="button" type="submit">Send Report</button>
-          <a id="aiReportMailto" class="button-secondary" href="mailto:matejakjan@gmail.com?subject=AI%20result%20report%20from%20M8%20Painting%20Tools">Email Support</a>
+          <a id="aiReportMailto" class="button-secondary" href="mailto:matejakjan@gmail.com?subject=Analysis%20result%20report%20from%20M8%20Painting%20Tools">Email Support</a>
           <button class="button-secondary" type="button" data-ai-report-close>Close</button>
         </div>
       </form>

@@ -77,7 +77,7 @@ exports.handler = async (event) => {
   }
 
   if (imageDataUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
-    return response(413, { error: "Image is too large for AI analysis." });
+    return response(413, { error: "Image is too large for analysis." });
   }
 
   if (!computedAnalysis || typeof computedAnalysis !== "object") {
@@ -136,7 +136,7 @@ exports.handler = async (event) => {
   } catch (error) {
     if (!String(error.message || "").includes("OpenAI 400")) {
       console.error(error);
-      return response(502, { error: "AI analysis failed. The normal Quick Check result is still available." });
+      return response(502, { error: "analysis failed. The normal Quick Check result is still available." });
     }
 
     try {
@@ -163,7 +163,7 @@ exports.handler = async (event) => {
       });
     } catch (fallbackError) {
       console.error(fallbackError);
-      return response(502, { error: "AI analysis failed. The normal Quick Check result is still available." });
+      return response(502, { error: "analysis failed. The normal Quick Check result is still available." });
     }
   }
 };
