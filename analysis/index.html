@@ -427,9 +427,9 @@
               <button id="reportAiResultButton" class="button-secondary report-ai-result-button" type="button">Report Result</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
-              <p class="section-label result-label">Daily free check used</p>
+              <p class="section-label result-label">Daily free checks used</p>
               <h3 class="locked-title">Want more checks today?</h3>
-              <p class="detail-copy">Your free full Quick Check is available once every 24 hours. Come back tomorrow, or unlock lifetime access to keep working today.</p>
+              <p class="detail-copy">You get 3 free Quick Checks every day. Come back tomorrow, or unlock lifetime access to keep working today.</p>
               <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="event.stopImmediatePropagation(); window.location.href=this.dataset.unlockLink; return false;">Unlock Lifetime Access - $5</button>
               <p class="result-note">One-time payment. Lifetime access. No subscription.</p>
               <p class="result-note"><a href="../access/index.html">Already paid? Restore access</a></p>
@@ -444,7 +444,7 @@
           </div>
 
           <button id="runAnalysisButton" class="button-secondary analysis-button mobile-duplicate-action" type="button" disabled>Run Analysis</button>
-          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">Today's free full Quick Check is already used. Come back tomorrow, or unlock lifetime access to keep working today.</p>
+          <p id="freeLimitHelper" class="result-note free-limit-helper hidden">Your 3 free Quick Checks are used today. Come back tomorrow, or unlock lifetime access to keep working today.</p>
         </div>
       </aside>
 
@@ -488,7 +488,7 @@
           </svg>
         </a>
       </div>
-      <p class="footer-ai-note" style="font-size:.72rem; opacity:.62; margin-top:6px;">Your image is processed securely and is not stored permanently. The analysis is based on the painter principles Mate uses for value, composition, color, and drawing.</p>
+      <p class="footer-ai-note" style="font-size:.72rem; opacity:.62; margin-top:6px;">Some feedback tools may use AI-assisted analysis. Images are processed securely and are not stored permanently.</p>
       <div class="footer-links">
         <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
         <a class="footer-link" href="../terms/index.html">Terms of Use</a>
@@ -510,7 +510,7 @@
       <form id="aiReportForm" class="ai-report-form" name="ai-result-report" method="POST" action="./?ai-report=sent" data-netlify="true" netlify-honeypot="ai-report-bot-field">
         <input type="hidden" name="form-name" value="ai-result-report">
         <input type="hidden" name="subject" value="Analysis result report from M8 Painting Tools">
-        <input type="hidden" name="appVersion" value="1.0.52">
+        <input type="hidden" name="appVersion" value="1.0.55">
         <input id="aiReportResultSummary" type="hidden" name="resultSummary">
         <p class="bot-field">
           <label>Do not fill this out if you are human: <input name="ai-report-bot-field"></label>

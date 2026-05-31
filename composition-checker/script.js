@@ -295,6 +295,8 @@ const LANDING_HANDOFF_TARGET_KEY = "m8_landing_handoff_target";
 const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
 const LANDING_HANDOFF_STORE = "uploads";
 const LANDING_HANDOFF_RECORD = "latest";
+const BASIC_COMPOSITION_UPLOAD_LOCK_STORAGE_KEY = "m8_composition_basic_upload_lock";
+const BASIC_COMPOSITION_UPLOAD_LOCK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 const state = {
   analysisMode: "basic",
@@ -417,6 +419,11 @@ fileInput.addEventListener("change", handleUpload);
 uploadLabels.forEach((label) => {
   label.addEventListener("click", (event) => {
     if (!requireUnlock("advanced image uploads")) {
+      event.preventDefault();
+      return;
+    }
+
+    if (blockBasicCompositionUploadIfNeeded()) {
       event.preventDefault();
     }
   });
@@ -585,6 +592,58 @@ function isAdvancedLocked() {
   return state.analysisMode === "advanced" && !isUnlocked();
 }
 
+function getBasicCompositionUploadLockTime() {
+  const storedValue = Number(window.localStorage.getItem(BASIC_COMPOSITION_UPLOAD_LOCK_STORAGE_KEY) || "0");
+  return Number.isFinite(storedValue) && storedValue > 0 ? storedValue : 0;
+}
+
+function getBasicCompositionUploadWaitMs() {
+  if (isUnlocked()) {
+    return 0;
+  }
+
+  const elapsed = Date.now() - getBasicCompositionUploadLockTime();
+  return Math.max(0, BASIC_COMPOSITION_UPLOAD_LOCK_WINDOW_MS - elapsed);
+}
+
+function isBasicCompositionUploadLocked() {
+  return state.analysisMode === "basic" && getBasicCompositionUploadWaitMs() > 0;
+}
+
+function formatBasicCompositionUploadWait() {
+  const waitMs = getBasicCompositionUploadWaitMs();
+  if (!waitMs) {
+    return "now";
+  }
+
+  const days = Math.floor(waitMs / (24 * 60 * 60 * 1000));
+  const hours = Math.ceil((waitMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+  if (days <= 0) {
+    return `${hours}h`;
+  }
+
+  return `${days}d ${String(hours).padStart(2, "0")}h`;
+}
+
+function markBasicCompositionUploadUsed() {
+  if (!isUnlocked()) {
+    window.localStorage.setItem(BASIC_COMPOSITION_UPLOAD_LOCK_STORAGE_KEY, String(Date.now()));
+  }
+}
+
+function blockBasicCompositionUploadIfNeeded() {
+  if (!isBasicCompositionUploadLocked()) {
+    return false;
+  }
+
+  const message = `Your free Basic Composition upload is used. Unlock lifetime access for $5, or try another free upload in ${formatBasicCompositionUploadWait()}.`;
+  workspaceHint.textContent = message;
+  statusNote.textContent = message;
+  advancedStatusNote.textContent = message;
+  showPremiumLimitToast("Free upload used. Unlock - $5.");
+  return true;
+}
+
 function isBasicAiLocked() {
   return !window.M8_GOOGLE_PLAY_BUILD && !isUnlocked();
 }
@@ -673,6 +732,11 @@ function handleUpload(event) {
     return;
   }
 
+  if (blockBasicCompositionUploadIfNeeded()) {
+    event.target.value = "";
+    return;
+  }
+
   if (state.objectUrl) {
     URL.revokeObjectURL(state.objectUrl);
   }
@@ -690,6 +754,7 @@ function handleUpload(event) {
     }
 
     state.imageLoaded = true;
+    markBasicCompositionUploadUsed();
     state.focalPoints = [];
     state.focalPointSource = "manual";
     state.thirdsSelection = null;
@@ -729,6 +794,9 @@ function loadCompositionFromDataUrl(dataUrl) {
   }
 
   setAnalysisMode("basic");
+  if (blockBasicCompositionUploadIfNeeded()) {
+    return;
+  }
   state.imageName = "composition upload";
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
@@ -741,6 +809,7 @@ function loadCompositionFromDataUrl(dataUrl) {
     }
 
     state.imageLoaded = true;
+    markBasicCompositionUploadUsed();
     state.focalPoints = [];
     state.focalPointSource = "manual";
     state.thirdsSelection = null;
@@ -824,6 +893,9 @@ function loadCompositionFromObjectFile(file) {
   }
 
   setAnalysisMode("basic");
+  if (blockBasicCompositionUploadIfNeeded()) {
+    return;
+  }
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
   state.objectUrl = URL.createObjectURL(file);
@@ -837,6 +909,7 @@ function loadCompositionFromObjectFile(file) {
     }
 
     state.imageLoaded = true;
+    markBasicCompositionUploadUsed();
     state.focalPoints = [];
     state.focalPointSource = "manual";
     state.thirdsSelection = null;
@@ -896,6 +969,9 @@ function handleWorkspaceClick() {
     if (!requireUnlock("advanced image uploads")) {
       return;
     }
+    if (blockBasicCompositionUploadIfNeeded()) {
+      return;
+    }
     fileInput.click();
   }
 }
@@ -908,6 +984,9 @@ function handleWorkspaceKeydown(event) {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     if (!requireUnlock("advanced image uploads")) {
+      return;
+    }
+    if (blockBasicCompositionUploadIfNeeded()) {
       return;
     }
     fileInput.click();

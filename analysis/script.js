@@ -124,7 +124,7 @@ const aiReportMailto = document.getElementById("aiReportMailto");
 const aiReportStatus = document.getElementById("aiReportStatus");
 
 const params = new URLSearchParams(window.location.search);
-const APP_VERSION_NAME = "1.0.50";
+const APP_VERSION_NAME = "1.0.55";
 const DEV_MODE = params.get("dev") === "true";
 const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
 const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
@@ -139,6 +139,8 @@ const LANDING_HANDOFF_STORE = "uploads";
 const LANDING_HANDOFF_RECORD = "latest";
 const QUICK_UNLOCK_PENDING_ANALYSIS_KEY = "m8_quick_unlock_pending_analysis";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
+const FREE_QUICK_CHECK_DAILY_LIMIT = 3;
+const FREE_QUICK_CHECK_USAGE_STORAGE_KEY = "m8_quick_free_check_usage";
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
@@ -784,7 +786,7 @@ function hasUsedFullAnalysis() {
     return false;
   }
 
-  return getLastFreeCheckDay() === getTodayAnalysisStamp();
+  return getFreeQuickChecksUsedToday() >= FREE_QUICK_CHECK_DAILY_LIMIT;
 }
 
 function hasUnlockedAccess() {
@@ -805,7 +807,47 @@ function getTodayAnalysisStamp() {
 }
 
 function markFreeAnalysisUsedToday() {
+  const usage = getFreeQuickCheckUsage();
+  const nextCount = Math.min(FREE_QUICK_CHECK_DAILY_LIMIT, usage.count + 1);
+  localStorage.setItem(FREE_QUICK_CHECK_USAGE_STORAGE_KEY, JSON.stringify({
+    day: getTodayAnalysisStamp(),
+    count: nextCount
+  }));
   localStorage.setItem(LAST_FREE_CHECK_STORAGE_KEY, getTodayAnalysisStamp());
+}
+
+function getFreeQuickCheckUsage() {
+  const today = getTodayAnalysisStamp();
+
+  try {
+    const record = JSON.parse(localStorage.getItem(FREE_QUICK_CHECK_USAGE_STORAGE_KEY) || "{}");
+    if (record && record.day === today) {
+      const count = Number(record.count);
+      return {
+        day: today,
+        count: Number.isFinite(count) && count > 0 ? Math.min(FREE_QUICK_CHECK_DAILY_LIMIT, count) : 0
+      };
+    }
+  } catch (error) {
+    // Ignore malformed local storage and fall back to the legacy daily flag.
+  }
+
+  return {
+    day: today,
+    count: getLastFreeCheckDay() === today ? 1 : 0
+  };
+}
+
+function getFreeQuickChecksUsedToday() {
+  return getFreeQuickCheckUsage().count;
+}
+
+function getFreeQuickChecksRemainingToday() {
+  return Math.max(0, FREE_QUICK_CHECK_DAILY_LIMIT - getFreeQuickChecksUsedToday());
+}
+
+function getFreeQuickCheckLimitMessage() {
+  return `You have used your ${FREE_QUICK_CHECK_DAILY_LIMIT} free Quick Checks today. Come back tomorrow, or unlock lifetime access for $5.`;
 }
 
 function markStreakForCompletedFreeAnalysis() {
@@ -1076,10 +1118,15 @@ function completeQuickCheck() {
   } else {
     markFreeAnalysisUsedToday();
     markStreakForCompletedFreeAnalysis();
-    freeCheckNote.textContent = "Your full free Quick Check is ready.";
+    const remainingFreeChecks = getFreeQuickChecksRemainingToday();
+    freeCheckNote.textContent = remainingFreeChecks > 0
+      ? `Your full free Quick Check is ready. ${remainingFreeChecks} free checks left today.`
+      : "Your full free Quick Check is ready. That was your last free check today.";
     freeCheckNote.classList.remove("hidden");
     freeDailyNote.classList.remove("hidden");
-    freeDailyNote.textContent = "You can run another free full check tomorrow, or unlock lifetime access to keep working today.";
+    freeDailyNote.textContent = remainingFreeChecks > 0
+      ? "Use another free Quick Check today, or unlock lifetime access to keep working without limits."
+      : "Come back tomorrow for 3 more free Quick Checks, or unlock lifetime access to keep working today.";
     streakNote.textContent = getStreakMessage();
     streakNote.classList.remove("hidden");
   }
@@ -3295,7 +3342,7 @@ function buildPremiumFixPlan(result) {
   return {
     lockedTitle: "Your scan is ready.",
     unlockedTitle: "Painter Analysis",
-    lockedSummary: "Today's free full scan is already used. Come back tomorrow, or unlock lifetime access to keep working today.",
+    lockedSummary: "Your 3 free Quick Checks are used today. Come back tomorrow, or unlock lifetime access to keep working today.",
     unlockedSummary: "This measured read starts the diagnosis. The painter fix plan below is generated from this specific painting.",
     sections: [
       {
@@ -4061,9 +4108,9 @@ function showLockedAnalysisState() {
   freeCheckNote.classList.add("hidden");
   freeDailyNote.classList.add("hidden");
   streakNote.classList.add("hidden");
-  updateStatusMessage("Today's free full check is already used.");
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
-  showPremiumLimitToast("Today's free full check is used.");
+  updateStatusMessage("Today's free Quick Check limit is used.");
+  workspaceHint.textContent = getFreeQuickCheckLimitMessage();
+  showPremiumLimitToast("3 free Quick Checks used today.");
   scrollToQuickCheckAiAnalysisOnMobile();
 }
 
@@ -4076,8 +4123,8 @@ function showFreeLimitReachedState() {
   runAnalysisButton.disabled = false;
   runAnalysisButton.classList.add("is-unlock-cta");
   freeLimitHelper.classList.remove("hidden");
-  updateStatusMessage("Today's free full check is already used.");
-  workspaceHint.textContent = window.M8_UNLOCK?.COPY?.limitBody || "Come back tomorrow for another free full check, or unlock lifetime access to keep working today.";
+  updateStatusMessage("Today's free Quick Check limit is used.");
+  workspaceHint.textContent = getFreeQuickCheckLimitMessage();
   syncMobileRunAnalysisButton();
   scrollToQuickCheckAiAnalysisOnMobile();
 }

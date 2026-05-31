@@ -3904,7 +3904,7 @@
           <span class="mobile-tool-status-pill"><span aria-hidden="true"></span> Ready</span>
         </div>
         <p class="intro">
-          Value analysis is completely free � use it as much as you want.
+          Your first Basic Value upload is free. More Basic uploads unlock with lifetime access, or reset after 3 days.
           Want deeper insight into your painting? Try <a href="../analysis/index.html">Quick Check</a> for full analysis, or explore <a href="../composition-checker/index.html">Composition Checker</a> and <a href="../color-studio/index.html">Color Checker</a>.
           Quick Check combines value, composition, and color into one analysis.
         </p>
@@ -4497,7 +4497,7 @@
           </svg>
         </a>
       </div>
-      <p class="footer-ai-note" style="font-size:.72rem; opacity:.62; margin-top:6px;">Advanced reads may use AI assistance. Your image is processed securely and is not stored permanently.</p>
+      <p class="footer-ai-note" style="font-size:.72rem; opacity:.62; margin-top:6px;">Some feedback tools may use AI-assisted analysis. Images are processed securely and are not stored permanently.</p>
       <div class="footer-links">
         <a class="footer-link" href="../privacy/index.html">Privacy Policy</a>
         <a class="footer-link" href="../terms/index.html">Terms of Use</a>
@@ -4660,6 +4660,10 @@
     const LANDING_HANDOFF_DB = "m8_landing_handoff_db";
     const LANDING_HANDOFF_STORE = "uploads";
     const LANDING_HANDOFF_RECORD = "latest";
+    const BASIC_VALUE_UPLOAD_LOCK_STORAGE_KEY = "m8_value_basic_upload_lock";
+    const BASIC_UPLOAD_LOCK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+    const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
+    const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
     const modePanels = {
       "value-picker": {
         workspace: document.getElementById("workspaceValuePicker"),
@@ -5060,12 +5064,25 @@
     fileInput.addEventListener("change", handleUpload);
     referenceInput.addEventListener("change", (event) => handleCompareUpload(event, "reference"));
     paintingInput.addEventListener("change", (event) => handleCompareUpload(event, "painting"));
+    document.querySelectorAll('label[for="fileInput"], label[for="referenceInput"], label[for="paintingInput"]').forEach((label) => {
+      label.addEventListener("click", (event) => {
+        if (blockBasicUploadIfNeeded()) {
+          event.preventDefault();
+        }
+      });
+    });
     compareUploadZones.forEach(({ zone, input }) => {
-      zone.addEventListener("click", () => input.click());
+      zone.addEventListener("click", () => {
+        if (!blockBasicUploadIfNeeded()) {
+          input.click();
+        }
+      });
       zone.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          input.click();
+          if (!blockBasicUploadIfNeeded()) {
+            input.click();
+          }
         }
       });
     });
@@ -5323,6 +5340,11 @@
         return;
       }
 
+      if (blockBasicUploadIfNeeded()) {
+        event.target.value = "";
+        return;
+      }
+
       loadSingleImageFile(file);
     }
 
@@ -5335,12 +5357,18 @@
       sevenValueStatus.textContent = "Preparing analysis...";
       compareStatus.textContent = "Preparing analysis...";
       loadImageFromFile(file)
-        .then((image) => prepareGrayscaleImage(image))
+        .then((image) => {
+          prepareGrayscaleImage(image);
+          markBasicUploadUsed();
+        })
         .catch(() => showSingleImageLoadError("Couldn't load image. Please try another file."));
     }
 
     function handleSingleUploadZoneClick() {
       if (!state.imageLoaded && !state.imageLoading) {
+        if (blockBasicUploadIfNeeded()) {
+          return;
+        }
         fileInput.click();
       }
     }
@@ -5352,6 +5380,9 @@
 
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
+        if (blockBasicUploadIfNeeded()) {
+          return;
+        }
         fileInput.click();
       }
     }
@@ -5399,12 +5430,73 @@
         return;
       }
 
+      if (blockBasicUploadIfNeeded()) {
+        return;
+      }
+
       fileInput.value = "";
       loadSingleImageFile(file);
     }
 
     function canAcceptSingleImageDrop(event) {
-      return !state.imageLoaded && Array.from(event.dataTransfer?.types || []).includes("Files");
+      return !state.imageLoaded && !isBasicUploadLocked() && Array.from(event.dataTransfer?.types || []).includes("Files");
+    }
+
+    function hasUnlockedAccess() {
+      return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${UNLOCKED_ACCESS_COOKIE_NAME}=true`);
+    }
+
+    function getBasicUploadLockTime() {
+      const storedValue = Number(localStorage.getItem(BASIC_VALUE_UPLOAD_LOCK_STORAGE_KEY) || "0");
+      return Number.isFinite(storedValue) && storedValue > 0 ? storedValue : 0;
+    }
+
+    function getBasicUploadWaitMs() {
+      if (hasUnlockedAccess()) {
+        return 0;
+      }
+
+      const elapsed = Date.now() - getBasicUploadLockTime();
+      return Math.max(0, BASIC_UPLOAD_LOCK_WINDOW_MS - elapsed);
+    }
+
+    function isBasicUploadLocked() {
+      return getBasicUploadWaitMs() > 0;
+    }
+
+    function formatBasicUploadWait() {
+      const waitMs = getBasicUploadWaitMs();
+      if (!waitMs) {
+        return "now";
+      }
+
+      const days = Math.floor(waitMs / (24 * 60 * 60 * 1000));
+      const hours = Math.ceil((waitMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      if (days <= 0) {
+        return `${hours}h`;
+      }
+
+      return `${days}d ${String(hours).padStart(2, "0")}h`;
+    }
+
+    function markBasicUploadUsed() {
+      if (!hasUnlockedAccess()) {
+        localStorage.setItem(BASIC_VALUE_UPLOAD_LOCK_STORAGE_KEY, String(Date.now()));
+      }
+    }
+
+    function blockBasicUploadIfNeeded() {
+      if (!isBasicUploadLocked()) {
+        return false;
+      }
+
+      const message = `Your free Basic Value upload is used. Unlock lifetime access for $5, or try another free upload in ${formatBasicUploadWait()}.`;
+      workspaceHint.textContent = message;
+      statusNote.textContent = message;
+      sevenValueStatus.textContent = message;
+      compareStatus.textContent = message;
+      showStatusToast("Free upload used. Unlock - $5.");
+      return true;
     }
 
     function clearSingleUploadDragState() {
@@ -5493,6 +5585,11 @@
         return;
       }
 
+      if (blockBasicUploadIfNeeded()) {
+        event.target.value = "";
+        return;
+      }
+
       resetUploadMessages();
       setCompareLoadingState(type, true);
       compareStatus.textContent = "Preparing comparison...";
@@ -5504,6 +5601,7 @@
           } else {
             state.paintingImage = image;
           }
+          markBasicUploadUsed();
 
           buildCompareBuffers();
           drawCompareCanvases();
@@ -5588,9 +5686,14 @@
       });
 
       db.close();
+      if (blockBasicUploadIfNeeded()) {
+        return true;
+      }
+
       setMode("value-picker");
       const image = await loadImageFromFile(record.file);
       prepareGrayscaleImage(image);
+      markBasicUploadUsed();
       return true;
     }
 
@@ -5614,9 +5717,15 @@
 
         window.sessionStorage.removeItem(LANDING_HANDOFF_TARGET_KEY);
         window.sessionStorage.removeItem(LANDING_HANDOFF_IMAGE_KEY);
+        if (blockBasicUploadIfNeeded()) {
+          return;
+        }
         setMode("value-picker");
         loadImageFromDataUrl(imageData)
-          .then((image) => prepareGrayscaleImage(image))
+          .then((image) => {
+            prepareGrayscaleImage(image);
+            markBasicUploadUsed();
+          })
           .catch(() => showUploadError("Couldn't load image. Please try another file."));
       } catch (error) {
         // Ignore session storage failures and keep the regular upload flow.
@@ -6723,6 +6832,17 @@
       event.preventDefault();
       const sourceUrl = event.currentTarget.href;
       const filename = event.currentTarget.getAttribute("download") || "m8-value-scale.png";
+
+      if (typeof window.M8AppDownloadUrl === "function") {
+        try {
+          const saved = await window.M8AppDownloadUrl(filename, sourceUrl);
+          if (saved !== false) {
+            return;
+          }
+        } catch (error) {
+          // Fall back to the browser download path below.
+        }
+      }
 
       try {
         const response = await fetch(sourceUrl);

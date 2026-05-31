@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Policy | M8 Painting Studio</title>
+  <title>Privacy Policy | M8 Painting Tools</title>
     <script src="../assets/mobile-theme.js"></script>
   <style>
     :root {
@@ -253,9 +253,88 @@
         color: var(--ink);
       }
 
+      .page {
+        width: 100%;
+        padding: 10px 18px calc(92px + env(safe-area-inset-bottom));
+      }
+
+      .topbar {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .brand-title {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        font-size: clamp(2.15rem, 10.4vw, 2.85rem);
+        line-height: 0.95;
+        white-space: normal;
+      }
+
+      .brand-logo {
+        height: 46px;
+        border-radius: 4px;
+        box-shadow: 0 0 0 1px rgba(185, 141, 66, 0.42), 0 10px 18px rgba(0, 0, 0, 0.3);
+      }
+
+      .header-actions {
+        width: 100%;
+        gap: 10px;
+        justify-items: stretch;
+      }
+
+      .top-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+      }
+
+      .top-nav-link {
+        display: flex;
+        min-height: 36px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        border: 1px solid rgba(185, 141, 66, 0.28);
+        border-radius: 0;
+        background: rgba(13, 11, 8, 0.54);
+        color: rgba(242, 231, 207, 0.82);
+        font-size: 0.75rem;
+        font-weight: 750;
+        line-height: 1.05;
+        text-align: center;
+      }
+
+      .top-nav-link:first-child {
+        padding-left: 8px;
+      }
+
+      .top-nav-link:last-child {
+        padding-right: 8px;
+        border-right: 1px solid rgba(185, 141, 66, 0.28);
+      }
+
+      .social-links {
+        justify-content: flex-start;
+        gap: 8px;
+      }
+
+      .social-link {
+        width: 34px;
+        height: 34px;
+        border-color: rgba(185, 141, 66, 0.32);
+        background: rgba(13, 11, 8, 0.58);
+        color: #b98d42;
+      }
+
       .legal-card {
         border: 1px solid rgba(185, 141, 66, 0.38);
         border-radius: 4px;
+        padding: 22px;
         background:
           repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.026) 0 1px, transparent 1px 7px),
           linear-gradient(180deg, rgba(29, 24, 18, 0.96), rgba(12, 10, 8, 0.96));
@@ -275,6 +354,14 @@
       .legal-card p,
       .legal-list {
         color: rgba(242, 231, 207, 0.7);
+      }
+
+      .legal-section {
+        border: 1px solid rgba(185, 141, 66, 0.24);
+        border-radius: 4px;
+        background:
+          repeating-linear-gradient(95deg, rgba(242, 231, 207, 0.018) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, rgba(31, 26, 20, 0.94), rgba(13, 11, 8, 0.94));
       }
 
       .button-secondary {
@@ -335,26 +422,31 @@
           <h2>Privacy Policy</h2>
         </div>
 
-        <p>M8 Painting Tools is a set of painting study tools designed for artists. This page explains what information is processed when you use the website, installed web app, or Google Play version.</p>
+        <p>M8 Painting Tools is a set of painting study tools designed for artists. This Privacy Policy explains what information is processed when you use the website, installed web app, or Google Play version.</p>
 
         <div class="legal-sections">
           <div class="legal-section">
             <h2>App and developer</h2>
             <p>App name: M8 Painting Tools.</p>
-            <p>Developer: M8art / Jan Matěják.</p>
+            <p>Developer: M8art / Jan Mat&#283;j&#225;k.</p>
             <p>Privacy contact: <a href="mailto:matejakjan@gmail.com">matejakjan@gmail.com</a>.</p>
           </div>
 
           <div class="legal-section">
             <h2>Uploaded images for tool use</h2>
-            <p>For normal use of the painting tools, uploaded images are processed locally in the user's browser or app webview. These images are used to calculate value, composition, color, and related visual readings on the user's device.</p>
-            <p>Normal tool uploads are not uploaded to our server and are not stored by us as part of the standard analysis workflow.</p>
+            <p>Normal local tools may process uploaded images locally in the user's browser or app webview where applicable. These images are used to calculate value, composition, color, drawing, and related visual readings on the user's device.</p>
+            <p>Normal local tool uploads are not uploaded to our server and are not stored by M8 Painting Tools as part of the standard local analysis workflow.</p>
           </div>
 
           <div class="legal-section">
-            <h2>Quick Analysis AI image processing</h2>
-            <p>When a user chooses Quick Analysis in Google Play mode, the uploaded image may be sent securely to a backend AI service so the requested painting critique can be generated.</p>
-            <p>These images are used only to generate the requested analysis. They are not sold and are not stored permanently by M8 Painting Tools.</p>
+            <h2>Secure image processing</h2>
+            <p>Quick Analysis processes uploaded images securely for the requested painting analysis.</p>
+            <p>Uploaded Quick Analysis images are used only to generate the requested feedback. M8 Painting Tools does not sell user data, and images are not stored permanently by M8 Painting Tools.</p>
+          </div>
+
+          <div class="legal-section">
+            <h2>AI-Assisted Analysis</h2>
+            <p>Some tools on M8 Painting Tools may use AI-assisted image analysis to provide painting feedback and educational guidance. Uploaded images are processed only for the purpose of generating the requested result. Images are not stored permanently, are not sold to third parties, and are not used to train our own models.</p>
           </div>
 
           <div class="legal-section">
@@ -377,19 +469,19 @@
           <div class="legal-section">
             <h2>Payments and Google Play</h2>
             <p>The web version may use external payment providers for optional unlocks or services where applicable. Payment details are handled by the payment provider and are not stored by M8 Painting Tools.</p>
-            <p>The Google Play version does not currently process in-app payments.</p>
+            <p>The Google Play version does not use Stripe or external payment links. If payments are later added inside the Google Play version, they will use Google Play Billing.</p>
           </div>
 
           <div class="legal-section">
             <h2>Sharing and selling data</h2>
-            <p>Data is not sold.</p>
+            <p>M8 Painting Tools does not sell user data.</p>
             <p>Data is not shared except with service providers needed to run the website or app, including hosting, email or contact handling, form handling, analytics where applicable, and payment processing where applicable.</p>
           </div>
 
           <div class="legal-section">
             <h2>Retention and deletion</h2>
-            <p>User-submitted contact or feedback data is kept only as long as needed to respond to the user, provide the requested service, maintain records for that request, or meet legal or security requirements.</p>
-            <p>Users can request deletion of submitted contact or feedback data by emailing <a href="mailto:matejakjan@gmail.com">matejakjan@gmail.com</a>.</p>
+            <p>Images are not stored permanently by M8 Painting Tools. User-submitted contact, support, or report data is kept only as long as needed to respond to the user, handle the request, maintain records for that request, or meet legal or security requirements.</p>
+            <p>Users can request deletion of submitted data by emailing <a href="mailto:matejakjan@gmail.com">matejakjan@gmail.com</a>.</p>
           </div>
 
           <div class="legal-section">
