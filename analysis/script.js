@@ -1,4 +1,4 @@
-﻿const analysisFileInput = document.getElementById("analysisFileInput");
+const analysisFileInput = document.getElementById("analysisFileInput");
 const uploadZone = document.getElementById("uploadZone");
 const imageStage = document.getElementById("imageStage");
 const analysisSurface = document.getElementById("analysisSurface");
@@ -46,6 +46,9 @@ const quickCheckSuggestion = document.getElementById("quickCheckSuggestion");
 const quickCheckSuggestionText = document.getElementById("quickCheckSuggestionText");
 const quickCheckFastestFix = document.getElementById("quickCheckFastestFix");
 const quickCheckFastestFixText = document.getElementById("quickCheckFastestFixText");
+const quickCheckNextTool = document.getElementById("quickCheckNextTool");
+const quickCheckNextToolCopy = document.getElementById("quickCheckNextToolCopy");
+const quickCheckNextToolLink = document.getElementById("quickCheckNextToolLink");
 const quickCheckPremiumFix = document.getElementById("quickCheckPremiumFix");
 const premiumFixCount = document.getElementById("premiumFixCount");
 const premiumFixTitle = document.getElementById("premiumFixTitle");
@@ -1084,9 +1087,9 @@ function completeQuickCheck() {
   quickCheckVerdict.textContent = result.verdict;
   quickCheckWhyPositive.textContent = result.whyThisScore.positive;
   quickCheckWhyLimiting.textContent = result.whyThisScore.limiting;
-  quickCheckKeyInsightText.textContent = result.keyInsight;
-  quickCheckStrengthText.textContent = result.strength;
-  quickCheckWeaknessText.textContent = result.weakness;
+  quickCheckKeyInsightText.textContent = result.attributeRead?.value || result.keyInsight;
+  quickCheckStrengthText.textContent = result.attributeRead?.composition || result.strength;
+  quickCheckWeaknessText.textContent = result.attributeRead?.color || result.weakness;
   renderResultBlocks(result.blocks);
   renderDynamicBreakdown(result);
   quickCheckSuggestionText.textContent = result.suggestion;
@@ -2088,6 +2091,97 @@ function getDepthLine(metrics) {
   ]);
 }
 
+function buildAttributeRead(metrics) {
+  return {
+    value: buildValueAttributeLine(metrics),
+    composition: buildCompositionAttributeLine(metrics),
+    color: buildColorAttributeLine(metrics)
+  };
+}
+
+function buildValueAttributeLine(metrics) {
+  if (metrics.valueQuality < 0.42) {
+    return "Values are the main weakness: the light, middle, and dark groups sit too close together.";
+  }
+
+  if (metrics.valueQuality < 0.66) {
+    return "Values are usable, but the big light and shadow masses could separate more clearly.";
+  }
+
+  return "Values are supporting the read well. Protect the big light-dark structure while refining details.";
+}
+
+function buildCompositionAttributeLine(metrics) {
+  if ((metrics.cropRisk || 0) > 0.6) {
+    return "Composition read is limited because the image behaves like a cropped detail. Upload the full frame for a fairer check.";
+  }
+
+  if ((metrics.centralLockRisk || 0) > 0.55 || metrics.centerDominance > 0.58) {
+    return "Composition is the next issue: the focal pull sits too close to the center and needs a stronger eye path.";
+  }
+
+  if (metrics.balanceImbalance > 0.15) {
+    return `Composition leans ${metrics.balanceDirection}-heavy. Quiet that side or build a counterweight on the opposite side.`;
+  }
+
+  if (metrics.flowQuality < 0.42) {
+    return "Composition needs more movement. Connect the main shapes so the eye has a clearer route through the frame.";
+  }
+
+  return "Composition is readable. Keep the focal hierarchy clear and avoid adding equal accents everywhere.";
+}
+
+function buildColorAttributeLine(metrics) {
+  if ((metrics.nearGrayRatio || 0) > 0.72 || (metrics.meanSaturation || 0) < 0.08) {
+    return "Color is quiet or nearly monochrome here, so value structure matters more than palette decisions.";
+  }
+
+  if ((metrics.colorQuality || 0) < 0.38) {
+    return "Color relationships look limited. Check whether the palette is too flat before mixing more paint.";
+  }
+
+  if ((metrics.colorQuality || 0) < 0.62) {
+    return "Color is usable, but the palette relationships could be clearer around the focal area.";
+  }
+
+  return "Color has enough variety to support the painting. Keep the strongest chroma near the focal read.";
+}
+
+function buildNextToolRecommendation(metrics) {
+  const candidates = [
+    {
+      score: 1 - (metrics.valueQuality || 0),
+      label: "Open Value Checker",
+      href: "../value-checker/index.html",
+      copy: "Go deeper into the light-dark structure first."
+    },
+    {
+      score: Math.max(metrics.centralLockRisk || 0, metrics.centerDominance || 0, metrics.balanceImbalance || 0, 1 - (metrics.flowQuality || 0)),
+      label: "Open Composition Checker",
+      href: "../composition-checker/index.html",
+      copy: "Go deeper into focal placement, balance, and eye path."
+    },
+    {
+      score: 1 - (metrics.colorQuality || 0),
+      label: "Open Color Checker",
+      href: "../color-studio/index.html",
+      copy: "Go deeper into palette structure and color relationships."
+    }
+  ];
+
+  candidates.sort((left, right) => right.score - left.score);
+  return candidates[0];
+}
+
+function renderQuickNextTool(nextTool) {
+  if (!quickCheckNextTool || !quickCheckNextToolLink || !quickCheckNextToolCopy || !nextTool) {
+    return;
+  }
+
+  quickCheckNextToolCopy.textContent = nextTool.copy;
+  quickCheckNextToolLink.textContent = nextTool.label;
+  quickCheckNextToolLink.href = nextTool.href;
+}
 function pickVariant(variants) {
   return variants[Math.floor(Math.random() * variants.length)];
 }
@@ -2156,7 +2250,9 @@ function syncQuickCheckResultAccess(result) {
   const hasFullResult = hasFullQuickCheckResultAccess(result);
 
   quickCheckResult?.classList.toggle("is-free-preview", !hasFullResult);
-  setResultBlockTitle(quickCheckKeyInsightBlock, hasFullResult ? "Key Insight" : "Biggest Issue");
+  setResultBlockTitle(quickCheckKeyInsightBlock, hasFullResult ? "Value Read" : "Biggest Issue");
+  setResultBlockTitle(quickCheckStrengthBlock, "Composition Read");
+  setResultBlockTitle(quickCheckWeaknessBlock, "Color Read");
 
   if (!hasFullResult) {
     quickCheckKeyInsightText.textContent = result?.weakness || result?.keyInsight || "M8 found one main issue in this painting.";
@@ -5398,7 +5494,7 @@ function safeWriteStorage(key, value) {
 }
 
 function updateBreakdownUI() {
-  breakdownToggleButton.textContent = isBreakdownExpanded ? "Hide free breakdown" : "Show free breakdown";
+  breakdownToggleButton.textContent = isBreakdownExpanded ? "Hide full details" : "Show full details";
   breakdownToggleButton.setAttribute("aria-expanded", String(isBreakdownExpanded));
   quickCheckDetails.classList.toggle("expanded", isBreakdownExpanded);
   quickCheckDetails.setAttribute("aria-hidden", String(!isBreakdownExpanded));

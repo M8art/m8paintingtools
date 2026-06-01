@@ -2546,6 +2546,32 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   line-height: 1.45;
 }
 
+.quick-next-tool {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 248, 237, 0.18);
+}
+
+.quick-next-tool .detail-copy {
+  color: rgba(255, 248, 237, 0.82);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.quick-next-tool-link {
+  width: 100%;
+  min-height: 42px;
+  border-color: rgba(255, 248, 237, 0.22);
+  background: rgba(255, 248, 237, 0.94);
+  color: #241f1a;
+}
+
+.quick-next-tool-link:hover {
+  background: #ffffff;
+}
+
 .result-breakdown {
   display: grid;
   gap: 12px;

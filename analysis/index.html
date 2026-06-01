@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -293,7 +293,7 @@
             <p id="statusHelper" class="status-helper hidden">Preparing your quick check</p>
             <p id="statusNote" class="detail-copy">Waiting for image upload.</p>
             <div id="quickCheckResult" class="quick-check-result hidden">
-              <p class="section-label result-label">Quick Check Score</p>
+              <p class="section-label result-label">Overall Score</p>
               <div id="quickScoreHeader" class="quick-score-header">
                 <p id="quickCheckScore" class="quick-check-score">72 / 100</p>
                 <span id="quickCheckConfidenceBadge" class="confidence-badge">Usable</span>
@@ -308,15 +308,15 @@
               </div>
               <div id="quickCheckTopSections" class="result-blocks">
                 <div id="quickCheckKeyInsightBlock" class="result-block">
-                  <p class="result-block-title">Key Insight</p>
+                  <p class="result-block-title">Value Read</p>
                   <p id="quickCheckKeyInsightText" class="detail-copy">The focal point sits too close to the center, reducing visual tension.</p>
                 </div>
                 <div id="quickCheckStrengthBlock" class="result-block">
-                  <p class="result-block-title">Strength</p>
+                  <p class="result-block-title">Composition Read</p>
                   <p id="quickCheckStrengthText" class="detail-copy">The overall balance creates a stable and readable composition.</p>
                 </div>
                 <div id="quickCheckWeaknessBlock" class="result-block">
-                  <p class="result-block-title">Weakness</p>
+                  <p class="result-block-title">Color Read</p>
                   <p id="quickCheckWeaknessText" class="detail-copy">The focal area blends too much with surrounding values.</p>
                 </div>
               </div>
@@ -407,7 +407,27 @@
                     <ul id="breakdownTest" class="breakdown-list"></ul>
                   </div>
                 </div>
-                <div id="quickCheckBlocks" class="result-blocks"></div>
+                                <div id="quickCheckBlocks" class="result-blocks"></div>
+                <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
+                  <p class="result-block-title">Score Breakdown</p>
+                  <div id="quickCheckBreakdownRows" class="score-breakdown-list"></div>
+                </div>
+                <div id="quickCheckTags" class="result-tags">
+                  <span class="result-tag">Center Dominant</span>
+                  <span class="result-tag">Left Heavy</span>
+                  <span class="result-tag">Compressed Values</span>
+                </div>
+                <div id="quickCheckPremiumFix" class="premium-fix-preview result-reveal hidden">
+                  <div class="premium-fix-head">
+                    <p class="section-label result-label">Studio Diagnosis</p>
+                    <span id="premiumFixCount" class="premium-fix-count">3 fixes detected</span>
+                  </div>
+                  <h3 id="premiumFixTitle">Unlock the full painter fix</h3>
+                  <p id="premiumFixSummary" class="detail-copy">The scan found practical fixes for this painting.</p>
+                  <div id="premiumFixList" class="premium-fix-list"></div>
+                  <button id="premiumFixUnlockButton" class="button premium-fix-button" type="button">Unlock Lifetime Access - $5</button>
+                  <p id="premiumFixNote" class="premium-fix-note">One-time payment. Includes the exact first fix, 3-step paint plan, and full painter breakdown.</p>
+                </div>
                 <div id="paintersFix" class="painters-fix">
                   <p class="result-block-title">Painter&rsquo;s Fix</p>
                   <div id="paintersFixList" class="painters-fix-list"></div>
@@ -422,7 +442,7 @@
                 <p id="freeDailyNote" class="result-note hidden">Unlock the full fix plan to see exact painting steps.</p>
                 <p id="streakNote" class="result-note streak-note hidden">Day 1 ✅</p>
               </div>
-              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show free breakdown</button>
+              <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full details</button>
               <button id="paintingBreakdownButton" class="button-secondary painting-breakdown-button" type="button">Unlock - $5</button>
               <button id="reportAiResultButton" class="button-secondary report-ai-result-button" type="button">Report Result</button>
             </div>
