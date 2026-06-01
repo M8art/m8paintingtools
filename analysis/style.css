@@ -4567,6 +4567,13 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
     color: #fff6e8 !important;
   }
 
+  html.mobile-light-mode .quick-analysis-privacy-notice {
+    border-color: rgba(201, 106, 61, 0.18) !important;
+    border-radius: 18px !important;
+    background: rgba(255, 250, 244, 0.78) !important;
+    color: #69635d !important;
+  }
+
   html.mobile-light-mode h1,
   html.mobile-light-mode h2,
   html.mobile-light-mode h3,
