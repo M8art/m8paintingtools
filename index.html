@@ -5384,6 +5384,49 @@ html,
         line-height: 1.25;
       }
 
+      html.mobile-light-mode .app-tool-tile::before {
+        background:
+          linear-gradient(90deg, rgba(var(--tile-accent-rgb), 0.9), rgba(var(--tile-accent-rgb), 0.18) 58%, transparent 76%) left top / 100% 6px no-repeat,
+          linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(36, 31, 26, 0.08) 42%, rgba(18, 14, 11, 0.74) 100%),
+          radial-gradient(circle at 86% 86%, rgba(var(--tile-accent-rgb), 0.2), transparent 38%);
+        opacity: 1;
+      }
+
+      html.mobile-light-mode .app-tool-tile:not(.is-primary)::after,
+      html.mobile-light-mode .app-tool-tile-drawing::after {
+        opacity: 0.82;
+        filter: saturate(0.92) contrast(0.94);
+      }
+
+      html.mobile-light-mode .app-tool-tile:not(.is-primary) .app-tool-kicker,
+      html.mobile-light-mode .app-tool-tile:not(.is-primary) .app-tool-name,
+      html.mobile-light-mode .app-tool-tile:not(.is-primary) .app-tool-copy,
+      html.mobile-light-mode .app-tool-tile-wide .app-tool-kicker,
+      html.mobile-light-mode .app-tool-tile-wide .app-tool-name,
+      html.mobile-light-mode .app-tool-tile-wide .app-tool-copy {
+        color: #fff8ed;
+        text-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.62),
+          0 8px 18px rgba(0, 0, 0, 0.28);
+      }
+
+      html.mobile-light-mode .app-tool-tile:not(.is-primary) .app-tool-copy,
+      html.mobile-light-mode .app-tool-tile-wide .app-tool-copy {
+        color: rgba(255, 248, 237, 0.92);
+      }
+
+      html.mobile-light-mode .app-tool-tile:not(.is-primary) .app-tool-icon,
+      html.mobile-light-mode .app-tool-tile:not(.is-primary) .app-tool-arrow,
+      html.mobile-light-mode .app-tool-tile-wide .app-tool-icon,
+      html.mobile-light-mode .app-tool-tile-wide .app-tool-arrow {
+        background: rgba(255, 250, 244, 0.96);
+        color: #c96a3d;
+        border-color: rgba(255, 250, 244, 0.74);
+        box-shadow:
+          0 10px 22px rgba(36, 31, 26, 0.24),
+          inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      }
+
       .app-tool-arrow {
         width: 26px;
         height: 26px;
