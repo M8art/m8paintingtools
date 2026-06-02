@@ -1,4 +1,4 @@
-const analysisFileInput = document.getElementById("analysisFileInput");
+﻿const analysisFileInput = document.getElementById("analysisFileInput");
 const uploadZone = document.getElementById("uploadZone");
 const imageStage = document.getElementById("imageStage");
 const analysisSurface = document.getElementById("analysisSurface");
@@ -46,6 +46,9 @@ const quickCheckSuggestion = document.getElementById("quickCheckSuggestion");
 const quickCheckSuggestionText = document.getElementById("quickCheckSuggestionText");
 const quickCheckFastestFix = document.getElementById("quickCheckFastestFix");
 const quickCheckFastestFixText = document.getElementById("quickCheckFastestFixText");
+const quickCheckStudioNotes = document.getElementById("quickCheckStudioNotes");
+const quickCheckStudioNotesText = document.getElementById("quickCheckStudioNotesText");
+const quickCheckStudioNotesDetails = document.getElementById("quickCheckStudioNotesDetails");
 const quickCheckNextTool = document.getElementById("quickCheckNextTool");
 const quickCheckNextToolCopy = document.getElementById("quickCheckNextToolCopy");
 const quickCheckNextToolLink = document.getElementById("quickCheckNextToolLink");
@@ -127,7 +130,7 @@ const aiReportMailto = document.getElementById("aiReportMailto");
 const aiReportStatus = document.getElementById("aiReportStatus");
 
 const params = new URLSearchParams(window.location.search);
-const APP_VERSION_NAME = "1.0.55";
+const APP_VERSION_NAME = "1.0.67";
 const DEV_MODE = params.get("dev") === "true";
 const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
 const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
@@ -167,9 +170,38 @@ const QUICK_CHAT_UNLOCKED_DAILY_LIMIT = 20;
 const QUICK_CHAT_DAILY_STORAGE_KEY = "m8_quick_chat_daily_count";
 const AI_IMAGE_MAX_DIMENSION = 1024;
 const AI_IMAGE_QUALITY = 0.82;
+const PLAY_QUICK_AI_MAX_ATTEMPTS = 3;
+const PLAY_QUICK_AI_RETRY_DELAY_MS = 700;
 const NOTAN_SAMPLE_SIZE = 68;
 const NOTAN_SIGNIFICANT_REGION_RATIO = 0.014;
 const NOTAN_SMALL_REGION_RATIO = 0.004;
+
+function trackM8AnalysisCompleted(tool, details = {}) {
+  if (window.M8_UNLOCK?.trackAnalysisCompleted) {
+    window.M8_UNLOCK.trackAnalysisCompleted(tool, details);
+    return;
+  }
+
+  const payload = {
+    event_category: "analysis",
+    event_label: tool,
+    page_location: window.location.href,
+    transport_type: "beacon",
+    ...details
+  };
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "analysis_completed", payload);
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "analysis_completed",
+    ...payload
+  });
+}
+
 const WORKS_POOL = [
   "The focal point has enough contrast hierarchy to be readable.",
   "The overall balance supports a stable value grouping.",
@@ -276,6 +308,8 @@ let quickAiChatHistory = [];
 let quickAiChatFreeCount = 0;
 let quickAiChatRequestId = 0;
 let isQuickAiChatLoading = false;
+let playQuickAiRequestId = 0;
+let pendingPlayQuickAiImageDataUrl = "";
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -544,13 +578,8 @@ window.M8RunPlayQuickAnalysis = async function runPlayQuickAnalysis(imageDataUrl
   hasUploadedImage = true;
   currentAnalysisUsesFreeSlot = false;
   updateAnalysisAccessUI();
+  pendingPlayQuickAiImageDataUrl = hasDirectImage ? imageDataUrl : createAiAnalysisImageDataUrl();
   runQuickCheck();
-
-  const result = latestQuickCheckResult || buildQuickCheckResult();
-  const aiImage = hasDirectImage ? imageDataUrl : createAiAnalysisImageDataUrl();
-  if (aiImage) {
-    requestPlayQuickAiAnalysis(aiImage, result);
-  }
   return true;
 };
 
@@ -660,6 +689,7 @@ async function consumeLandingHandoff() {
 function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
   resetAnalysisSequence();
   resetNotanReading();
+  pendingPlayQuickAiImageDataUrl = "";
   imageLoadRequestId += 1;
   const requestId = imageLoadRequestId;
 
@@ -933,6 +963,9 @@ function handleUnlockReturn() {
 
   persistUnlockedAccess();
   justUnlockedFromStripe = true;
+  window.M8_UNLOCK?.trackPurchaseCompleted?.("quick_check_return", {
+    unlock_method: "stripe_return"
+  });
 
   const cleanedUrl = new URL(window.location.href);
   cleanedUrl.searchParams.delete("unlocked");
@@ -1036,6 +1069,7 @@ function runQuickCheck() {
   resetResultRevealState();
   resetPaintingBreakdown();
   resetQuickAiChat();
+  resetQuickStudioNotes();
   quickCheckResult.classList.add("hidden");
   quickCheckDeepReport?.classList.add("hidden");
   lockedAnalysisState.classList.add("hidden");
@@ -1094,6 +1128,7 @@ function completeQuickCheck() {
   renderDynamicBreakdown(result);
   quickCheckSuggestionText.textContent = result.suggestion;
   quickCheckFastestFixText.textContent = result.fastestFix;
+  renderQuickNextTool(result.nextTool);
   renderPremiumFixPreview(result);
   renderScoreBreakdown(result.scoreBreakdown);
   renderComparison(comparison, result.score);
@@ -1146,13 +1181,30 @@ function completeQuickCheck() {
   };
   markMobileResultsReady();
   openQuickAiChat(result);
+  requestPlayQuickAiAnalysisForCurrentResult(result);
   scrollToQuickCheckAiAnalysisOnMobile();
+  trackM8AnalysisCompleted("quick_check", {
+    score: result.score,
+    access_state: hasUnlockedAccess() ? "unlocked" : "free"
+  });
 
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
   analysisTimeoutIds = [];
   updateAnalysisAccessUI();
   maybeRequestUnlockedPaintingBreakdown(result);
+}
+
+function requestPlayQuickAiAnalysisForCurrentResult(result) {
+  if (!window.M8_GOOGLE_PLAY_BUILD || !result) {
+    return;
+  }
+
+  const aiImage = pendingPlayQuickAiImageDataUrl || createAiAnalysisImageDataUrl();
+  pendingPlayQuickAiImageDataUrl = "";
+  if (aiImage) {
+    requestPlayQuickAiAnalysis(aiImage, result);
+  }
 }
 
 function scrollToQuickCheckAiAnalysisOnMobile() {
@@ -1191,7 +1243,7 @@ function resetQuickAiChat() {
 }
 
 function openQuickAiChat(result) {
-  if (window.M8_GOOGLE_PLAY_BUILD || !quickAiChatPanel || !result) {
+  if (!quickAiChatPanel || !result) {
     return;
   }
   quickAiChatContext = sanitizeQuickAiChatContext(result);
@@ -1287,7 +1339,7 @@ async function handleQuickAiChatSubmit(event) {
         message,
         quickCheck: quickAiChatContext,
         history: historyForRequest,
-        unlocked: hasUnlockedAccess() || DEV_MODE
+        unlocked: hasQuickAiChatIncludedAccess()
       })
     });
     const data = await response.json().catch(() => ({}));
@@ -1302,7 +1354,7 @@ async function handleQuickAiChatSubmit(event) {
     quickAiChatHistory.push({ role: "assistant", content: answer });
     appendQuickAiChatMessage(data.offTopic ? "system" : "assistant", answer);
     incrementQuickAiChatUsage();
-    if (data.unlockSuggested) {
+    if (data.unlockSuggested && !window.M8_GOOGLE_PLAY_BUILD) {
       appendQuickAiChatUnlockCard();
     }
     updateQuickAiChatUI();
@@ -1311,7 +1363,7 @@ async function handleQuickAiChatSubmit(event) {
       return;
     }
     appendQuickAiChatMessage("system", error.message || "Painter chat failed. Try again in a moment.");
-    if (!hasUnlockedAccess() && !DEV_MODE) {
+    if (!hasQuickAiChatIncludedAccess()) {
       appendQuickAiChatUnlockCard();
     }
     updateQuickAiChatUI("Chat paused.");
@@ -1337,6 +1389,9 @@ function appendQuickAiChatMessage(type, text) {
 }
 
 function appendQuickAiChatUnlockCard() {
+  if (window.M8_GOOGLE_PLAY_BUILD) {
+    return;
+  }
   if (!quickAiChatMessages) {
     return;
   }
@@ -1359,14 +1414,14 @@ function appendQuickAiChatUnlockCard() {
 }
 
 function canSendQuickAiChatMessage() {
-  if (hasUnlockedAccess() || DEV_MODE) {
+  if (hasQuickAiChatIncludedAccess()) {
     return getQuickAiChatDailyCount() < QUICK_CHAT_UNLOCKED_DAILY_LIMIT;
   }
   return quickAiChatFreeCount < QUICK_CHAT_FREE_LIMIT;
 }
 
 function incrementQuickAiChatUsage() {
-  if (hasUnlockedAccess() || DEV_MODE) {
+  if (hasQuickAiChatIncludedAccess()) {
     setQuickAiChatDailyCount(getQuickAiChatDailyCount() + 1);
     return;
   }
@@ -1374,7 +1429,7 @@ function incrementQuickAiChatUsage() {
 }
 
 function showQuickAiChatLimitMessage() {
-  if (hasUnlockedAccess() || DEV_MODE) {
+  if (hasQuickAiChatIncludedAccess()) {
     appendQuickAiChatMessage("system", "Daily painter chat limit reached. Try again tomorrow.");
     updateQuickAiChatUI("Daily chat limit reached.");
     return;
@@ -1385,7 +1440,7 @@ function showQuickAiChatLimitMessage() {
 }
 
 function updateQuickAiChatUI(statusText) {
-  const unlocked = hasUnlockedAccess() || DEV_MODE;
+  const unlocked = hasQuickAiChatIncludedAccess();
   const used = unlocked ? getQuickAiChatDailyCount() : quickAiChatFreeCount;
   const limit = unlocked ? QUICK_CHAT_UNLOCKED_DAILY_LIMIT : QUICK_CHAT_FREE_LIMIT;
   const hasContext = Boolean(quickAiChatContext);
@@ -1408,9 +1463,13 @@ function updateQuickAiChatUI(statusText) {
   }
   if (quickAiChatStatus) {
     quickAiChatStatus.textContent = statusText || (hasContext
-      ? (unlocked ? "Full chat active for this painting." : "Free chat preview: ask up to two follow-up questions.")
+      ? (unlocked ? "Ask M8 follow-up questions about this painting." : "Free chat preview: ask up to two follow-up questions.")
       : "Chat opens after Quick Check.");
   }
+}
+
+function hasQuickAiChatIncludedAccess() {
+  return window.M8_GOOGLE_PLAY_BUILD || hasUnlockedAccess() || DEV_MODE;
 }
 
 function getQuickAiChatDailyCount() {
@@ -1451,6 +1510,8 @@ function buildQuickCheckResult() {
     suggestion: referenceCopy?.suggestion || composeSectionText("suggestion", getSuggestionLine(metrics), composition),
     fastestFix: referenceCopy?.fastestFix || buildFastestFix(metrics),
     verdict: referenceCopy?.verdict || buildOneSentenceVerdict(metrics),
+    attributeRead: referenceCopy?.attributeRead || buildAttributeRead(metrics),
+    nextTool: referenceCopy?.nextTool || buildNextToolRecommendation(metrics),
     scoreBreakdown: buildScoreBreakdown(metrics),
     composition,
     tags: buildTags(metrics)
@@ -1518,6 +1579,16 @@ function buildReferenceIssueCopy(metrics, composition) {
       "The checker sees this as a bad reference, not as artwork to critique.",
       "Use the actual artwork instead of a screenshot before trusting the score."
     ]),
+    attributeRead: {
+      value: "Value can be sampled, but the source does not behave like a clean painting reference.",
+      composition: "Composition feedback is unreliable because screen-like shapes may be driving the read.",
+      color: "Color grouping looks too graphic for a useful painter palette read."
+    },
+    nextTool: {
+      label: "Try Quick Check Again",
+      href: "./index.html",
+      copy: "Crop to the artwork only, then run a cleaner scan."
+    },
     fastestFix: pickVariant([
       "Upload the artwork only, cropped cleanly.",
       "Remove the screen or UI capture and use the real reference.",
@@ -1703,6 +1774,14 @@ function analyzeUploadedImage() {
     edgeDensity,
     axisEdgeBias
   });
+  const colorQuality = clamp(
+    (clamp((referenceAssessment.colorEntropy - 0.36) / 0.3, 0, 1) * 0.38)
+      + (clamp((referenceAssessment.colorGroupCount - 10) / 24, 0, 1) * 0.28)
+      + (clamp(referenceAssessment.meanSaturation / 0.32, 0, 1) * 0.24)
+      + ((1 - clamp(referenceAssessment.nearGrayRatio / 0.86, 0, 1)) * 0.1),
+    0,
+    1
+  );
   const weightedQuality = (centerQuality * 0.16)
     + (balanceQuality * 0.14)
     + (valueQuality * 0.17)
@@ -1740,6 +1819,7 @@ function analyzeUploadedImage() {
     clarityQuality,
     flowQuality,
     depthQuality,
+    colorQuality,
     edgeDensity,
     axisEdgeBias,
     borderWeightShare,
@@ -2182,6 +2262,7 @@ function renderQuickNextTool(nextTool) {
   quickCheckNextToolLink.textContent = nextTool.label;
   quickCheckNextToolLink.href = nextTool.href;
 }
+
 function pickVariant(variants) {
   return variants[Math.floor(Math.random() * variants.length)];
 }
@@ -2224,7 +2305,7 @@ function applyResultComposition(composition) {
     weakness: quickCheckWeaknessBlock
   };
 
-  composition.topSectionOrder.forEach((sectionKey) => {
+  ["keyInsight", "strength", "weakness"].forEach((sectionKey) => {
     quickCheckTopSections.appendChild(topSectionBlocks[sectionKey]);
   });
 
@@ -3130,6 +3211,7 @@ function resetUploadedImage() {
   }
 
   hasUploadedImage = false;
+  pendingPlayQuickAiImageDataUrl = "";
   analysisPreview.onload = null;
   analysisPreview.onerror = null;
   analysisPreview.removeAttribute("src");
@@ -3698,28 +3780,83 @@ async function requestPlayQuickAiAnalysis(imageDataUrl, computedAnalysis) {
     return;
   }
 
-  showPlayQuickAiMessage("analysis is running...");
-  try {
-    const response = await fetch(QUICK_AI_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        imageDataUrl,
-        computedAnalysis: sanitizeQuickAiComputedAnalysis(computedAnalysis)
-      })
-    });
-    const data = await response.json().catch(() => ({}));
+  const requestId = playQuickAiRequestId + 1;
+  playQuickAiRequestId = requestId;
+  showPlayQuickAiMessage("Refining Studio Notes...");
 
-    if (!response.ok) {
-      throw new Error(data.error || "analysis failed.");
+  try {
+    const data = await fetchPlayQuickAiAnalysis({
+      imageDataUrl,
+      computedAnalysis: sanitizeQuickAiComputedAnalysis(computedAnalysis)
+    }, requestId);
+
+    if (requestId !== playQuickAiRequestId || !data) {
+      return;
     }
 
     renderPlayQuickAiAnalysis(data.analysis);
   } catch (error) {
-    showPlayQuickAiMessage(error.message || "analysis failed. The normal Quick Check result is still available.");
+    if (requestId !== playQuickAiRequestId) {
+      return;
+    }
+    showPlayQuickAiMessage(getPlayQuickAiFallbackMessage());
   }
+}
+
+async function fetchPlayQuickAiAnalysis(payload, requestId) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= PLAY_QUICK_AI_MAX_ATTEMPTS; attempt += 1) {
+    if (requestId !== playQuickAiRequestId) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(QUICK_AI_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || "Painting analysis failed.");
+      }
+
+      return data;
+    } catch (error) {
+      lastError = error;
+      if (requestId !== playQuickAiRequestId) {
+        return null;
+      }
+      if (attempt >= PLAY_QUICK_AI_MAX_ATTEMPTS || !isRetryablePlayQuickAiError(error)) {
+        break;
+      }
+      await waitForPlayQuickRetry(PLAY_QUICK_AI_RETRY_DELAY_MS * attempt);
+    }
+  }
+
+  throw lastError || new Error("Painting analysis failed.");
+}
+
+function isRetryablePlayQuickAiError(error) {
+  const message = String(error?.message || "").toLowerCase();
+  return error instanceof TypeError ||
+    message.includes("failed to fetch") ||
+    message.includes("network") ||
+    message.includes("load failed");
+}
+
+function waitForPlayQuickRetry(delay) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, delay);
+  });
+}
+
+function getPlayQuickAiFallbackMessage() {
+  return "Studio Notes could not be refined right now. The normal Quick Check result is still available.";
 }
 
 function sanitizeQuickAiComputedAnalysis(result) {
@@ -3749,37 +3886,33 @@ function sanitizeQuickAiComputedAnalysis(result) {
   };
 }
 
-function ensurePlayQuickAiResultBlock() {
-  let block = document.getElementById("playQuickAiResult");
-  if (block) {
-    return block;
+function ensureQuickStudioNotesPanel() {
+  if (quickCheckStudioNotes) {
+    return quickCheckStudioNotes;
   }
-
-  block = document.createElement("div");
-  block.id = "playQuickAiResult";
-  block.className = "result-block play-quick-ai-result result-reveal";
-  const anchor = quickCheckFastestFix || quickCheckResult;
-  anchor?.insertAdjacentElement("afterend", block);
-  return block;
+  return null;
 }
 
 function showPlayQuickAiMessage(message) {
-  const block = ensurePlayQuickAiResultBlock();
+  const block = ensureQuickStudioNotesPanel();
   if (!block) {
     return;
   }
 
-  block.innerHTML = `
-    <p class="result-block-title">Painter Mentor Read</p>
-    <p class="detail-copy">${escapeHtml(message)}</p>
-  `;
+  if (quickCheckStudioNotesText) {
+    quickCheckStudioNotesText.textContent = message;
+  }
+  if (quickCheckStudioNotesDetails) {
+    quickCheckStudioNotesDetails.innerHTML = "";
+    quickCheckStudioNotesDetails.classList.add("hidden");
+  }
   block.classList.remove("hidden");
-  quickCheckDeepReport?.classList.remove("hidden");
+  block.classList.toggle("is-loading", /running|refining|loading/i.test(message));
 }
 
 function renderPlayQuickAiAnalysis(analysis) {
   if (!analysis) {
-    showPlayQuickAiMessage("analysis failed. The normal Quick Check result is still available.");
+    showPlayQuickAiMessage(getPlayQuickAiFallbackMessage());
     return;
   }
 
@@ -3789,22 +3922,39 @@ function renderPlayQuickAiAnalysis(analysis) {
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
 
-  const block = ensurePlayQuickAiResultBlock();
+  const block = ensureQuickStudioNotesPanel();
   if (!block) {
     return;
   }
 
-  block.innerHTML = `
-    <p class="result-block-title">Painter Mentor Read</p>
-    ${analysis.summary ? `<p class="detail-copy">${escapeHtml(analysis.summary)}</p>` : ""}
-    ${analysis.mainPriority ? `<div class="breakdown-section"><p class="breakdown-section-title">Main Priority</p><p class="detail-copy">${escapeHtml(analysis.mainPriority)}</p></div>` : ""}
-    ${analysis.valueStructure ? `<div class="breakdown-section"><p class="breakdown-section-title">Value Structure</p><p class="detail-copy">${escapeHtml(analysis.valueStructure)}</p></div>` : ""}
-    ${analysis.composition ? `<div class="breakdown-section"><p class="breakdown-section-title">Composition</p><p class="detail-copy">${escapeHtml(analysis.composition)}</p></div>` : ""}
-    ${list(analysis.nextSteps) ? `<div class="breakdown-section"><p class="breakdown-section-title">Next Steps</p><ol class="breakdown-list">${list(analysis.nextSteps)}</ol></div>` : ""}
-  `;
+  if (quickCheckStudioNotesText) {
+    quickCheckStudioNotesText.textContent = analysis.summary || analysis.mainPriority || "Studio read is ready.";
+  }
+  const nextSteps = list(analysis.nextSteps);
+  const details = [
+    analysis.mainPriority ? `<div class="quick-studio-note"><span>Priority</span><p>${escapeHtml(analysis.mainPriority)}</p></div>` : "",
+    analysis.valueStructure ? `<div class="quick-studio-note"><span>Value</span><p>${escapeHtml(analysis.valueStructure)}</p></div>` : "",
+    analysis.composition ? `<div class="quick-studio-note"><span>Composition</span><p>${escapeHtml(analysis.composition)}</p></div>` : "",
+    nextSteps ? `<div class="quick-studio-note"><span>Next steps</span><ol>${nextSteps}</ol></div>` : ""
+  ].filter(Boolean).join("");
+  if (quickCheckStudioNotesDetails) {
+    quickCheckStudioNotesDetails.innerHTML = details;
+    quickCheckStudioNotesDetails.classList.toggle("hidden", !details);
+  }
   block.classList.remove("hidden");
-  quickCheckDeepReport?.classList.remove("hidden");
-  block.scrollIntoView({ behavior: "smooth", block: "start" });
+  block.classList.remove("is-loading");
+}
+
+function resetQuickStudioNotes() {
+  quickCheckStudioNotes?.classList.add("hidden");
+  quickCheckStudioNotes?.classList.remove("is-loading");
+  if (quickCheckStudioNotesText) {
+    quickCheckStudioNotesText.textContent = "Refining the studio read...";
+  }
+  if (quickCheckStudioNotesDetails) {
+    quickCheckStudioNotesDetails.innerHTML = "";
+    quickCheckStudioNotesDetails.classList.add("hidden");
+  }
 }
 
 function openAiReportDialog() {
@@ -3874,7 +4024,7 @@ function buildAiReportMailtoHref(summary) {
 
 function buildAiReportSummary() {
   const result = latestQuickCheckResult || lastCompletedQuickCheckResult || {};
-  const aiBlock = document.getElementById("playQuickAiResult");
+  const aiBlock = document.getElementById("quickCheckStudioNotes");
   const parts = [
     `Version: ${APP_VERSION_NAME}`,
     result.score ? `Quick Check score: ${result.score}/100` : "",

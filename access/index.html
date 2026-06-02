@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Restore Access | M8 Painting Studio</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZYJSDPH5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-6ZYJSDPH5X');
+  </script>
     <script src="../assets/mobile-theme.js"></script>
   <style>
     :root {
@@ -182,6 +189,38 @@
       flex: 0 0 auto;
     }
 
+    .legal-about-card {
+      margin-top: 18px;
+    }
+
+    .legal-link-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .legal-link-grid .button {
+      min-height: 46px;
+      border: 1px solid rgba(61, 51, 40, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .legal-version {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(201, 106, 61, 0.2);
+      border-radius: 999px;
+      background: rgba(201, 106, 61, 0.08);
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
     .access-form {
       display: grid;
       gap: 14px;
@@ -266,6 +305,10 @@
 
     .access-message.is-error {
       color: var(--error);
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .footer {
@@ -478,6 +521,10 @@
         gap: 10px;
       }
 
+      .legal-link-grid {
+        grid-template-columns: 1fr;
+      }
+
       .access-input {
         min-height: 58px;
         border-radius: 20px;
@@ -658,6 +705,13 @@
         box-shadow: 0 0 0 5px rgba(201, 106, 61, 0.18) !important;
       }
 
+      .legal-link-grid .button,
+      .legal-version {
+        border-color: rgba(185, 141, 66, 0.34) !important;
+        background: rgba(13, 11, 8, 0.58) !important;
+        color: rgba(242, 231, 207, 0.84) !important;
+      }
+
       .access-input,
       .access-input:focus {
         border: 1px solid rgba(185, 141, 66, 0.34) !important;
@@ -708,15 +762,15 @@
     </header>
 
     <main class="access-wrap">
-      <section class="card access-card">
+      <section id="accessPanel" class="card access-card">
         <div>
           <p class="eyebrow">Premium Access</p>
-          <h2>Unlock or Restore</h2>
+          <h2 id="accessPanelTitle">Unlock or Restore</h2>
         </div>
 
-        <p class="access-subtitle">Unlock unlimited access to all premium painting tools.</p>
-        <p class="access-copy">Already paid with Stripe? Restore your purchase with the same email you used at checkout. This is useful when iPhone app mode does not share Safari access.</p>
-        <div class="access-benefits" aria-label="Premium access includes">
+        <p id="accessSubtitle" class="access-subtitle">Unlock unlimited access to all premium painting tools.</p>
+        <p id="accessCopy" class="access-copy">Already paid with Stripe? Restore your purchase with the same email you used at checkout. This is useful when iPhone app mode does not share Safari access.</p>
+        <div id="accessBenefits" class="access-benefits" aria-label="Premium access includes">
           <p class="access-benefit">Advanced composition overlays</p>
           <p class="access-benefit">Premium color analysis tools</p>
           <p class="access-benefit">Unlimited studio access on this device</p>
@@ -727,7 +781,7 @@
           <button id="unlockButton" class="button" type="submit">Unlock Tools</button>
         </form>
 
-        <div class="restore-divider">Already paid?</div>
+        <div id="restoreDivider" class="restore-divider">Already paid?</div>
 
         <form id="restoreForm" class="access-form">
           <input id="restoreEmailInput" class="access-input" type="email" placeholder="Stripe receipt email" autocomplete="email">
@@ -735,7 +789,23 @@
         </form>
 
         <p id="accessMessage" class="access-message" aria-live="polite"></p>
-        <p class="access-helper">Patreon members can still use the member password. Stripe buyers can restore access on any browser or iPhone app install with their receipt email.</p>
+        <p id="accessHelper" class="access-helper">Patreon members can still use the member password. Stripe buyers can restore access on any browser or iPhone app install with their receipt email.</p>
+      </section>
+
+      <section class="card access-card legal-about-card" aria-label="Legal and about">
+        <div>
+          <p class="eyebrow">Legal / About</p>
+          <h2>M8 Painting Tools</h2>
+        </div>
+
+        <p class="access-copy">Legal, support, result reporting, and app version details.</p>
+        <div class="legal-link-grid">
+          <a class="button" href="../privacy/index.html">Privacy Policy</a>
+          <a class="button" href="../terms/index.html">Terms of Use</a>
+          <a class="button" href="../contact/index.html">Contact Support</a>
+          <a class="button" href="../contact/index.html?report=ai">Report Result</a>
+        </div>
+        <p id="appVersionLabel" class="legal-version">Version: 1.0.49</p>
       </section>
     </main>
 
@@ -769,10 +839,22 @@
   </div>
 
   <script>
+    const APP_VERSION_NAME = "1.0.49";
     const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
     const PATREON_PASSWORD = "patreonmate";
     const UNLOCK_COOKIE_NAME = "m8_unlocked";
     const REDIRECT_PATH = "../analysis/index.html";
+    const pageParams = new URLSearchParams(window.location.search);
+    const isGooglePlayMode = pageParams.get("gp") === "1"
+      || pageParams.has("playBuild")
+      || window.M8_GOOGLE_PLAY_BUILD === true;
+    const accessPanelTitle = document.getElementById("accessPanelTitle");
+    const accessSubtitle = document.getElementById("accessSubtitle");
+    const accessCopy = document.getElementById("accessCopy");
+    const accessBenefits = document.getElementById("accessBenefits");
+    const restoreDivider = document.getElementById("restoreDivider");
+    const accessHelper = document.getElementById("accessHelper");
+    const appVersionLabel = document.getElementById("appVersionLabel");
     const accessForm = document.getElementById("accessForm");
     const restoreForm = document.getElementById("restoreForm");
     const passwordInput = document.getElementById("passwordInput");
@@ -780,6 +862,12 @@
     const unlockButton = document.getElementById("unlockButton");
     const restoreButton = document.getElementById("restoreButton");
     const accessMessage = document.getElementById("accessMessage");
+
+    if (appVersionLabel) {
+      appVersionLabel.textContent = `Version: ${APP_VERSION_NAME}`;
+    }
+
+    configureGooglePlayAccessMode();
 
     function hasUnlockCookie() {
       return document.cookie
@@ -790,6 +878,50 @@
     function persistUnlockedAccess() {
       localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
       document.cookie = `${UNLOCK_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
+    }
+
+    function trackPurchaseCompleted(source, details = {}) {
+      const payload = {
+        event_category: "monetization",
+        event_label: source,
+        page_location: window.location.href,
+        transport_type: "beacon",
+        value: 5,
+        currency: "USD",
+        ...details
+      };
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "purchase_completed", payload);
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "purchase_completed",
+        ...payload
+      });
+    }
+
+    function trackAccessRestored(source, details = {}) {
+      const payload = {
+        event_category: "monetization",
+        event_label: source,
+        page_location: window.location.href,
+        transport_type: "beacon",
+        ...details
+      };
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "access_restored", payload);
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "access_restored",
+        ...payload
+      });
     }
 
     function hasUnlockedAccess() {
@@ -825,8 +957,29 @@
 
       persistUnlockedAccess();
       renderUnlockedAccessState("Payment confirmed. All tools are unlocked on this device.");
+      trackPurchaseCompleted("access_payment_return", {
+        unlock_method: "stripe_return"
+      });
       cleanUnlockQueryFromUrl();
       return true;
+    }
+
+    function configureGooglePlayAccessMode() {
+      if (!isGooglePlayMode) {
+        return;
+      }
+
+      accessPanelTitle.textContent = "Google Play Access";
+      accessSubtitle.textContent = "Available tools are included in this Google Play version.";
+      accessCopy.textContent = "The Google Play version does not use Stripe, external payment links, or paid web unlocks.";
+      accessBenefits?.classList.add("hidden");
+      accessForm?.classList.add("hidden");
+      restoreForm?.classList.add("hidden");
+      restoreDivider?.classList.add("hidden");
+      accessHelper.textContent = "If payments are added to this Google Play version later, they will use Google Play Billing.";
+      accessMessage.classList.remove("is-error");
+      accessMessage.classList.add("is-success");
+      accessMessage.textContent = "Google Play mode active.";
     }
 
     if (!handlePaymentUnlockReturn() && hasUnlockedAccess()) {
@@ -877,6 +1030,9 @@
 
         persistUnlockedAccess();
         renderUnlockedAccessState("Purchase restored. All tools are unlocked in this app mode.");
+        trackAccessRestored("access_restore", {
+          unlock_method: "stripe_restore"
+        });
         window.setTimeout(() => {
           window.location.href = REDIRECT_PATH;
         }, 1200);

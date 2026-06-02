@@ -56,6 +56,32 @@
     { className: "stage-structure", line: "Reading structure...", detail: "Checking whether the big value masses support the image.", delay: 720 }
   ];
 
+  function trackM8AnalysisCompleted(tool, details = {}) {
+    if (window.M8_UNLOCK?.trackAnalysisCompleted) {
+      window.M8_UNLOCK.trackAnalysisCompleted(tool, details);
+      return;
+    }
+
+    const payload = {
+      event_category: "analysis",
+      event_label: tool,
+      page_location: window.location.href,
+      transport_type: "beacon",
+      ...details
+    };
+
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "analysis_completed", payload);
+      return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "analysis_completed",
+      ...payload
+    });
+  }
+
   proUploadButtons.forEach((button) => button.classList.add("value-pro-upload-button"));
   proAnalyzeButtons.forEach((button) => button.classList.add("value-pro-analyze-button"));
   proResultLinks.forEach((link) => link.classList.add("value-pro-result-link"));
@@ -586,6 +612,9 @@
         markFreeAnalysisUsedToday();
       }
       renderResults(data);
+      trackM8AnalysisCompleted("value_pro", {
+        access_state: hasUnlockedAccess() ? "unlocked" : "free"
+      });
       finishScanAnimation();
       setStatus("Pro Value Analysis ready.", "Review the value key, grouping, light/shadow structure, and practical fixes before painting.");
     } catch (error) {

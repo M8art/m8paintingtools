@@ -251,6 +251,32 @@ const MIXER_PALETTE_REFERENCE = [
 
 const TRAINER_PIGMENT_OPTIONS = MIXER_PALETTE_REFERENCE.filter((item) => item.name !== "Lead White");
 
+function trackM8AnalysisCompleted(tool, details = {}) {
+  if (window.M8_UNLOCK?.trackAnalysisCompleted) {
+    window.M8_UNLOCK.trackAnalysisCompleted(tool, details);
+    return;
+  }
+
+  const payload = {
+    event_category: "analysis",
+    event_label: tool,
+    page_location: window.location.href,
+    transport_type: "beacon",
+    ...details
+  };
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "analysis_completed", payload);
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "analysis_completed",
+    ...payload
+  });
+}
+
 const state = {
   objectUrl: null,
   palette: [],
@@ -1291,6 +1317,10 @@ function analyzeHarmony() {
   state.analysisResult = analysisResult;
   renderHarmonyAnalysis(analysisResult);
   renderPaletteCoach();
+  trackM8AnalysisCompleted("color_palette", {
+    access_state: isUnlocked() ? "unlocked" : "locked_preview",
+    harmony_type: analysisResult.primary
+  });
 }
 
 function renderHarmonyAnalysis(result) {
@@ -2293,6 +2323,9 @@ async function requestPaletteCoach() {
     state.paletteCoachError = "";
     markColorAiFreeAnalysisUsed(PALETTE_COACH_FREE_CHECK_STORAGE_KEY);
     statusNote.textContent = "Palette Coach ready.";
+    trackM8AnalysisCompleted("color_palette_coach", {
+      access_state: isUnlocked() ? "unlocked" : "free"
+    });
     showStatusToast("Palette plan ready");
   } catch (error) {
     if (requestId !== state.paletteCoachRequestId) {
@@ -2465,6 +2498,9 @@ async function requestMixerCoach() {
     state.mixerCoachError = "";
     markColorAiFreeAnalysisUsed(MIX_COACH_FREE_CHECK_STORAGE_KEY);
     statusNote.textContent = "Mix Coach ready.";
+    trackM8AnalysisCompleted("color_mix_coach", {
+      access_state: isUnlocked() ? "unlocked" : "free"
+    });
     showStatusToast("Mix plan ready");
   } catch (error) {
     if (requestId !== state.mixerCoachRequestId) {

@@ -19,11 +19,33 @@
   };
   let lastUnlockTrackAt = 0;
   let lastStripeOutboundTrackAt = 0;
+  let lastPurchaseTrackAt = 0;
+
+  function pushM8Event(eventName, payload = {}) {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", eventName, payload);
+      return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      ...payload
+    });
+  }
 
   function open() {
     trackUnlockClicked("m8_unlock_open");
     trackStripeCheckoutOutbound("m8_unlock_open", PAYMENT_LINK);
     window.location.href = PAYMENT_LINK;
+  }
+
+  function checkout(element, source) {
+    const checkoutUrl = getStripeCheckoutUrl(element) || PAYMENT_LINK;
+    const checkoutSource = source || getUnlockSource(element) || "unlock_button";
+    trackUnlockClicked(checkoutSource);
+    trackStripeCheckoutOutbound(checkoutSource, checkoutUrl);
+    window.location.href = checkoutUrl;
   }
 
   function trackUnlockClicked(source = "unknown") {
@@ -41,16 +63,7 @@
       value: 5
     };
 
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "unlock_clicked", payload);
-      return;
-    }
-
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "unlock_clicked",
-      ...payload
-    });
+    pushM8Event("unlock_clicked", payload);
   }
 
   function trackStripeCheckoutOutbound(source = "unknown", url = PAYMENT_LINK) {
@@ -69,15 +82,35 @@
       value: 5
     };
 
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "stripe_checkout_outbound", payload);
+    pushM8Event("stripe_checkout_outbound", payload);
+    pushM8Event("stripe_checkout_opened", payload);
+  }
+
+  function trackAnalysisCompleted(tool = "unknown", details = {}) {
+    pushM8Event("analysis_completed", {
+      event_category: "analysis",
+      event_label: tool,
+      page_location: window.location.href,
+      transport_type: "beacon",
+      ...details
+    });
+  }
+
+  function trackPurchaseCompleted(source = "unknown", details = {}) {
+    const now = Date.now();
+    if (now - lastPurchaseTrackAt < 750) {
       return;
     }
+    lastPurchaseTrackAt = now;
 
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "stripe_checkout_outbound",
-      ...payload
+    pushM8Event("purchase_completed", {
+      event_category: "monetization",
+      event_label: source,
+      page_location: window.location.href,
+      transport_type: "beacon",
+      value: 5,
+      currency: "USD",
+      ...details
     });
   }
 
@@ -229,8 +262,11 @@
     ACCESS_LINK,
     COPY,
     open,
+    checkout,
     trackUnlockClicked,
     trackStripeCheckoutOutbound,
+    trackAnalysisCompleted,
+    trackPurchaseCompleted,
     renderInlineCard,
     bind,
     ensurePaymentNotes

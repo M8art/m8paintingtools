@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -218,7 +218,7 @@
                   <p class="detail-copy">• Painter fix steps</p>
                   <p class="detail-copy">• Unlimited checks</p>
                 </div>
-              <button id="notanUnlockButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="event.stopImmediatePropagation(); window.location.href=this.dataset.unlockLink; return false;">Unlock Lifetime Access - $5</button>
+              <button id="notanUnlockButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="window.M8_UNLOCK?.checkout(this); return false;">Unlock Lifetime Access - $5</button>
                 <p class="result-note">One-time payment. Lifetime access. No subscription.</p>
                 <p class="result-note">Unlimited analyses. No subscription.</p>
                 <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
@@ -299,13 +299,6 @@
                 <span id="quickCheckConfidenceBadge" class="confidence-badge">Usable</span>
               </div>
               <p id="quickCheckVerdict" class="quick-check-verdict">Your composition is readable, but the focal point needs a clearer job.</p>
-              <div id="quickCheckWhyScore" class="result-block result-reveal">
-                <p class="result-block-title">Why This Score</p>
-                <div class="result-reason-list">
-                  <p id="quickCheckWhyPositive" class="detail-copy">The score is helped by a stable left-right balance.</p>
-                  <p id="quickCheckWhyLimiting" class="detail-copy">The score drops because the focal pull sits too close to the center.</p>
-                </div>
-              </div>
               <div id="quickCheckTopSections" class="result-blocks">
                 <div id="quickCheckKeyInsightBlock" class="result-block">
                   <p class="result-block-title">Value Read</p>
@@ -320,24 +313,25 @@
                   <p id="quickCheckWeaknessText" class="detail-copy">The focal area blends too much with surrounding values.</p>
                 </div>
               </div>
-              <div id="quickCheckFastestFix" class="result-suggestion result-reveal">
-                <p class="section-label result-label">Fix This First</p>
-                <p id="quickCheckFastestFixText" class="detail-copy">Push the focal contrast farther away from the center.</p>
-              </div>
-              <div id="quickCheckPremiumFix" class="premium-fix-preview result-reveal hidden">
-                <div class="premium-fix-head">
-                  <p class="section-label result-label">Studio Diagnosis</p>
-                  <span id="premiumFixCount" class="premium-fix-count">3 fixes detected</span>
+              <div id="quickCheckWhyScore" class="result-block result-reveal">
+                <p class="result-block-title">Overall Read</p>
+                <div class="result-reason-list">
+                  <p id="quickCheckWhyPositive" class="detail-copy">The score is helped by a stable left-right balance.</p>
+                  <p id="quickCheckWhyLimiting" class="detail-copy">The score drops because the focal pull sits too close to the center.</p>
                 </div>
-                <h3 id="premiumFixTitle">Unlock the full painter fix</h3>
-                <p id="premiumFixSummary" class="detail-copy">The scan found practical fixes for this painting.</p>
-                <div id="premiumFixList" class="premium-fix-list"></div>
-                <button id="premiumFixUnlockButton" class="button premium-fix-button" type="button">Unlock Lifetime Access - $5</button>
-                <p id="premiumFixNote" class="premium-fix-note">One-time payment. Includes the exact first fix, 3-step paint plan, and full painter breakdown.</p>
               </div>
-              <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
-                <p class="result-block-title">Score Breakdown</p>
-                <div id="quickCheckBreakdownRows" class="score-breakdown-list"></div>
+              <div id="quickCheckFastestFix" class="result-suggestion result-reveal">
+                <p class="section-label result-label">What To Do Next</p>
+                <p id="quickCheckFastestFixText" class="detail-copy">Push the focal contrast farther away from the center.</p>
+                <div id="quickCheckStudioNotes" class="quick-studio-notes hidden" aria-live="polite">
+                  <p class="quick-studio-notes-label">Studio Notes</p>
+                  <p id="quickCheckStudioNotesText" class="detail-copy">Refining the studio read...</p>
+                  <div id="quickCheckStudioNotesDetails" class="quick-studio-notes-details hidden"></div>
+                </div>
+                <div id="quickCheckNextTool" class="quick-next-tool">
+                  <p id="quickCheckNextToolCopy" class="detail-copy">Go deeper in the matching checker.</p>
+                  <a id="quickCheckNextToolLink" class="button-secondary quick-next-tool-link" href="../value-checker/index.html">Open Value Checker</a>
+                </div>
               </div>
               <div id="quickCheckComparison" class="result-block result-reveal hidden">
                 <p class="result-block-title">Compared To Previous Check</p>
@@ -347,11 +341,6 @@
                   <p id="quickCheckScoreDelta" class="detail-copy">Difference: +4</p>
                 </div>
                 <p id="quickCheckComparisonText" class="detail-copy">Focal clarity improved.</p>
-              </div>
-              <div id="quickCheckTags" class="result-tags">
-                <span class="result-tag">Center Dominant</span>
-                <span class="result-tag">Left Heavy</span>
-                <span class="result-tag">Compressed Values</span>
               </div>
               <div id="paintingBreakdownResult" class="result-block painting-breakdown-result hidden" aria-live="polite">
                 <p class="result-block-title">Painter Fix Plan From This Painting</p>
@@ -407,7 +396,7 @@
                     <ul id="breakdownTest" class="breakdown-list"></ul>
                   </div>
                 </div>
-                                <div id="quickCheckBlocks" class="result-blocks"></div>
+                <div id="quickCheckBlocks" class="result-blocks"></div>
                 <div id="quickCheckScoreBreakdown" class="result-breakdown result-reveal">
                   <p class="result-block-title">Score Breakdown</p>
                   <div id="quickCheckBreakdownRows" class="score-breakdown-list"></div>
@@ -444,13 +433,12 @@
               </div>
               <button id="breakdownToggleButton" class="breakdown-toggle" type="button" aria-expanded="false">Show full details</button>
               <button id="paintingBreakdownButton" class="button-secondary painting-breakdown-button" type="button">Unlock - $5</button>
-              <button id="reportAiResultButton" class="button-secondary report-ai-result-button" type="button">Report Result</button>
             </div>
             <div id="lockedAnalysisState" class="quick-check-result hidden">
               <p class="section-label result-label">Daily free checks used</p>
               <h3 class="locked-title">Want more checks today?</h3>
               <p class="detail-copy">You get 3 free Quick Checks every day. Come back tomorrow, or unlock lifetime access to keep working today.</p>
-              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="event.stopImmediatePropagation(); window.location.href=this.dataset.unlockLink; return false;">Unlock Lifetime Access - $5</button>
+              <button id="unlockFullAccessButton" class="button premium-unlock-button analysis-button" type="button" data-unlock-link="https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002" onclick="window.M8_UNLOCK?.checkout(this); return false;">Unlock Lifetime Access - $5</button>
               <p class="result-note">One-time payment. Lifetime access. No subscription.</p>
               <p class="result-note"><a href="../access/index.html">Already paid? Restore access</a></p>
               <p class="result-note">Secure payment via Stripe. Instant access after payment.</p>
@@ -530,7 +518,7 @@
       <form id="aiReportForm" class="ai-report-form" name="ai-result-report" method="POST" action="./?ai-report=sent" data-netlify="true" netlify-honeypot="ai-report-bot-field">
         <input type="hidden" name="form-name" value="ai-result-report">
         <input type="hidden" name="subject" value="Analysis result report from M8 Painting Tools">
-        <input type="hidden" name="appVersion" value="1.0.55">
+        <input type="hidden" name="appVersion" value="1.0.67">
         <input id="aiReportResultSummary" type="hidden" name="resultSummary">
         <p class="bot-field">
           <label>Do not fill this out if you are human: <input name="ai-report-bot-field"></label>

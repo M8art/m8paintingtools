@@ -263,6 +263,8 @@ const SPIRAL_TEMPLATE_ARCS = [
 
 const GRID_DIVISION_OPTIONS = [2, 4, 6, 8, 10, 12];
 const BASIC_OVERLAY_LINE_WIDTH = 1.75;
+const EXPORT_OVERLAY_LINE_SCALE = 2.35;
+const EXPORT_ANDROID_BYTE_CHUNK_SIZE = 49152;
 const DYNAMIC_SYMMETRY_MAX_POINTS = 42;
 const DYNAMIC_SYMMETRY_SAMPLE_SIZE = 180;
 const THIRDS_SAMPLE_SIZE = 112;
@@ -297,6 +299,32 @@ const LANDING_HANDOFF_STORE = "uploads";
 const LANDING_HANDOFF_RECORD = "latest";
 const BASIC_COMPOSITION_UPLOAD_LOCK_STORAGE_KEY = "m8_composition_basic_upload_lock";
 const BASIC_COMPOSITION_UPLOAD_LOCK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+
+function trackM8AnalysisCompleted(tool, details = {}) {
+  if (window.M8_UNLOCK?.trackAnalysisCompleted) {
+    window.M8_UNLOCK.trackAnalysisCompleted(tool, details);
+    return;
+  }
+
+  const payload = {
+    event_category: "analysis",
+    event_label: tool,
+    page_location: window.location.href,
+    transport_type: "beacon",
+    ...details
+  };
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "analysis_completed", payload);
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "analysis_completed",
+    ...payload
+  });
+}
 
 const state = {
   analysisMode: "basic",
@@ -401,6 +429,7 @@ const state = {
 let imageLoadRequestId = 0;
 let feedbackToastTimeoutId = null;
 let compositionAiScanTimers = [];
+let isCompositionExporting = false;
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -2785,7 +2814,7 @@ function updateModeUI() {
 
   overlayCanvas.classList.toggle("notes-mode", isGoldenSpiral && state.imageLoaded);
   overlayCanvas.style.cursor = getOverlayCursor(isGoldenSpiral, isFocalBalance, isThirdsMode, isDynamicSymmetry, isCenterMode);
-  downloadCompositionAnalysisButton.disabled = !state.imageLoaded;
+  downloadCompositionAnalysisButton.disabled = !state.imageLoaded || isCompositionExporting;
   if (clearCompositionButton) {
     clearCompositionButton.disabled = !state.imageLoaded;
   }
@@ -2793,7 +2822,7 @@ function updateModeUI() {
     resetCompositionButton.disabled = !state.imageLoaded && !state.imageLoading && !state.loadErrorMessage;
   }
   if (exportCompositionButton) {
-    exportCompositionButton.disabled = !state.imageLoaded;
+    exportCompositionButton.disabled = !state.imageLoaded || isCompositionExporting;
   }
 
   spiralScale.value = String(Math.round(state.spiral.scale * 100));
@@ -3570,6 +3599,9 @@ async function runThirdsAiAnalysis() {
     }
     analysisState.result = data.analysis || null;
     renderThirdsAiResult(analysisState.result);
+    trackM8AnalysisCompleted("composition_rule_of_thirds", {
+      access_state: isUnlocked() ? "unlocked" : "free"
+    });
     showStatusToast("Rule of Thirds read ready");
     scrollToThirdsAiResults();
   } catch (error) {
@@ -3675,6 +3707,9 @@ async function runBasicCompositionAiAnalysis(options) {
     }
     analysisState.result = data.analysis || null;
     options.render(analysisState.result);
+    trackM8AnalysisCompleted(`composition_${options.modeName}`, {
+      access_state: isUnlocked() ? "unlocked" : "free"
+    });
     showStatusToast(options.readyToast);
     options.scroll();
   } catch (error) {
@@ -3745,6 +3780,9 @@ async function runGoldenRatioAiAnalysis() {
     }
     analysisState.result = data.analysis || null;
     renderGoldenRatioAiResult(analysisState.result);
+    trackM8AnalysisCompleted("composition_golden_ratio", {
+      access_state: "unlocked"
+    });
     showStatusToast("Golden Ratio read ready");
     scrollToGoldenRatioAiResults();
   } catch (error) {
@@ -3808,6 +3846,9 @@ async function runNotanAiAnalysis() {
     }
     analysisState.result = data.analysis || null;
     renderNotanAiResult(analysisState.result);
+    trackM8AnalysisCompleted("composition_notan", {
+      access_state: "unlocked"
+    });
     showStatusToast("Notan read ready");
     scrollToNotanAiResults();
   } catch (error) {
@@ -3906,6 +3947,9 @@ async function runSpiralAiAnalysis() {
     }
     analysisState.result = data.analysis || null;
     renderSpiralAiResult(analysisState.result);
+    trackM8AnalysisCompleted("composition_golden_spiral", {
+      access_state: "unlocked"
+    });
     showStatusToast("Golden Spiral read ready");
     scrollToSpiralAiResults();
   } catch (error) {
@@ -3970,6 +4014,9 @@ async function runDynamicSymmetryAiAnalysis() {
     }
     analysisState.result = data.analysis || null;
     renderDynamicSymmetryAiResult(analysisState.result);
+    trackM8AnalysisCompleted("composition_dynamic_symmetry", {
+      access_state: "unlocked"
+    });
     showStatusToast("Dynamic Symmetry read ready");
     scrollToDynamicSymmetryAiResults();
   } catch (error) {
@@ -4643,36 +4690,37 @@ function drawCompositionOverlay(ctx, width, height, options = {}) {
   const drawOptions = {
     includeSelection: options.includeSelection ?? true,
     spiralState: options.spiralState ?? state.spiral,
-    basicLineWidth: options.basicLineWidth ?? BASIC_OVERLAY_LINE_WIDTH
+    basicLineWidth: options.basicLineWidth ?? BASIC_OVERLAY_LINE_WIDTH,
+    lineScale: options.lineScale ?? 1
   };
 
   if (state.analysisMode === "basic") {
     if (state.mode === "thirds") {
-      drawThirds(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
+      drawThirds(ctx, width, height, overlayPalette, drawOptions.basicLineWidth, drawOptions.lineScale);
     } else if (state.mode === "grid") {
       drawGrid(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
     } else if (state.mode === "center") {
-      drawCenterLines(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
+      drawCenterLines(ctx, width, height, overlayPalette, drawOptions.basicLineWidth, drawOptions.lineScale);
     } else if (state.mode === "diagonal") {
       drawDiagonals(ctx, width, height, overlayPalette, drawOptions.basicLineWidth);
     }
   } else {
     if (state.advancedMode === "golden-ratio") {
-      drawGoldenRatio(ctx, width, height, overlayPalette);
+      drawGoldenRatio(ctx, width, height, overlayPalette, drawOptions.lineScale);
     } else if (state.advancedMode === "golden-spiral") {
       drawGoldenSpiral(ctx, width, height, overlayPalette, drawOptions);
     } else if (state.advancedMode === "dynamic-symmetry") {
       if (!state.dynamicSymmetry.showAlignmentsOnly) {
-        drawDynamicSymmetry(ctx, width, height, overlayPalette);
+        drawDynamicSymmetry(ctx, width, height, overlayPalette, drawOptions.lineScale);
       }
-      drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette);
+      drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette, drawOptions.lineScale);
     } else if (state.advancedMode === "focal-balance") {
-      drawFocalBalance(ctx, width, height, overlayPalette);
+      drawFocalBalance(ctx, width, height, overlayPalette, drawOptions.lineScale);
     }
   }
 }
 
-function drawThirds(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
+function drawThirds(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH, lineScale = 1) {
   const firstThirdX = width * 0.33333;
   const secondThirdX = width * 0.66666;
   const firstThirdY = height * 0.33333;
@@ -4691,11 +4739,11 @@ function drawThirds(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLA
   ctx.lineTo(width, secondThirdY);
   ctx.stroke();
 
-  drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette);
-  drawThirdsSelection(ctx, width, height, overlayPalette);
+  drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette, lineScale);
+  drawThirdsSelection(ctx, width, height, overlayPalette, lineScale);
 }
 
-function drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette) {
+function drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette, lineScale = 1) {
   const glowRadius = Math.max(18, Math.min(width, height) * 0.055);
   const ringRadius = glowRadius * 0.42;
   const reading = getThirdsReading();
@@ -4719,7 +4767,7 @@ function drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette) {
     ctx.fill();
 
     ctx.strokeStyle = isPreferred ? overlayPalette.strokeStrong : overlayPalette.strokeSoft;
-    ctx.lineWidth = isPreferred ? 1.25 : 1;
+    ctx.lineWidth = (isPreferred ? 1.25 : 1) * lineScale;
     ctx.beginPath();
     ctx.arc(x, y, localRingRadius, 0, Math.PI * 2);
     ctx.stroke();
@@ -4727,7 +4775,7 @@ function drawThirdsPowerPointEmphasis(ctx, width, height, overlayPalette) {
   ctx.restore();
 }
 
-function drawThirdsSelection(ctx, width, height, overlayPalette) {
+function drawThirdsSelection(ctx, width, height, overlayPalette, lineScale = 1) {
   if (!state.thirdsSelection) {
     return;
   }
@@ -4745,7 +4793,7 @@ function drawThirdsSelection(ctx, width, height, overlayPalette) {
 
   ctx.save();
   ctx.strokeStyle = overlayPalette.strokeMuted;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.2 * lineScale;
   ctx.beginPath();
   ctx.moveTo(point.x, point.y);
   ctx.lineTo(nearestPowerPoint.x, nearestPowerPoint.y);
@@ -4756,7 +4804,7 @@ function drawThirdsSelection(ctx, width, height, overlayPalette) {
   ctx.arc(point.x, point.y, markerRadius + 1.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = overlayPalette.strokeStrong;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.4 * lineScale;
   ctx.beginPath();
   ctx.arc(point.x, point.y, markerRadius, 0, Math.PI * 2);
   ctx.stroke();
@@ -4766,7 +4814,7 @@ function drawThirdsSelection(ctx, width, height, overlayPalette) {
   ctx.arc(nearestPowerPoint.x, nearestPowerPoint.y, targetRadius + 4, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = overlayPalette.strokeStrong;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.2 * lineScale;
   ctx.beginPath();
   ctx.arc(nearestPowerPoint.x, nearestPowerPoint.y, targetRadius, 0, Math.PI * 2);
   ctx.stroke();
@@ -4821,8 +4869,8 @@ function drawGrid(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_
   ctx.stroke();
 }
 
-function drawCenterLines(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH) {
-  drawCenterDangerZone(ctx, width, height, overlayPalette);
+function drawCenterLines(ctx, width, height, overlayPalette, lineWidth = BASIC_OVERLAY_LINE_WIDTH, lineScale = 1) {
+  drawCenterDangerZone(ctx, width, height, overlayPalette, lineScale);
   ctx.strokeStyle = overlayPalette.stroke;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
@@ -4831,10 +4879,10 @@ function drawCenterLines(ctx, width, height, overlayPalette, lineWidth = BASIC_O
   ctx.moveTo(0, height / 2);
   ctx.lineTo(width, height / 2);
   ctx.stroke();
-  drawCenterSelection(ctx, width, height, overlayPalette);
+  drawCenterSelection(ctx, width, height, overlayPalette, lineScale);
 }
 
-function drawCenterDangerZone(ctx, width, height, overlayPalette) {
+function drawCenterDangerZone(ctx, width, height, overlayPalette, lineScale = 1) {
   const zoneSize = Math.min(width, height) * 0.18;
   const x = (width - zoneSize) / 2;
   const y = (height - zoneSize) / 2;
@@ -4842,14 +4890,14 @@ function drawCenterDangerZone(ctx, width, height, overlayPalette) {
   ctx.save();
   ctx.fillStyle = overlayPalette.fillVerySoft;
   ctx.strokeStyle = overlayPalette.strokeSoft;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1 * lineScale;
   drawRoundedRect(ctx, x, y, zoneSize, zoneSize, 18);
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 }
 
-function drawCenterSelection(ctx, width, height, overlayPalette) {
+function drawCenterSelection(ctx, width, height, overlayPalette, lineScale = 1) {
   if (!state.centerSelection) {
     return;
   }
@@ -4863,7 +4911,7 @@ function drawCenterSelection(ctx, width, height, overlayPalette) {
 
   ctx.save();
   ctx.strokeStyle = overlayPalette.strokeMuted;
-  ctx.lineWidth = 1.1;
+  ctx.lineWidth = 1.1 * lineScale;
   ctx.beginPath();
   ctx.moveTo(point.x, point.y);
   ctx.lineTo(centerPoint.x, point.y);
@@ -4876,7 +4924,7 @@ function drawCenterSelection(ctx, width, height, overlayPalette) {
   ctx.arc(point.x, point.y, markerRadius + 1.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = overlayPalette.strokeStrong;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.4 * lineScale;
   ctx.beginPath();
   ctx.arc(point.x, point.y, markerRadius, 0, Math.PI * 2);
   ctx.stroke();
@@ -4893,7 +4941,7 @@ function drawCenterSelection(ctx, width, height, overlayPalette) {
     drawRoundedRect(ctx, boxX, boxY, boxWidth, boxHeight, 13);
     ctx.fill();
     ctx.strokeStyle = overlayPalette.strokeSoft;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1 * lineScale;
     ctx.stroke();
     ctx.fillStyle = "#1f1c18";
     ctx.textAlign = "left";
@@ -4940,7 +4988,7 @@ function drawDiagonalAxis(ctx, width, height, axis, options = {}) {
   ctx.restore();
 }
 
-function drawGoldenRatio(ctx, width, height, overlayPalette) {
+function drawGoldenRatio(ctx, width, height, overlayPalette, lineScale = 1) {
   const goldenMinor = 0.38196601125;
   const goldenMajor = 0.61803398875;
   const verticalA = width * goldenMinor;
@@ -4950,7 +4998,7 @@ function drawGoldenRatio(ctx, width, height, overlayPalette) {
 
   ctx.save();
   ctx.strokeStyle = overlayPalette.strokeStrong;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.4 * lineScale;
   ctx.beginPath();
   ctx.moveTo(verticalA, 0);
   ctx.lineTo(verticalA, height);
@@ -4992,11 +5040,11 @@ function drawGoldenSpiral(ctx, width, height, overlayPalette, options = {}) {
   ctx.translate(-bounds.drawWidth / 2, -bounds.drawHeight / 2);
 
   if (showRectangles) {
-    drawGoldenConstruction(ctx, bounds.drawWidth, bounds.drawHeight, spiralTemplate.squares, overlayPalette);
+    drawGoldenConstruction(ctx, bounds.drawWidth, bounds.drawHeight, spiralTemplate.squares, overlayPalette, options.lineScale);
   }
 
   if (showSpiral) {
-    drawGoldenSpiralCurve(ctx, spiralTemplate.arcs, overlayPalette);
+    drawGoldenSpiralCurve(ctx, spiralTemplate.arcs, overlayPalette, options.lineScale);
   }
   ctx.restore();
 
@@ -5005,7 +5053,7 @@ function drawGoldenSpiral(ctx, width, height, overlayPalette, options = {}) {
   }
 }
 
-function drawDynamicSymmetry(ctx, width, height, overlayPalette) {
+function drawDynamicSymmetry(ctx, width, height, overlayPalette, lineScale = 1) {
   const reciprocalA = {
     x1: 0,
     y1: height,
@@ -5023,7 +5071,7 @@ function drawDynamicSymmetry(ctx, width, height, overlayPalette) {
 
   ctx.save();
   ctx.strokeStyle = overlayPalette.stroke;
-  ctx.lineWidth = 1.35;
+  ctx.lineWidth = 1.35 * lineScale;
   ctx.beginPath();
   ctx.moveTo(reciprocalA.x1, reciprocalA.y1);
   ctx.lineTo(reciprocalA.x2, reciprocalA.y2);
@@ -5041,7 +5089,7 @@ function drawDynamicSymmetry(ctx, width, height, overlayPalette) {
   ctx.restore();
 }
 
-function drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette) {
+function drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette, lineScale = 1) {
   const analysis = getDynamicSymmetryAnalysis(width, height);
   const pulse = 0.72 + Math.sin(Date.now() / 360) * 0.18;
 
@@ -5065,7 +5113,7 @@ function drawDynamicSymmetryHighlights(ctx, width, height, overlayPalette) {
     ctx.arc(x, y, coreRadius + 1.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = overlayPalette.strokeStrong;
-    ctx.lineWidth = 1.15;
+    ctx.lineWidth = 1.15 * lineScale;
     ctx.beginPath();
     ctx.arc(x, y, coreRadius, 0, Math.PI * 2);
     ctx.stroke();
@@ -5114,7 +5162,7 @@ function drawNotanOverlay(ctx, width, height) {
   ctx.restore();
 }
 
-function drawFocalBalance(ctx, width, height, overlayPalette) {
+function drawFocalBalance(ctx, width, height, overlayPalette, lineScale = 1) {
   const sizes = [56, 42, 30];
   const alphas = [0.2, 0.14, 0.1];
   const points = state.focalPoints.map((point, index) => ({
@@ -5138,7 +5186,7 @@ function drawFocalBalance(ctx, width, height, overlayPalette) {
 
   points.forEach((point) => {
     ctx.strokeStyle = overlayPalette.strokeMuted;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.4 * lineScale;
     ctx.beginPath();
     ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
     ctx.stroke();
@@ -5147,7 +5195,7 @@ function drawFocalBalance(ctx, width, height, overlayPalette) {
     ctx.arc(point.x, point.y, 13, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = overlayPalette.strokeStrong;
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1.2 * lineScale;
     ctx.stroke();
     ctx.fillStyle = overlayPalette.strokeStrong;
     ctx.font = "700 12px Segoe UI";
@@ -5158,10 +5206,10 @@ function drawFocalBalance(ctx, width, height, overlayPalette) {
   ctx.restore();
 }
 
-function drawGoldenConstruction(ctx, width, height, squares, overlayPalette) {
+function drawGoldenConstruction(ctx, width, height, squares, overlayPalette, lineScale = 1) {
   ctx.save();
   ctx.strokeStyle = overlayPalette.strokeSoft;
-  ctx.lineWidth = 1.35;
+  ctx.lineWidth = 1.35 * lineScale;
   ctx.strokeRect(0, 0, width, height);
 
   squares.forEach((square) => {
@@ -5170,10 +5218,10 @@ function drawGoldenConstruction(ctx, width, height, squares, overlayPalette) {
   ctx.restore();
 }
 
-function drawGoldenSpiralCurve(ctx, arcs, overlayPalette) {
+function drawGoldenSpiralCurve(ctx, arcs, overlayPalette, lineScale = 1) {
   ctx.save();
   ctx.strokeStyle = overlayPalette.strokeStrong;
-  ctx.lineWidth = 1.9;
+  ctx.lineWidth = 1.9 * lineScale;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.stroke(getGoldenSpiralPath(arcs));
@@ -5277,54 +5325,464 @@ function getScaledSpiralState(targetWidth, targetHeight) {
   };
 }
 
-function downloadCompositionAnalysis() {
-  if (!requireUnlock("advanced exports")) {
+function clampExportFont(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function drawExportRoundRect(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function wrapExportText(ctx, text, maxWidth) {
+  const cleanText = String(text || "").replace(/\s+/g, " ").trim();
+  if (!cleanText) {
+    return [];
+  }
+
+  const words = cleanText.split(" ");
+  const lines = [];
+  let line = "";
+
+  words.forEach((word) => {
+    const testLine = line ? `${line} ${word}` : word;
+    if (line && ctx.measureText(testLine).width > maxWidth) {
+      lines.push(line);
+      line = word;
+      return;
+    }
+    line = testLine;
+  });
+
+  if (line) {
+    lines.push(line);
+  }
+
+  return lines;
+}
+
+function getExportElementText(element) {
+  return String(element?.innerText || element?.textContent || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function isExportElementVisible(element) {
+  if (!element || element.closest(".hidden")) {
+    return false;
+  }
+
+  const style = window.getComputedStyle(element);
+  return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+}
+
+function collectCompositionReportCard(card) {
+  if (!isExportElementVisible(card)) {
+    return null;
+  }
+
+  const label = getExportElementText(card.querySelector(".section-label"));
+  const heading = getExportElementText(card.querySelector("h3, .dynamic-score, .feedback-title"));
+  const lines = [];
+  const seen = new Set([label, heading].filter(Boolean));
+
+  card.querySelectorAll("h3, p, li, .dynamic-score").forEach((node) => {
+    if (!isExportElementVisible(node) || node.classList.contains("section-label")) {
+      return;
+    }
+
+    const text = getExportElementText(node);
+    if (!text || seen.has(text)) {
+      return;
+    }
+
+    seen.add(text);
+    lines.push(text);
+  });
+
+  if (!label && !heading && !lines.length) {
+    return null;
+  }
+
+  return {
+    label: label || "COMPOSITION READ",
+    title: heading || label || "Composition Read",
+    lines
+  };
+}
+
+function buildCompositionExportReport() {
+  const currentTitle = state.analysisMode === "basic"
+    ? MODES[state.mode]?.title
+    : ADVANCED_MODES[state.advancedMode]?.title;
+  const sections = [];
+  const cards = [
+    ...Array.from(document.querySelectorAll(".placeholder-panel")),
+    ...Array.from(document.querySelectorAll(".detail-card"))
+  ];
+
+  cards.forEach((card) => {
+    const section = collectCompositionReportCard(card);
+    if (section) {
+      sections.push(section);
+    }
+  });
+
+  if (!sections.length) {
+    sections.push({
+      label: "COMPOSITION READ",
+      title: currentTitle || "Composition Analysis",
+      lines: [
+        modeDescription?.textContent || advancedModeDescription?.textContent || "Composition overlay exported.",
+        modeTip?.textContent || advancedModeTip?.textContent || "Use this report to compare placement, balance, and visual flow."
+      ]
+    });
+  }
+
+  return {
+    title: "M8 Composition Analysis",
+    subtitle: `${currentTitle || "Composition"} - ${new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`,
+    sections
+  };
+}
+
+function renderCompositionReport(ctx, report, canvasWidth, startY, draw = true) {
+  const padding = Math.max(34, Math.round(canvasWidth * 0.038));
+  const gap = Math.max(18, Math.round(canvasWidth * 0.018));
+  const cardPadding = Math.max(18, Math.round(canvasWidth * 0.022));
+  const cardRadius = Math.max(18, Math.round(canvasWidth * 0.018));
+  const titleSize = clampExportFont(Math.round(canvasWidth * 0.038), 34, 62);
+  const subtitleSize = clampExportFont(Math.round(canvasWidth * 0.017), 17, 26);
+  const labelSize = clampExportFont(Math.round(canvasWidth * 0.013), 13, 20);
+  const headingSize = clampExportFont(Math.round(canvasWidth * 0.024), 24, 38);
+  const bodySize = clampExportFont(Math.round(canvasWidth * 0.018), 18, 28);
+  const bodyLineHeight = Math.round(bodySize * 1.5);
+  const maxTextWidth = canvasWidth - padding * 2 - cardPadding * 2;
+  let y = startY + padding;
+
+  if (draw) {
+    ctx.fillStyle = "#f4efe6";
+    ctx.fillRect(0, startY, canvasWidth, 100000);
+    ctx.strokeStyle = "rgba(50, 44, 38, 0.12)";
+    ctx.lineWidth = Math.max(1, canvasWidth * 0.001);
+    ctx.beginPath();
+    ctx.moveTo(0, startY + 0.5);
+    ctx.lineTo(canvasWidth, startY + 0.5);
+    ctx.stroke();
+  }
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.font = `700 ${titleSize}px Georgia, Times New Roman, serif`;
+  if (draw) {
+    ctx.fillStyle = "#1f1c18";
+    ctx.fillText(report.title, padding, y + titleSize);
+  }
+  y += titleSize + Math.round(titleSize * 0.38);
+
+  ctx.font = `600 ${subtitleSize}px Segoe UI, Arial, sans-serif`;
+  if (draw) {
+    ctx.fillStyle = "rgba(31, 28, 24, 0.62)";
+    ctx.fillText(report.subtitle, padding, y + subtitleSize);
+  }
+  y += subtitleSize + gap;
+
+  report.sections.forEach((section) => {
+    const headingLines = [];
+    const bodyLines = [];
+    ctx.font = `700 ${headingSize}px Georgia, Times New Roman, serif`;
+    headingLines.push(...wrapExportText(ctx, section.title, maxTextWidth));
+    ctx.font = `500 ${bodySize}px Segoe UI, Arial, sans-serif`;
+    section.lines.forEach((line) => {
+      bodyLines.push(...wrapExportText(ctx, line, maxTextWidth));
+      bodyLines.push("");
+    });
+    if (bodyLines[bodyLines.length - 1] === "") {
+      bodyLines.pop();
+    }
+
+    const cardHeight = (
+      cardPadding * 2
+      + labelSize
+      + Math.round(labelSize * 0.9)
+      + headingLines.length * Math.round(headingSize * 1.14)
+      + Math.round(headingSize * 0.36)
+      + Math.max(bodyLineHeight, bodyLines.length * bodyLineHeight)
+    );
+
+    if (draw) {
+      drawExportRoundRect(ctx, padding, y, canvasWidth - padding * 2, cardHeight, cardRadius);
+      ctx.fillStyle = "rgba(255, 250, 244, 0.88)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(201, 106, 61, 0.16)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    let innerY = y + cardPadding;
+    ctx.font = `800 ${labelSize}px Segoe UI, Arial, sans-serif`;
+    if (draw) {
+      ctx.fillStyle = "#9a5535";
+      ctx.fillText(String(section.label || "COMPOSITION READ").toUpperCase(), padding + cardPadding, innerY + labelSize);
+    }
+    innerY += labelSize + Math.round(labelSize * 0.9);
+
+    ctx.font = `700 ${headingSize}px Georgia, Times New Roman, serif`;
+    if (draw) {
+      ctx.fillStyle = "#1f1c18";
+    }
+    headingLines.forEach((line) => {
+      if (draw) {
+        ctx.fillText(line, padding + cardPadding, innerY + headingSize);
+      }
+      innerY += Math.round(headingSize * 1.14);
+    });
+    innerY += Math.round(headingSize * 0.36);
+
+    ctx.font = `500 ${bodySize}px Segoe UI, Arial, sans-serif`;
+    if (draw) {
+      ctx.fillStyle = "rgba(31, 28, 24, 0.72)";
+    }
+    bodyLines.forEach((line) => {
+      if (!line) {
+        innerY += Math.round(bodyLineHeight * 0.38);
+        return;
+      }
+      if (draw) {
+        ctx.fillText(line, padding + cardPadding, innerY + bodySize);
+      }
+      innerY += bodyLineHeight;
+    });
+
+    y += cardHeight + gap;
+  });
+
+  return y + padding - gap;
+}
+
+async function downloadCompositionAnalysis() {
+  if (isCompositionExporting) {
+    return;
+  }
+
+  if (state.analysisMode === "advanced" && !window.M8_GOOGLE_PLAY_BUILD && !requireUnlock("advanced exports")) {
     return;
   }
   if (!state.imageLoaded || !compositionImage.naturalWidth || !compositionImage.naturalHeight) {
+    showStatusToast("Upload an image first");
     return;
   }
 
-  const imageWidth = compositionImage.naturalWidth;
-  const imageHeight = compositionImage.naturalHeight;
-  const footerHeight = Math.max(56, Math.round(imageHeight * 0.08));
-  const exportCanvas = document.createElement("canvas");
-  exportCanvas.width = imageWidth;
-  exportCanvas.height = imageHeight + footerHeight;
-  const exportCtx = exportCanvas.getContext("2d");
+  isCompositionExporting = true;
+  setCompositionExportBusy(true);
+  showStatusToast("Preparing export...");
 
-  exportCtx.fillStyle = "#f4efe6";
-  exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-  exportCtx.drawImage(compositionImage, 0, 0, imageWidth, imageHeight);
+  try {
+    const sourceWidth = compositionImage.naturalWidth;
+    const sourceHeight = compositionImage.naturalHeight;
+    const maxExportSide = 2200;
+    const minExportWidth = 1200;
+    const imageScale = Math.min(
+      Math.max(1, minExportWidth / Math.max(1, sourceWidth)),
+      maxExportSide / Math.max(sourceWidth, sourceHeight)
+    );
+    const imageWidth = Math.max(1, Math.round(sourceWidth * imageScale));
+    const imageHeight = Math.max(1, Math.round(sourceHeight * imageScale));
+    const exportWidth = imageWidth;
+    const report = buildCompositionExportReport();
+    const measureCanvas = document.createElement("canvas");
+    measureCanvas.width = exportWidth;
+    const measureCtx = measureCanvas.getContext("2d");
+    const reportHeight = Math.ceil(renderCompositionReport(measureCtx, report, exportWidth, imageHeight, false) - imageHeight);
+    const footerHeight = Math.max(76, Math.round(exportWidth * 0.07));
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = imageWidth;
+    exportCanvas.height = imageHeight + reportHeight + footerHeight;
+    const exportCtx = exportCanvas.getContext("2d");
 
-  drawCompositionOverlay(exportCtx, imageWidth, imageHeight, {
-    includeSelection: false,
-    spiralState: getScaledSpiralState(imageWidth, imageHeight)
+    exportCtx.fillStyle = "#f4efe6";
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    exportCtx.drawImage(compositionImage, 0, 0, imageWidth, imageHeight);
+
+    drawCompositionOverlay(exportCtx, imageWidth, imageHeight, {
+      includeSelection: false,
+      spiralState: getScaledSpiralState(imageWidth, imageHeight),
+      basicLineWidth: BASIC_OVERLAY_LINE_WIDTH * EXPORT_OVERLAY_LINE_SCALE,
+      lineScale: EXPORT_OVERLAY_LINE_SCALE
+    });
+
+    const reportEndY = renderCompositionReport(exportCtx, report, exportWidth, imageHeight, true);
+
+    drawCompositionExportFooter(exportCtx, exportCanvas.width, reportEndY, footerHeight);
+
+    const filename = "m8-composition-analysis.png";
+
+    if (typeof window.M8AppDownloadCanvas === "function") {
+      try {
+        const saved = await window.M8AppDownloadCanvas(filename, exportCanvas, "image/png");
+        if (saved !== false) {
+          showStatusToast("Analysis exported");
+          return;
+        }
+      } catch (error) {
+        // Fall back to the browser download path below.
+      }
+    }
+
+    const androidSaved = await saveCanvasWithAndroidBridge(exportCanvas, filename);
+    if (androidSaved) {
+      showStatusToast("Analysis exported");
+      return;
+    }
+
+    const blob = await canvasToPngBlob(exportCanvas);
+    downloadBlobFile(blob, filename);
+    showStatusToast("Analysis downloaded");
+  } catch (error) {
+    showStatusToast("Export failed. Try a smaller image.");
+  } finally {
+    isCompositionExporting = false;
+    setCompositionExportBusy(false);
+  }
+}
+
+function setCompositionExportBusy(isBusy) {
+  const buttons = [
+    { element: exportCompositionButton, busyText: "Exporting..." },
+    { element: downloadCompositionAnalysisButton, busyText: "Exporting..." }
+  ];
+
+  buttons.forEach(({ element, busyText }) => {
+    if (!element) {
+      return;
+    }
+
+    if (!element.dataset.readyText) {
+      element.dataset.readyText = element.textContent;
+    }
+    element.disabled = isBusy || !state.imageLoaded;
+    element.textContent = isBusy ? busyText : element.dataset.readyText;
   });
+}
 
-  exportCtx.strokeStyle = "rgba(50, 44, 38, 0.12)";
-  exportCtx.lineWidth = 1;
-  exportCtx.beginPath();
-  exportCtx.moveTo(0, imageHeight + 0.5);
-  exportCtx.lineTo(exportCanvas.width, imageHeight + 0.5);
-  exportCtx.stroke();
+function canvasToPngBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+      reject(new Error("Canvas export failed"));
+    }, "image/png");
+  });
+}
 
-  const paddingX = Math.max(18, Math.round(exportCanvas.width * 0.035));
-  const footerBaseY = imageHeight + Math.round(footerHeight * 0.48);
-  exportCtx.fillStyle = "rgba(31, 28, 24, 0.78)";
-  exportCtx.textAlign = "left";
-  exportCtx.textBaseline = "alphabetic";
-  exportCtx.font = `600 ${Math.max(14, Math.round(exportCanvas.width * 0.018))}px Segoe UI`;
-  exportCtx.fillText("www.mateartwork.com", paddingX, footerBaseY);
-  exportCtx.font = `500 ${Math.max(12, Math.round(exportCanvas.width * 0.014))}px Segoe UI`;
-  exportCtx.fillStyle = "rgba(31, 28, 24, 0.62)";
-  exportCtx.fillText("Created with M8 Composition Studio", paddingX, footerBaseY + Math.max(18, Math.round(footerHeight * 0.28)));
+function readBlobChunkAsArrayBuffer(blob) {
+  if (typeof blob.arrayBuffer === "function") {
+    return blob.arrayBuffer();
+  }
 
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error("Blob read failed"));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  const sliceSize = 8192;
+  for (let index = 0; index < bytes.length; index += sliceSize) {
+    const slice = bytes.subarray(index, index + sliceSize);
+    binary += String.fromCharCode.apply(null, slice);
+  }
+  return btoa(binary);
+}
+
+async function saveCanvasWithAndroidBridge(canvas, filename) {
+  const bridge = window.M8AndroidDownload;
+  if (!bridge || typeof bridge.beginDownload !== "function") {
+    return false;
+  }
+
+  const blob = await canvasToPngBlob(canvas);
+  const id = bridge.beginDownload(filename, "image/png");
+  if (!id) {
+    return false;
+  }
+
+  try {
+    for (let start = 0; start < blob.size; start += EXPORT_ANDROID_BYTE_CHUNK_SIZE) {
+      const chunk = blob.slice(start, start + EXPORT_ANDROID_BYTE_CHUNK_SIZE);
+      const buffer = await readBlobChunkAsArrayBuffer(chunk);
+      bridge.appendDownload(id, bytesToBase64(new Uint8Array(buffer)));
+    }
+    bridge.finishDownload(id);
+    return true;
+  } catch (error) {
+    try {
+      bridge.showToast("Export failed");
+    } catch (toastError) {
+      // Ignore toast failures and let the UI toast below handle it.
+    }
+    return false;
+  }
+}
+
+function downloadBlobFile(blob, filename) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = exportCanvas.toDataURL("image/png");
-  link.download = "m8-composition-analysis.png";
+  link.href = url;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
   link.click();
-  showStatusToast("Analysis downloaded");
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+}
+
+function drawCompositionExportFooter(ctx, width, startY, footerHeight) {
+  const paddingX = Math.max(28, Math.round(width * 0.035));
+  const maxWidth = width - paddingX * 2;
+  const titleSize = Math.max(20, Math.round(width * 0.018));
+  const metaSize = Math.max(15, Math.round(width * 0.013));
+  const titleY = startY + Math.round(footerHeight * 0.38);
+  const metaY = titleY + Math.max(24, Math.round(footerHeight * 0.28));
+
+  ctx.fillStyle = "#f4efe6";
+  ctx.fillRect(0, startY, width, footerHeight);
+  ctx.strokeStyle = "rgba(50, 44, 38, 0.16)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, startY + 0.5);
+  ctx.lineTo(width, startY + 0.5);
+  ctx.stroke();
+
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
+  ctx.font = `700 ${titleSize}px Georgia, Times New Roman, serif`;
+  ctx.fillStyle = "rgba(31, 28, 24, 0.84)";
+  ctx.fillText("M8 Painting Tools", paddingX, titleY, maxWidth);
+  ctx.font = `600 ${metaSize}px Segoe UI, Arial, sans-serif`;
+  ctx.fillStyle = "rgba(31, 28, 24, 0.66)";
+  ctx.fillText("www.mateartwork.com", paddingX, metaY, maxWidth * 0.48);
+
+  ctx.textAlign = "right";
+  ctx.fillStyle = "rgba(31, 28, 24, 0.58)";
+  ctx.fillText("Created with M8 Composition Studio", width - paddingX, metaY, maxWidth * 0.52);
 }
 
 function createUploadLoadingOverlay() {

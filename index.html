@@ -8471,8 +8471,8 @@ html,
             <h2>About the Creator</h2>
           </div>
           <p>M8 Painting Tools was created by Jan Matěják, an oil painter, educator, author, and ARC Salon finalist specializing in classical oil painting techniques and the study of Old Master methods.</p>
-          <p>After years of teaching artists worldwide through books, workshops, YouTube videos, and Patreon, Jan created M8 Painting Tools to help artists analyze value, composition, and color using modern AI-assisted tools guided by traditional painting principles.</p>
-          <p>This is not just another AI image analyzer. It is a painter&rsquo;s tool - built from real studio experience, classical training, and years of helping artists improve their work.</p>
+          <p>After years of teaching artists worldwide through books, workshops, YouTube videos, and Patreon, Jan created M8 Painting Tools to help artists analyze value, composition, and color with modern image-analysis tools guided by traditional painting principles.</p>
+          <p>This is not just another image checker. It is a painter&rsquo;s tool - built from real studio experience, classical training, and years of helping artists improve their work.</p>
           <div class="creator-badges" aria-label="Creator credentials">
             <span class="creator-badge">ARC Salon finalist</span>
             <span class="creator-badge">Oil painter &amp; educator</span>
@@ -8674,12 +8674,40 @@ html,
 
       if (typeof window.gtag === "function") {
         window.gtag("event", "stripe_checkout_outbound", payload);
+        window.gtag("event", "stripe_checkout_opened", payload);
         return;
       }
 
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: "stripe_checkout_outbound",
+        ...payload
+      });
+      window.dataLayer.push({
+        event: "stripe_checkout_opened",
+        ...payload
+      });
+    }
+
+    function trackPurchaseCompleted(source = "landing_payment_return") {
+      const payload = {
+        event_category: "monetization",
+        event_label: source,
+        page_location: window.location.href,
+        transport_type: "beacon",
+        value: 5,
+        currency: "USD",
+        unlock_method: "stripe_return"
+      };
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "purchase_completed", payload);
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "purchase_completed",
         ...payload
       });
     }
@@ -8976,6 +9004,7 @@ html,
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get("unlocked") === "true") {
         setUnlocked();
+        trackPurchaseCompleted("landing_payment_return");
         showGlobalUnlockSuccess();
         clearUnlockQueryFromUrl();
       }

@@ -99,6 +99,32 @@ const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw0
 const AI_PERSPECTIVE_IMAGE_MAX_DIMENSION = 1024;
 const AI_PERSPECTIVE_IMAGE_QUALITY = 0.82;
 
+function trackM8AnalysisCompleted(tool, details = {}) {
+  if (window.M8_UNLOCK?.trackAnalysisCompleted) {
+    window.M8_UNLOCK.trackAnalysisCompleted(tool, details);
+    return;
+  }
+
+  const payload = {
+    event_category: "analysis",
+    event_label: tool,
+    page_location: window.location.href,
+    transport_type: "beacon",
+    ...details
+  };
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "analysis_completed", payload);
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "analysis_completed",
+    ...payload
+  });
+}
+
 const MODE_COPY = {
   proportion: {
     title: "Proportion Check",
@@ -762,6 +788,10 @@ function showDrawing(file) {
     resetButton.disabled = false;
     readinessBadge.textContent = "Ready";
     currentDrawingRead = analyzeDrawingImage();
+    trackM8AnalysisCompleted("drawing_structure", {
+      access_state: isUnlocked() ? "unlocked" : "locked",
+      confidence: currentDrawingRead.confidence
+    });
     workspaceHint.textContent = currentDrawingRead.confidence === "low"
       ? "Drawing loaded, but the read is low-confidence. Use a clearer photo or darker sketch lines if needed."
       : "Drawing loaded. Switch modes or run the structure check.";
@@ -1101,7 +1131,7 @@ function drawPerspectiveExport(context, width, height) {
   context.save();
   context.strokeStyle = "rgba(201, 106, 61, 0.92)";
   context.fillStyle = "rgba(255, 250, 245, 0.95)";
-  context.lineWidth = 4;
+  context.lineWidth = 7;
   const horizonY = height * (perspectiveState.horizon / 100);
   line(context, 0, horizonY, width, horizonY);
 
@@ -1116,7 +1146,7 @@ function drawPerspectiveExport(context, width, height) {
     if (perspectiveState.mode === "two" && originIndex === 0 && perspectiveState.showLeft === false) return;
     if (perspectiveState.mode === "two" && originIndex === 1 && perspectiveState.showRight === false) return;
     context.beginPath();
-    context.arc(origin.x, origin.y, 12, 0, Math.PI * 2);
+    context.arc(origin.x, origin.y, 16, 0, Math.PI * 2);
     context.fill();
     const targets = perspectiveState.mode === "one"
       ? createSplitOnePointTargets(rayCount, width, height, origin)
@@ -1134,22 +1164,22 @@ function drawHeadCanonExport(context, stageRect, scale) {
   context.globalAlpha = canonState.opacity / 100;
   context.lineCap = "butt";
   context.strokeStyle = colors.line;
-  context.lineWidth = 4 * scale;
+  context.lineWidth = 5.5 * scale;
   context.strokeRect(rect.x, rect.y, rect.width, rect.height);
 
   const hardLine = (x1, y1, x2, y2) => {
     context.strokeStyle = colors.accent;
-    context.lineWidth = 3 * scale;
+    context.lineWidth = 4 * scale;
     line(context, x1, y1, x2, y2);
   };
   const softLine = (x1, y1, x2, y2) => {
     context.strokeStyle = colors.soft;
-    context.lineWidth = 2 * scale;
+    context.lineWidth = 3 * scale;
     line(context, x1, y1, x2, y2);
   };
   const detailLine = (x1, y1, x2, y2) => {
     context.strokeStyle = colors.strong;
-    context.lineWidth = 1.5 * scale;
+    context.lineWidth = 2.2 * scale;
     context.setLineDash([8 * scale, 6 * scale]);
     line(context, x1, y1, x2, y2);
     context.setLineDash([]);
@@ -1186,10 +1216,10 @@ function drawBodyCanonExport(context, stageRect, scale) {
   context.save();
   context.globalAlpha = bodyState.opacity / 100;
   context.strokeStyle = "rgba(255, 250, 245, 0.82)";
-  context.lineWidth = 4 * scale;
+  context.lineWidth = 5.5 * scale;
   context.strokeRect(rect.x, rect.y, rect.width, rect.height);
   context.strokeStyle = "rgba(201, 106, 61, 0.84)";
-  context.lineWidth = 2.5 * scale;
+  context.lineWidth = 3.6 * scale;
   for (let index = 1; index < 8; index += 1) {
     const yLine = rect.y + rect.height * (index / 8);
     line(context, rect.x, yLine, rect.x + rect.width, yLine);
@@ -1263,21 +1293,31 @@ function drawVisibleExportLabels(context, container, stageRect, scale) {
 }
 
 function drawDrawingExportFooter(context, width, contentHeight, footerHeight) {
+  const paddingX = Math.max(28, Math.round(width * 0.035));
+  const maxWidth = width - paddingX * 2;
+  const titleSize = Math.max(20, Math.round(width * 0.018));
+  const metaSize = Math.max(16, Math.round(width * 0.014));
+  const titleY = contentHeight + Math.round(footerHeight * 0.38);
+  const metaY = titleY + Math.max(24, Math.round(footerHeight * 0.28));
+
   context.fillStyle = "#f4efe6";
   context.fillRect(0, contentHeight, width, footerHeight);
-  context.strokeStyle = "rgba(50, 44, 38, 0.12)";
-  context.lineWidth = 1;
+  context.strokeStyle = "rgba(50, 44, 38, 0.16)";
+  context.lineWidth = 1.5;
   line(context, 0, contentHeight + 0.5, width, contentHeight + 0.5);
-  const paddingX = Math.max(28, Math.round(width * 0.035));
-  const footerBaseY = contentHeight + Math.round(footerHeight * 0.38);
+
   context.fillStyle = "rgba(31, 28, 24, 0.78)";
   context.textAlign = "left";
   context.textBaseline = "alphabetic";
-  context.font = `600 ${Math.max(20, Math.round(width * 0.018))}px Segoe UI`;
-  context.fillText("www.mateartwork.com", paddingX, footerBaseY);
-  context.font = `500 ${Math.max(16, Math.round(width * 0.014))}px Segoe UI`;
-  context.fillStyle = "rgba(31, 28, 24, 0.62)";
-  context.fillText("Created with M8 Drawing Checker", paddingX, footerBaseY + Math.max(24, Math.round(footerHeight * 0.28)));
+  context.font = `700 ${titleSize}px Georgia, Times New Roman, serif`;
+  context.fillText("M8 Painting Tools", paddingX, titleY, maxWidth);
+  context.font = `600 ${metaSize}px Segoe UI`;
+  context.fillStyle = "rgba(31, 28, 24, 0.66)";
+  context.fillText("www.mateartwork.com", paddingX, metaY, maxWidth * 0.48);
+
+  context.textAlign = "right";
+  context.fillStyle = "rgba(31, 28, 24, 0.58)";
+  context.fillText("Created with M8 Drawing Checker", width - paddingX, metaY, maxWidth * 0.52);
 }
 
 function roundedRect(context, x, y, width, height, radius) {
