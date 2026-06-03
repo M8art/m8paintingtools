@@ -806,6 +806,116 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
 }
 
+.block-in-card {
+  gap: 14px;
+}
+
+.block-in-levels,
+.block-in-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.block-in-level-button.is-active {
+  border-color: rgba(201, 106, 61, 0.34);
+  background: linear-gradient(135deg, #cf7444 0%, #b5522f 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(181, 82, 47, 0.18);
+}
+
+.block-in-empty-state {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed rgba(59, 52, 45, 0.14);
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.block-in-result {
+  display: grid;
+  gap: 14px;
+}
+
+.block-in-canvas-wrap {
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 52, 45, 0.1);
+  background:
+    repeating-linear-gradient(45deg, rgba(85, 76, 66, 0.04) 0 10px, transparent 10px 20px),
+    rgba(255, 255, 255, 0.44);
+}
+
+.block-in-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  background: #f8f3eb;
+  image-rendering: auto;
+}
+
+.block-in-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 9px;
+}
+
+.block-in-palette-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 52, 45, 0.08);
+  background: rgba(255, 255, 255, 0.46);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.block-in-palette-item small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.block-in-swatch,
+.block-in-order-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 28, 24, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.block-in-order {
+  display: grid;
+  gap: 10px;
+}
+
+.block-in-order-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.block-in-order-item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(59, 52, 45, 0.08);
+  background: rgba(255, 255, 255, 0.46);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
 .mixer-coach-section,
 .mixer-coach-desk {
   gap: 14px;
@@ -1897,12 +2007,14 @@ a {
 
   .mode-switcher {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 8px;
     margin-bottom: 14px;
     padding: 0;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     background: transparent;
     border: 0;
     box-shadow: none;
@@ -1910,7 +2022,9 @@ a {
 
   .tab-button,
   .home-tab-button {
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 86px;
     min-width: 0;
     min-height: 54px;
     padding: 8px 6px;
@@ -1941,9 +2055,9 @@ a {
   }
 
   .home-tab-button {
-    width: 100%;
+    width: 54px;
     height: 54px;
-    min-width: 0;
+    min-width: 54px;
     min-height: 54px;
     background: #1f1c18;
     border-color: #1f1c18;
@@ -2096,6 +2210,38 @@ a {
   .mixer-coach-steps,
   .mixer-coach-loading {
     border-radius: 14px;
+  }
+
+  .block-in-card .detail-copy,
+  .block-in-empty-state .detail-copy {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: initial;
+  }
+
+  .block-in-levels,
+  .block-in-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .block-in-level-button,
+  .block-in-actions .button-secondary {
+    width: 100%;
+    min-height: 44px;
+    padding-inline: 12px;
+    white-space: normal;
+  }
+
+  .block-in-palette {
+    grid-template-columns: 1fr;
+  }
+
+  .block-in-order-item {
+    align-items: start;
+    overflow-wrap: anywhere;
   }
 
   .harmony-scheme-head,
@@ -2692,6 +2838,7 @@ a {
   }
 
   .tab-button.active,
+  .block-in-level-button.is-active,
   .trainer-pigment-button.is-selected {
     border-color: rgba(185, 141, 66, 0.58);
     background: linear-gradient(135deg, #c9763d, #9f4f28);
@@ -2758,6 +2905,7 @@ a {
   }
 
   .tab-button.active,
+  .block-in-level-button.is-active,
   .trainer-pigment-button.is-selected,
   .button:not([disabled]),
   .premium-unlock-button,
@@ -2781,6 +2929,10 @@ a {
   .card,
   .analysis-grid,
   .detail-card,
+  .block-in-empty-state,
+  .block-in-canvas-wrap,
+  .block-in-palette-item,
+  .block-in-order-item,
   .mixer-coach-verdict,
   .mixer-coach-card,
   .mixer-coach-steps,
@@ -2820,6 +2972,7 @@ a {
 
   .top-nav-link.is-current,
   .mode-switcher .tab-button.active,
+  .block-in-level-button.is-active,
   .primary-switcher .tab-button.active,
   .secondary-switcher .tab-button.active,
   .mobile-tool-chip {

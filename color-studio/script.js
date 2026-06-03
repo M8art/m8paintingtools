@@ -181,11 +181,26 @@ const painterInterpretation = document.getElementById("painterInterpretation");
 const howToPaint = document.getElementById("howToPaint");
 const valueStructure = document.getElementById("valueStructure");
 const focalColor = document.getElementById("focalColor");
+const blockInCard = document.getElementById("blockInCard");
+const blockInCanvas = document.getElementById("blockInCanvas");
+const blockInEmptyState = document.getElementById("blockInEmptyState");
+const blockInResult = document.getElementById("blockInResult");
+const blockInHelper = document.getElementById("blockInHelper");
+const blockInPalette = document.getElementById("blockInPalette");
+const blockInOrderList = document.getElementById("blockInOrderList");
+const blockInLevelButtons = Array.from(document.querySelectorAll("[data-block-in-level]"));
+const downloadBlockInImageButton = document.getElementById("downloadBlockInImageButton");
+const downloadBlockInReportButton = document.getElementById("downloadBlockInReportButton");
 
 const SAMPLE_SIZE = 60;
 const PALETTE_SIZE = 8;
 const HARMONY_SAMPLE_SIZE = 84;
 const HARMONY_CLUSTER_COUNT = 8;
+const BLOCK_IN_LEVELS = {
+  5: { label: "Simple", masses: 5, sampleMax: 190 },
+  10: { label: "Balanced", masses: 10, sampleMax: 260 },
+  20: { label: "Detailed", masses: 20, sampleMax: 360 }
+};
 const GLOBAL_UNLOCK_STORAGE_KEY = "m8_unlocked";
 const GLOBAL_UNLOCK_COOKIE_NAME = "m8_unlocked";
 const GLOBAL_UNLOCK_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
@@ -301,6 +316,8 @@ const state = {
   mixerCoachLoading: false,
   mixerCoachError: "",
   mixerCoachRequestId: 0,
+  blockInMassCount: 5,
+  blockInResult: null,
   trainerSelection: [],
   trainerEvaluation: null,
   actionHistory: [],
@@ -387,6 +404,19 @@ if (mixerCoachButton) {
 if (paletteCoachButton) {
   paletteCoachButton.addEventListener("click", requestPaletteCoach);
 }
+blockInLevelButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const nextLevel = Number(button.dataset.blockInLevel || 5);
+    if (!BLOCK_IN_LEVELS[nextLevel]) {
+      return;
+    }
+    state.blockInMassCount = nextLevel;
+    state.blockInResult = null;
+    renderBlockInMap();
+  });
+});
+downloadBlockInImageButton?.addEventListener("click", downloadBlockInMapImage);
+downloadBlockInReportButton?.addEventListener("click", downloadBlockInMapReport);
 
 undoButton?.addEventListener("click", handleUndoWorkspace);
 clearButton?.addEventListener("click", handleClearWorkspace);
@@ -587,7 +617,7 @@ function restoreActionSnapshot(snapshot) {
 
 function updateWorkspaceActionState() {
   const hasImage = hasLoadedImage();
-  const hasSample = !!state.sampledColor || !!state.sampledPoint || !!state.mixerCoachResult || !!state.paletteCoachResult || state.trainerSelection.length > 0 || !!state.trainerEvaluation;
+  const hasSample = !!state.sampledColor || !!state.sampledPoint || !!state.mixerCoachResult || !!state.paletteCoachResult || !!state.blockInResult || state.trainerSelection.length > 0 || !!state.trainerEvaluation;
   if (undoButton) {
     undoButton.disabled = !state.actionHistory.length;
   }
@@ -646,6 +676,7 @@ function handleClearWorkspace() {
   state.paletteCoachLoading = false;
   state.paletteCoachError = "";
   state.paletteCoachRequestId += 1;
+  state.blockInResult = null;
   state.actionHistory = [];
   state.loadErrorMessage = "";
   state.imageLoading = false;
@@ -667,6 +698,7 @@ function handleClearWorkspace() {
   renderPaletteSummary();
   renderHarmonyAnalysis(null);
   renderPaletteCoach();
+  renderBlockInMap();
   setTab(state.activeTab);
   showStatusToast("Workspace cleared");
   updateWorkspaceActionState();
@@ -1061,12 +1093,85 @@ function setTab(tab) {
     if (trainerCard) {
       trainerCard.classList.add("hidden");
     }
+    if (blockInCard) {
+      blockInCard.classList.add("hidden");
+    }
     mixerCoachDesk?.classList.add("hidden");
     renderPaletteCoach();
     setMixerSupportMode(false);
     setTrainerSupportMode(false);
     renderPaletteSummary();
     renderHarmonyAnalysis(state.harmony);
+    return;
+  }
+
+  if (tab === "palette-plan") {
+    hidePremiumUnlockCard();
+    panelTitle.textContent = "Palette Plan";
+    panelDescription.textContent = "Turn the palette read into a practical order for harmony, temperature, focal color, and saturation control.";
+    if (paletteSummary) {
+      paletteSummary.textContent = state.analysisResult
+        ? "Build a painter plan from the current color analysis before mixing or detailing."
+        : "Upload and analyze an image first, then build the Palette Plan.";
+    }
+    if (colorHarmonyCard) {
+      colorHarmonyCard.classList.add("hidden");
+    }
+    if (breakdownToggle) {
+      breakdownToggle.parentElement?.classList.add("hidden");
+    }
+    if (breakdownContent) {
+      breakdownContent.classList.add("hidden");
+    }
+    if (mixerCard) {
+      mixerCard.classList.add("hidden");
+    }
+    if (trainerCard) {
+      trainerCard.classList.add("hidden");
+    }
+    if (blockInCard) {
+      blockInCard.classList.add("hidden");
+    }
+    mixerCoachDesk?.classList.add("hidden");
+    setMixerSupportMode(false);
+    setTrainerSupportMode(false);
+    renderPaletteCoach();
+    statusNote.textContent = state.imageLoading
+      ? "Preparing analysis..."
+      : state.loadErrorMessage || (state.analysisResult ? "Palette Plan ready to build." : "Upload an image to build a Palette Plan.");
+    return;
+  }
+
+  if (tab === "block-in") {
+    hidePremiumUnlockCard();
+    panelTitle.textContent = "Block-In Map";
+    panelDescription.textContent = "Simplify your reference into large paintable color masses for the first oil-painting block-in.";
+    if (paletteSummary) {
+      paletteSummary.textContent = "Use the largest color families as a practical block-in guide before details, textures, and highlights.";
+    }
+    if (colorHarmonyCard) {
+      colorHarmonyCard.classList.add("hidden");
+    }
+    if (breakdownToggle) {
+      breakdownToggle.parentElement?.classList.add("hidden");
+    }
+    if (breakdownContent) {
+      breakdownContent.classList.add("hidden");
+    }
+    if (mixerCard) {
+      mixerCard.classList.add("hidden");
+    }
+    if (trainerCard) {
+      trainerCard.classList.add("hidden");
+    }
+    paletteCoachDesk?.classList.add("hidden");
+    mixerCoachDesk?.classList.add("hidden");
+    setMixerSupportMode(false);
+    setTrainerSupportMode(false);
+    renderBlockInMap();
+    statusNote.textContent = state.imageLoading
+      ? "Preparing Block-In Map..."
+      : state.loadErrorMessage || (state.analysisResult ? "Block-In Map ready." : "Upload an image and run Color Checker first.");
     return;
   }
 
@@ -1096,6 +1201,9 @@ function setTab(tab) {
     }
     if (trainerCard) {
       trainerCard.classList.add("hidden");
+    }
+    if (blockInCard) {
+      blockInCard.classList.add("hidden");
     }
     premiumUnlockCard?.classList.toggle("hidden", !state.premiumUnlockVisible);
     paletteCoachDesk?.classList.add("hidden");
@@ -1129,6 +1237,9 @@ function setTab(tab) {
     if (trainerCard) {
       trainerCard.classList.remove("hidden");
     }
+    if (blockInCard) {
+      blockInCard.classList.add("hidden");
+    }
     premiumUnlockCard?.classList.toggle("hidden", !state.premiumUnlockVisible);
     paletteCoachDesk?.classList.add("hidden");
     setMixerSupportMode(false);
@@ -1159,6 +1270,9 @@ function setTab(tab) {
   if (trainerCard) {
     trainerCard.classList.add("hidden");
   }
+  if (blockInCard) {
+    blockInCard.classList.add("hidden");
+  }
   setMixerSupportMode(false);
   setTrainerSupportMode(false);
   statusNote.textContent = "This mode is not active yet.";
@@ -1171,6 +1285,7 @@ function beginImageLoad() {
   state.paletteCoachLoading = false;
   state.paletteCoachError = "";
   state.paletteCoachRequestId += 1;
+  state.blockInResult = null;
   resetWorkspaceZoom();
   previewImage.classList.remove("is-loaded");
   previewImage.style.display = "none";
@@ -1286,6 +1401,7 @@ function analyzeHarmony() {
     state.harmony = null;
     state.analysisResult = null;
     renderHarmonyAnalysis(null);
+    renderBlockInMap();
     return;
   }
 
@@ -1317,6 +1433,7 @@ function analyzeHarmony() {
   state.analysisResult = analysisResult;
   renderHarmonyAnalysis(analysisResult);
   renderPaletteCoach();
+  renderBlockInMap();
   trackM8AnalysisCompleted("color_palette", {
     access_state: isUnlocked() ? "unlocked" : "locked_preview",
     harmony_type: analysisResult.primary
@@ -1380,6 +1497,401 @@ function renderHarmonyAnalysis(result) {
   renderValueStructure(result.valueStructure);
   renderFocalColor(result.focalColor);
   renderHarmonySchemePanel(result);
+}
+
+function renderBlockInMap() {
+  if (!blockInCard) {
+    return;
+  }
+
+  const isVisible = state.activeTab === "block-in";
+  blockInCard.classList.toggle("hidden", !isVisible);
+  blockInLevelButtons.forEach((button) => {
+    const level = Number(button.dataset.blockInLevel || 0);
+    button.classList.toggle("is-active", level === state.blockInMassCount);
+  });
+
+  if (!isVisible) {
+    return;
+  }
+
+  if (!hasLoadedImage()) {
+    showBlockInEmptyState("Upload an image to create a Block-In Map. It will simplify the reference into large paintable color masses.");
+    return;
+  }
+
+  if (!state.analysisResult) {
+    showBlockInEmptyState("Run Color Checker first so the Block-In Map can use the detected palette colors.");
+    return;
+  }
+
+  if (!state.blockInResult || state.blockInResult.massCount !== state.blockInMassCount) {
+    state.blockInResult = buildBlockInMapResult(previewImage, state.blockInMassCount);
+  }
+
+  if (!state.blockInResult) {
+    showBlockInEmptyState("The Block-In Map could not be built from this image. Try a different reference.");
+    return;
+  }
+
+  blockInEmptyState?.classList.add("hidden");
+  blockInResult?.classList.remove("hidden");
+
+  blockInCanvas.width = state.blockInResult.width;
+  blockInCanvas.height = state.blockInResult.height;
+  const canvasContext = blockInCanvas.getContext("2d");
+  canvasContext.putImageData(state.blockInResult.imageData, 0, 0);
+
+  if (blockInHelper) {
+    blockInHelper.textContent = "Use this map to block in the biggest color shapes first. Paint the large masses before details, textures, and highlights.";
+  }
+
+  renderBlockInPalette(state.blockInResult.colors);
+  renderBlockInOrder(state.blockInResult.steps);
+  updateWorkspaceActionState();
+}
+
+function showBlockInEmptyState(message) {
+  if (blockInEmptyState) {
+    blockInEmptyState.classList.remove("hidden");
+    blockInEmptyState.innerHTML = `<p class="detail-copy">${escapeHtml(message)}</p>`;
+  }
+  blockInResult?.classList.add("hidden");
+}
+
+function buildBlockInMapResult(image, massCount) {
+  const level = BLOCK_IN_LEVELS[massCount] || BLOCK_IN_LEVELS[5];
+  const aspect = image.naturalWidth / Math.max(image.naturalHeight, 1);
+  const width = aspect >= 1 ? level.sampleMax : Math.max(120, Math.round(level.sampleMax * aspect));
+  const height = aspect >= 1 ? Math.max(120, Math.round(level.sampleMax / aspect)) : level.sampleMax;
+  const sourceCanvas = document.createElement("canvas");
+  const sourceContext = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  sourceCanvas.width = width;
+  sourceCanvas.height = height;
+  sourceContext.imageSmoothingEnabled = true;
+  sourceContext.imageSmoothingQuality = "high";
+  sourceContext.drawImage(image, 0, 0, width, height);
+
+  const sourceImageData = sourceContext.getImageData(0, 0, width, height);
+  const centers = buildBlockInColorCenters(sourceImageData.data, massCount);
+  if (!centers.length) {
+    return null;
+  }
+
+  const outputImageData = sourceContext.createImageData(width, height);
+  const clusterCounts = centers.map(() => 0);
+  const data = sourceImageData.data;
+  const output = outputImageData.data;
+
+  for (let index = 0; index < data.length; index += 4) {
+    const alpha = data[index + 3];
+    if (alpha < 10) {
+      output[index] = 250;
+      output[index + 1] = 247;
+      output[index + 2] = 239;
+      output[index + 3] = 255;
+      continue;
+    }
+
+    const nearestIndex = getNearestColorIndex({ r: data[index], g: data[index + 1], b: data[index + 2] }, centers);
+    const center = centers[nearestIndex];
+    clusterCounts[nearestIndex] += 1;
+    output[index] = center.r;
+    output[index + 1] = center.g;
+    output[index + 2] = center.b;
+    output[index + 3] = 255;
+  }
+
+  const totalPixels = width * height;
+  const colors = centers
+    .map((center, index) => normalizeColorForHarmony({ ...center, count: clusterCounts[index] }, totalPixels))
+    .filter((color) => color.coverage > 0)
+    .sort((left, right) => right.coverage - left.coverage);
+
+  return {
+    massCount,
+    width,
+    height,
+    imageData: outputImageData,
+    colors,
+    steps: buildBlockInPaintingOrder(colors, massCount)
+  };
+}
+
+function buildBlockInColorCenters(data, massCount) {
+  const bucketMap = new Map();
+  let sampleCount = 0;
+
+  for (let index = 0; index < data.length; index += 4) {
+    if (data[index + 3] < 120) {
+      continue;
+    }
+    const r = Math.round(data[index] / 24) * 24;
+    const g = Math.round(data[index + 1] / 24) * 24;
+    const b = Math.round(data[index + 2] / 24) * 24;
+    const key = `${clamp(r, 0, 255)},${clamp(g, 0, 255)},${clamp(b, 0, 255)}`;
+    bucketMap.set(key, (bucketMap.get(key) || 0) + 1);
+    sampleCount += 1;
+  }
+
+  const buckets = Array.from(bucketMap.entries())
+    .map(([key, count]) => {
+      const [r, g, b] = key.split(",").map(Number);
+      return { r, g, b, count };
+    })
+    .sort((left, right) => right.count - left.count);
+
+  const seeded = getBlockInPaletteSeeds(massCount);
+  const centers = [];
+  seeded.concat(buckets).forEach((color) => {
+    if (centers.length >= massCount) {
+      return;
+    }
+    if (centers.some((center) => colorDistance(center, color) < 38)) {
+      return;
+    }
+    centers.push({ r: color.r, g: color.g, b: color.b });
+  });
+
+  if (!centers.length) {
+    return [];
+  }
+
+  while (centers.length < massCount && buckets[centers.length]) {
+    const fallback = buckets[centers.length];
+    centers.push({ r: fallback.r, g: fallback.g, b: fallback.b });
+  }
+
+  for (let iteration = 0; iteration < 5; iteration += 1) {
+    const assignments = centers.map(() => ({ r: 0, g: 0, b: 0, weight: 0 }));
+    buckets.forEach((bucket) => {
+      const nearestIndex = getNearestColorIndex(bucket, centers);
+      assignments[nearestIndex].r += bucket.r * bucket.count;
+      assignments[nearestIndex].g += bucket.g * bucket.count;
+      assignments[nearestIndex].b += bucket.b * bucket.count;
+      assignments[nearestIndex].weight += bucket.count;
+    });
+
+    assignments.forEach((assignment, index) => {
+      if (!assignment.weight) {
+        return;
+      }
+      centers[index] = {
+        r: Math.round(assignment.r / assignment.weight),
+        g: Math.round(assignment.g / assignment.weight),
+        b: Math.round(assignment.b / assignment.weight)
+      };
+    });
+  }
+
+  return centers.slice(0, Math.min(massCount, sampleCount || massCount));
+}
+
+function getBlockInPaletteSeeds(massCount) {
+  const analysisColors = state.analysisResult?.dominantColors || [];
+  const sourceColors = analysisColors.length ? analysisColors : state.palette;
+  return sourceColors
+    .slice(0, massCount)
+    .map((color) => ({ r: color.r, g: color.g, b: color.b, count: Math.max(1, color.coverage || 1) }));
+}
+
+function getNearestColorIndex(color, centers) {
+  let bestIndex = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  centers.forEach((center, index) => {
+    const distance = colorDistance(color, center);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = index;
+    }
+  });
+  return bestIndex;
+}
+
+function buildBlockInPaintingOrder(colors, massCount) {
+  if (!colors.length) {
+    return [];
+  }
+
+  const sorted = [...colors].sort((left, right) => right.coverage - left.coverage);
+  const darkMass = [...colors].sort((left, right) => left.brightness - right.brightness)[0];
+  const midMass = sorted.find((color) => color.brightness > 70 && color.brightness < 185) || sorted[0];
+  const warmMass = sorted.find((color) => color.temperature === "Warm") || sorted[0];
+  const coolMass = sorted.find((color) => color.temperature === "Cool") || sorted[1] || sorted[0];
+  const accentMass = [...colors]
+    .filter((color) => color.coverage < 18)
+    .sort((left, right) => right.saturation - left.saturation)[0] || sorted[Math.min(sorted.length - 1, 3)] || sorted[0];
+  const lightMass = [...colors].sort((left, right) => right.brightness - left.brightness)[0];
+
+  const steps = [
+    {
+      color: darkMass,
+      text: `Block in the largest dark mass first with the ${darkMass.painterHueName.toLowerCase()} family. Keep this flat and simple.`
+    },
+    {
+      color: midMass,
+      text: `Establish the main midtone color masses next, especially the ${midMass.painterHueName.toLowerCase()} shapes that carry the picture.`
+    },
+    {
+      color: warmMass,
+      text: `Add the major warm color groups and keep them connected as broad notes, not small patches.`
+    },
+    {
+      color: coolMass,
+      text: `Place the major cool groups against the warm masses so the temperature structure is clear early.`
+    },
+    {
+      color: accentMass,
+      text: `Place smaller secondary masses with restraint. Let ${accentMass.painterHueName.toLowerCase()} support the focal read instead of scattering it everywhere.`
+    },
+    {
+      color: lightMass,
+      text: `Save highlights and sharp accents for the end. Keep the ${lightMass.valueLabel.toLowerCase()} notes clean and deliberate.`
+    }
+  ];
+
+  return steps.slice(0, massCount <= 5 ? 5 : 6);
+}
+
+function renderBlockInPalette(colors) {
+  if (!blockInPalette) {
+    return;
+  }
+  blockInPalette.innerHTML = "";
+  colors.slice(0, state.blockInMassCount).forEach((color) => {
+    const item = document.createElement("div");
+    item.className = "block-in-palette-item";
+    item.innerHTML = `
+      <span class="block-in-swatch" style="background:${escapeHtml(color.hex)}"></span>
+      <span>${escapeHtml(color.painterHueName)}</span>
+      <small>${Math.round(color.coverage)}%</small>
+    `;
+    blockInPalette.appendChild(item);
+  });
+}
+
+function renderBlockInOrder(steps) {
+  if (!blockInOrderList) {
+    return;
+  }
+  blockInOrderList.innerHTML = "";
+  steps.forEach((step) => {
+    const item = document.createElement("li");
+    item.className = "block-in-order-item";
+    item.innerHTML = `
+      <span class="block-in-order-swatch" style="background:${escapeHtml(step.color.hex)}"></span>
+      <span>${escapeHtml(step.text)}</span>
+    `;
+    blockInOrderList.appendChild(item);
+  });
+}
+
+function downloadBlockInMapImage() {
+  if (!state.blockInResult || !blockInCanvas) {
+    showStatusToast("Create a Block-In Map first");
+    return;
+  }
+
+  blockInCanvas.toBlob((blob) => {
+    if (!blob) {
+      showStatusToast("Could not export Block-In Map");
+      return;
+    }
+    downloadBlob(blob, `m8-block-in-map-${state.blockInMassCount}-masses-${new Date().toISOString().slice(0, 10)}.png`);
+    showStatusToast("Block-In Map image downloaded");
+  }, "image/png");
+}
+
+function downloadBlockInMapReport() {
+  if (!state.blockInResult || !blockInCanvas) {
+    showStatusToast("Create a Block-In Map first");
+    return;
+  }
+
+  const reportCanvas = buildBlockInReportCanvas();
+  reportCanvas.toBlob((blob) => {
+    if (!blob) {
+      showStatusToast("Could not export Block-In report");
+      return;
+    }
+    downloadBlob(blob, `m8-block-in-map-report-${state.blockInMassCount}-masses-${new Date().toISOString().slice(0, 10)}.png`);
+    showStatusToast("Block-In Map report downloaded");
+  }, "image/png");
+}
+
+function buildBlockInReportCanvas() {
+  const margin = 56;
+  const reportWidth = 1200;
+  const mapWidth = reportWidth - (margin * 2);
+  const mapHeight = Math.round(mapWidth * (state.blockInResult.height / state.blockInResult.width));
+  const lineHeight = 30;
+  const orderLines = state.blockInResult.steps.flatMap((step, index) => wrapTextForCanvas(`${index + 1}. ${step.text}`, 82));
+  const reportHeight = margin + 92 + mapHeight + 44 + (orderLines.length * lineHeight) + 96;
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = reportWidth;
+  canvas.height = reportHeight;
+
+  ctx.fillStyle = "#f5efe4";
+  ctx.fillRect(0, 0, reportWidth, reportHeight);
+  ctx.fillStyle = "#1f1c18";
+  ctx.font = "700 42px Georgia, serif";
+  ctx.fillText("M8 Block-In Map", margin, margin + 12);
+  ctx.font = "700 18px Segoe UI, sans-serif";
+  ctx.fillStyle = "#8f613f";
+  const level = BLOCK_IN_LEVELS[state.blockInMassCount] || BLOCK_IN_LEVELS[5];
+  ctx.fillText(`${level.label} / ${state.blockInMassCount} masses`, margin, margin + 46);
+  ctx.font = "18px Segoe UI, sans-serif";
+  ctx.fillStyle = "#69635d";
+  ctx.fillText("Simplify the reference into large paintable color masses before detail.", margin, margin + 76);
+  ctx.drawImage(blockInCanvas, margin, margin + 104, mapWidth, mapHeight);
+
+  let y = margin + 104 + mapHeight + 54;
+  ctx.fillStyle = "#1f1c18";
+  ctx.font = "700 28px Georgia, serif";
+  ctx.fillText("Suggested Painting Order", margin, y);
+  y += 36;
+  ctx.font = "18px Segoe UI, sans-serif";
+  ctx.fillStyle = "#3a332b";
+  orderLines.forEach((line) => {
+    ctx.fillText(line, margin, y);
+    y += lineHeight;
+  });
+
+  ctx.fillStyle = "#8f613f";
+  ctx.font = "700 14px Segoe UI, sans-serif";
+  ctx.fillText("Built from M8 painter color principles.", margin, reportHeight - margin + 8);
+  return canvas;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+}
+
+function wrapTextForCanvas(text, maxChars) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = "";
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxChars && current) {
+      lines.push(current);
+      current = word;
+      return;
+    }
+    current = next;
+  });
+  if (current) {
+    lines.push(current);
+  }
+  return lines;
 }
 
 function resetMixerSampling() {
@@ -2170,7 +2682,7 @@ function renderPaletteCoach() {
     return;
   }
 
-  const isPaletteVisible = state.activeTab === "palette";
+  const isPaletteVisible = state.activeTab === "palette-plan";
   paletteCoachDesk.classList.toggle("hidden", !isPaletteVisible);
   if (!isPaletteVisible) {
     return;
@@ -2524,6 +3036,16 @@ function updateMobileWorkspaceHow(tab) {
 
   if (tab === "mixer") {
     mobileWorkspaceHowCopy.textContent = "Tap a color in the image. M8 shows the likely paint mix, then the Mix Coach can build a practical mixing plan below the image.";
+    return;
+  }
+
+  if (tab === "palette-plan") {
+    mobileWorkspaceHowCopy.textContent = "Upload an image, then build a Palette Plan for harmony, temperature, focal color, and paint order.";
+    return;
+  }
+
+  if (tab === "block-in") {
+    mobileWorkspaceHowCopy.textContent = "Use Block-In Map to simplify the reference into big paintable color masses before details and highlights.";
     return;
   }
 

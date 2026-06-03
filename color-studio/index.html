@@ -13,7 +13,7 @@
 
     gtag('config', 'G-6ZYJSDPH5X');
   </script>
-  <link rel="stylesheet" href="./style.css?v=20260527-mobile-coach-layout">
+  <link rel="stylesheet" href="./style.css?v=20260603-block-in-map">
   <script src="../assets/mobile-theme.js"></script>
   <link rel="stylesheet" href="../assets/mobile-theme.css">
   <link rel="stylesheet" href="../assets/desktop-nav.css">
@@ -68,6 +68,8 @@
     <nav class="mode-switcher" aria-label="Navigation">
       <a class="tab-button home-tab-button" href="../index.html" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path><path d="M9.5 21v-6h5v6"></path></svg></a>
       <button class="tab-button active" type="button" data-tab="palette"><span class="desktop-tab-label">Palette Analysis</span><span class="mobile-tab-label">Palette</span></button>
+      <button class="tab-button" type="button" data-tab="palette-plan"><span class="desktop-tab-label">Palette Plan</span><span class="mobile-tab-label">Plan</span></button>
+      <button class="tab-button" type="button" data-tab="block-in"><span class="desktop-tab-label">Block-In Map</span><span class="mobile-tab-label">Block-In</span></button>
       <button class="tab-button" type="button" data-tab="mixer"><span class="desktop-tab-label">Color Mixer</span><span class="mobile-tab-label">Mixer</span></button>
       <button class="tab-button" type="button" data-tab="trainer"><span class="desktop-tab-label">Mix Trainer</span><span class="mobile-tab-label">Trainer</span></button>
     </nav>
@@ -447,6 +449,38 @@
             </div>
           </div>
 
+          <div id="blockInCard" class="detail-card block-in-card hidden">
+            <p class="section-label">Block-In Map</p>
+            <h3 class="feedback-title">Block-In Map</h3>
+            <p class="detail-copy">Simplify your reference into large paintable color masses.</p>
+
+            <div class="block-in-levels" role="group" aria-label="Block-In Map simplification level">
+              <button class="button-secondary block-in-level-button is-active" type="button" data-block-in-level="5">5 Masses</button>
+              <button class="button-secondary block-in-level-button" type="button" data-block-in-level="10">10 Masses</button>
+              <button class="button-secondary block-in-level-button" type="button" data-block-in-level="20">20 Masses</button>
+            </div>
+
+            <div id="blockInEmptyState" class="block-in-empty-state">
+              <p class="detail-copy">Upload and analyze an image in Color Checker first. The Block-In Map will turn it into large paintable color shapes.</p>
+            </div>
+
+            <div id="blockInResult" class="block-in-result hidden">
+              <div class="block-in-canvas-wrap">
+                <canvas id="blockInCanvas" class="block-in-canvas"></canvas>
+              </div>
+              <p id="blockInHelper" class="detail-copy">Use this map to block in the biggest color shapes first. Paint the large masses before details, textures, and highlights.</p>
+              <div id="blockInPalette" class="block-in-palette" aria-label="Block-In Map palette"></div>
+              <div class="block-in-order">
+                <p class="section-label">Suggested Painting Order</p>
+                <ol id="blockInOrderList" class="block-in-order-list"></ol>
+              </div>
+              <div class="block-in-actions">
+                <button id="downloadBlockInImageButton" class="button-secondary" type="button">Download Block-In Map image</button>
+                <button id="downloadBlockInReportButton" class="button-secondary" type="button">Download Block-In Map report</button>
+              </div>
+            </div>
+          </div>
+
           <div id="breakdownContent" class="breakdown-content">
             <div class="detail-card">
               <p class="section-label">Painter Interpretation</p>
@@ -528,7 +562,7 @@
   <div id="premiumToast" class="premium-toast hidden" aria-live="polite"></div>
 
   <script src="../assets/unlock-paywall.js"></script>
-  <script src="./script.js?v=20260527-ai-color-coach"></script>
+  <script src="./script.js?v=20260603-block-in-map"></script>
 </body>
 </html>
 
