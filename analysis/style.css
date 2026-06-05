@@ -1915,6 +1915,15 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   transition: opacity 320ms ease, transform 380ms ease;
 }
 
+.quick-check-score.is-text-score {
+  font-family: inherit;
+  font-size: clamp(1rem, 2.2vw, 1.28rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
 .quick-score-header {
   display: flex;
   align-items: center;

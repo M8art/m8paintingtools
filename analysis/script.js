@@ -35,6 +35,7 @@ const quickCheckStrengthText = document.getElementById("quickCheckStrengthText")
 const quickCheckWeaknessBlock = document.getElementById("quickCheckWeaknessBlock");
 const quickCheckWeaknessText = document.getElementById("quickCheckWeaknessText");
 const quickCheckBlocks = document.getElementById("quickCheckBlocks");
+const quickCheckScoreLabel = document.getElementById("quickCheckScoreLabel");
 const quickCheckScore = document.getElementById("quickCheckScore");
 const quickScoreHeader = document.getElementById("quickScoreHeader");
 const quickCheckConfidenceBadge = document.getElementById("quickCheckConfidenceBadge");
@@ -1101,6 +1102,7 @@ function runQuickCheck() {
 
 function completeQuickCheck() {
   const result = latestQuickCheckResult || buildQuickCheckResult();
+  const isBadUpload = isBadQuickCheckUpload(result);
 
   setAnalysisStage("stage-final");
   applyGuidanceOverlay(result.metrics);
@@ -1108,8 +1110,13 @@ function completeQuickCheck() {
   analysisSurface.classList.remove("is-analysis-running");
   statusHelper.classList.remove("is-analysis-running");
   statusHelper.classList.add("hidden");
-  updateStatusMessage("Check complete.");
-  workspaceHint.textContent = "Quick check complete. Review the composition notes on the right.";
+  updateStatusMessage(isBadUpload ? "Upload not scored." : "Check complete.");
+  workspaceHint.textContent = isBadUpload
+    ? "This upload was not scored. Use a clean crop of the artwork or reference photo."
+    : "Quick check complete. Review the composition notes on the right.";
+  if (quickCheckScoreLabel) {
+    quickCheckScoreLabel.textContent = isBadUpload ? "Reference Check" : "Overall Score";
+  }
   animateQuickCheckScore(result.score);
   renderConfidenceBadge(result.metrics);
   quickCheckVerdict.textContent = result.verdict;
@@ -1136,7 +1143,13 @@ function completeQuickCheck() {
   });
   isBreakdownExpanded = false;
   updateBreakdownUI();
-  if (hasUnlockedAccess()) {
+  if (isBadUpload) {
+    freeCheckNote.textContent = "This upload was not scored and was not counted as a free Quick Check.";
+    freeCheckNote.classList.remove("hidden");
+    freeDailyNote.classList.remove("hidden");
+    freeDailyNote.textContent = "Upload only the artwork, sketch, or reference photo without app screens, menus, or phone UI.";
+    streakNote.classList.add("hidden");
+  } else if (hasUnlockedAccess()) {
     freeCheckNote.textContent = "Unlimited access is now active.";
     freeCheckNote.classList.remove("hidden");
     freeDailyNote.classList.add("hidden");
@@ -1177,8 +1190,8 @@ function completeQuickCheck() {
   requestPlayQuickAiAnalysisForCurrentResult(result);
   scrollToQuickCheckAiAnalysisOnMobile();
   trackM8AnalysisCompleted("quick_check", {
-    score: result.score,
-    access_state: hasUnlockedAccess() ? "unlocked" : "free"
+    score: Number.isFinite(result.score) ? result.score : null,
+    access_state: isBadUpload ? "bad_upload" : hasUnlockedAccess() ? "unlocked" : "free"
   });
 
   isAnalysisRunning = false;
@@ -1186,6 +1199,10 @@ function completeQuickCheck() {
   analysisTimeoutIds = [];
   updateAnalysisAccessUI();
   maybeRequestUnlockedPaintingBreakdown(result);
+}
+
+function isBadQuickCheckUpload(result) {
+  return Boolean(result?.metrics?.referenceIssue);
 }
 
 function requestPlayQuickAiAnalysisForCurrentResult(result) {
@@ -1515,14 +1532,14 @@ function buildReferenceIssueCopy(metrics, composition) {
   return {
     whyThisScore: {
       positive: pickVariant([
-        "The checker can still read contrast and balance signals, but those signals are coming from interface shapes.",
-        "There is enough light-dark information to analyze, but the source behaves more like a screenshot than a painting.",
-        "The scan found graphic structure, but it does not look like a usable artwork reference."
+        "The checker can see contrast and edge signals, but they appear to come from interface shapes.",
+        "There is light-dark information in the upload, but the source behaves more like a screenshot than a painting.",
+        "The scan found graphic structure, but not a clean artwork or reference photo."
       ]),
       limiting: pickVariant([
-        "The score is held low because the upload looks like a UI screenshot or graphic panel, not a painting reference.",
-        "The score drops hard because large flat colors and screen-like edges make this a poor reference for composition critique.",
-        "The score stays low because the image appears to be an interface capture rather than the artwork itself."
+        "The upload is not scored because it looks like a UI screenshot or graphic panel, not a painting reference.",
+        "Large flat panels and screen-like edges make this unreliable for painting critique.",
+        "The image appears to be an interface capture rather than the artwork itself, so a normal score would be misleading."
       ])
     },
     keyInsight: composeKeyInsightText(pickVariant([
@@ -1544,14 +1561,14 @@ function buildReferenceIssueCopy(metrics, composition) {
       {
         title: "Reference Quality",
         text: pickVariant([
-          "This upload is being treated as a weak reference. It has too many flat screen-like shapes for a normal score.",
-          "The checker sees this as a low-confidence source because it looks more like UI than a painting or study image.",
-          "The reference is not strong enough for a fair critique, so the final score is intentionally capped low."
+          "This upload is being rejected as a painting reference. It has too many flat, screen-like shapes for a fair score.",
+          "The checker sees this as UI or a graphic capture rather than a painting, sketch, or usable reference photo.",
+          "The source is not strong enough for a fair critique, so Quick Check is not assigning a normal score."
         ])
       },
       {
         title: "What Was Detected",
-        text: `Flat-color signal: ${Math.round((metrics.topColorRatio || 0) * 100)}%. Screen-like confidence: ${Math.round((metrics.screenLikeScore || 0) * 100)}%.`
+        text: `Flat-color signal: ${Math.round((metrics.topColorRatio || 0) * 100)}%. Screen-like confidence: ${Math.round((metrics.screenLikeScore || 0) * 100)}%. UI-frame signal: ${Math.round((metrics.uiFrameScore || 0) * 100)}%.`
       },
       {
         title: "Better Upload",
@@ -1568,9 +1585,9 @@ function buildReferenceIssueCopy(metrics, composition) {
       "remove UI panels and screen overlays before checking the image again."
     ]), composition),
     verdict: pickVariant([
-      "This upload is not a clean painting reference, so the score is intentionally low.",
-      "The checker sees this as a bad reference, not as artwork to critique.",
-      "Use the actual artwork instead of a screenshot before trusting the score."
+      "This upload is not a clean painting reference, so it was not scored.",
+      "The checker sees this as a bad upload, not as artwork to critique.",
+      "Use the actual artwork instead of a screenshot before running Quick Check."
     ]),
     attributeRead: {
       value: "Value can be sampled, but the source does not behave like a clean painting reference.",
@@ -1765,7 +1782,14 @@ function analyzeUploadedImage() {
   const referenceAssessment = assessReferenceQuality({
     ...sample,
     edgeDensity,
-    axisEdgeBias
+    axisEdgeBias,
+    borderWeightShare,
+    borderEdgeDensity,
+    strongBorderEdgeDensity,
+    cornerWeightShare,
+    cropRisk,
+    valueSpread,
+    valueStd
   });
   const colorQuality = clamp(
     (clamp((referenceAssessment.colorEntropy - 0.36) / 0.3, 0, 1) * 0.38)
@@ -1784,12 +1808,12 @@ function analyzeUploadedImage() {
     + (frameCompletenessQuality * 0.16);
   const objectivityPenalty = (cropRisk * 0.18) + (centralLockRisk * 0.1);
   const adjustedQuality = clamp(weightedQuality - objectivityPenalty, 0, 1);
-  const rawScore = clamp(Math.round(24 + (adjustedQuality * 68)), 6, 94);
+  const rawScore = clamp(Math.round(8 + (adjustedQuality * 88)), 4, 96);
   const contextScoreCap = cropRisk > 0.62 ? Math.round(68 - (cropRisk * 20)) : 94;
   const centerScoreCap = centralLockRisk > 0.68 ? 76 : 94;
   const contextAdjustedScore = Math.min(rawScore, contextScoreCap, centerScoreCap);
   const score = referenceAssessment.referenceIssue
-    ? clamp(Math.round(rawScore * (0.28 + (referenceAssessment.referenceConfidence * 0.18))), 6, 38)
+    ? null
     : contextAdjustedScore;
 
   return {
@@ -1932,34 +1956,79 @@ function assessReferenceQuality(sample) {
   const nearGrayRatio = sample.nearGrayRatio || 0;
   const edgeDensity = sample.edgeDensity || 0;
   const axisEdgeBias = sample.axisEdgeBias || 0;
+  const borderWeightShare = sample.borderWeightShare || 0;
+  const borderEdgeDensity = sample.borderEdgeDensity || 0;
+  const strongBorderEdgeDensity = sample.strongBorderEdgeDensity || 0;
+  const cornerWeightShare = sample.cornerWeightShare || 0;
+  const cropRisk = sample.cropRisk || 0;
+  const valueStd = sample.valueStd || 0;
 
-  const flatColorScore = clamp((topColorRatio - 0.16) / 0.22, 0, 1);
-  const limitedPaletteScore = clamp((14 - colorGroupCount) / 11, 0, 1);
-  const lowEntropyScore = clamp((0.48 - colorEntropy) / 0.28, 0, 1);
-  const axisScore = clamp((axisEdgeBias - 0.54) / 0.26, 0, 1);
+  const flatColorScore = clamp((topColorRatio - 0.14) / 0.22, 0, 1);
+  const limitedPaletteScore = clamp((18 - colorGroupCount) / 14, 0, 1);
+  const lowEntropyScore = clamp((0.54 - colorEntropy) / 0.34, 0, 1);
+  const axisScore = clamp((axisEdgeBias - 0.5) / 0.24, 0, 1);
   const hardEdgeScore = clamp((edgeDensity - 0.045) / 0.12, 0, 1);
+  const uiFrameScore = clamp(
+    (clamp((borderWeightShare - 0.2) / 0.26, 0, 1) * 0.34)
+      + (clamp((borderEdgeDensity - 0.05) / 0.17, 0, 1) * 0.24)
+      + (clamp((strongBorderEdgeDensity - 0.03) / 0.16, 0, 1) * 0.18)
+      + (clamp((cornerWeightShare - 0.08) / 0.16, 0, 1) * 0.14)
+      + (clamp((cropRisk - 0.5) / 0.36, 0, 1) * 0.1),
+    0,
+    1
+  );
+  const lowTextureScore = clamp((0.22 - valueStd) / 0.16, 0, 1) * clamp((0.58 - colorEntropy) / 0.36, 0, 1);
   const grayscaleUiScore = clamp((nearGrayRatio - 0.68) / 0.24, 0, 1) * clamp((edgeDensity - 0.035) / 0.1, 0, 1);
   const paintedTextureRelief = clamp((colorEntropy - 0.44) / 0.22, 0, 1) * clamp((1 - axisEdgeBias) / 0.42, 0, 1);
   const screenLikeScore = clamp(
-    (flatColorScore * 0.3)
-      + (limitedPaletteScore * 0.22)
-      + (lowEntropyScore * 0.18)
+    (flatColorScore * 0.24)
+      + (limitedPaletteScore * 0.18)
+      + (lowEntropyScore * 0.16)
       + (axisScore * 0.16)
       + (hardEdgeScore * 0.08)
-      + (grayscaleUiScore * 0.06)
-      - (paintedTextureRelief * 0.16),
+      + (uiFrameScore * 0.14)
+      + (lowTextureScore * 0.08)
+      + (grayscaleUiScore * 0.04)
+      - (paintedTextureRelief * 0.2),
     0,
     1
   );
   const referenceConfidence = clamp(1 - screenLikeScore, 0, 1);
-  const strongScreenSignals = topColorRatio > 0.22 || colorGroupCount <= 12 || colorEntropy < 0.34;
-  const referenceIssue = screenLikeScore > 0.56 && strongScreenSignals && meanSaturation < 0.42;
+  const screenSignalCount = [
+    topColorRatio > 0.18,
+    colorGroupCount <= 16,
+    colorEntropy < 0.46,
+    axisEdgeBias > 0.58,
+    uiFrameScore > 0.46,
+    lowTextureScore > 0.48,
+    edgeDensity > 0.08 && axisEdgeBias > 0.54
+  ].filter(Boolean).length;
+  const hasScreenColorProfile = meanSaturation < 0.62 || lowTextureScore > 0.44 || topColorRatio > 0.24 || colorEntropy < 0.42;
+  const hasUiFrameSignal = uiFrameScore > 0.46 || cropRisk > 0.76 || borderEdgeDensity > 0.18;
+  const hasHardInterfaceSignal = axisEdgeBias > 0.58 || (edgeDensity > 0.08 && axisEdgeBias > 0.54);
+  const hasGraphicScreenSignal = lowTextureScore > 0.56
+    && topColorRatio > 0.3
+    && colorGroupCount <= 16
+    && colorEntropy < 0.42;
+  const referenceIssue = hasScreenColorProfile
+    && ((hasUiFrameSignal && screenLikeScore > 0.48 && screenSignalCount >= 3)
+      || (hasUiFrameSignal && hasHardInterfaceSignal && colorEntropy < 0.56)
+      || (hasHardInterfaceSignal && hasGraphicScreenSignal && screenLikeScore > 0.58));
+  const referenceGate = referenceIssue
+    ? "bad-upload"
+    : cropRisk > 0.68
+      ? "needs-crop"
+      : "analyzable";
 
   return {
     referenceConfidence,
     referenceIssue,
     screenLikeScore,
+    referenceGate,
     referenceIssueType: referenceIssue ? "screen-or-graphic" : "",
+    uiFrameScore,
+    lowTextureScore,
+    screenSignalCount,
     topColorRatio,
     colorGroupCount,
     colorEntropy,
@@ -2322,11 +2391,12 @@ function setResultBlockTitle(block, title) {
 
 function syncQuickCheckResultAccess(result) {
   const hasFullResult = hasFullQuickCheckResultAccess(result);
+  const isBadUpload = isBadQuickCheckUpload(result);
 
   quickCheckResult?.classList.toggle("is-free-preview", !hasFullResult);
-  setResultBlockTitle(quickCheckKeyInsightBlock, hasFullResult ? "Value Read" : "Biggest Issue");
-  setResultBlockTitle(quickCheckStrengthBlock, "Composition Read");
-  setResultBlockTitle(quickCheckWeaknessBlock, "Color Read");
+  setResultBlockTitle(quickCheckKeyInsightBlock, isBadUpload ? "Reference Read" : hasFullResult ? "Value Read" : "Biggest Issue");
+  setResultBlockTitle(quickCheckStrengthBlock, isBadUpload ? "Input Type" : "Composition Read");
+  setResultBlockTitle(quickCheckWeaknessBlock, isBadUpload ? "Upload Fix" : "Color Read");
 
   if (!hasFullResult) {
     quickCheckKeyInsightText.textContent = result?.weakness || result?.keyInsight || "M8 found one main issue in this painting.";
@@ -3015,7 +3085,7 @@ function buildTags(metrics) {
 
 function getFallbackMetrics() {
   return {
-    score: 18,
+    score: null,
     centerDominance: 0.62,
     centerDistance: 0.12,
     centerWeightShare: 0.28,
@@ -3045,7 +3115,11 @@ function getFallbackMetrics() {
     referenceConfidence: 0.18,
     referenceIssue: true,
     screenLikeScore: 0.82,
+    referenceGate: "bad-upload",
     referenceIssueType: "unreadable",
+    uiFrameScore: 0.82,
+    lowTextureScore: 0.82,
+    screenSignalCount: 4,
     topColorRatio: 0,
     colorGroupCount: 0,
     colorEntropy: 0,
@@ -4298,6 +4372,10 @@ function resetResultRevealState() {
   });
 
   quickCheckPremiumFix?.classList.add("hidden");
+  if (quickCheckScoreLabel) {
+    quickCheckScoreLabel.textContent = "Overall Score";
+  }
+  quickCheckScore.classList.remove("is-text-score");
   quickCheckScore.textContent = "72 / 100";
   quickCheckVerdict.textContent = "Your composition is readable, but the focal point needs a clearer job.";
   if (quickCheckConfidenceBadge) {
@@ -4399,6 +4477,14 @@ function animateQuickCheckScore(score) {
     window.cancelAnimationFrame(scoreAnimationFrameId);
   }
 
+  if (!Number.isFinite(score)) {
+    quickCheckScore.classList.add("is-text-score");
+    quickCheckScore.textContent = "Not scored";
+    scoreAnimationFrameId = null;
+    return;
+  }
+
+  quickCheckScore.classList.remove("is-text-score");
   const duration = 540;
   const startTime = performance.now();
 
@@ -4423,11 +4509,11 @@ function animateQuickCheckScore(score) {
 function buildScoreBreakdown(metrics) {
   if (metrics.referenceIssue) {
     return [
-      { label: "Reference Quality", score: normalizeQualityScore(metrics.referenceConfidence), quality: "Poor source" },
-      { label: "Artwork Confidence", score: normalizeQualityScore(1 - metrics.screenLikeScore), quality: "Low confidence" },
-      { label: "Focal Placement", score: Math.min(38, normalizeQualityScore(metrics.centerQuality)), quality: getQualityLabel(metrics.centerQuality) },
-      { label: "Value Structure", score: Math.min(38, normalizeQualityScore(metrics.valueQuality)), quality: getQualityLabel(metrics.valueQuality) },
-      { label: "Depth Read", score: Math.min(34, normalizeQualityScore(metrics.depthQuality)), quality: getQualityLabel(metrics.depthQuality) }
+      { label: "Reference Quality", score: normalizeQualityScore(metrics.referenceConfidence), quality: "Rejected" },
+      { label: "Artwork Confidence", score: normalizeQualityScore(1 - metrics.screenLikeScore), quality: "Too low" },
+      { label: "Screen/UI Risk", score: normalizeQualityScore(1 - metrics.screenLikeScore), quality: "Too high" },
+      { label: "Clean Crop", score: normalizeQualityScore(1 - (metrics.uiFrameScore || 0)), quality: "Needs crop" },
+      { label: "Painter Read", score: 0, quality: "Not scored" }
     ];
   }
 
