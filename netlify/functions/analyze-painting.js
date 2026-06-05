@@ -31,7 +31,36 @@ const JSON_SCHEMA = {
     focalPoint: { type: "string" },
     colorHarmony: { type: "string" },
     edgeControl: { type: "string" },
-    readability: { type: "string" }
+    readability: { type: "string" },
+    scoreCalibration: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        qualityBand: {
+          type: "string",
+          enum: ["bad-upload", "weak", "usable", "strong", "excellent"]
+        },
+        scoreAdjustment: {
+          type: "integer",
+          minimum: -12,
+          maximum: 12
+        },
+        confidence: {
+          type: "integer",
+          minimum: 0,
+          maximum: 100
+        },
+        centeredSubjectIntentional: { type: "boolean" },
+        reason: { type: "string" }
+      },
+      required: [
+        "qualityBand",
+        "scoreAdjustment",
+        "confidence",
+        "centeredSubjectIntentional",
+        "reason"
+      ]
+    }
   },
   required: [
     "summary",
@@ -44,7 +73,8 @@ const JSON_SCHEMA = {
     "focalPoint",
     "colorHarmony",
     "edgeControl",
-    "readability"
+    "readability",
+    "scoreCalibration"
   ]
 };
 
@@ -252,8 +282,30 @@ function normalizeAnalysis(raw) {
     focalPoint: cleanText(raw.focalPoint),
     colorHarmony: cleanText(raw.colorHarmony),
     edgeControl: cleanText(raw.edgeControl),
-    readability: cleanText(raw.readability)
+    readability: cleanText(raw.readability),
+    scoreCalibration: normalizeScoreCalibration(raw.scoreCalibration)
   };
+}
+
+function normalizeScoreCalibration(raw) {
+  const source = raw && typeof raw === "object" ? raw : {};
+  const allowedBands = new Set(["bad-upload", "weak", "usable", "strong", "excellent"]);
+  const qualityBand = allowedBands.has(source.qualityBand) ? source.qualityBand : "usable";
+  return {
+    qualityBand,
+    scoreAdjustment: clampInteger(source.scoreAdjustment, -12, 12, 0),
+    confidence: clampInteger(source.confidence, 0, 100, 0),
+    centeredSubjectIntentional: Boolean(source.centeredSubjectIntentional),
+    reason: cleanText(source.reason)
+  };
+}
+
+function clampInteger(value, min, max, fallback = min) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, Math.round(number)));
 }
 
 function cleanText(value) {
@@ -278,6 +330,10 @@ function buildSystemPrompt() {
     "Critique the uploaded painting using visible evidence and the supplied objective Quick Check measurements.",
     "Do not flatter. Do not invent subject details that are not visible. Do not overstate certainty.",
     "If the image looks like a screenshot, app UI, graphic panel, cropped fragment, or weak reference, say so directly and keep the score implications strict.",
+    "For score calibration, do not replace the computed score. Give only a small adjustment from -12 to +12 based on visible painter evidence.",
+    "Use positive adjustment when the computed score underrates intentional painterly choices such as a centered flower, portrait, still life, soft atmospheric background, or chiaroscuro lighting.",
+    "Use negative adjustment when the computed score overrates a screenshot, app UI, weak reference, flat graphic, confusing crop, or unreadable value hierarchy.",
+    "Excellent should mean strong painting/reference with clear focal hierarchy, value design, readable composition, useful color/temperature structure, and no upload problem. A perfect 100 is theoretical.",
     "Keep the language specific, practical, objective, encouraging but honest.",
     "Focus on painting improvement: value structure, composition, focal point, color harmony, edge control, readability, and next actions.",
     "Avoid generic phrases such as beautiful colors, nice work, strong composition, or painterly feel unless supported by visible evidence.",
@@ -290,6 +346,9 @@ function buildUserPrompt(computedAnalysis) {
     "Analyze this uploaded painting/reference.",
     "Use the image first, then cross-check your interpretation against these computed Quick Check measurements.",
     "If the computed metrics and the visible image disagree, explain the visible evidence and stay conservative.",
+    "Return scoreCalibration.scoreAdjustment as an integer from -12 to 12. Use 0 if the computed score already feels fair.",
+    "Do not reward prettiness alone. Reward painter-useful structure: value hierarchy, focal hierarchy, composition intent, depth, edge control, color temperature, and reference quality.",
+    "If a centered subject is intentional and visually supported, set centeredSubjectIntentional true and do not punish center placement.",
     "Return JSON only.",
     "",
     "Computed Quick Check data:",

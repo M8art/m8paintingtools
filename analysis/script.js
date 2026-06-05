@@ -1206,7 +1206,13 @@ function isBadQuickCheckUpload(result) {
 }
 
 function requestPlayQuickAiAnalysisForCurrentResult(result) {
-  if (!window.M8_GOOGLE_PLAY_BUILD || !result) {
+  if (!result) {
+    pendingPlayQuickAiImageDataUrl = "";
+    return;
+  }
+
+  if (isBadQuickCheckUpload(result)) {
+    pendingPlayQuickAiImageDataUrl = "";
     return;
   }
 
@@ -1748,7 +1754,7 @@ function analyzeUploadedImage() {
     }
   }
 
-  const focalClarity = clamp((focalWeight / safeTotalWeight - 0.08) / 0.2, 0, 1);
+  const focalClarity = clamp((focalWeight / safeTotalWeight - 0.05) / 0.17, 0, 1);
   const verticalImbalance = Math.abs(topWeight - bottomWeight) / Math.max(topWeight + bottomWeight, 0.0001);
   const flowStrength = clamp((centerDistance * 1.25) + (balanceImbalance * 0.45) + (verticalImbalance * 0.3), 0, 1);
   const depthStrength = clamp((valueSpread * 0.62) + (valueStd * 0.75) + (verticalImbalance * 0.18), 0, 1);
@@ -1767,15 +1773,17 @@ function analyzeUploadedImage() {
     0,
     1
   );
-  const centralLockRisk = clamp((centerDominance - 0.52) / 0.34, 0, 1)
-    * (1 - (clamp(flowStrength / 0.72, 0, 1) * 0.45));
+  const centralLockRisk = clamp((centerDominance - 0.68) / 0.26, 0, 1)
+    * (1 - (clamp(flowStrength / 0.68, 0, 1) * 0.55))
+    * (1 - (clamp(depthStrength / 0.64, 0, 1) * 0.25));
   const frameCompletenessQuality = 1 - cropRisk;
 
-  const centerQuality = clamp((centerDistance - 0.06) / 0.24, 0, 1) * 0.76
-    + (1 - clamp((centerWeightShare - 0.14) / 0.36, 0, 1)) * 0.24;
+  const centerQuality = (clamp((centerDistance - 0.035) / 0.28, 0, 1) * 0.52)
+    + ((1 - clamp((centerWeightShare - 0.22) / 0.42, 0, 1)) * 0.3)
+    + (clamp(flowStrength / 0.72, 0, 1) * 0.18);
   const balanceQuality = 1 - clamp(balanceImbalance / 0.28, 0, 1);
-  const valueQuality = clamp((valueSpread - 0.22) / 0.36, 0, 1) * 0.72
-    + clamp((valueStd - 0.11) / 0.18, 0, 1) * 0.28;
+  const valueQuality = clamp((valueSpread - 0.14) / 0.34, 0, 1) * 0.62
+    + clamp((valueStd - 0.07) / 0.18, 0, 1) * 0.38;
   const clarityQuality = focalClarity;
   const flowQuality = flowStrength;
   const depthQuality = depthStrength;
@@ -1799,18 +1807,26 @@ function analyzeUploadedImage() {
     0,
     1
   );
-  const weightedQuality = (centerQuality * 0.16)
-    + (balanceQuality * 0.14)
-    + (valueQuality * 0.17)
-    + (clarityQuality * 0.13)
-    + (flowQuality * 0.14)
-    + (depthQuality * 0.1)
-    + (frameCompletenessQuality * 0.16);
-  const objectivityPenalty = (cropRisk * 0.18) + (centralLockRisk * 0.1);
-  const adjustedQuality = clamp(weightedQuality - objectivityPenalty, 0, 1);
-  const rawScore = clamp(Math.round(8 + (adjustedQuality * 88)), 4, 96);
-  const contextScoreCap = cropRisk > 0.62 ? Math.round(68 - (cropRisk * 20)) : 94;
-  const centerScoreCap = centralLockRisk > 0.68 ? 76 : 94;
+  const weightedQuality = (centerQuality * 0.13)
+    + (balanceQuality * 0.12)
+    + (valueQuality * 0.18)
+    + (clarityQuality * 0.11)
+    + (flowQuality * 0.12)
+    + (depthQuality * 0.11)
+    + (frameCompletenessQuality * 0.12)
+    + (colorQuality * 0.11);
+  const objectivityPenalty = (cropRisk * 0.12) + (centralLockRisk * 0.06);
+  const painterlyLift = clamp(
+    (clamp((referenceAssessment.referenceConfidence - 0.72) / 0.24, 0, 1) * 0.07)
+      + (clamp((colorQuality - 0.5) / 0.5, 0, 1) * 0.04)
+      + (clamp((depthQuality - 0.45) / 0.45, 0, 1) * 0.04),
+    0,
+    0.12
+  );
+  const adjustedQuality = clamp(weightedQuality - objectivityPenalty + painterlyLift, 0, 1);
+  const rawScore = clamp(Math.round(20 + (Math.pow(adjustedQuality, 0.72) * 79)), 8, 99);
+  const contextScoreCap = cropRisk > 0.72 ? Math.round(92 - (cropRisk * 16)) : 98;
+  const centerScoreCap = centralLockRisk > 0.78 ? 86 : 98;
   const contextAdjustedScore = Math.min(rawScore, contextScoreCap, centerScoreCap);
   const score = referenceAssessment.referenceIssue
     ? null
@@ -2038,7 +2054,7 @@ function assessReferenceQuality(sample) {
 }
 
 function getFocalLine(metrics) {
-  if (metrics.centerDominance > 0.68) {
+  if (metrics.centerDominance > 0.78 && (metrics.centralLockRisk || 0) > 0.58) {
     return pickVariant([
       "Main attention sits slightly too close to the center.",
       "The main emphasis stays slightly too near the middle.",
@@ -2049,14 +2065,14 @@ function getFocalLine(metrics) {
     ]);
   }
 
-  if (metrics.centerDominance > 0.42) {
+  if (metrics.centerDominance > 0.52) {
     return pickVariant([
-      "The main emphasis feels reasonably offset from the center.",
-      "The focal area sits a moderate distance away from the middle.",
-      "Attention is placed reasonably away from center.",
-      "The emphasis feels moderately offset from the center.",
-      "The main pull sits reasonably outside the middle zone.",
-      "The focal placement is moderately removed from center."
+      "The main emphasis is clear enough for a centered or near-centered subject.",
+      "The focal area reads clearly, even though it stays close to the middle zone.",
+      "Attention lands in a stable focal area with enough supporting structure around it.",
+      "The emphasis is readable and the surrounding shapes help hold it in place.",
+      "The main pull is strong enough to work even near the middle of the frame.",
+      "The focal placement reads as intentional rather than accidental."
     ]);
   }
 
@@ -2102,7 +2118,7 @@ function getBalanceLine(metrics) {
 }
 
 function getValueLine(metrics) {
-  if (metrics.valueSpread < 0.34 || metrics.valueStd < 0.16) {
+  if (metrics.valueSpread < 0.25 || metrics.valueStd < 0.11) {
     return pickVariant([
       "Value range is somewhat compressed.",
       "The value spread feels somewhat tight.",
@@ -2113,7 +2129,7 @@ function getValueLine(metrics) {
     ]);
   }
 
-  if (metrics.valueSpread < 0.56 || metrics.valueStd < 0.23) {
+  if (metrics.valueSpread < 0.45 || metrics.valueStd < 0.18) {
     return pickVariant([
       "The image shows a moderate value spread.",
       "Value range feels moderate across the image.",
@@ -2135,7 +2151,7 @@ function getValueLine(metrics) {
 }
 
 function getFocalClarityLine(metrics) {
-  if (metrics.focalClarity < 0.34) {
+  if (metrics.focalClarity < 0.28) {
     return pickVariant([
       "The focal emphasis feels a little dispersed across the image.",
       "The main emphasis feels a bit spread out.",
@@ -2146,7 +2162,7 @@ function getFocalClarityLine(metrics) {
     ]);
   }
 
-  if (metrics.focalClarity < 0.64) {
+  if (metrics.focalClarity < 0.56) {
     return pickVariant([
       "There is a readable focal area, though it could separate more clearly.",
       "The focal area is readable, but it could stand apart more clearly.",
@@ -2242,12 +2258,12 @@ function buildAttributeRead(metrics) {
 }
 
 function buildValueAttributeLine(metrics) {
-  if (metrics.valueQuality < 0.42) {
+  if (metrics.valueQuality < 0.32) {
     return "Values are the main weakness: the light, middle, and dark groups sit too close together.";
   }
 
-  if (metrics.valueQuality < 0.66) {
-    return "Values are usable, but the big light and shadow masses could separate more clearly.";
+  if (metrics.valueQuality < 0.56) {
+    return "Values are usable, but the big light and shadow masses could separate a little more clearly.";
   }
 
   return "Values are supporting the read well. Protect the big light-dark structure while refining details.";
@@ -2258,7 +2274,7 @@ function buildCompositionAttributeLine(metrics) {
     return "Composition read is limited because the image behaves like a cropped detail. Upload the full frame for a fairer check.";
   }
 
-  if ((metrics.centralLockRisk || 0) > 0.55 || metrics.centerDominance > 0.58) {
+  if ((metrics.centralLockRisk || 0) > 0.72 || (metrics.centerDominance > 0.82 && metrics.flowQuality < 0.42)) {
     return "Composition is the next issue: the focal pull sits too close to the center and needs a stronger eye path.";
   }
 
@@ -2932,7 +2948,7 @@ function buildOneSentenceVerdict(metrics) {
     ]);
   }
 
-  if ((metrics.cropRisk || 0) > 0.62) {
+  if ((metrics.cropRisk || 0) > 0.74) {
     return pickVariant([
       "This reads like a cropped detail, so the composition score is intentionally stricter.",
       "The image has readable values, but missing full-frame context is holding the score down.",
@@ -2940,7 +2956,7 @@ function buildOneSentenceVerdict(metrics) {
     ]);
   }
 
-  if ((metrics.centralLockRisk || 0) > 0.62) {
+  if ((metrics.centralLockRisk || 0) > 0.76) {
     return pickVariant([
       "The focal point is clear, but the composition is too center-locked to score higher.",
       "The center reads well, but the surrounding frame needs more movement.",
@@ -2948,7 +2964,7 @@ function buildOneSentenceVerdict(metrics) {
     ]);
   }
 
-  if (metrics.centerDominance > 0.56) {
+  if (metrics.centerDominance > 0.78 && metrics.flowQuality < 0.42) {
     return pickVariant([
       "The composition is readable, but the focal pull sits too close to center.",
       "Your image has a clear read, but the main attention feels too centered.",
@@ -2970,7 +2986,7 @@ function buildOneSentenceVerdict(metrics) {
       ]);
   }
 
-  if (metrics.valueQuality < 0.46) {
+  if (metrics.valueQuality < 0.36) {
     return pickVariant([
       "The composition has potential, but the value groups need stronger separation.",
       "The image reads softly because light and dark families sit too close together.",
@@ -2978,7 +2994,7 @@ function buildOneSentenceVerdict(metrics) {
     ]);
   }
 
-  if (metrics.clarityQuality < 0.46) {
+  if (metrics.clarityQuality < 0.36) {
     return pickVariant([
       "The structure is usable, but the focal stop needs more clarity.",
       "The eye needs a firmer landing point inside the composition.",
@@ -3008,7 +3024,7 @@ function getConfidenceBadge(metrics) {
     return { label: "Bad Upload", className: "confidence-bad" };
   }
 
-  if ((metrics.cropRisk || 0) > 0.62) {
+  if ((metrics.cropRisk || 0) > 0.74) {
     return { label: "Cropped Detail", className: "confidence-low" };
   }
 
@@ -3030,19 +3046,19 @@ function buildTags(metrics) {
     return ["Not Artwork", "Screenshot / UI", "Low Confidence", "Re-upload"];
   }
 
-  if ((metrics.cropRisk || 0) > 0.62) {
+  if ((metrics.cropRisk || 0) > 0.74) {
     tags.push("Cropped Detail");
   } else if ((metrics.frameCompletenessQuality || 0) > 0.68) {
     tags.push("Fuller Frame");
   }
 
-  if ((metrics.centralLockRisk || 0) > 0.62) {
+  if ((metrics.centralLockRisk || 0) > 0.72) {
     tags.push("Center Locked");
   }
 
-  if (metrics.centerDominance > 0.68) {
+  if (metrics.centerDominance > 0.78) {
     tags.push("Center Dominant");
-  } else if (metrics.centerDominance > 0.42) {
+  } else if (metrics.centerDominance > 0.52) {
     tags.push("Near Center");
   } else {
     tags.push("Offset Focus");
@@ -3054,17 +3070,17 @@ function buildTags(metrics) {
     tags.push("Balanced");
   }
 
-  if (metrics.valueSpread < 0.34 || metrics.valueStd < 0.16) {
+  if (metrics.valueSpread < 0.25 || metrics.valueStd < 0.11) {
     tags.push("Compressed Values");
-  } else if (metrics.valueSpread < 0.56 || metrics.valueStd < 0.23) {
+  } else if (metrics.valueSpread < 0.45 || metrics.valueStd < 0.18) {
     tags.push("Moderate Range");
   } else {
     tags.push("Strong Contrast");
   }
 
-  if (metrics.focalClarity < 0.34) {
+  if (metrics.focalClarity < 0.28) {
     tags.push("Diffuse Focus");
-  } else if (metrics.focalClarity > 0.64) {
+  } else if (metrics.focalClarity > 0.56) {
     tags.push("Clear Focus");
   }
 
@@ -3150,6 +3166,8 @@ function resetAnalysisSequence() {
   isAnalysisRunning = false;
   currentAnalysisUsesFreeSlot = false;
   latestQuickCheckResult = null;
+  playQuickAiRequestId += 1;
+  pendingPlayQuickAiImageDataUrl = "";
   clearMobileResultsReady();
   uploadZone.classList.remove("is-analysis-running");
   analysisSurface.classList.remove("is-analysis-running");
@@ -3841,7 +3859,7 @@ function renderPaintingBreakdownPlan(lines) {
 }
 
 async function requestPlayQuickAiAnalysis(imageDataUrl, computedAnalysis) {
-  if (!window.M8_GOOGLE_PLAY_BUILD || !imageDataUrl) {
+  if (!imageDataUrl || !computedAnalysis || isBadQuickCheckUpload(computedAnalysis)) {
     return;
   }
 
@@ -3859,6 +3877,7 @@ async function requestPlayQuickAiAnalysis(imageDataUrl, computedAnalysis) {
       return;
     }
 
+    applyQuickAiScoreCalibration(data.analysis?.scoreCalibration, computedAnalysis);
     renderPlayQuickAiAnalysis(data.analysis);
   } catch (error) {
     if (requestId !== playQuickAiRequestId) {
@@ -3942,13 +3961,79 @@ function sanitizeQuickAiComputedAnalysis(result) {
       focalClarity: metrics.focalClarity,
       flowStrength: metrics.flowStrength,
       depthStrength: metrics.depthStrength,
+      colorQuality: metrics.colorQuality,
+      valueQuality: metrics.valueQuality,
+      clarityQuality: metrics.clarityQuality,
       balanceQuality: metrics.balanceQuality,
       centerQuality: metrics.centerQuality,
+      centerDominance: metrics.centerDominance,
+      centralLockRisk: metrics.centralLockRisk,
+      frameCompletenessQuality: metrics.frameCompletenessQuality,
       cropRisk: metrics.cropRisk,
       referenceConfidence: metrics.referenceConfidence,
-      referenceIssue: metrics.referenceIssue
+      referenceIssue: metrics.referenceIssue,
+      referenceGate: metrics.referenceGate
     }
   };
+}
+
+function applyQuickAiScoreCalibration(calibration, result) {
+  if (!calibration || !result || isBadQuickCheckUpload(result) || !Number.isFinite(result.score)) {
+    return null;
+  }
+
+  const confidence = clamp(Math.round(Number(calibration.confidence) || 0), 0, 100);
+  const adjustment = clamp(Math.round(Number(calibration.scoreAdjustment) || 0), -12, 12);
+  if (confidence < 45 || adjustment === 0) {
+    result.aiScoreCalibration = {
+      qualityBand: calibration.qualityBand || "usable",
+      scoreAdjustment: adjustment,
+      confidence,
+      centeredSubjectIntentional: Boolean(calibration.centeredSubjectIntentional),
+      reason: calibration.reason || ""
+    };
+    return result.aiScoreCalibration;
+  }
+
+  const localScore = result.score;
+  const calibratedScore = clamp(Math.round(localScore + adjustment), 1, 99);
+  result.score = calibratedScore;
+  result.aiScoreCalibration = {
+    qualityBand: calibration.qualityBand || "usable",
+    scoreAdjustment: adjustment,
+    confidence,
+    centeredSubjectIntentional: Boolean(calibration.centeredSubjectIntentional),
+    reason: calibration.reason || "",
+    localScore,
+    calibratedScore
+  };
+  result.metrics = {
+    ...result.metrics,
+    aiScoreAdjustment: adjustment,
+    aiScoreConfidence: confidence,
+    aiQualityBand: result.aiScoreCalibration.qualityBand,
+    aiCenteredSubjectIntentional: result.aiScoreCalibration.centeredSubjectIntentional
+  };
+
+  animateQuickCheckScore(calibratedScore);
+  if (lastCompletedQuickCheckResult) {
+    lastCompletedQuickCheckResult.score = calibratedScore;
+    lastCompletedQuickCheckResult.metrics = { ...result.metrics };
+  }
+  if (latestQuickCheckResult === result) {
+    latestQuickCheckResult = result;
+  }
+  if (quickAiChatContext) {
+    quickAiChatContext = sanitizeQuickAiChatContext(result);
+  }
+  trackM8AnalysisCompleted("quick_check_ai_calibrated", {
+    score: calibratedScore,
+    local_score: localScore,
+    adjustment,
+    confidence,
+    quality_band: result.aiScoreCalibration.qualityBand
+  });
+  return result.aiScoreCalibration;
 }
 
 function ensureQuickStudioNotesPanel() {
@@ -3996,7 +4081,9 @@ function renderPlayQuickAiAnalysis(analysis) {
     quickCheckStudioNotesText.textContent = analysis.summary || analysis.mainPriority || "Studio read is ready.";
   }
   const nextSteps = list(analysis.nextSteps);
+  const scoreCalibration = buildQuickAiScoreCalibrationNote(analysis.scoreCalibration);
   const details = [
+    scoreCalibration ? `<div class="quick-studio-note"><span>Score check</span><p>${escapeHtml(scoreCalibration)}</p></div>` : "",
     analysis.mainPriority ? `<div class="quick-studio-note"><span>Priority</span><p>${escapeHtml(analysis.mainPriority)}</p></div>` : "",
     analysis.valueStructure ? `<div class="quick-studio-note"><span>Value</span><p>${escapeHtml(analysis.valueStructure)}</p></div>` : "",
     analysis.composition ? `<div class="quick-studio-note"><span>Composition</span><p>${escapeHtml(analysis.composition)}</p></div>` : "",
@@ -4008,6 +4095,31 @@ function renderPlayQuickAiAnalysis(analysis) {
   }
   block.classList.remove("hidden");
   block.classList.remove("is-loading");
+}
+
+function buildQuickAiScoreCalibrationNote(calibration) {
+  if (!calibration || typeof calibration !== "object") {
+    return "";
+  }
+
+  const confidence = clamp(Math.round(Number(calibration.confidence) || 0), 0, 100);
+  const adjustment = clamp(Math.round(Number(calibration.scoreAdjustment) || 0), -12, 12);
+  const reason = String(calibration.reason || "").trim();
+  const band = String(calibration.qualityBand || "").replace(/-/g, " ");
+  const direction = adjustment > 0 ? `+${adjustment}` : String(adjustment);
+  const adjustmentText = adjustment === 0
+    ? "The first score reads fair."
+    : `Studio calibration adjusted the score ${direction} points.`;
+  const intentText = calibration.centeredSubjectIntentional
+    ? "Centered subject reads intentional."
+    : "";
+  return [
+    adjustmentText,
+    band ? `Band: ${band}.` : "",
+    confidence ? `Confidence: ${confidence}%.` : "",
+    intentText,
+    reason
+  ].filter(Boolean).join(" ");
 }
 
 function resetQuickStudioNotes() {
@@ -4150,11 +4262,11 @@ function buildBreakdownContext(result) {
     isCentered: hasTag("Center Dominant"),
     isBalanced: hasTag("Balanced"),
     isStatic: hasTag("Static Flow"),
-    hasLowContrast: hasTag("Compressed Values") || metrics.valueSpread < 0.34 || metrics.valueStd < 0.16,
-    hasStrongFocus: hasTag("Clear Focus") || metrics.focalClarity > 0.64,
-    hasDiffuseFocus: hasTag("Diffuse Focus") || metrics.focalClarity < 0.34,
+    hasLowContrast: hasTag("Compressed Values") || metrics.valueSpread < 0.25 || metrics.valueStd < 0.11,
+    hasStrongFocus: hasTag("Clear Focus") || metrics.focalClarity > 0.56,
+    hasDiffuseFocus: hasTag("Diffuse Focus") || metrics.focalClarity < 0.28,
     hasStrongFlow: hasTag("Strong Flow") || metrics.flowStrength > 0.64,
-    hasStrongContrast: hasTag("Strong Contrast") || metrics.valueSpread > 0.56 || metrics.valueStd > 0.23,
+    hasStrongContrast: hasTag("Strong Contrast") || metrics.valueSpread > 0.45 || metrics.valueStd > 0.18,
     isLeftHeavy: hasTag("Left Heavy"),
     isRightHeavy: hasTag("Right Heavy"),
     hasShallowDepth: hasTag("Shallow Depth") || metrics.depthStrength < 0.34,
@@ -4291,11 +4403,11 @@ function buildContextualBreakdownPools(context) {
 }
 
 function inferStyleHint(metrics) {
-  if (metrics.valueSpread > 0.56 && metrics.focalClarity > 0.58) {
+  if (metrics.valueSpread > 0.45 && metrics.focalClarity > 0.56) {
     return "The image leans graphic, with a clear contrast hierarchy and firmer edge control.";
   }
 
-  if (metrics.valueSpread < 0.34 || metrics.valueStd < 0.16) {
+  if (metrics.valueSpread < 0.25 || metrics.valueStd < 0.11) {
     return "The image leans toward a limited-value structure with soft transitions.";
   }
 
@@ -4580,7 +4692,7 @@ function buildWhyThisScore(metrics) {
   ];
   const limits = [
     {
-      score: metrics.cropRisk || 0,
+      score: clamp(((metrics.cropRisk || 0) - 0.64) / 0.32, 0, 1),
       variants: [
         "The score drops because this looks too much like a cropped detail rather than the full painting.",
         "The image loses points where important visual weight is pressed against the outer frame.",
@@ -4596,7 +4708,7 @@ function buildWhyThisScore(metrics) {
       ]
     },
     {
-      score: metrics.centerDominance,
+      score: Math.max(metrics.centralLockRisk || 0, clamp((metrics.centerDominance - 0.72) / 0.24, 0, 1)),
       variants: [
         "The score drops because the focal pull sits too close to the center.",
         "The main attention is still a bit too centered, which makes the read feel locked.",
@@ -4645,9 +4757,9 @@ function buildWhyThisScore(metrics) {
 
 function buildFastestFix(metrics) {
   const options = [
-    { score: metrics.cropRisk || 0, text: "Upload the whole painting, not just a cropped detail." },
+    { score: clamp(((metrics.cropRisk || 0) - 0.64) / 0.32, 0, 1), text: "Upload the whole painting, not just a cropped detail." },
     { score: metrics.centralLockRisk || 0, text: "Add a stronger eye path around the centered focal point." },
-    { score: metrics.centerDominance, text: "Push the focal contrast farther away from the center." },
+    { score: Math.max(metrics.centralLockRisk || 0, clamp((metrics.centerDominance - 0.72) / 0.24, 0, 1)), text: "Push the focal contrast farther away from the center." },
     {
       score: metrics.balanceImbalance,
       text: metrics.balanceDirection === "left"
