@@ -2627,11 +2627,6 @@ html:not(.mobile-light-mode) .quick-check-onboarding-label {
   background: linear-gradient(90deg, rgba(201, 106, 61, 0.72), rgba(201, 106, 61, 0.32));
 }
 
-.result-compare-summary {
-  display: grid;
-  gap: 4px;
-}
-
 .result-tags {
   display: flex;
   flex-wrap: wrap;

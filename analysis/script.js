@@ -61,11 +61,6 @@ const premiumFixUnlockButton = document.getElementById("premiumFixUnlockButton")
 const premiumFixNote = document.getElementById("premiumFixNote");
 const quickCheckScoreBreakdown = document.getElementById("quickCheckScoreBreakdown");
 const quickCheckBreakdownRows = document.getElementById("quickCheckBreakdownRows");
-const quickCheckComparison = document.getElementById("quickCheckComparison");
-const quickCheckPreviousScore = document.getElementById("quickCheckPreviousScore");
-const quickCheckCurrentScoreSummary = document.getElementById("quickCheckCurrentScoreSummary");
-const quickCheckScoreDelta = document.getElementById("quickCheckScoreDelta");
-const quickCheckComparisonText = document.getElementById("quickCheckComparisonText");
 const quickCheckTags = document.getElementById("quickCheckTags");
 const dynamicBreakdown = document.getElementById("dynamicBreakdown");
 const breakdownWorks = document.getElementById("breakdownWorks");
@@ -1106,7 +1101,6 @@ function runQuickCheck() {
 
 function completeQuickCheck() {
   const result = latestQuickCheckResult || buildQuickCheckResult();
-  const comparison = buildComparison(lastCompletedQuickCheckResult, result);
 
   setAnalysisStage("stage-final");
   applyGuidanceOverlay(result.metrics);
@@ -1131,7 +1125,6 @@ function completeQuickCheck() {
   renderQuickNextTool(result.nextTool);
   renderPremiumFixPreview(result);
   renderScoreBreakdown(result.scoreBreakdown);
-  renderComparison(comparison, result.score);
   applyResultComposition(result.composition);
   syncQuickCheckResultAccess(result);
   quickCheckTags.innerHTML = "";
@@ -2352,7 +2345,6 @@ function syncQuickCheckResultAccess(result) {
   });
 
   if (!hasFullResult) {
-    quickCheckComparison?.classList.add("hidden");
     isBreakdownExpanded = false;
     quickCheckDetails?.setAttribute("aria-hidden", "true");
     breakdownToggleButton?.setAttribute("aria-expanded", "false");
@@ -3712,7 +3704,6 @@ function setupQuickCheckDeepReport() {
 
   const initiallyHiddenDeepReportElements = [
     quickCheckScoreBreakdown,
-    quickCheckComparison,
     quickCheckDetails,
     breakdownToggleButton,
     paintingBreakdownResult
@@ -4284,7 +4275,6 @@ function resetResultRevealState() {
     quickCheckFastestFix,
     quickCheckPremiumFix,
     quickCheckScoreBreakdown,
-    quickCheckComparison,
     quickCheckSuggestion,
     quickCheckTags,
     quickCheckBlocks,
@@ -4302,13 +4292,11 @@ function resetResultRevealState() {
     quickCheckWeaknessBlock,
     quickCheckFastestFix,
     quickCheckPremiumFix,
-    quickCheckScoreBreakdown,
-    quickCheckComparison
+    quickCheckScoreBreakdown
   ].forEach((element) => {
     element?.classList.add("result-reveal");
   });
 
-  quickCheckComparison?.classList.add("hidden");
   quickCheckPremiumFix?.classList.add("hidden");
   quickCheckScore.textContent = "72 / 100";
   quickCheckVerdict.textContent = "Your composition is readable, but the focal point needs a clearer job.";
@@ -4327,11 +4315,10 @@ function revealResultPanel() {
     { element: quickCheckFastestFix, delay: 460, skip: quickCheckFastestFix?.classList.contains("hidden") },
     { element: quickCheckPremiumFix, delay: 560, skip: quickCheckPremiumFix?.classList.contains("hidden") },
     { element: quickCheckScoreBreakdown, delay: 660, skip: quickCheckScoreBreakdown?.classList.contains("hidden") },
-    { element: quickCheckComparison, delay: 760, skip: quickCheckComparison?.classList.contains("hidden") },
-    { element: quickCheckTags, delay: 860 },
-    { element: freeCheckNote, delay: 940, skip: freeCheckNote.classList.contains("hidden") },
-    { element: freeDailyNote, delay: 940, skip: freeDailyNote.classList.contains("hidden") },
-    { element: streakNote, delay: 1020, skip: streakNote.classList.contains("hidden") }
+    { element: quickCheckTags, delay: 760 },
+    { element: freeCheckNote, delay: 840, skip: freeCheckNote.classList.contains("hidden") },
+    { element: freeDailyNote, delay: 840, skip: freeDailyNote.classList.contains("hidden") },
+    { element: streakNote, delay: 920, skip: streakNote.classList.contains("hidden") }
   ];
 
   revealSteps.forEach(({ element, delay, skip }) => {
@@ -4405,19 +4392,6 @@ function renderScoreBreakdown(items) {
     row.append(head, track);
     quickCheckBreakdownRows.appendChild(row);
   });
-}
-
-function renderComparison(comparison, currentScore) {
-  if (!comparison) {
-    quickCheckComparison.classList.add("hidden");
-    return;
-  }
-
-  quickCheckComparison.classList.remove("hidden");
-  quickCheckPreviousScore.textContent = `Previous score: ${comparison.previousScore} / 100`;
-  quickCheckCurrentScoreSummary.textContent = `Current score: ${currentScore} / 100`;
-  quickCheckScoreDelta.textContent = `Difference: ${comparison.delta > 0 ? "+" : ""}${comparison.delta}`;
-  quickCheckComparisonText.textContent = comparison.summary;
 }
 
 function animateQuickCheckScore(score) {
@@ -4600,38 +4574,6 @@ function buildFastestFix(metrics) {
   ];
 
   return pickHighestScoringText(options);
-}
-
-function buildComparison(previousResult, currentResult) {
-  if (!previousResult?.metrics) {
-    return null;
-  }
-
-  const delta = currentResult.score - previousResult.score;
-  const candidates = [
-    { delta: currentResult.metrics.clarityQuality - previousResult.metrics.clarityQuality, positive: "Focal clarity improved.", negative: "Focal clarity softened." },
-    { delta: currentResult.metrics.balanceQuality - previousResult.metrics.balanceQuality, positive: "Balance became more stable.", negative: "Balance became less stable." },
-    { delta: currentResult.metrics.valueQuality - previousResult.metrics.valueQuality, positive: "Value structure is stronger now.", negative: "Value structure is weaker now." },
-    { delta: (currentResult.metrics.frameCompletenessQuality || 0) - (previousResult.metrics.frameCompletenessQuality || 0), positive: "The frame context is more complete now.", negative: "The frame reads more cropped now." },
-    { delta: currentResult.metrics.flowQuality - previousResult.metrics.flowQuality, positive: "The eye path reads more clearly now.", negative: "The eye path reads less clearly now." },
-    { delta: currentResult.metrics.depthQuality - previousResult.metrics.depthQuality, positive: "Depth separation reads more clearly now.", negative: "Depth separation reads less clearly now." }
-  ];
-  const strongestShift = [...candidates].sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
-
-  let summary = "The structure reads close to the previous check.";
-  if (strongestShift && Math.abs(strongestShift.delta) > 0.035) {
-    summary = strongestShift.delta > 0 ? strongestShift.positive : strongestShift.negative;
-  } else if (delta > 0) {
-    summary = "The revised version reads a little stronger overall.";
-  } else if (delta < 0) {
-    summary = "The revised version reads a little less clearly overall.";
-  }
-
-  return {
-    previousScore: previousResult.score,
-    delta,
-    summary
-  };
 }
 
 function applyGuidanceOverlay(metrics) {
