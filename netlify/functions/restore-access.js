@@ -1,16 +1,10 @@
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
 const MIN_UNLOCK_AMOUNT_USD = 500;
 const MAX_SESSION_PAGES = 10;
+const { createAccessToken, jsonResponse } = require("./_access");
 
 function json(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store"
-    },
-    body: JSON.stringify(body)
-  };
+  return jsonResponse(statusCode, body);
 }
 
 function normalizeEmail(value = "") {
@@ -52,6 +46,10 @@ async function fetchStripe(path, secretKey) {
 }
 
 exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return json(204, "");
+  }
+
   if (event.httpMethod !== "POST") {
     return json(405, { ok: false, error: "Method not allowed." });
   }
@@ -88,6 +86,11 @@ exports.handler = async (event) => {
         return json(200, {
           ok: true,
           unlocked: true,
+          accessToken: createAccessToken({
+            sub: email,
+            source: "stripe_restore",
+            stripeSession: match.id
+          }),
           restoredAt: new Date().toISOString()
         });
       }
