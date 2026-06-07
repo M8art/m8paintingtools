@@ -126,7 +126,7 @@ const aiReportMailto = document.getElementById("aiReportMailto");
 const aiReportStatus = document.getElementById("aiReportStatus");
 
 const params = new URLSearchParams(window.location.search);
-const APP_VERSION_NAME = "1.0.67";
+const APP_VERSION_NAME = "1.0.75";
 const DEV_MODE = params.get("dev") === "true";
 const LAST_FREE_CHECK_STORAGE_KEY = "m8_last_free_check";
 const STREAK_COUNT_STORAGE_KEY = "m8_streak_count";
@@ -141,11 +141,17 @@ const LANDING_HANDOFF_STORE = "uploads";
 const LANDING_HANDOFF_RECORD = "latest";
 const QUICK_UNLOCK_PENDING_ANALYSIS_KEY = "m8_quick_unlock_pending_analysis";
 const FREE_FULL_ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
-const FREE_QUICK_CHECK_DAILY_LIMIT = 3;
+const FREE_QUICK_CHECK_DAILY_LIMIT = 1;
 const FREE_QUICK_CHECK_USAGE_STORAGE_KEY = "m8_quick_free_check_usage";
 const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
 const UNLOCKED_ACCESS_COOKIE_NAME = "m8_unlocked";
+const ACCESS_TOKEN_STORAGE_KEY = "m8_access_token";
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gMfZh9jNb2P2A32u8gw002";
+const CONFIRM_ACCESS_ENDPOINT = window.M8_CONFIRM_ACCESS_ENDPOINT || (
+  window.location.protocol === "file:"
+    ? "http://localhost:8888/.netlify/functions/confirm-access"
+    : "/.netlify/functions/confirm-access"
+);
 const PAINTING_BREAKDOWN_ENDPOINT = window.M8_PAINTING_BREAKDOWN_ENDPOINT || (
   window.location.protocol === "file:"
     ? "http://localhost:8888/.netlify/functions/painting-breakdown"
@@ -822,9 +828,34 @@ function hasUnlockedAccess() {
   return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true" || document.cookie.split(";").some((item) => item.trim() === `${UNLOCKED_ACCESS_COOKIE_NAME}=true`);
 }
 
-function persistUnlockedAccess() {
+function persistUnlockedAccess(accessToken = "") {
   localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+  if (accessToken) {
+    localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
+  }
   document.cookie = `${UNLOCKED_ACCESS_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
+}
+
+function getAccessToken() {
+  return window.M8_UNLOCK?.getAccessToken?.() || localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "";
+}
+
+function getJsonRequestHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  const unlockHeaders = window.M8_UNLOCK?.authHeaders?.(headers);
+  if (unlockHeaders) {
+    return unlockHeaders;
+  }
+  const accessToken = getAccessToken();
+  const playToken = String(window.M8_GOOGLE_PLAY_ACCESS_TOKEN || "");
+  const baseHeaders = window.M8_GOOGLE_PLAY_BUILD
+    ? {
+      ...headers,
+      "X-M8-Google-Play-Build": "1",
+      ...(playToken ? { "X-M8-Play-Access-Token": playToken } : {})
+    }
+    : headers;
+  return accessToken ? { ...baseHeaders, Authorization: `Bearer ${accessToken}` } : baseHeaders;
 }
 
 function getTodayAnalysisStamp() {
@@ -876,7 +907,7 @@ function getFreeQuickChecksRemainingToday() {
 }
 
 function getFreeQuickCheckLimitMessage() {
-  return `You have used your ${FREE_QUICK_CHECK_DAILY_LIMIT} free Quick Checks today. Come back tomorrow, or unlock lifetime access for $5.`;
+  return "Your free Quick Check is used today. Come back tomorrow, or unlock lifetime access for $5.";
 }
 
 function markStreakForCompletedFreeAnalysis() {
@@ -953,18 +984,57 @@ function getStreakMessage() {
 }
 
 function handleUnlockReturn() {
-  if (params.get("unlocked") !== "true") {
+  const sessionId = params.get("checkout_session_id") || params.get("session_id") || params.get("cs") || "";
+  if (params.get("unlocked") !== "true" && !sessionId) {
     return;
   }
 
-  persistUnlockedAccess();
-  justUnlockedFromStripe = true;
-  window.M8_UNLOCK?.trackPurchaseCompleted?.("quick_check_return", {
-    unlock_method: "stripe_return"
-  });
+  if (!sessionId) {
+    showStatusToast("Payment return needs verification. Restore access with your Stripe receipt email.");
+    cleanUnlockParamsFromUrl();
+    return;
+  }
 
+  void confirmCheckoutAccess(sessionId);
+}
+
+async function confirmCheckoutAccess(sessionId) {
+  try {
+    const response = await fetch(CONFIRM_ACCESS_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.unlocked || !result.accessToken) {
+      throw new Error(result.error || "Payment could not be verified.");
+    }
+
+    if (window.M8_UNLOCK?.persistUnlockedAccess) {
+      window.M8_UNLOCK.persistUnlockedAccess(result.accessToken);
+    } else {
+      persistUnlockedAccess(result.accessToken);
+    }
+    justUnlockedFromStripe = true;
+    window.M8_UNLOCK?.trackPurchaseCompleted?.("quick_check_return", {
+      unlock_method: "stripe_checkout_verified"
+    });
+    updateStatusMessage("Unlocked forever. You now have full access.", true);
+    workspaceHint.textContent = "Unlocked forever. You now have full access.";
+    updateAnalysisAccessUI();
+  } catch (error) {
+    showStatusToast(error.message || "Could not verify checkout. Restore access from the Access page.");
+  } finally {
+    cleanUnlockParamsFromUrl();
+  }
+}
+
+function cleanUnlockParamsFromUrl() {
   const cleanedUrl = new URL(window.location.href);
   cleanedUrl.searchParams.delete("unlocked");
+  cleanedUrl.searchParams.delete("checkout_session_id");
+  cleanedUrl.searchParams.delete("session_id");
+  cleanedUrl.searchParams.delete("cs");
   const nextUrl = `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`;
   window.history.replaceState({}, "", nextUrl || cleanedUrl.pathname);
 }
@@ -1350,7 +1420,7 @@ async function handleQuickAiChatSubmit(event) {
   try {
     const response = await fetch(QUICK_CHAT_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getJsonRequestHeaders(),
       body: JSON.stringify({
         message,
         quickCheck: quickAiChatContext,
@@ -3604,7 +3674,7 @@ function buildPremiumFixPlan(result) {
   return {
     lockedTitle: "Your scan is ready.",
     unlockedTitle: "Painter Analysis",
-    lockedSummary: "Your 3 free Quick Checks are used today. Come back tomorrow, or unlock lifetime access to keep working today.",
+    lockedSummary: "Your free Quick Check is used today. Come back tomorrow, or unlock lifetime access to keep working today.",
     unlockedSummary: "This measured read starts the diagnosis. The painter fix plan below is generated from this specific painting.",
     sections: [
       {
@@ -3697,9 +3767,7 @@ async function requestFullPaintingBreakdown(options = {}) {
   try {
     const response = await fetch(PAINTING_BREAKDOWN_ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: getJsonRequestHeaders(),
       body: JSON.stringify({ image })
     });
     const data = await response.json().catch(() => ({}));
@@ -3898,9 +3966,7 @@ async function fetchPlayQuickAiAnalysis(payload, requestId) {
     try {
       const response = await fetch(QUICK_AI_ENDPOINT, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: getJsonRequestHeaders(),
         body: JSON.stringify(payload)
       });
       const data = await response.json().catch(() => ({}));
@@ -4533,7 +4599,7 @@ function showLockedAnalysisState() {
   streakNote.classList.add("hidden");
   updateStatusMessage("Today's free Quick Check limit is used.");
   workspaceHint.textContent = getFreeQuickCheckLimitMessage();
-  showPremiumLimitToast("3 free Quick Checks used today.");
+  showPremiumLimitToast("Free Quick Check used today.");
   scrollToQuickCheckAiAnalysisOnMobile();
 }
 

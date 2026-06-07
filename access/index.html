@@ -805,7 +805,7 @@
           <a class="button" href="../contact/index.html">Contact Support</a>
           <a class="button" href="../contact/index.html?report=ai">Report Result</a>
         </div>
-        <p id="appVersionLabel" class="legal-version">Version: 1.0.49</p>
+        <p id="appVersionLabel" class="legal-version">Version: 1.0.75</p>
       </section>
     </main>
 
@@ -839,10 +839,13 @@
   </div>
 
   <script>
-    const APP_VERSION_NAME = "1.0.49";
+    const APP_VERSION_NAME = "1.0.75";
     const UNLOCKED_ACCESS_STORAGE_KEY = "m8_unlocked";
-    const PATREON_PASSWORD = "patreonmate";
     const UNLOCK_COOKIE_NAME = "m8_unlocked";
+    const ACCESS_TOKEN_STORAGE_KEY = "m8_access_token";
+    const CONFIRM_ACCESS_ENDPOINT = "/.netlify/functions/confirm-access";
+    const MEMBER_UNLOCK_ENDPOINT = "/.netlify/functions/member-unlock";
+    const RESTORE_ACCESS_ENDPOINT = "/.netlify/functions/restore-access";
     const REDIRECT_PATH = "../analysis/index.html";
     const pageParams = new URLSearchParams(window.location.search);
     const isGooglePlayMode = pageParams.get("gp") === "1"
@@ -875,8 +878,11 @@
         .some((item) => item.trim() === `${UNLOCK_COOKIE_NAME}=true`);
     }
 
-    function persistUnlockedAccess() {
+    function persistUnlockedAccess(accessToken = "") {
       localStorage.setItem(UNLOCKED_ACCESS_STORAGE_KEY, "true");
+      if (accessToken) {
+        localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
+      }
       document.cookie = `${UNLOCK_COOKIE_NAME}=true; Max-Age=31536000; Path=/; SameSite=Lax`;
     }
 
@@ -928,9 +934,20 @@
       return localStorage.getItem(UNLOCKED_ACCESS_STORAGE_KEY) === "true" || hasUnlockCookie();
     }
 
+    function getCheckoutSessionId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("checkout_session_id") ||
+        params.get("session_id") ||
+        params.get("cs") ||
+        "";
+    }
+
     function cleanUnlockQueryFromUrl() {
       const cleanedUrl = new URL(window.location.href);
       cleanedUrl.searchParams.delete("unlocked");
+      cleanedUrl.searchParams.delete("checkout_session_id");
+      cleanedUrl.searchParams.delete("session_id");
+      cleanedUrl.searchParams.delete("cs");
       const nextUrl = `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`;
       window.history.replaceState({}, "", nextUrl || cleanedUrl.pathname);
     }
@@ -949,19 +966,50 @@
       restoreEmailInput.placeholder = "Already unlocked";
     }
 
-    function handlePaymentUnlockReturn() {
+    async function handlePaymentUnlockReturn() {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("unlocked") !== "true") {
+      const sessionId = getCheckoutSessionId();
+      if (params.get("unlocked") !== "true" && !sessionId) {
         return false;
       }
 
-      persistUnlockedAccess();
-      renderUnlockedAccessState("Payment confirmed. All tools are unlocked on this device.");
-      trackPurchaseCompleted("access_payment_return", {
-        unlock_method: "stripe_return"
-      });
-      cleanUnlockQueryFromUrl();
-      return true;
+      if (!sessionId) {
+        accessMessage.classList.remove("is-success");
+        accessMessage.classList.add("is-error");
+        accessMessage.textContent = "Payment return needs Stripe verification. Restore access with your Stripe receipt email.";
+        cleanUnlockQueryFromUrl();
+        return false;
+      }
+
+      accessMessage.classList.remove("is-error");
+      accessMessage.classList.add("is-success");
+      accessMessage.textContent = "Verifying Stripe payment...";
+
+      try {
+        const response = await fetch(CONFIRM_ACCESS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.unlocked || !result.accessToken) {
+          throw new Error(result.error || "Payment could not be verified.");
+        }
+
+        persistUnlockedAccess(result.accessToken);
+        renderUnlockedAccessState("Payment confirmed. All tools are unlocked on this device.");
+        trackPurchaseCompleted("access_payment_return", {
+          unlock_method: "stripe_checkout_verified"
+        });
+        cleanUnlockQueryFromUrl();
+        return true;
+      } catch (error) {
+        accessMessage.classList.remove("is-success");
+        accessMessage.classList.add("is-error");
+        accessMessage.textContent = error.message || "Could not verify checkout. Restore access with your Stripe receipt email.";
+        cleanUnlockQueryFromUrl();
+        return false;
+      }
     }
 
     function configureGooglePlayAccessMode() {
@@ -982,18 +1030,35 @@
       accessMessage.textContent = "Google Play mode active.";
     }
 
-    if (!handlePaymentUnlockReturn() && hasUnlockedAccess()) {
-      renderUnlockedAccessState();
+    void initializeAccessState();
+
+    async function initializeAccessState() {
+      const confirmedReturn = await handlePaymentUnlockReturn();
+      if (!confirmedReturn && hasUnlockedAccess()) {
+        renderUnlockedAccessState();
+      }
     }
 
-    accessForm.addEventListener("submit", (event) => {
+    accessForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const normalizedValue = (passwordInput.value || "").trim().toLowerCase();
+      const password = (passwordInput.value || "").trim();
       accessMessage.classList.remove("is-success", "is-error");
+      unlockButton.disabled = true;
+      unlockButton.textContent = "Checking...";
 
-      if (normalizedValue === PATREON_PASSWORD) {
-        persistUnlockedAccess();
+      try {
+        const response = await fetch(MEMBER_UNLOCK_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.unlocked || !result.accessToken) {
+          throw new Error(result.error || "Wrong password. Please check your member post.");
+        }
+
+        persistUnlockedAccess(result.accessToken);
         accessMessage.textContent = "Access unlocked. You now have unlimited access to all premium tools.";
         accessMessage.classList.add("is-success");
         unlockButton.disabled = true;
@@ -1002,11 +1067,12 @@
         window.setTimeout(() => {
           window.location.href = REDIRECT_PATH;
         }, 1400);
-        return;
+      } catch (error) {
+        unlockButton.disabled = false;
+        unlockButton.textContent = "Unlock Tools";
+        accessMessage.textContent = error.message || "Could not unlock tools right now.";
+        accessMessage.classList.add("is-error");
       }
-
-      accessMessage.textContent = "Wrong password. Please check your Patreon post.";
-      accessMessage.classList.add("is-error");
     });
 
     restoreForm.addEventListener("submit", async (event) => {
@@ -1018,17 +1084,17 @@
       restoreButton.textContent = "Checking Stripe...";
 
       try {
-        const response = await fetch("/.netlify/functions/restore-access", {
+        const response = await fetch(RESTORE_ACCESS_ENDPOINT, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email })
         });
         const result = await response.json().catch(() => ({}));
-        if (!response.ok || !result.unlocked) {
+        if (!response.ok || !result.unlocked || !result.accessToken) {
           throw new Error(result.error || "No paid unlock was found for that email.");
         }
 
-        persistUnlockedAccess();
+        persistUnlockedAccess(result.accessToken);
         renderUnlockedAccessState("Purchase restored. All tools are unlocked in this app mode.");
         trackAccessRestored("access_restore", {
           unlock_method: "stripe_restore"
