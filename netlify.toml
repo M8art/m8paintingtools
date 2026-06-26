@@ -17,6 +17,30 @@
   force = true
 
 [[redirects]]
+  from = "https://m8paintingtools.netlify.app/*"
+  to = "https://www.m8paintingtools.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://m8paintingtools.netlify.app/*"
+  to = "https://www.m8paintingtools.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://ma8paintingtools.netlify.app/*"
+  to = "https://www.m8paintingtools.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://ma8paintingtools.netlify.app/*"
+  to = "https://www.m8paintingtools.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/assets/*"
   to = "/assets/:splat"
   status = 200
