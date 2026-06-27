@@ -312,6 +312,7 @@ let quickAiChatRequestId = 0;
 let isQuickAiChatLoading = false;
 let playQuickAiRequestId = 0;
 let pendingPlayQuickAiImageDataUrl = "";
+let currentUploadFileMeta = null;
 
 const uploadLoadingOverlay = createUploadLoadingOverlay();
 const statusToast = createStatusToast();
@@ -337,44 +338,25 @@ uploadZone.addEventListener("click", (event) => {
   if (event.target.closest(".upload-input-hitbox")) {
     return;
   }
-  if (shouldBlockAnalysisUpload()) {
-    showLockedAnalysisState();
-    return;
-  }
   openAnalysisFilePicker();
 }, true);
 
 uploadZone.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
-    if (shouldBlockAnalysisUpload()) {
-      showLockedAnalysisState();
-      return;
-    }
     openAnalysisFilePicker();
   }
 });
 
 analysisFileInput.addEventListener("change", (event) => {
-  if (shouldBlockAnalysisUpload()) {
-    event.target.value = "";
-    showLockedAnalysisState();
-    return;
-  }
-
   const [file] = event.target.files || [];
   if (file) {
-    showPreview(file);
+    handleSelectedImageFile(file);
     event.target.value = "";
   }
 });
 
 window.M8HandleNativeQuickUpload = async function handleNativeQuickUpload(payload) {
-  if (shouldBlockAnalysisUpload()) {
-    showLockedAnalysisState();
-    return false;
-  }
-
   const source = payload?.dataUrl || payload?.fileUrl;
   if (!source) {
     showUploadError("Couldn't load image. Please try another file.");
@@ -427,10 +409,6 @@ analysisUploadLabels.forEach((label) => {
       return;
     }
     event.preventDefault();
-    if (shouldBlockAnalysisUpload()) {
-      showLockedAnalysisState();
-      return;
-    }
 
     openAnalysisFilePicker();
   });
@@ -439,10 +417,6 @@ analysisUploadLabels.forEach((label) => {
 document.querySelector(".upload-input-hitbox")?.addEventListener("click", (event) => {
   completeQuickCheckOnboarding();
   event.preventDefault();
-  if (shouldBlockAnalysisUpload()) {
-    showLockedAnalysisState();
-    return;
-  }
 
   openAnalysisFilePicker();
 });
@@ -602,16 +576,40 @@ uploadZone.addEventListener("drop", (event) => {
   event.preventDefault();
   uploadZone.classList.remove("dragover");
 
-  if (shouldBlockAnalysisUpload()) {
-    showLockedAnalysisState();
+  const [file] = event.dataTransfer?.files || [];
+  if (file) {
+    handleSelectedImageFile(file);
+  }
+});
+
+function handleSelectedImageFile(file) {
+  if (!file) {
     return;
   }
 
-  const [file] = event.dataTransfer?.files || [];
-  if (file && file.type.startsWith("image/")) {
-    showPreview(file);
+  currentUploadFileMeta = {
+    name: file.name || "",
+    type: file.type || "",
+    size: file.size || 0
+  };
+
+  if (!isLikelyImageFile(file)) {
+    showUploadError("That file is not an image. Please choose a photo.");
+    return;
   }
-});
+
+  showPreview(file);
+}
+
+function isLikelyImageFile(file) {
+  const type = String(file?.type || "").toLowerCase();
+  if (type.startsWith("image/")) {
+    return true;
+  }
+
+  const name = String(file?.name || "").toLowerCase();
+  return /\.(jpe?g|png|webp|gif|heic|heif|bmp|avif)$/.test(name);
+}
 
 function showPreview(file) {
   const objectUrl = URL.createObjectURL(file);
@@ -763,10 +761,30 @@ function showPreviewFromSource(sourceUrl, isObjectUrl = false) {
     quickCheckDeepReport?.classList.add("hidden");
     lockedAnalysisState.classList.add("hidden");
     resetNotanReading();
-    showUploadError("Couldn't load image. Please try another file.");
+    showUploadError(getImageLoadErrorMessage(), getImageLoadErrorSubcopy());
     resetWorkspaceViewport(true);
   };
   analysisPreview.src = currentObjectUrl;
+}
+
+function getImageLoadErrorMessage() {
+  const type = String(currentUploadFileMeta?.type || "").toLowerCase();
+  const name = String(currentUploadFileMeta?.name || "").toLowerCase();
+  if (type.includes("heic") || type.includes("heif") || /\.(heic|heif)$/.test(name)) {
+    return "This phone photo format could not be opened here.";
+  }
+
+  return "Couldn't load image. Please try another file.";
+}
+
+function getImageLoadErrorSubcopy() {
+  const type = String(currentUploadFileMeta?.type || "").toLowerCase();
+  const name = String(currentUploadFileMeta?.name || "").toLowerCase();
+  if (type.includes("heic") || type.includes("heif") || /\.(heic|heif)$/.test(name)) {
+    return "Open the photo on your phone and share/export it as JPG, PNG, or WebP.";
+  }
+
+  return "Choose another JPG, PNG, WebP, or phone photo.";
 }
 
 function maybeRunPendingUnlockAnalysis() {
@@ -3312,7 +3330,7 @@ function resetEmptyState() {
     emptyStateLabel.textContent = "Click to upload your image";
   }
   if (emptyStateSubcopy) {
-    emptyStateSubcopy.textContent = "JPG, PNG, WebP";
+    emptyStateSubcopy.textContent = "JPG, PNG, WebP, HEIC";
     emptyStateSubcopy.classList.add("hidden");
   }
   emptyState.classList.remove("hidden");
@@ -3365,6 +3383,7 @@ function resetUploadedImage() {
   }
 
   hasUploadedImage = false;
+  currentUploadFileMeta = null;
   pendingPlayQuickAiImageDataUrl = "";
   analysisPreview.onload = null;
   analysisPreview.onerror = null;
@@ -3391,7 +3410,7 @@ function resetUploadedImage() {
   showStatusToast("Workspace reset");
 }
 
-function showUploadError(message) {
+function showUploadError(message, subcopy = "Choose another JPG, PNG, WebP, or phone photo.") {
   resetAnalysisSequence();
   setUploadLoadingState(false);
   uploadZone.classList.add("has-load-error");
@@ -3399,7 +3418,7 @@ function showUploadError(message) {
     emptyStateLabel.textContent = message;
   }
   if (emptyStateSubcopy) {
-    emptyStateSubcopy.textContent = "Choose another JPG, PNG, or WebP image.";
+    emptyStateSubcopy.textContent = subcopy;
     emptyStateSubcopy.classList.remove("hidden");
   }
   imageStage.classList.add("hidden");

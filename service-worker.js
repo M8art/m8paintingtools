@@ -1,4 +1,4 @@
-const CACHE_NAME = "m8-painting-tools-shell-v21";
+const CACHE_NAME = "m8-painting-tools-shell-v31";
 const SHELL_URLS = [
   "/",
   "/index.html",
